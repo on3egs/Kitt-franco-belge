@@ -27,34 +27,73 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 #lang-screen{
   position:fixed;top:0;left:0;right:0;bottom:0;
   background:#000;z-index:8000;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:20px;
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
 }
 #lang-box{
+  width:100%;max-width:440px;
   border:1px solid var(--green);
-  padding:30px 40px;
-  max-width:520px;width:100%;
-  text-align:center;
-  box-shadow:0 0 30px rgba(0,255,100,.12);
-}
-#lang-output{
-  font-size:14px;line-height:1.8;
-  min-height:220px;
-  white-space:pre-wrap;
-  text-align:left;
-}
-.lang-key{
-  display:inline-block;
-  border:1px solid var(--green);
-  padding:6px 18px;
-  margin:8px 6px 0;
+  box-shadow:0 0 40px rgba(0,255,100,.12),inset 0 0 30px rgba(0,255,100,.02);
   font-size:13px;
-  cursor:pointer;
-  letter-spacing:2px;
-  transition:all .15s;
 }
-.lang-key:hover,.lang-key.active{background:var(--green);color:#000;}
-#lang-keys{margin-top:16px;display:none;}
+#lang-hdr{
+  border-bottom:1px solid var(--green-dim);
+  padding:10px 18px;
+  color:var(--green);
+  letter-spacing:3px;
+  font-size:12px;
+  text-align:center;
+  text-shadow:0 0 10px var(--green);
+}
+#lang-sub{
+  padding:10px 18px 4px;
+  color:var(--amber);
+  letter-spacing:2px;
+  font-size:11px;
+  border-bottom:1px solid #111;
+}
+#lang-output{padding:4px 0;}
+.lang-opt{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:7px 22px;
+  cursor:pointer;
+  transition:background .12s;
+  border-left:2px solid transparent;
+}
+.lang-opt:hover{
+  background:rgba(0,255,100,.07);
+  border-left-color:var(--green);
+}
+.lang-opt.active{
+  background:rgba(0,255,100,.15);
+  border-left-color:var(--green);
+  color:#000;
+}
+.lo-n{
+  color:var(--red);
+  font-size:11px;
+  min-width:28px;
+  text-align:center;
+  border:1px solid var(--red);
+  padding:1px 4px;
+  letter-spacing:1px;
+  flex-shrink:0;
+}
+.lo-l{color:var(--green);letter-spacing:2px;font-size:13px;}
+#lang-ftr{
+  border-top:1px solid var(--green-dim);
+  padding:8px 18px;
+  color:var(--green-dim);
+  font-size:10px;
+  letter-spacing:2px;
+  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
 
 /* ── SCANNER KITT ───────────────────────────────────────── */
 #sw{position:fixed;top:0;left:0;right:0;height:3px;overflow:hidden;z-index:1000;}
@@ -134,14 +173,10 @@ button:active{transform:scale(.95);}
 <!-- Language selection overlay -->
 <div id="lang-screen">
   <div id="lang-box">
+    <div id="lang-hdr"></div>
+    <div id="lang-sub"></div>
     <div id="lang-output"></div>
-    <div id="lang-keys">
-      <span class="lang-key" onclick="selectLang('fr')">[1] FRANÇAIS</span>
-      <span class="lang-key" onclick="selectLang('en')">[2] ENGLISH</span>
-      <span class="lang-key" onclick="selectLang('nl')">[3] NEDERLANDS</span>
-      <span class="lang-key" onclick="selectLang('it')">[4] ITALIANO</span>
-      <span class="lang-key" onclick="selectLang('de')">[5] DEUTSCH</span>
-    </div>
+    <div id="lang-ftr"></div>
   </div>
 </div>
 
@@ -649,12 +684,144 @@ const T = {
       ['mario',      'Mario Ravasi / IoT Akte'],
       ['za',         'ZA Elettronica Akte'],
       ['pascal',     'K Industrie Akte'],
-      ['daemon',     'Daemon Paule Akte'],
+      ['damon',      'Damon Paule Akte'],
       ['geoffrey',   'Geoffrey Akte'],
     ],
     hi:  'HALLO. ICH BIN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'FRANCO-BELGISCHES SYSTEM ENTWICKELT VON MANIX.',
     hi3: 'ZU IHREN DIENSTEN.',
+  },
+
+  es: {
+    wait:       'SISTEMA EN ESPERA — ESCRIBE "boot" O HAZ CLIC EN [ INITIALISER ]',
+    help_hint:  'ESCRIBE "ayuda" PARA VER LOS COMANDOS.',
+    cleared:    'TERMINAL BORRADO.',
+    unknown:    (c) => `COMANDO DESCONOCIDO: "${c}". ESCRIBE "ayuda".`,
+    online:     'EN LÍNEA',
+    boot_title: '  KITT FRANCO-BELGA — SECUENCIA DE INICIO   ',
+    boot_lines: [
+      ['INICIALIZANDO SISTEMA...', 'line-warn'],
+      ['CARGANDO MÓDULOS COGNITIVOS...     [OK]', 'line-ok'],
+      ['INTERFAZ NEURONAL...               [OK]', 'line-ok'],
+      ['SÍNTESIS DE VOZ (PIPER-GPU)...     [OK]', 'line-ok'],
+      ['RECONOCIMIENTO DE VOZ (WHISPER)... [OK]', 'line-ok'],
+      ['MODELO LLM LOCAL (QWEN 3B)...      [OK]', 'line-ok'],
+      ['MODO SIN CONEXIÓN...               [ACTIVO]', 'line-ok'],
+      ['', 'line-ok'],
+      ['PROYECTO FAN — NO COMERCIAL.', 'line-dim'],
+      ['ESTADO : INTERFAZ EN CONSTRUCCIÓN ACTIVA.', 'line-warn'],
+      ['', 'line-ok'],
+      ['ACTUALIZACIONES PUBLICADAS REGULARMENTE :', 'line-info'],
+      ['  • a veces cada día', 'line-dim'],
+      ['  • a veces cada semana', 'line-dim'],
+      ['  • a veces cada hora', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). TODOS LOS DERECHOS RESERVADOS.', 'line-warn'],
+    ],
+    boot_end:   '  CONEXIÓN AL NÚCLEO KITT ESTABLECIDA.',
+    boot_hint:  '  ESCRIBE "ayuda" PARA VER LOS COMANDOS',
+    aide_title: 'COMANDOS DISPONIBLES:',
+    aide_sys:   '── SISTEMA ──',
+    aide_fun:   '── DIVERSIÓN ──',
+    cmds_sys: [
+      ['ayuda',      'esta lista'],
+      ['boot',       'secuencia de inicio'],
+      ['diagnostic', 'prueba completa del sistema'],
+      ['status',     'estado rápido'],
+      ['hora',       'hora actual'],
+      ['version',    'versión de la interfaz'],
+      ['sonido',     'demo de audio'],
+      ['clear',      'borrar terminal'],
+    ],
+    cmds_fun: [
+      ['hola',       'saludo KITT'],
+      ['chiste',     'chiste aleatorio KITT'],
+      ['alien',      'conexión MU-TH-UR 6000'],
+      ['matrix',     'el conejo blanco'],
+      ['kitt',       'ficha de identidad KITT'],
+      ['manix',      'expediente del conductor'],
+      ['cedric',     'expediente Cedric Momo Rider'],
+      ['kr95',       'expediente KR95'],
+      ['replicas',   'las réplicas franco-belgas'],
+      ['secreto',    'archivo clasificado...'],
+      ['cafe',       'pedir café a KITT'],
+      ['belgica',    'análisis geopolítico'],
+      ['jarvis',     'llamada a Stark Tower'],
+      ['mario',      'expediente Mario Ravasi / IoT'],
+      ['za',         'expediente ZA Elettronica'],
+      ['pascal',     'expediente K Industrie'],
+      ['damon',      'expediente Damon Paule'],
+      ['geoffrey',   'expediente Geoffrey'],
+    ],
+    hi:  'HOLA. SOY KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'SISTEMA FRANCO-BELGA DESARROLLADO POR MANIX.',
+    hi3: 'A SU SERVICIO.',
+  },
+
+  pt: {
+    wait:       'SISTEMA EM ESPERA — DIGITE "boot" OU CLIQUE EM [ INITIALISER ]',
+    help_hint:  'DIGITE "ajuda" PARA VER OS COMANDOS.',
+    cleared:    'TERMINAL LIMPO.',
+    unknown:    (c) => `COMANDO DESCONHECIDO: "${c}". DIGITE "ajuda".`,
+    online:     'EM LINHA',
+    boot_title: '  KITT FRANCO-BELGA — SEQUÊNCIA DE ARRANQUE  ',
+    boot_lines: [
+      ['A INICIALIZAR O SISTEMA...', 'line-warn'],
+      ['A CARREGAR MÓDULOS COGNITIVOS...   [OK]', 'line-ok'],
+      ['INTERFACE NEURONAL...              [OK]', 'line-ok'],
+      ['SÍNTESE DE VOZ (PIPER-GPU)...      [OK]', 'line-ok'],
+      ['RECONHECIMENTO DE VOZ (WHISPER)... [OK]', 'line-ok'],
+      ['MODELO LLM LOCAL (QWEN 3B)...      [OK]', 'line-ok'],
+      ['MODO OFFLINE...                    [ATIVO]', 'line-ok'],
+      ['', 'line-ok'],
+      ['PROJETO FÃ — NÃO COMERCIAL.', 'line-dim'],
+      ['ESTADO : INTERFACE EM CONSTRUÇÃO ATIVA.', 'line-warn'],
+      ['', 'line-ok'],
+      ['ATUALIZAÇÕES PUBLICADAS REGULARMENTE :', 'line-info'],
+      ['  • às vezes todos os dias', 'line-dim'],
+      ['  • às vezes semanalmente', 'line-dim'],
+      ['  • às vezes de hora em hora', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). TODOS OS DIREITOS RESERVADOS.', 'line-warn'],
+    ],
+    boot_end:   '  LIGAÇÃO AO NÚCLEO KITT ESTABELECIDA.',
+    boot_hint:  '  DIGITE "ajuda" PARA VER OS COMANDOS',
+    aide_title: 'COMANDOS DISPONÍVEIS:',
+    aide_sys:   '── SISTEMA ──',
+    aide_fun:   '── DIVERSÃO ──',
+    cmds_sys: [
+      ['ajuda',      'esta lista'],
+      ['boot',       'sequência de arranque'],
+      ['diagnostic', 'teste completo do sistema'],
+      ['status',     'estado rápido'],
+      ['hora',       'hora atual'],
+      ['version',    'versão da interface'],
+      ['som',        'demonstração de áudio'],
+      ['clear',      'limpar terminal'],
+    ],
+    cmds_fun: [
+      ['ola',        'saudação KITT'],
+      ['piada',      'piada aleatória KITT'],
+      ['alien',      'ligação MU-TH-UR 6000'],
+      ['matrix',     'o coelho branco'],
+      ['kitt',       'ficha de identidade KITT'],
+      ['manix',      'dossier do condutor'],
+      ['cedric',     'dossier Cedric Momo Rider'],
+      ['kr95',       'dossier KR95'],
+      ['replicas',   'as réplicas franco-belgas'],
+      ['segredo',    'ficheiro classificado...'],
+      ['cafe',       'pedir café ao KITT'],
+      ['belgica',    'análise geopolítica'],
+      ['jarvis',     'chamada para Stark Tower'],
+      ['mario',      'dossier Mario Ravasi / IoT'],
+      ['za',         'dossier ZA Elettronica'],
+      ['pascal',     'dossier K Industrie'],
+      ['damon',      'dossier Damon Paule'],
+      ['geoffrey',   'dossier Geoffrey'],
+    ],
+    hi:  'OLÁ. SOU O KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'SISTEMA FRANCO-BELGA DESENVOLVIDO POR MANIX.',
+    hi3: 'AO SEU SERVIÇO.',
   },
 };
 
@@ -674,9 +841,16 @@ const CMD_ALIASES = {
   // DE
   hilfe:'aide', ton:'son', witz:'blague', uhrzeit:'heure',
   kaffee:'cafe', belgien:'belgique', geheimnis:'secret',
-  // Noms personnes
-  za:'mario', ragny:'mario', zagny:'mario', ravasi:'mario',
-  'pascal':'pascal', 'daemon':'daemon', 'geoffrey':'geoffrey',
+  // Noms personnes — ZA ≠ Mario Ravasi !
+  ravasi:'mario', roadthunder:'mario',
+  zagny:'za', zagni:'za', 'za-elettronica':'za', zaelettronica:'za',
+  damon:'damon', daemon:'damon',
+  // ES
+  ayuda:'aide', sonido:'son', hola:'bonjour', chiste:'blague',
+  hora:'heure', cafe:'cafe', belgica:'belgique', secreto:'secret',
+  // PT
+  ajuda:'aide', som:'son', ola:'bonjour', piada:'blague',
+  hora:'heure', segredo:'secret',
 };
 
 // ════════════════════════════════════════════════════════════
@@ -684,45 +858,62 @@ const CMD_ALIASES = {
 // ════════════════════════════════════════════════════════════
 let _langTyping = false;
 
+const LANG_LIST = [
+  ['1','fr','FRANÇAIS'],
+  ['2','en','ENGLISH'],
+  ['3','nl','NEDERLANDS'],
+  ['4','it','ITALIANO'],
+  ['5','de','DEUTSCH'],
+  ['6','es','ESPAÑOL'],
+  ['7','pt','PORTUGUÊS'],
+];
+
 async function showLangScreen() {
   const screen = document.getElementById('lang-screen');
-  const out    = document.getElementById('lang-output');
-  const keys   = document.getElementById('lang-keys');
   screen.style.display = 'flex';
-  out.textContent = '';
-  keys.style.display = 'none';
-  _langTyping = true;
+  screen.style.opacity  = '1';
 
-  const lines = [
-    ['MU-TH-UR 6000 — STANDARD INTERFACE PROTOCOL v2.1', 'color:var(--green)'],
-    ['═══════════════════════════════════════════════════', 'color:var(--green-dim)'],
-    ['', ''],
-    ['  LANGUAGE SELECTION REQUIRED', 'color:var(--amber)'],
-    ['  SÉLECTION DE LANGUE REQUISE', 'color:var(--amber)'],
-    ['  TAALSELECTIE VEREIST', 'color:var(--amber)'],
-    ['  SELEZIONE LINGUA RICHIESTA', 'color:var(--amber)'],
-    ['  SPRACHAUSWAHL ERFORDERLICH', 'color:var(--amber)'],
-    ['', ''],
-    ['  [1]  FRANÇAIS', 'color:var(--green)'],
-    ['  [2]  ENGLISH', 'color:var(--green)'],
-    ['  [3]  NEDERLANDS', 'color:var(--green)'],
-    ['  [4]  ITALIANO', 'color:var(--green)'],
-    ['  [5]  DEUTSCH', 'color:var(--green)'],
-    ['', ''],
-    ['═══════════════════════════════════════════════════', 'color:var(--green-dim)'],
-    ['  PRESS KEY (1-5) OR CLICK / APPUYEZ SUR 1 À 5', 'color:var(--green-dim)'],
-  ];
+  // Vider les zones
+  ['lang-hdr','lang-sub','lang-output','lang-ftr'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
 
-  for (const [txt, style] of lines) {
-    const span = document.createElement('div');
-    if (style) span.style.cssText = style;
-    out.appendChild(span);
-    if (txt === '') { span.innerHTML = '\n'; continue; }
-    await _langType(span, txt);
-    await _langDelay(30);
+  const hdr = document.getElementById('lang-hdr');
+  const sub = document.getElementById('lang-sub');
+  const out = document.getElementById('lang-output');
+  const ftr = document.getElementById('lang-ftr');
+
+  // ── Header tapé caractère par caractère
+  await _langType(hdr, 'MU-TH-UR 6000  //  INTERFACE PROTOCOL v2.1');
+  await _langDelay(80);
+
+  // ── Sous-titre
+  await _langType(sub, 'SELECT INTERFACE LANGUAGE');
+  await _langDelay(60);
+
+  // ── Options (apparition rapide, une par une)
+  for (const [num, code, label] of LANG_LIST) {
+    const row = document.createElement('div');
+    row.className = 'lang-opt';
+    row.dataset.code = code;
+    row.innerHTML = `<span class="lo-n">${num}</span><span class="lo-l">${label}</span>`;
+    row.addEventListener('click', () => selectLang(code));
+    row.addEventListener('mouseenter', () => sndTick());
+    out.appendChild(row);
+    sndClick();
+    await _langDelay(55);
   }
-  keys.style.display = 'block';
-  _langTyping = false;
+
+  await _langDelay(80);
+
+  // ── Footer avec curseur clignotant
+  const ftrTxt = document.createElement('span');
+  ftr.appendChild(ftrTxt);
+  await _langType(ftrTxt, 'PRESS  [ 1 – 7 ]  OR CLICK');
+  const cur = document.createElement('span');
+  cur.className = 'cursor';
+  cur.style.marginLeft = '4px';
+  ftr.appendChild(cur);
 }
 
 function _langType(el, txt) {
@@ -759,11 +950,8 @@ function selectLang(lang) {
 // Clavier pour sélection de langue
 document.addEventListener('keydown', e => {
   if (document.getElementById('lang-screen').style.display !== 'none') {
-    if (e.key === '1') selectLang('fr');
-    if (e.key === '2') selectLang('en');
-    if (e.key === '3') selectLang('nl');
-    if (e.key === '4') selectLang('it');
-    if (e.key === '5') selectLang('de');
+    const langMap = {'1':'fr','2':'en','3':'nl','4':'it','5':'de','6':'es','7':'pt'};
+    if (langMap[e.key]) selectLang(langMap[e.key]);
   }
 });
 
@@ -832,7 +1020,7 @@ async function boot() {
 async function runSelfTest() {
   if (typing) return;
   term.innerHTML=''; kittChime();
-  const diagMsg = {fr:'DIAGNOSTIC SYSTÈME EN COURS...',en:'RUNNING SYSTEM DIAGNOSTIC...',nl:'SYSTEEMDIAGNOSE BEZIG...',it:'DIAGNOSI SISTEMA IN CORSO...',de:'SYSTEMDIAGNOSE LÄUFT...'}[LANG]||'DIAGNOSTIC SYSTÈME EN COURS...';
+  const diagMsg = {fr:'DIAGNOSTIC SYSTÈME EN COURS...',en:'RUNNING SYSTEM DIAGNOSTIC...',nl:'SYSTEEMDIAGNOSE BEZIG...',it:'DIAGNOSI SISTEMA IN CORSO...',de:'SYSTEMDIAGNOSE LÄUFT...',es:'DIAGNÓSTICO DEL SISTEMA EN CURSO...',pt:'DIAGNÓSTICO DO SISTEMA EM CURSO...'}[LANG]||'DIAGNOSTIC SYSTÈME EN COURS...';
   await typeText(diagMsg, 18, 'line-warn');
   await delay(300);
   const checks = [
@@ -858,8 +1046,8 @@ async function runSelfTest() {
   }
   await delay(200);
   await typeText('', 0);
-  const ok_msg = {fr:'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.',en:'RESULT: ALL SYSTEMS NOMINAL.',nl:'RESULTAAT : ALLE SYSTEMEN NOMINAAL.',it:'RISULTATO : TUTTI I SISTEMI NOMINALI.',de:'ERGEBNIS: ALLE SYSTEME NOMINAL.'}[LANG]||'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.';
-  const op_msg = {fr:'KITT EST OPÉRATIONNEL.',en:'KITT IS OPERATIONAL.',nl:'KITT IS OPERATIONEEL.',it:'KITT È OPERATIVO.',de:'KITT IST BETRIEBSBEREIT.'}[LANG]||'KITT EST OPÉRATIONNEL.';
+  const ok_msg = {fr:'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.',en:'RESULT: ALL SYSTEMS NOMINAL.',nl:'RESULTAAT : ALLE SYSTEMEN NOMINAAL.',it:'RISULTATO : TUTTI I SISTEMI NOMINALI.',de:'ERGEBNIS: ALLE SYSTEME NOMINAL.',es:'RESULTADO: TODOS LOS SISTEMAS NOMINALES.',pt:'RESULTADO: TODOS OS SISTEMAS NOMINAIS.'}[LANG]||'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.';
+  const op_msg = {fr:'KITT EST OPÉRATIONNEL.',en:'KITT IS OPERATIONAL.',nl:'KITT IS OPERATIONEEL.',it:'KITT È OPERATIVO.',de:'KITT IST BETRIEBSBEREIT.',es:'KITT ESTÁ OPERATIVO.',pt:'KITT ESTÁ OPERACIONAL.'}[LANG]||'KITT EST OPÉRATIONNEL.';
   await typeText(ok_msg, 16, 'line-info');
   await typeText(op_msg, 16, 'line-err');
 }
@@ -909,7 +1097,7 @@ const CMDS = {
 
   heure: async () => {
     const now = new Date(), loc = getLoc();
-    const pfx = {fr:'IL EST',en:'IT IS',nl:'HET IS',it:'SONO LE',de:'ES IST'}[LANG]||'IL EST';
+    const pfx = {fr:'IL EST',en:'IT IS',nl:'HET IS',it:'SONO LE',de:'ES IST',es:'SON LAS',pt:'SÃO'}[LANG]||'IL EST';
     await typeText(`${pfx} ${now.toLocaleTimeString(loc)}.`, 14, 'line-info');
   },
 
@@ -1119,7 +1307,7 @@ const CMDS = {
         'Conducteur belge — roule aussi en BMW',
         'Scanner rouge. Intérieur cuir bavarois. (peut-être)',
       ]],
-      ['KITT-D', 'DAEMON PAULE', [
+      ['KITT-D', 'DAMON PAULE', [
         'Réplique K2000 Pontiac Trans Am',
         'Prénom intimidant. Conducteur rassurant.',
         'KARR a déjà essayé de le recruter. Refus poli.',
@@ -1316,11 +1504,11 @@ const CMDS = {
     await typeText(' seraient... des Citroën avec un scanner rouge collé."', 12, 'line-dim');
   },
 
-  // ── Daemon Paule ──────────────────────────────────────────
-  daemon: async () => {
+  // ── Damon Paule ───────────────────────────────────────────
+  damon: async () => {
     kittChime();
     await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
-    await typeText('║  DOSSIER CONDUCTEUR — DAEMON PAULE       ║', 10, 'line-err');
+    await typeText('║  DOSSIER CONDUCTEUR — DAMON PAULE       ║', 10, 'line-err');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
     await typeText('║ STATUT      : PROPRIÉTAIRE RÉPLIQUE KITT ║', 8, 'line-ok');
     await typeText('║ RÉPLIQUE    : K2000 PONTIAC TRANS AM      ║', 8, 'line-ok');
@@ -1384,6 +1572,7 @@ const CMDS = {
 
 // Alias commandes multilingues dans CMDS
 CMDS['replicas'] = CMDS['repliques'];
+CMDS['daemon']   = CMDS['damon'];   // compat ancien alias
 
 // ════════════════════════════════════════════════════════════
 // INPUT handler
@@ -1410,7 +1599,7 @@ document.getElementById('cmd-input').addEventListener('keydown', async function(
 // ════════════════════════════════════════════════════════════
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-function getLoc(){return{fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE'}[LANG]||'fr-FR';}
+function getLoc(){return{fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE',es:'es-ES',pt:'pt-PT'}[LANG]||'fr-FR';}
 setInterval(()=>{
   document.getElementById('clock').textContent=new Date().toLocaleTimeString(getLoc());
 },1000);
