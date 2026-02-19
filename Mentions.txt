@@ -1,52 +1,18 @@
-Mentions légales – Projet KITT Franco-Belge
+MENTIONS LÉGALES – KITT FRANCO-BELGE
 
-Le projet KITT Franco-Belge est un développement personnel, expérimental et strictement non commercial, initié par Emmanuel Gelinne (Manix).
+Projet personnel, expérimental et non commercial
+initié par Emmanuel Gelinne (Manix).
 
-Ce projet constitue une création technique originale indépendante, librement inspirée d’un univers de fiction, sans affiliation officielle, approbation ni partenariat avec les ayants droit de la franchise associée.
-Toutes les marques, noms et références éventuelles à des œuvres existantes demeurent la propriété exclusive de leurs détenteurs respectifs.
+Création indépendante inspirée d’un univers de fiction,
+sans affiliation officielle avec les ayants droit.
 
-Propriété intellectuelle
+L’ensemble du code, design et contenus est protégé
+par le droit d’auteur.
 
-L’ensemble des éléments composant ce projet, incluant notamment :
+Toute reproduction, modification, redistribution
+ou exploitation commerciale est interdite sans
+autorisation écrite préalable.
 
-le code source
-
-l’architecture logicielle
-
-l’interface graphique
-
-les scripts, textes et contenus techniques
-
-les éléments visuels originaux
-
-est protégé par le droit d’auteur conformément à la législation applicable.
-
-Sauf autorisation écrite préalable de l’auteur, toute reproduction, modification, redistribution, intégration dans un autre projet ou exploitation, notamment commerciale, est strictement interdite.
-
-Le projet est distribué sous licence propriétaire privée.
-Aucun droit d’utilisation n’est accordé en dehors de la simple consultation publique.
-
-Nature non commerciale
-
-Le projet est présenté exclusivement dans un cadre :
-
-personnel
-
-expérimental
-
-éducatif et passionnel
-
-Aucune vente, monétisation ou exploitation commerciale n’est réalisée à ce stade.
-
-Toute utilisation commerciale non autorisée est formellement interdite.
-
-Responsabilité
-
-Le projet est fourni en l’état, sans garantie d’aucune sorte.
-L’auteur ne saurait être tenu responsable de tout dommage direct ou indirect lié à l’utilisation ou à l’impossibilité d’utilisation du logiciel ou des contenus associés.
-
-Droit applicable
-
-Les présentes mentions légales sont régies par la législation applicable dans le pays de résidence de l’auteur.
+Projet fourni “en l’état”, sans garantie.
 
 © 2026 Emmanuel Gelinne – Tous droits réservés.
