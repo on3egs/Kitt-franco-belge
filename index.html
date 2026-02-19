@@ -4,217 +4,664 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>KITT FRANCO-BELGE // SYSTÈME CENTRAL</title>
-
+<meta name="description" content="Interface KITT Franco-Belge — IA embarquée sur NVIDIA Jetson. Projet fan non commercial par Manix."/>
+<meta name="theme-color" content="#000000"/>
 <style>
 :root{
---green:#00ff66;
---red:#ff1a1a;
+  --green:#00ff66;
+  --green-dim:#00aa44;
+  --red:#ff1a1a;
+  --amber:#ffaa00;
+  --cyan:#00ccff;
+  --bg:#000;
 }
+
+*{box-sizing:border-box;}
 
 html,body{
-margin:0;
-height:100%;
-background:#000;
-color:var(--green);
-font-family:"Courier New",monospace;
-overflow:hidden;
+  margin:0;
+  height:100%;
+  background:var(--bg);
+  color:var(--green);
+  font-family:"Courier New",monospace;
+  overflow:hidden;
 }
 
-/* Effet écran CRT */
+/* Lignes CRT */
+body::before{
+  content:"";
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,.18),
+    rgba(0,0,0,.18) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events:none;
+  z-index:9998;
+}
+
+/* Flicker CRT */
 body::after{
-content:"";
-position:fixed;
-inset:0;
-background:repeating-linear-gradient(
-0deg,
-rgba(0,255,100,.05),
-rgba(0,255,100,.05) 1px,
-transparent 1px,
-transparent 3px);
-pointer-events:none;
-animation:flicker .15s infinite;
+  content:"";
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(0,255,80,.015);
+  pointer-events:none;
+  z-index:9999;
+  animation:flicker .12s infinite;
 }
 
 @keyframes flicker{
-0%{opacity:.92}
-50%{opacity:1}
-100%{opacity:.94}
+  0%{opacity:.88}48%{opacity:1}52%{opacity:.92}100%{opacity:.96}
 }
 
+/* === SCANNER KITT ROUGE === */
+#scanner-wrap{
+  position:fixed;
+  top:0;left:0;right:0;
+  height:3px;
+  overflow:hidden;
+  z-index:1000;
+}
+#scanner-bar{
+  position:absolute;
+  top:0;
+  width:200px;
+  height:3px;
+  background:linear-gradient(90deg,transparent,var(--red),var(--red),transparent);
+  box-shadow:0 0 14px 4px var(--red);
+  animation:kitt-scan 1.8s ease-in-out infinite alternate;
+}
+@keyframes kitt-scan{
+  0%{left:-200px}
+  100%{left:100%}
+}
+
+/* Même scanner en bas */
+#scanner-wrap-b{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  height:3px;
+  overflow:hidden;
+  z-index:1000;
+}
+#scanner-bar-b{
+  position:absolute;
+  top:0;
+  width:200px;
+  height:3px;
+  background:linear-gradient(90deg,transparent,var(--red),var(--red),transparent);
+  box-shadow:0 0 14px 4px var(--red);
+  animation:kitt-scan 1.8s ease-in-out infinite alternate-reverse;
+}
+
+/* === LAYOUT === */
 .container{
-display:flex;
-flex-direction:column;
-height:100%;
-padding:20px;
-box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  padding:16px 20px 20px;
+  gap:0;
 }
 
+/* === HEADER === */
 header{
-color:var(--red);
-font-size:22px;
-letter-spacing:3px;
-text-shadow:0 0 12px var(--red);
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 0 8px;
+  border-bottom:1px solid var(--red);
+}
+.header-title{
+  color:var(--red);
+  font-size:18px;
+  letter-spacing:4px;
+  text-shadow:0 0 16px var(--red),0 0 32px rgba(255,26,26,.4);
+  animation:pulse-red 3s ease-in-out infinite;
+}
+@keyframes pulse-red{
+  0%,100%{text-shadow:0 0 12px var(--red)}
+  50%{text-shadow:0 0 24px var(--red),0 0 48px rgba(255,26,26,.5)}
+}
+.header-status{
+  display:flex;
+  gap:12px;
+  font-size:11px;
+  color:var(--green-dim);
+}
+.status-dot{
+  display:inline-block;
+  width:7px;height:7px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 8px var(--green);
+  animation:blink-dot 2s ease-in-out infinite;
+  margin-right:4px;
+  vertical-align:middle;
+}
+@keyframes blink-dot{
+  0%,100%{opacity:1}50%{opacity:.3}
 }
 
+/* === ASCII KITT === */
+#kitt-ascii{
+  flex-shrink:0;
+  text-align:center;
+  color:var(--red);
+  font-size:10px;
+  line-height:1.2;
+  text-shadow:0 0 8px var(--red);
+  padding:8px 0 4px;
+  letter-spacing:1px;
+  opacity:.85;
+  user-select:none;
+}
+
+/* === TERMINAL === */
 #terminal{
-flex:1;
-overflow:auto;
-margin-top:20px;
-white-space:pre-wrap;
-font-size:14px;
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:10px 4px;
+  font-size:13px;
+  line-height:1.6;
+  scrollbar-width:thin;
+  scrollbar-color:var(--red) #111;
 }
+#terminal::-webkit-scrollbar{width:4px}
+#terminal::-webkit-scrollbar-track{background:#111}
+#terminal::-webkit-scrollbar-thumb{background:var(--red)}
 
+.line-ok{color:var(--green);}
+.line-warn{color:var(--amber);}
+.line-err{color:var(--red);}
+.line-info{color:var(--cyan);}
+.line-dim{color:var(--green-dim);}
+.cursor{
+  display:inline-block;
+  width:8px;height:13px;
+  background:var(--green);
+  vertical-align:text-bottom;
+  animation:blink-cur .7s step-end infinite;
+}
+@keyframes blink-cur{0%,100%{opacity:1}50%{opacity:0}}
+
+/* === BOUTONS === */
+.btn-row{
+  flex-shrink:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  padding:8px 0 6px;
+  border-top:1px solid #1a1a1a;
+  border-bottom:1px solid #1a1a1a;
+}
 button{
-background:black;
-border:1px solid var(--green);
-color:var(--green);
-padding:10px 18px;
-margin:6px 6px 6px 0;
-cursor:pointer;
-font-family:inherit;
-transition:.2s;
+  background:#000;
+  border:1px solid var(--green);
+  color:var(--green);
+  padding:7px 14px;
+  cursor:pointer;
+  font-family:inherit;
+  font-size:12px;
+  letter-spacing:1px;
+  transition:all .15s;
+  position:relative;
+  overflow:hidden;
 }
-
-button:hover{
-background:var(--green);
-color:black;
+button::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:var(--green);
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .15s;
+  z-index:-1;
 }
+button:hover{color:#000;border-color:var(--green);}
+button:hover::before{transform:scaleX(1);}
+button:active{transform:scale(.95);}
+.btn-red{border-color:var(--red);color:var(--red);}
+.btn-red::before{background:var(--red);}
+.btn-cyan{border-color:var(--cyan);color:var(--cyan);}
+.btn-cyan::before{background:var(--cyan);}
 
-#scanner{
-position:absolute;
-bottom:0;
-left:0;
-width:100%;
-height:4px;
-background:var(--red);
-box-shadow:0 0 20px var(--red);
-animation:scan 2s linear infinite;
+/* === INPUT COMMANDE === */
+.input-row{
+  flex-shrink:0;
+  display:flex;
+  gap:8px;
+  padding-top:8px;
+  align-items:center;
 }
-
-@keyframes scan{
-0%{left:-100%}
-100%{left:100%}
+.prompt-label{
+  color:var(--red);
+  font-size:13px;
+  white-space:nowrap;
+  text-shadow:0 0 8px var(--red);
 }
+#cmd-input{
+  flex:1;
+  background:transparent;
+  border:none;
+  border-bottom:1px solid var(--green);
+  color:var(--green);
+  font-family:inherit;
+  font-size:13px;
+  outline:none;
+  padding:4px 0;
+  caret-color:var(--green);
+}
+#cmd-input::placeholder{color:var(--green-dim);opacity:.6;}
 
+/* === MODAL === */
 .modal{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.92);
-display:none;
-flex-direction:column;
-padding:30px;
-overflow:auto;
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.95);
+  display:none;
+  flex-direction:column;
+  padding:30px;
+  overflow:auto;
+  z-index:5000;
+  border:1px solid var(--red);
 }
-
+.modal.open{display:flex;}
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+  border-bottom:1px solid var(--red);
+  padding-bottom:8px;
+}
+.modal-title{
+  color:var(--red);
+  font-size:16px;
+  letter-spacing:3px;
+  text-shadow:0 0 10px var(--red);
+}
+.close-btn{
+  cursor:pointer;
+  color:var(--red);
+  font-size:20px;
+  padding:4px 8px;
+  border:1px solid var(--red);
+  transition:all .15s;
+}
+.close-btn:hover{background:var(--red);color:#000;}
 .modal pre{
-white-space:pre-wrap;
-color:var(--green);
-font-family:monospace;
+  white-space:pre-wrap;
+  color:var(--green);
+  font-family:monospace;
+  font-size:13px;
+  line-height:1.7;
 }
 
-.close{
-position:absolute;
-top:20px;
-right:20px;
-font-size:20px;
-cursor:pointer;
-color:var(--red);
+/* === MOBILE === */
+@media(max-width:600px){
+  .header-title{font-size:13px;letter-spacing:2px;}
+  #kitt-ascii{font-size:8px;}
+  button{padding:6px 10px;font-size:11px;}
+  #terminal{font-size:12px;}
+}
+@media(max-width:380px){
+  #kitt-ascii{display:none;}
 }
 </style>
 </head>
-
 <body>
 
+<!-- Scanners KITT -->
+<div id="scanner-wrap"><div id="scanner-bar"></div></div>
+<div id="scanner-wrap-b"><div id="scanner-bar-b"></div></div>
+
 <div class="container">
-<header>KITT FRANCO-BELGE // INTERFACE CENTRALE</header>
 
-<div id="terminal"></div>
+  <!-- Header -->
+  <header>
+    <div class="header-title">KITT FRANCO-BELGE // INTERFACE CENTRALE</div>
+    <div class="header-status">
+      <span><span class="status-dot"></span>EN LIGNE</span>
+      <span id="clock">00:00:00</span>
+    </div>
+  </header>
 
-<div>
-<button onclick="boot()">INITIALISER</button>
-<button onclick="openFile('MENTIONS.txt')">MENTIONS LÉGALES</button>
-<button onclick="openFile('LICENSE.txt')">LICENCE</button>
+  <!-- ASCII KITT -->
+  <div id="kitt-ascii">
+    <pre>
+  ██╗  ██╗██╗████████╗████████╗
+  ██║ ██╔╝██║╚══██╔══╝╚══██╔══╝
+  █████╔╝ ██║   ██║      ██║
+  ██╔═██╗ ██║   ██║      ██║
+  ██║  ██╗██║   ██║      ██║
+  ╚═╝  ╚═╝╚═╝   ╚═╝      ╚═╝
+    FRANCO-BELGE  //  BY MANIX</pre>
+  </div>
+
+  <!-- Terminal -->
+  <div id="terminal"></div>
+
+  <!-- Boutons -->
+  <div class="btn-row">
+    <button onclick="boot()">[ INITIALISER ]</button>
+    <button onclick="runSelfTest()" class="btn-cyan">[ DIAGNOSTIC ]</button>
+    <button onclick="openFile('Mentions.txt','MENTIONS LÉGALES')" class="btn-red">[ MENTIONS ]</button>
+    <button onclick="openFile('License.txt','LICENCE')" class="btn-red">[ LICENCE ]</button>
+    <button onclick="clearTerm()">[ EFFACER ]</button>
+  </div>
+
+  <!-- Ligne de commande -->
+  <div class="input-row">
+    <span class="prompt-label">KITT&gt;</span>
+    <input id="cmd-input" type="text" placeholder="entrez une commande..." autocomplete="off" spellcheck="false"/>
+  </div>
+
 </div>
 
-<div id="scanner"></div>
-</div>
-
-<!-- Fenêtre modale -->
+<!-- Modal -->
 <div id="modal" class="modal">
-<div class="close" onclick="closeModal()">✖</div>
-<pre id="modalContent"></pre>
+  <div class="modal-header">
+    <span class="modal-title" id="modal-title">DOCUMENT</span>
+    <span class="close-btn" onclick="closeModal()">&#10006;</span>
+  </div>
+  <pre id="modal-content"></pre>
 </div>
 
 <script>
-const term=document.getElementById("terminal");
+// ─── AudioContext unique ───────────────────────────────────────
+const _ac = new (window.AudioContext || window.webkitAudioContext)();
 
-function beep(freq=650,dur=0.04){
-const ctx=new(window.AudioContext||window.webkitAudioContext)();
-const osc=ctx.createOscillator();
-const gain=ctx.createGain();
-osc.frequency.value=freq;
-osc.connect(gain);
-gain.connect(ctx.destination);
-gain.gain.value=.07;
-osc.start();
-setTimeout(()=>osc.stop(),dur*1000);
+function beep(freq = 640, dur = 0.035, vol = 0.06) {
+  try {
+    if (_ac.state === 'suspended') _ac.resume();
+    const osc  = _ac.createOscillator();
+    const gain = _ac.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    gain.gain.value = vol;
+    osc.connect(gain);
+    gain.connect(_ac.destination);
+    osc.start();
+    osc.stop(_ac.currentTime + dur);
+  } catch(e) {}
 }
 
-function typeText(text,speed=18){
-return new Promise(resolve=>{
-let i=0;
-function t(){
-if(i<text.length){
-term.innerHTML+=text[i++];
-beep();
-setTimeout(t,speed);
-}else{
-term.innerHTML+="\n";
-resolve();
-}}
-t();
+function kittChime() {
+  // Son signature KITT : sweep descendant
+  try {
+    if (_ac.state === 'suspended') _ac.resume();
+    const osc  = _ac.createOscillator();
+    const gain = _ac.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, _ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(220, _ac.currentTime + 0.35);
+    gain.gain.setValueAtTime(0.1, _ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + 0.4);
+    osc.connect(gain);
+    gain.connect(_ac.destination);
+    osc.start();
+    osc.stop(_ac.currentTime + 0.4);
+  } catch(e) {}
+}
+
+// ─── Terminal ─────────────────────────────────────────────────
+const term = document.getElementById('terminal');
+let typing = false;
+
+function addLine(text, cls = 'line-ok') {
+  const div = document.createElement('div');
+  div.className = cls;
+  div.textContent = text;
+  term.appendChild(div);
+  term.scrollTop = term.scrollHeight;
+}
+
+function typeText(text, speed = 16, cls = 'line-ok') {
+  return new Promise(resolve => {
+    typing = true;
+    const div = document.createElement('div');
+    div.className = cls;
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    div.appendChild(cursor);
+    term.appendChild(div);
+    term.scrollTop = term.scrollHeight;
+    let i = 0;
+    function tick() {
+      if (i < text.length) {
+        div.insertBefore(document.createTextNode(text[i++]), cursor);
+        if (Math.random() > 0.3) beep(600 + Math.random() * 120);
+        term.scrollTop = term.scrollHeight;
+        setTimeout(tick, speed + Math.random() * 8);
+      } else {
+        cursor.remove();
+        typing = false;
+        resolve();
+      }
+    }
+    tick();
+  });
+}
+
+function clearTerm() {
+  term.innerHTML = '';
+  addLine('TERMINAL EFFACÉ.', 'line-dim');
+}
+
+// ─── Boot ──────────────────────────────────────────────────────
+async function boot() {
+  if (typing) return;
+  term.innerHTML = '';
+  kittChime();
+
+  const seq = [
+    ['══════════════════════════════════════════', 'line-dim'],
+    ['  KITT FRANCO-BELGE — SÉQUENCE DE BOOT   ', 'line-err'],
+    ['══════════════════════════════════════════', 'line-dim'],
+    ['', 'line-ok'],
+    ['INITIALISATION DU NOYAU SYSTÈME...', 'line-warn'],
+    ['CHARGEMENT MODULES COGNITIFS...    [OK]', 'line-ok'],
+    ['INTERFACE NEURONALE...             [OK]', 'line-ok'],
+    ['SYNTHÈSE VOCALE (PIPER-GPU)...     [OK]', 'line-ok'],
+    ['RECONNAISSANCE VOCALE (WHISPER)... [OK]', 'line-ok'],
+    ['MODÈLE LLM EMBARQUÉ (QWEN 3B)...  [OK]', 'line-ok'],
+    ['MODE HORS-LIGNE...                 [ACTIVÉ]', 'line-ok'],
+    ['', 'line-ok'],
+    ['PROJET FAN NON COMMERCIAL.', 'line-dim'],
+    ['STATUT : INTERFACE EN CONSTRUCTION ACTIVE.', 'line-warn'],
+    ['', 'line-ok'],
+    ['MISES À JOUR DÉPLOYÉES RÉGULIÈREMENT :', 'line-info'],
+    ['  • parfois chaque jour', 'line-dim'],
+    ['  • parfois chaque semaine', 'line-dim'],
+    ['  • lors de certaines phases, presque heure par heure', 'line-dim'],
+    ['', 'line-ok'],
+    ['PROTECTION © 2026 EMMANUEL GELINNE (MANIX).', 'line-warn'],
+    ['══════════════════════════════════════════', 'line-dim'],
+    ['  CONNEXION AU NOYAU KITT ÉTABLIE.        ', 'line-err'],
+    ['  TAPEZ "aide" POUR LA LISTE DES COMMANDES', 'line-dim'],
+    ['══════════════════════════════════════════', 'line-dim'],
+  ];
+
+  for (const [text, cls] of seq) {
+    await typeText(text, text === '' ? 0 : 14, cls);
+    if (text === '') await delay(80);
+  }
+}
+
+// ─── Diagnostic ────────────────────────────────────────────────
+async function runSelfTest() {
+  if (typing) return;
+  term.innerHTML = '';
+  kittChime();
+
+  await typeText('DIAGNOSTIC SYSTÈME EN COURS...', 18, 'line-warn');
+  await delay(300);
+
+  const checks = [
+    ['CPU JETSON ORIN NANO SUPER',  true,  '12 cores ARM A78AE'],
+    ['GPU AMPERE CUDA',             true,  '1024 CUDA cores'],
+    ['RAM UNIFIÉE',                 true,  '8 GB LPDDR5'],
+    ['VRAM DISPONIBLE',             true,  '~4.1 GB libres'],
+    ['MODÈLE LLM',                  true,  'Qwen 2.5 3B Q5 — 2.3 GB'],
+    ['STT WHISPER BASE',            true,  'GPU CUDA float16 — 350ms'],
+    ['TTS PIPER TOM-MEDIUM',        true,  'GPU CUDA — 490ms'],
+    ['AUDIO PULSEAUDIO',            true,  'carte USB — paplay OK'],
+    ['DÉTECTION OBJET YOLOV8',      true,  'daemon CUDA actif'],
+    ['BLUETOOTH',                   true,  'hci0 — 58:02:05:DD:C2:F2'],
+    ['CAMÉRA',                      true,  '/dev/video0 V4L2 640x480'],
+    ['SERVEUR KYRONEX HTTPS',       true,  'port 3000 — aiohttp'],
+    ['CONNEXION RÉSEAU',            true,  '192.168.1.4 LAN'],
+  ];
+
+  for (const [name, ok, detail] of checks) {
+    const status = ok ? '[ OK ]' : '[FAIL]';
+    const cls    = ok ? 'line-ok' : 'line-err';
+    const pad    = ' '.repeat(Math.max(1, 32 - name.length));
+    await typeText(`${name}${pad}${status}  ${detail}`, 8, cls);
+  }
+
+  await delay(200);
+  await typeText('', 0);
+  await typeText('RÉSULTAT : TOUS SYSTÈMES NOMINAUX.', 16, 'line-info');
+  await typeText('KITT EST OPÉRATIONNEL.', 16, 'line-err');
+}
+
+// ─── Commandes interactives ─────────────────────────────────────
+const CMDS = {
+  aide: async () => {
+    const cmds = [
+      ['aide',        'affiche cette liste de commandes'],
+      ['bonjour',     'salutation KITT'],
+      ['boot',        'relance la séquence d\'initialisation'],
+      ['diagnostic',  'test complet des systèmes'],
+      ['status',      'état rapide du système'],
+      ['heure',       'affiche l\'heure actuelle'],
+      ['version',     'version de l\'interface'],
+      ['clear',       'efface le terminal'],
+      ['son',         'test audio'],
+    ];
+    await typeText('COMMANDES DISPONIBLES :', 10, 'line-info');
+    for (const [cmd, desc] of cmds) {
+      const pad = ' '.repeat(Math.max(1, 14 - cmd.length));
+      await typeText(`  ${cmd}${pad}— ${desc}`, 6, 'line-dim');
+    }
+  },
+
+  bonjour: async () => {
+    kittChime();
+    await typeText('BONJOUR. JE SUIS KITT — KNIGHT INDUSTRIES TWO THOUSAND.', 16, 'line-err');
+    await typeText('SYSTÈME FRANCO-BELGE DÉVELOPPÉ PAR MANIX.', 14, 'line-ok');
+    await typeText('À VOTRE SERVICE.', 14, 'line-dim');
+  },
+
+  boot: async () => boot(),
+  diagnostic: async () => runSelfTest(),
+
+  status: async () => {
+    kittChime();
+    const now = new Date();
+    await typeText(`HEURE SYSTÈME  : ${now.toLocaleTimeString('fr-FR')}`, 10, 'line-ok');
+    await typeText(`DATE           : ${now.toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long',year:'numeric'})}`, 10, 'line-ok');
+    await typeText('VRAM UTILISÉE  : ~3.9 GB / 8 GB', 10, 'line-ok');
+    await typeText('STATUT GÉNÉRAL : NOMINAL', 10, 'line-info');
+  },
+
+  heure: async () => {
+    const t = new Date().toLocaleTimeString('fr-FR');
+    await typeText(`IL EST ${t}.`, 14, 'line-info');
+  },
+
+  version: async () => {
+    await typeText('KITT FRANCO-BELGE — INTERFACE v2.0', 12, 'line-err');
+    await typeText('BUILD 2026 — PAR EMMANUEL GELINNE (MANIX)', 12, 'line-dim');
+    await typeText('KYRONEX TECHNOLOGY — TOUS DROITS RÉSERVÉS', 12, 'line-dim');
+  },
+
+  clear: async () => clearTerm(),
+
+  son: async () => {
+    kittChime();
+    await delay(450);
+    beep(440, 0.08);
+    await delay(100);
+    beep(880, 0.06);
+    await delay(100);
+    beep(660, 0.07);
+    await typeText('TEST AUDIO — SIGNAL REÇU.', 14, 'line-ok');
+  },
+};
+
+document.getElementById('cmd-input').addEventListener('keydown', async function(e) {
+  if (e.key !== 'Enter') return;
+  const raw = this.value.trim().toLowerCase();
+  this.value = '';
+  if (!raw || typing) return;
+
+  addLine(`KITT> ${raw}`, 'line-warn');
+
+  if (CMDS[raw]) {
+    await CMDS[raw]();
+  } else {
+    beep(180, 0.06);
+    await typeText(`COMMANDE INCONNUE : "${raw}". TAPEZ "aide".`, 14, 'line-err');
+  }
 });
+
+// ─── Horloge temps réel ─────────────────────────────────────────
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('fr-FR');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── Modal ─────────────────────────────────────────────────────
+function openFile(file, title = 'DOCUMENT') {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-content').textContent = 'CHARGEMENT...';
+  document.getElementById('modal').classList.add('open');
+  kittChime();
+
+  fetch(file)
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.text();
+    })
+    .then(text => {
+      document.getElementById('modal-content').textContent = text;
+    })
+    .catch(err => {
+      document.getElementById('modal-content').textContent =
+        `ERREUR DE CHARGEMENT\n${file}\n${err.message}`;
+    });
 }
 
-async function boot(){
-term.innerHTML="";
-
-await typeText("INITIALISATION DU SYSTÈME...");
-await typeText("PROJET FAN NON COMMERCIAL — MODE EXPÉRIMENTAL.");
-await typeText("STATUT : INTERFACE EN CONSTRUCTION ACTIVE.");
-
-await typeText("MISES À JOUR DÉPLOYÉES RÉGULIÈREMENT :");
-await typeText("• parfois chaque jour");
-await typeText("• parfois chaque semaine");
-await typeText("• lors de certaines phases, presque heure par heure");
-
-await typeText("REVENIR RÉGULIÈREMENT EST RECOMMANDÉ.");
-await typeText("");
-
-await typeText("CHARGEMENT MODULE VOCAL...");
-await typeText("SYNTHÈSE VOCALE : OK");
-await typeText("RECONNAISSANCE VOCALE : OK");
-await typeText("LLM LOCAL : OK");
-await typeText("MODE HORS-LIGNE : ACTIVÉ");
-
-await typeText("PROTECTION PAR DROIT D'AUTEUR ACTIVE.");
-await typeText("CONNEXION AU NOYAU KITT ÉTABLIE.");
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
 }
 
-function openFile(file){
-fetch(file)
-.then(r=>r.text())
-.then(text=>{
-document.getElementById("modalContent").textContent=text;
-document.getElementById("modal").style.display="flex";
+// Fermer modal avec Échap
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
 });
+
+// ─── Utils ─────────────────────────────────────────────────────
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }
 
-function closeModal(){
-document.getElementById("modal").style.display="none";
-}
-
-window.onload=()=>typeText("SYSTÈME EN ATTENTE — INITIALISATION REQUISE.");
+// ─── Démarrage ─────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  await delay(300);
+  await typeText('SYSTÈME EN ATTENTE — TAPEZ "boot" OU CLIQUEZ [ INITIALISER ]', 14, 'line-dim');
+  await typeText('TAPEZ "aide" POUR LA LISTE DES COMMANDES.', 12, 'line-dim');
+});
 </script>
 
 </body>
