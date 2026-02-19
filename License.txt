@@ -1,0 +1,74 @@
+PROPRIETARY LICENSE AGREEMENT
+KITT Franco-Belge Project
+Version 1.0
+
+Copyright (c) 2026 Emmanuel Gelinne (Manix)
+All Rights Reserved.
+
+1. Ownership
+
+The KITT Franco-Belge project, including but not limited to source code, architecture, interface design, visual elements, scripts, documentation, and associated materials (hereafter referred to as "the Software"), is the exclusive intellectual property of Emmanuel Gelinne (Manix).
+
+All rights not expressly granted herein are reserved.
+
+2. Nature of the Project
+
+This project is a personal, experimental, and non-commercial development.
+
+It is an independent technical creation inspired by a fictional universe and is not affiliated with, endorsed by, or connected to any official rights holders of any existing franchise.
+
+3. Grant of Rights
+
+No rights are granted to use, copy, modify, distribute, sublicense, publish, sell, or commercially exploit the Software without prior written authorization from the Author.
+
+Access to public repositories or online demonstrations does not grant any usage rights beyond personal viewing.
+
+4. Restrictions
+
+Without explicit written permission from the Author, you may NOT:
+
+Copy or reproduce the Software in whole or in part
+
+Modify, adapt, reverse engineer, or create derivative works
+
+Redistribute the Software
+
+Use the Software for commercial purposes
+
+Integrate the Software into any other project
+
+Remove or alter copyright notices
+
+Any unauthorized use constitutes copyright infringement.
+
+5. Non-Commercial Fan Context
+
+This project is presented strictly in a non-commercial context.
+
+Any references to fictional universes, characters, or concepts are used in a descriptive and inspirational capacity only.
+
+No claim of ownership over third-party intellectual property is made.
+
+All third-party trademarks remain the property of their respective owners.
+
+6. Commercial Use
+
+Any commercial exploitation of this Software, in part or in whole, requires a separate written commercial agreement signed by the Author.
+
+Unauthorized commercial use is strictly prohibited.
+
+7. Disclaimer
+
+The Software is provided "as is", without warranty of any kind.
+
+The Author shall not be held liable for any damages arising from the use or misuse of the Software.
+
+8. Jurisdiction
+
+This License shall be governed by and construed in accordance with the applicable laws of the Author's country of residence.
+
+9. Enforcement
+
+Violation of the terms of this License may result in legal action under applicable intellectual property law.
+
+End of License.
