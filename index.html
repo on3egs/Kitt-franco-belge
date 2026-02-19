@@ -3,93 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic KITT Franco-Belge</title>
+    <title>KITT Franco-Belge</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: black;
-            color: white;
-            font-family: 'Arial', sans-serif;
+        body { font-family: Arial, sans-serif; background-color: #0e0e0e; color: #fff; }
+        .terminal { background: black; color: lime; padding: 10px; border: 1px solid #444; }
+        .scanner { animation: scan 1s infinite; }
+        @keyframes scan {
+            0% { background-color: rgba(0, 255, 0, 0); }
+            50% { background-color: rgba(0, 255, 0, 0.5); }
+            100% { background-color: rgba(0, 255, 0, 0); }
         }
-        #kitt {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
-            background: radial-gradient(circle, #222 0%, #000 100%);
-        }
-        .scanner {
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            margin-left: -75px;
-            width: 150px;
-            height: 10px;
-            background: rgba(255, 0, 0, 0.8);
-            animation: scanner 2s linear infinite;
-        }
-        @keyframes scanner {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(100%); }
-        }
-        #heart {
-            position: absolute;
-            bottom: 20%;
-            left: 50%;
-            margin-left: -25px;
-            width: 50px;
-            height: 50px;
-            background: red;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-        #terminal {
-            position: absolute;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px;
-            border: 1px solid #fff;
-            background: rgba(0, 0, 0, 0.7);
-        }
+        #interactive-btn { padding: 10px 20px; color: white; background-color: #007bff; border: none; cursor: pointer; }
+        #particles-js { position: absolute; width: 100%; height: 100%; z-index: -1; }
     </style>
 </head>
 <body>
-<div id="kitt">
-    <div class="scanner"></div>
-    <div id="heart"></div>
-    <div id="terminal">Welcome to KITT Franco-Belge Terminal Simulation</div>
-</div>
-<script>
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+    <h1>KITT Franco-Belge</h1>
+    <div class="terminal">$ KITT Terminal&gt;</div>
+    <button id="interactive-btn">Click Me!</button>
 
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    gainNode.gain.value = 0.1;
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, ctx.currentTime);
-    oscillator.start();
-    setTimeout(() => oscillator.stop(), 1000);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS.load('particles-js', 'particles.json', function() {
+            console.log('particles.js loaded - callback');
+        });
 
-    // Particle effect logic can be added here
-    const particles = [];
-    function createParticle() {
-        particles.push({ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight });
-    }
-    function animateParticles() {
-        // Animation logic for particles
-        requestAnimationFrame(animateParticles);
-    }
-    setInterval(createParticle, 100);
-    animateParticles();
-</script>
+        document.getElementById('interactive-btn').addEventListener('click', function() {
+            const audio = new Audio('synthesized-sound.mp3');
+            audio.play();
+            document.querySelector('.terminal').innerHTML += '<br/>Command executed: Sound played!';
+        });
+    </script>
 </body>
 </html>
