@@ -166,6 +166,15 @@ button:active{transform:scale(.95);}
   #lang-box{padding:20px;}
 }
 @media(max-width:380px){#kitt-ascii{display:none;}}
+
+/* ── BOUTON TUNNEL CLOUDFLARE ───────────────────────────────── */
+#btn-tunnel{border-color:#333;color:#333;transition:all .2s;}
+#btn-tunnel.tunnel-online{
+  border-color:var(--green);color:var(--green);
+  animation:tpulse 2.4s ease-in-out infinite;}
+#btn-tunnel.tunnel-offline{border-color:var(--red);color:var(--red);}
+#btn-tunnel.tunnel-checking{border-color:var(--amber);color:var(--amber);}
+@keyframes tpulse{0%,100%{box-shadow:0 0 5px rgba(0,255,102,.25)}50%{box-shadow:0 0 18px rgba(0,255,102,.65),inset 0 0 8px rgba(0,255,102,.08)}}
 </style>
 </head>
 <body>
@@ -211,6 +220,7 @@ button:active{transform:scale(.95);}
     <button onclick="openFile('Mentions.txt','MENTIONS LÉGALES')" class="btn-red">[ MENTIONS ]</button>
     <button onclick="openFile('License.txt','LICENCE')" class="btn-red">[ LICENCE ]</button>
     <button onclick="clearTerm()">[ EFFACER ]</button>
+    <button id="btn-tunnel" class="tunnel-checking" onclick="connectTunnel()" title="Vérification...">[ CONNEXION KITT ]</button>
   </div>
 
   <div class="input-row">
@@ -1593,6 +1603,89 @@ document.getElementById('cmd-input').addEventListener('keydown', async function(
     await typeText(T[LANG].unknown(raw), 14, 'line-err');
   }
 });
+
+// ════════════════════════════════════════════════════════════
+// TUNNEL CLOUDFLARE — Connexion distante KITT
+// ════════════════════════════════════════════════════════════
+const TUNNEL_JSON_URL = 'tunnel.json';
+let _tunnelUrl    = null;
+let _tunnelStatus = 'unknown';
+
+// Domaines Cloudflare autorisés (whitelist sécurité)
+const _CF_ALLOWED = ['.trycloudflare.com', '.cfargotunnel.com'];
+
+function _isValidCfUrl(url) {
+  if (!url || !url.startsWith('https://')) return false;
+  return _CF_ALLOWED.some(d => url.includes(d));
+}
+
+async function fetchTunnelStatus() {
+  const btn = document.getElementById('btn-tunnel');
+  if (btn) { btn.className = 'tunnel-checking'; btn.title = 'Vérification...'; }
+  try {
+    // Cache-bust : on recharge toutes les 60s côté navigateur
+    const r = await fetch(TUNNEL_JSON_URL + '?v=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    // Validation URL (sécurité : on n'ouvre que des URLs Cloudflare connues)
+    const raw = (data.url || '').trim();
+    const valid = _isValidCfUrl(raw);
+
+    // Âge de la dernière mise à jour (> 5 min = considéré offline)
+    let tooOld = false;
+    if (data.last_update) {
+      const ageSec = (Date.now() - new Date(data.last_update).getTime()) / 1000;
+      if (ageSec > 300) tooOld = true;
+    }
+
+    if (data.status === 'online' && valid && !tooOld) {
+      _tunnelStatus = 'online';
+      _tunnelUrl    = raw;
+    } else {
+      _tunnelStatus = 'offline';
+      _tunnelUrl    = null;
+    }
+  } catch(e) {
+    _tunnelStatus = 'unknown';
+    _tunnelUrl    = null;
+  }
+  _updateTunnelBtn();
+}
+
+function _updateTunnelBtn() {
+  const btn = document.getElementById('btn-tunnel');
+  if (!btn) return;
+  btn.className = '';
+  if (_tunnelStatus === 'online' && _tunnelUrl) {
+    btn.classList.add('tunnel-online');
+    btn.title = 'KITT EN LIGNE — CLIQUER POUR SE CONNECTER';
+  } else if (_tunnelStatus === 'offline') {
+    btn.classList.add('tunnel-offline');
+    btn.title = 'KITT HORS LIGNE';
+  } else {
+    btn.classList.add('tunnel-checking');
+    btn.title = 'ÉTAT INCONNU — VÉRIFICATION...';
+  }
+}
+
+function connectTunnel() {
+  sndSelect();
+  if (_tunnelStatus === 'online' && _tunnelUrl && _isValidCfUrl(_tunnelUrl)) {
+    addLine('[ TUNNEL ] CONNEXION SÉCURISÉE → ' + _tunnelUrl, 'line-ok');
+    setTimeout(() => window.open(_tunnelUrl, '_blank', 'noopener,noreferrer'), 300);
+  } else if (_tunnelStatus === 'offline') {
+    sndError();
+    addLine('[ TUNNEL ] KITT HORS LIGNE — CONNEXION DISTANTE INDISPONIBLE.', 'line-err');
+  } else {
+    addLine('[ TUNNEL ] VÉRIFICATION EN COURS...', 'line-warn');
+    fetchTunnelStatus();
+  }
+}
+
+// Vérification immédiate puis toutes les 60 secondes
+window.addEventListener('load', () => { setTimeout(fetchTunnelStatus, 1500); });
+setInterval(fetchTunnelStatus, 60000);
 
 // ════════════════════════════════════════════════════════════
 // UTILS & HORLOGE
