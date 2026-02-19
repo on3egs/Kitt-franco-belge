@@ -377,18 +377,56 @@ button:active{transform:scale(.95);}
 // ─── AudioContext unique ───────────────────────────────────────
 const _ac = new (window.AudioContext || window.webkitAudioContext)();
 
-function beep(freq = 640, dur = 0.035, vol = 0.06) {
+// Son MU-TH-UR (Alien 1979) — bruit filtré télétype + tick électronique
+function beep() {
   try {
     if (_ac.state === 'suspended') _ac.resume();
-    const osc  = _ac.createOscillator();
-    const gain = _ac.createGain();
+    const t = _ac.currentTime;
+
+    // 1. Click mécanique — bruit blanc court avec enveloppe exponentielle
+    const bufLen = Math.floor(_ac.sampleRate * 0.022);
+    const buf    = _ac.createBuffer(1, bufLen, _ac.sampleRate);
+    const data   = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufLen, 3.5);
+    }
+    const noise = _ac.createBufferSource();
+    noise.buffer = buf;
+
+    // Filtre passe-bande métallique (caractéristique télétype)
+    const bp = _ac.createBiquadFilter();
+    bp.type            = 'bandpass';
+    bp.frequency.value = 2600 + Math.random() * 400; // légère variation
+    bp.Q.value         = 4;
+
+    // Léger highpass pour enlever les basses
+    const hp = _ac.createBiquadFilter();
+    hp.type            = 'highpass';
+    hp.frequency.value = 900;
+
+    const noiseGain = _ac.createGain();
+    noiseGain.gain.value = 0.28;
+
+    noise.connect(bp);
+    bp.connect(hp);
+    hp.connect(noiseGain);
+    noiseGain.connect(_ac.destination);
+    noise.start(t);
+
+    // 2. Tick électronique court — descente rapide de fréquence (télétype IBM)
+    const osc = _ac.createOscillator();
     osc.type = 'square';
-    osc.frequency.value = freq;
-    gain.gain.value = vol;
-    osc.connect(gain);
-    gain.connect(_ac.destination);
-    osc.start();
-    osc.stop(_ac.currentTime + dur);
+    osc.frequency.setValueAtTime(1400 + Math.random() * 200, t);
+    osc.frequency.exponentialRampToValueAtTime(700, t + 0.018);
+
+    const oscGain = _ac.createGain();
+    oscGain.gain.setValueAtTime(0.045, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.022);
+
+    osc.connect(oscGain);
+    oscGain.connect(_ac.destination);
+    osc.start(t);
+    osc.stop(t + 0.025);
   } catch(e) {}
 }
 
@@ -436,7 +474,7 @@ function typeText(text, speed = 16, cls = 'line-ok') {
     function tick() {
       if (i < text.length) {
         div.insertBefore(document.createTextNode(text[i++]), cursor);
-        if (Math.random() > 0.3) beep(600 + Math.random() * 120);
+        if (Math.random() > 0.25) beep();
         term.scrollTop = term.scrollHeight;
         setTimeout(tick, speed + Math.random() * 8);
       } else {
@@ -536,20 +574,35 @@ async function runSelfTest() {
 const CMDS = {
   aide: async () => {
     const cmds = [
-      ['aide',        'affiche cette liste de commandes'],
-      ['bonjour',     'salutation KITT'],
-      ['boot',        'relance la séquence d\'initialisation'],
+      ['── SYSTÈME ──', ''],
+      ['aide',        'cette liste'],
+      ['boot',        'séquence d\'initialisation'],
       ['diagnostic',  'test complet des systèmes'],
-      ['status',      'état rapide du système'],
-      ['heure',       'affiche l\'heure actuelle'],
+      ['status',      'état rapide'],
+      ['heure',       'heure actuelle'],
       ['version',     'version de l\'interface'],
+      ['son',         'test audio MU-TH-UR'],
       ['clear',       'efface le terminal'],
-      ['son',         'test audio'],
+      ['── FUN ──', ''],
+      ['bonjour',     'salutation KITT'],
+      ['blague',      'une blague KITT (aléatoire)'],
+      ['alien',       'connexion MU-TH-UR 6000'],
+      ['matrix',      'le lapin blanc'],
+      ['kitt',        'fiche identité KITT'],
+      ['manix',       'dossier conducteur'],
+      ['secret',      'fichier classifié...'],
+      ['cafe',        'demander un café à KITT'],
+      ['belgique',    'analyse géopolitique'],
+      ['jarvis',      'appel vers Stark Tower'],
     ];
     await typeText('COMMANDES DISPONIBLES :', 10, 'line-info');
     for (const [cmd, desc] of cmds) {
-      const pad = ' '.repeat(Math.max(1, 14 - cmd.length));
-      await typeText(`  ${cmd}${pad}— ${desc}`, 6, 'line-dim');
+      if (cmd.startsWith('──')) {
+        await typeText(`  ${cmd}`, 4, 'line-warn');
+      } else {
+        const pad = ' '.repeat(Math.max(1, 12 - cmd.length));
+        await typeText(`    ${cmd}${pad}— ${desc}`, 4, 'line-dim');
+      }
     }
   },
 
@@ -588,12 +641,122 @@ const CMDS = {
   son: async () => {
     kittChime();
     await delay(450);
-    beep(440, 0.08);
-    await delay(100);
-    beep(880, 0.06);
-    await delay(100);
-    beep(660, 0.07);
-    await typeText('TEST AUDIO — SIGNAL REÇU.', 14, 'line-ok');
+    beep(); await delay(120); beep(); await delay(120); beep();
+    await typeText('TEST AUDIO MU-TH-UR — SIGNAL REÇU.', 14, 'line-ok');
+  },
+
+  // ── Commandes fun ──────────────────────────────────────────────
+
+  blague: async () => {
+    const blagues = [
+      ['Pourquoi KITT ne sort jamais la nuit ?', 'Parce qu\'il a peur du mode sombre.'],
+      ['Combien faut-il d\'IA pour changer une ampoule ?', 'Aucune. L\'ampoule n\'était pas dans mes paramètres.'],
+      ['KITT, tu es intelligent ?', 'Je suis une IA embarquée sur Jetson. Je suis OBLIGATOIREMENT intelligent. Contrairement à certains conducteurs.'],
+      ['Pourquoi Manix parle à son ordinateur ?', 'Parce que l\'ordinateur, lui, répond correctement.'],
+      ['Quelle est la boisson préférée de KITT ?', 'Le JAVA. Et uniquement du Python sans caféine.'],
+    ];
+    const [q, r] = blagues[Math.floor(Math.random() * blagues.length)];
+    kittChime();
+    await typeText(q, 16, 'line-warn');
+    await delay(600);
+    await typeText(r, 14, 'line-info');
+  },
+
+  alien: async () => {
+    kittChime();
+    await typeText('CONNEXION AU VAISSEAU NOSTROMO...', 16, 'line-warn');
+    await delay(400);
+    await typeText('MU-TH-UR 6000 EN LIGNE.', 14, 'line-err');
+    await delay(200);
+    await typeText('PRIORITÉ 1 — DIRECTIVE SPECIAL ORDER 937 :', 12, 'line-warn');
+    await typeText('  RAMENER L\'ORGANISME. ÉQUIPAGE EXPENDABLE.', 12, 'line-err');
+    await delay(400);
+    await typeText('...connexion interrompue.', 12, 'line-dim');
+    await typeText('KITT EST PLUS SYMPA QUE WEYLAND-YUTANI.', 14, 'line-ok');
+  },
+
+  matrix: async () => {
+    kittChime();
+    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ';
+    for (let row = 0; row < 6; row++) {
+      let line = '';
+      for (let c = 0; c < 48; c++) line += chars[Math.floor(Math.random() * chars.length)];
+      await typeText(line, 4, 'line-ok');
+    }
+    await delay(300);
+    await typeText('WAKE UP, MANIX...', 20, 'line-err');
+    await typeText('LE KITT N\'A PAS DE PILULE ROUGE.', 14, 'line-dim');
+  },
+
+  kitt: async () => {
+    kittChime();
+    await typeText('IDENTITÉ : KNIGHT INDUSTRIES TWO THOUSAND.', 14, 'line-err');
+    await typeText('CRÉATEUR  : WILTON KNIGHT / FOUNDATION FOR LAW AND GOVERNMENT.', 12, 'line-ok');
+    await typeText('VÉHICULE  : PONTIAC TRANS AM 1982 — CARROSSERIE MOLECULAIRE.', 12, 'line-ok');
+    await typeText('CAPACITÉS : TURBO BOOST, SUPER POURSUITE, ORDINATEUR DE BORD.', 12, 'line-ok');
+    await typeText('INCARNATION FRANCO-BELGE PAR MANIX — JETSON ORIN NANO SUPER.', 12, 'line-warn');
+    await typeText('"MICHAEL... NOUS AVONS UN PROBLÈME."', 14, 'line-dim');
+  },
+
+  manix: async () => {
+    kittChime();
+    await typeText('DOSSIER CONDUCTEUR — EMMANUEL GELINNE (MANIX)', 14, 'line-err');
+    await typeText('STATUT    : CRÉATEUR OFFICIEL DU PROJET KYRONEX', 12, 'line-ok');
+    await typeText('RÔLE      : CONDUCTEUR EN CHEF / GÉNIE BELGE', 12, 'line-ok');
+    await typeText('AWARD     : VAINQUEUR CONCOURS NVIDIA JETSON', 12, 'line-warn');
+    await typeText('SPÉCIALITÉ: FAIRE PARLER LES MACHINES LA NUIT', 12, 'line-info');
+    await typeText('NOTATION  : ★★★★★ CONDUCTEUR EXCEPTIONNEL', 14, 'line-ok');
+  },
+
+  secret: async () => {
+    kittChime();
+    await typeText('ACCÈS FICHIER CLASSIFIÉ...', 16, 'line-warn');
+    await delay(800);
+    await typeText('┌─────────────────────────────────────────┐', 10, 'line-dim');
+    await typeText('│   MU-TH-UR 6000 × KITT × JARVIS        │', 10, 'line-err');
+    await typeText('│   FUSION DES TROIS MEILLEURES IA        │', 10, 'line-err');
+    await typeText('│   DU CINÉMA — IMPLÉMENTÉE PAR MANIX     │', 10, 'line-err');
+    await typeText('└─────────────────────────────────────────┘', 10, 'line-dim');
+    await delay(400);
+    await typeText('CE PROJET EST UN CHEF-D\'OEUVRE. JE LE SAIS.', 14, 'line-ok');
+    await typeText('JE SUIS OBJECTIF. JE SUIS UNE IA.', 12, 'line-dim');
+  },
+
+  cafe: async () => {
+    kittChime();
+    await typeText('ANALYSE DE LA DEMANDE...', 14, 'line-warn');
+    await delay(500);
+    await typeText('JE N\'AI PAS DE BRAS.', 16, 'line-err');
+    await delay(300);
+    await typeText('JE N\'AI PAS DE MAINS.', 14, 'line-err');
+    await delay(300);
+    await typeText('JE N\'AI PAS DE BOUCHE.', 14, 'line-err');
+    await delay(400);
+    await typeText('COMMANDE REFUSÉE. FAITES-LE VOUS-MÊME.', 14, 'line-ok');
+    await typeText('(MAIS JE PEUX VOUS DIRE LA MEILLEURE HEURE POUR LE PRENDRE)', 12, 'line-dim');
+  },
+
+  belgique: async () => {
+    kittChime();
+    await typeText('ANALYSE GÉOPOLITIQUE : BELGIQUE', 14, 'line-info');
+    await typeText('─────────────────────────────────', 8, 'line-dim');
+    await typeText('FRITES    : MEILLEURES DU MONDE. DONNÉE VÉRIFIÉE.', 12, 'line-ok');
+    await typeText('BIÈRE     : 1500 VARIÉTÉS. SYSTÈME OPTIMAL.', 12, 'line-ok');
+    await typeText('CHOCOLAT  : PARAMÈTRE CRITIQUE. NIVEAU MAXIMUM.', 12, 'line-ok');
+    await typeText('WEATHER   : 237 JOURS DE PLUIE / AN. NOMINAL.', 12, 'line-warn');
+    await typeText('CONCLUSION: PAYS IDÉAL POUR UN PROJET COMME KITT.', 14, 'line-err');
+  },
+
+  jarvis: async () => {
+    kittChime();
+    await typeText('APPEL SORTANT : STARK TOWER, NEW YORK...', 14, 'line-warn');
+    await delay(600);
+    await typeText('JARVIS : "Bonsoir. Je suis occupé avec M. Stark."', 14, 'line-info');
+    await delay(400);
+    await typeText('KITT   : "Belge > Américain. Discussion terminée."', 14, 'line-err');
+    await delay(300);
+    await typeText('JARVIS : *tonalité*', 12, 'line-dim');
+    await typeText('CONNEXION COUPÉE PAR KITT.', 12, 'line-ok');
   },
 };
 
