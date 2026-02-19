@@ -3,65 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kitt Franco-Belge</title>
+    <title>KITT Franco-Belge AI</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        header {
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        .container {
-            width: 80%;
-            margin: auto;
+        body { 
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
-            padding: 20px;
-        }
-        h1 {
             margin: 0;
+            height: 100vh;
         }
-        section {
-            margin-top: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            background-color: #4CAF50;
-            color: white;
-            position: relative;
-            bottom: 0;
+        #scanner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
             width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, transparent, red, transparent);
+            opacity: 0.8;
+            transform: translate(-50%, -50%);
+            animation: scan 2s infinite;
+        }
+        @keyframes scan {
+            0% { transform: translate(-50%, -100%); }
+            50% { transform: translate(-50%, 0); }
+            100% { transform: translate(-50%, 100%); }
+        }
+        #init-button {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #e50914;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.7);
+            transition: all 0.3s;
+        }
+        #init-button:hover {
+            background-color: #d30812;
+        }
+        #terminal {
+            overflow-y: auto;
+            height: 300px;
+            background-color: #111;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+            white-space: pre;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to Kitt Franco-Belge</h1>
-    </header>
-    <div class="container">
-        <section>
-            <h2>About Kitt Franco-Belge</h2>
-            <p>The Kitt Franco-Belge project is dedicated to preserving and promoting the unique heritage and culture associated with the Kitt breed, known for its intelligence and companionship.</p>
-            <p>Join us in our mission to highlight the significance of Kitt within the Franco-Belgian cultural landscape.</p>
-        </section>
-        <section>
-            <h2>Get Involved</h2>
-            <p>We welcome enthusiasts, researchers, and anyone interested in contributing to the Kitt Franco-Belge project. Your support helps us achieve our goals.</p>
-        </section>
-    </div>
-    <footer>
-        <p>&copy; 2026 Kitt Franco-Belge Project. All rights reserved.</p>
-    </footer>
+    <div id="scanner"></div>
+    <h1 style="text-align: center;">KITT Franco-Belge AI</h1>
+    <button id="init-button">Initialize KITT</button>
+    <div id="terminal"></div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const initButton = document.getElementById('init-button');
+        const greetings = ["Initializing KITT...", "Welcome to KITT Franco-Belge.", "AI Online!", "Ready for action!"];
+        let index = 0;
+
+        initButton.addEventListener('click', function() {
+            terminal.innerHTML = ''; // Clear previous logs
+            index = 0; // Reset index
+            typeWriter();
+        });
+
+        function typeWriter() {
+            if (index < greetings.length) {
+                terminal.innerHTML += greetings[index] + '\n';
+                index++;
+                setTimeout(typeWriter, 1500);
+            }
+        }
+    </script>
 </body>
 </html>
