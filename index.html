@@ -3,195 +3,198 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>KITT FRANCO-BELGE — Intelligence Artificielle Locale</title>
+<title>KITT FRANCO-BELGE // SYSTÈME CENTRAL</title>
 
 <style>
 :root{
---bg:#000;
---red:#ff2222;
---red-dim:#b10f0f;
 --green:#00ff66;
+--dark:#000;
+--red:#ff1a1a;
 }
 
-html,body{height:100%}
-body{
+html,body{
 margin:0;
-background:radial-gradient(ellipse at center,rgba(255,0,0,.04),#000 60%);
-color:#e6e6e6;
-font-family:"Segoe UI",Roboto,Arial,sans-serif;
-display:flex;
-align-items:center;
-justify-content:center;
-padding:20px;
+height:100%;
+background:#000;
+color:var(--green);
+font-family: "Courier New", monospace;
 overflow:hidden;
 }
 
-.panel{
-width:min(1000px,95vw);
-background:rgba(255,255,255,.02);
-border:1px solid rgba(255,0,0,.08);
-border-radius:14px;
-padding:32px;
-display:grid;
-grid-template-columns:1fr 360px;
-gap:28px;
-box-shadow:0 0 60px rgba(0,0,0,.8),0 0 60px rgba(255,0,0,.08);
-backdrop-filter:blur(8px);
+/* CRT EFFECT */
+body::after{
+content:"";
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:repeating-linear-gradient(
+0deg,
+rgba(0,255,100,.05),
+rgba(0,255,100,.05) 1px,
+transparent 1px,
+transparent 3px);
+pointer-events:none;
+animation:flicker .15s infinite;
 }
 
-.left{display:flex;flex-direction:column;gap:18px;}
+@keyframes flicker{
+0%{opacity:.92}
+50%{opacity:1}
+100%{opacity:.94}
+}
 
-h1{
-font-family:"Courier New",monospace;
+.container{
+display:flex;
+flex-direction:column;
+height:100%;
+padding:20px;
+box-sizing:border-box;
+}
+
+header{
 color:var(--red);
-letter-spacing:4px;
-margin:0;
-text-shadow:0 0 25px rgba(255,0,0,.9);
-}
-
-h2{
-margin:0;
-font-size:13px;
-color:#9ad89a;
-font-weight:400;
+font-size:22px;
+letter-spacing:3px;
+text-shadow:0 0 10px var(--red);
 }
 
 #terminal{
-background:rgba(0,20,0,.85);
-border:1px solid rgba(0,255,120,.08);
-color:var(--green);
-padding:16px;
-border-radius:8px;
-font-family:monospace;
-font-size:13px;
-min-height:240px;
+flex:1;
 overflow:auto;
+margin-top:20px;
+white-space:pre-wrap;
+font-size:14px;
 }
 
 button{
-background:linear-gradient(135deg,var(--red),var(--red-dim));
-color:#fff;
-border:none;
-padding:14px 24px;
-border-radius:8px;
-font-family:monospace;
-font-weight:bold;
-letter-spacing:2px;
+background:black;
+border:1px solid var(--green);
+color:var(--green);
+padding:10px 18px;
+margin:6px 6px 6px 0;
 cursor:pointer;
-box-shadow:0 0 30px rgba(255,0,0,.15);
+font-family:inherit;
 transition:.2s;
 }
-button:hover{transform:scale(1.05);}
 
-.meta{
-font-size:13px;
-line-height:1.6;
-color:#aaa;
-margin-top:8px;
-}
-
-.visual{
-display:flex;
-align-items:center;
-justify-content:center;
-position:relative;
+button:hover{
+background:var(--green);
+color:black;
 }
 
 #scanner{
-width:200px;
-height:200px;
-border-radius:50%;
-border:3px solid rgba(255,0,0,.3);
-box-shadow:0 0 60px rgba(255,0,0,.2);
-position:relative;
-overflow:hidden;
-}
-
-#scanner::before{
-content:'';
 position:absolute;
-width:8px;
-height:100%;
-background:linear-gradient(to bottom,transparent,rgba(255,0,0,.95),transparent);
-animation:scan 3s linear infinite;
+bottom:0;
+left:0;
+width:100%;
+height:4px;
+background:var(--red);
+box-shadow:0 0 20px var(--red);
+animation:scan 2s linear infinite;
 }
 
 @keyframes scan{
-0%{transform:translateX(-80px);}
-50%{transform:translateX(180px);}
-100%{transform:translateX(-80px);}
+0%{left:-100%}
+100%{left:100%}
 }
 
-@media(max-width:880px){
-.panel{grid-template-columns:1fr;}
+.panel{
+margin-top:10px;
 }
+
+.hidden{display:none;}
 </style>
 </head>
 
 <body>
 
-<div class="panel">
-<div class="left">
-<h1>KITT FRANCO-BELGE</h1>
-<h2>Intelligence Artificielle Locale – Projet Manix</h2>
+<div class="container">
+
+<header>
+KITT FRANCO-BELGE // INTERFACE CENTRALE
+</header>
 
 <div id="terminal"></div>
 
-<button onclick="init()">INITIALISER KITT</button>
-
-<div class="meta">
-<strong>Transmission publique :</strong><br>
-Le système est actuellement en phase de construction active.<br>
-Des améliorations sont déployées régulièrement : parfois chaque jour,
-parfois chaque semaine, et durant certaines phases, presque heure par heure.<br>
-Revenez souvent pour observer l’évolution du projet.<br><br>
-Les retours et suggestions sont encouragés via le dépôt GitHub officiel.
+<div class="panel">
+<button onclick="boot()">INITIALISER</button>
+<button onclick="showSection('projet')">PROJET</button>
+<button onclick="showSection('licence')">LICENCE</button>
+<button onclick="showSection('evolution')">ÉVOLUTION</button>
+<button onclick="showSection('communaute')">COMMUNAUTÉ</button>
 </div>
 
-</div>
-
-<div class="visual">
 <div id="scanner"></div>
-</div>
 
 </div>
 
 <script>
+const term=document.getElementById("terminal");
 
-const terminal=document.getElementById("terminal");
-
-function log(text){
-const line=document.createElement("div");
-line.textContent=text;
-terminal.appendChild(line);
-terminal.scrollTop=terminal.scrollHeight;
+function beep(freq=500,dur=0.08){
+const ctx=new(window.AudioContext||window.webkitAudioContext)();
+const osc=ctx.createOscillator();
+const gain=ctx.createGain();
+osc.frequency.value=freq;
+osc.connect(gain);
+gain.connect(ctx.destination);
+gain.gain.value=.1;
+osc.start();
+setTimeout(()=>osc.stop(),dur*1000);
 }
 
-function dynamicMessage(){
-const now=new Date();
-const hour=now.getHours();
-
-if(hour<6) return "→ Cycle nocturne : maintenance silencieuse active.";
-if(hour<12) return "→ Cycle matinal : optimisation des modules.";
-if(hour<18) return "→ Cycle diurne : intégration des améliorations.";
-return "→ Cycle crépusculaire : ajustements expérimentaux.";
+function typeText(text,speed=25){
+return new Promise(resolve=>{
+let i=0;
+function typing(){
+if(i<text.length){
+term.innerHTML+=text.charAt(i);
+beep(800,0.02);
+i++;
+setTimeout(typing,speed);
+}else{
+term.innerHTML+="\n";
+resolve();
+}
+}
+typing();
+});
 }
 
-function init(){
-terminal.innerHTML="";
-log("Système en cours d'initialisation...");
-setTimeout(()=>log(dynamicMessage()),700);
-setTimeout(()=>log("→ Interface en développement continu"),1400);
-setTimeout(()=>log("→ Déploiement progressif des fonctionnalités"),2100);
-setTimeout(()=>log("→ Synthèse vocale : OK"),2800);
-setTimeout(()=>log("→ Reconnaissance vocale : OK"),3400);
-setTimeout(()=>log("→ LLM local : OK"),4000);
-setTimeout(()=>log("→ Mode hors-ligne : ACTIVÉ"),4600);
-setTimeout(()=>log("⬡ Connexion au noyau KITT établie ⬡"),5200);
+async function boot(){
+term.innerHTML="";
+await typeText("SYSTÈME EN COURS D'INITIALISATION...");
+await typeText("CHARGEMENT MODULE VOCAL...");
+await typeText("SYNTHÈSE VOCALE : OK");
+await typeText("RECONNAISSANCE VOCALE : OK");
+await typeText("LLM LOCAL : OK");
+await typeText("MODE HORS-LIGNE : ACTIVÉ");
+await typeText("SITE EN CONSTRUCTION ACTIVE.");
+await typeText("MISES À JOUR RÉGULIÈRES : JOURNALIÈRES / HEBDOMADAIRES / EXPÉRIMENTALES.");
+await typeText("REJOIGNEZ LE GROUPE FACEBOOK : KITT FRANCO-BELGE");
+await typeText("CONNEXION AU NOYAU ÉTABLIE.");
 }
 
-window.onload=()=>log("Système en attente d'initialisation...");
+function showSection(section){
+term.innerHTML="";
+beep(600,0.1);
 
+if(section==="projet"){
+term.innerHTML="PROJET\n\nIA locale pour Jetson Nano / Orin / Xavier.\nDéveloppement progressif et expérimental.\nArchitecture autonome hors-ligne.";
+}
+
+if(section==="licence"){
+term.innerHTML="LICENCE\n\nProjet indépendant.\nDéveloppement collaboratif.\nAucune exploitation commerciale sans autorisation.";
+}
+
+if(section==="evolution"){
+term.innerHTML="ÉVOLUTION\n\nAméliorations fréquentes.\nOptimisation graphique.\nAjout modules IA.\nTests expérimentaux permanents.";
+}
+
+if(section==="communaute"){
+term.innerHTML="COMMUNAUTÉ\n\nRejoignez le groupe Facebook :\nKITT FRANCO-BELGE\n\nPartagez idées, tests, suggestions.";
+}
+}
 </script>
 
 </body>
