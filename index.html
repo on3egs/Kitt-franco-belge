@@ -1,402 +1,198 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>KITT FRANCO-BELGE — Intelligence Artificielle Locale</title>
-  <meta name="description" content="KITT Franco-Belge — IA locale pour Jetson Nano / Orin / Xavier. Projet Manix." />
-  <style>
-    :root{
-      --bg:#000;
-      --red:#ff2222;
-      --red-dim:#b10f0f;
-      --green:#00ff66;
-      --glass: rgba(255,255,255,0.03);
-    }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>KITT FRANCO-BELGE — Intelligence Artificielle Locale</title>
 
-    html,body{height:100%}
-    body{
-      margin:0;
-      height:100%;
-      background: radial-gradient(ellipse at center, rgba(255,0,0,0.03) 0%, rgba(0,0,0,1) 45%), var(--bg);
-      color:#e6e6e6;
-      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      overflow:hidden;
-    }
+<style>
+:root{
+--bg:#000;
+--red:#ff2222;
+--red-dim:#b10f0f;
+--green:#00ff66;
+}
 
-    .panel{
-      position:relative;
-      width:min(910px, 96vw);
-      max-width:1000px;
-      min-height:520px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border:1px solid rgba(255,0,0,0.08);
-      border-radius:12px;
-      box-shadow: 0 10px 60px rgba(0,0,0,0.7), 0 0 45px rgba(255,0,0,0.06);
-      padding:32px;
-      display:grid;
-      grid-template-columns: 1fr 360px;
-      gap:24px;
-      backdrop-filter: blur(6px);
-      overflow:visible;
-    }
+html,body{height:100%}
+body{
+margin:0;
+background:radial-gradient(ellipse at center,rgba(255,0,0,.04),#000 60%);
+color:#e6e6e6;
+font-family:"Segoe UI",Roboto,Arial,sans-serif;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+overflow:hidden;
+}
 
-    .left{
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-      z-index:20;
-    }
+.panel{
+width:min(1000px,95vw);
+background:rgba(255,255,255,.02);
+border:1px solid rgba(255,0,0,.08);
+border-radius:14px;
+padding:32px;
+display:grid;
+grid-template-columns:1fr 360px;
+gap:28px;
+box-shadow:0 0 60px rgba(0,0,0,.8),0 0 60px rgba(255,0,0,.08);
+backdrop-filter:blur(8px);
+}
 
-    h1{
-      font-family: 'Courier New', monospace;
-      font-size:28px;
-      color:var(--red);
-      letter-spacing:4px;
-      margin:0;
-      text-shadow: 0 0 18px rgba(255,0,0,0.9), 0 0 36px rgba(255,0,0,0.4);
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
+.left{display:flex;flex-direction:column;gap:18px;}
 
-    h1 .dot{
-      font-size:14px;
-      color:#fff;
-      opacity:0.6;
-    }
+h1{
+font-family:"Courier New",monospace;
+color:var(--red);
+letter-spacing:4px;
+margin:0;
+text-shadow:0 0 25px rgba(255,0,0,.9);
+}
 
-    h2{
-      margin:0;
-      font-size:13px;
-      color:#bfe8b6;
-      opacity:0.95;
-      font-weight:400;
-    }
+h2{
+margin:0;
+font-size:13px;
+color:#9ad89a;
+font-weight:400;
+}
 
-    #terminal{
-      background: linear-gradient(180deg, rgba(0,12,0,0.85), rgba(0,6,0,0.75));
-      border:1px solid rgba(0,255,120,0.06);
-      color:var(--green);
-      padding:14px;
-      border-radius:8px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Courier New', monospace;
-      font-size:13px;
-      line-height:1.5;
-      min-height:220px;
-      max-height:320px;
-      overflow:auto;
-      box-shadow: inset 0 0 30px rgba(0,255,120,0.02), 0 0 20px rgba(0,255,120,0.02);
-    }
+#terminal{
+background:rgba(0,20,0,.85);
+border:1px solid rgba(0,255,120,.08);
+color:var(--green);
+padding:16px;
+border-radius:8px;
+font-family:monospace;
+font-size:13px;
+min-height:240px;
+overflow:auto;
+}
 
-    .log-line{
-      opacity:0;
-      transform:translateY(6px);
-      white-space:pre-wrap;
-    }
+button{
+background:linear-gradient(135deg,var(--red),var(--red-dim));
+color:#fff;
+border:none;
+padding:14px 24px;
+border-radius:8px;
+font-family:monospace;
+font-weight:bold;
+letter-spacing:2px;
+cursor:pointer;
+box-shadow:0 0 30px rgba(255,0,0,.15);
+transition:.2s;
+}
+button:hover{transform:scale(1.05);}
 
-    #btn-init{
-      margin-top:auto;
-      background: linear-gradient(135deg,var(--red),var(--red-dim));
-      color:#fff;
-      border:1px solid rgba(255,0,0,0.15);
-      padding:14px 22px;
-      border-radius:8px;
-      font-family: 'Courier New', monospace;
-      font-weight:700;
-      letter-spacing:2px;
-      cursor:pointer;
-      box-shadow: 0 8px 30px rgba(255,0,0,0.12), 0 0 30px rgba(255,0,0,0.07);
-      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
-      text-transform:uppercase;
-      align-self:flex-start;
-    }
-    #btn-init:hover{ transform:translateY(-3px) scale(1.02); box-shadow: 0 14px 50px rgba(255,0,0,0.18); }
-    #btn-init:active{ transform:translateY(0) scale(.99); }
+.meta{
+font-size:13px;
+line-height:1.6;
+color:#aaa;
+margin-top:8px;
+}
 
-    .visual{
-      position:relative;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:12px;
-    }
+.visual{
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+}
 
-    #heart{
-      width:180px;
-      height:180px;
-      border-radius:50%;
-      border:3px solid rgba(255,0,0,0.18);
-      box-shadow: 0 0 40px rgba(255,0,0,0.08), inset 0 0 40px rgba(255,0,0,0.04);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-      z-index:5;
-      background: radial-gradient(circle at 35% 35%, rgba(255,0,0,0.12), rgba(0,0,0,0) 40%);
-      animation: heart-breathe 1.6s ease-in-out infinite;
-    }
+#scanner{
+width:200px;
+height:200px;
+border-radius:50%;
+border:3px solid rgba(255,0,0,.3);
+box-shadow:0 0 60px rgba(255,0,0,.2);
+position:relative;
+overflow:hidden;
+}
 
-    @keyframes heart-breathe{
-      0%{ transform:translateY(0) scale(1); box-shadow: 0 0 22px rgba(255,0,0,0.08), inset 0 0 22px rgba(255,0,0,0.03); }
-      50%{ transform:translateY(-3px) scale(1.08); box-shadow: 0 0 70px rgba(255,0,0,0.18), inset 0 0 36px rgba(255,0,0,0.07); }
-      100%{ transform:translateY(0) scale(1); box-shadow: 0 0 22px rgba(255,0,0,0.08), inset 0 0 22px rgba(255,0,0,0.03); }
-    }
+#scanner::before{
+content:'';
+position:absolute;
+width:8px;
+height:100%;
+background:linear-gradient(to bottom,transparent,rgba(255,0,0,.95),transparent);
+animation:scan 3s linear infinite;
+}
 
-    #ring{
-      position:absolute;
-      width:250px;
-      height:250px;
-      border-radius:50%;
-      border:2px solid rgba(255,0,0,0.08);
-      box-shadow: 0 0 30px rgba(255,0,0,0.05);
-      animation: spin 6s linear infinite;
-      z-index:3;
-    }
-    @keyframes spin{ from{ transform: rotate(0deg) translate(-50%,-50%); } to{ transform: rotate(360deg) translate(-50%,-50%); } }
+@keyframes scan{
+0%{transform:translateX(-80px);}
+50%{transform:translateX(180px);}
+100%{transform:translateX(-80px);}
+}
 
-    #center-scanner{
-      position:absolute;
-      left:50%;
-      top:-6%;
-      width:12px;
-      height:112%;
-      transform:translateX(-50%);
-      pointer-events:none;
-      z-index:2;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    #center-scanner::before{
-      content:'';
-      width:6px;
-      height:100%;
-      background: linear-gradient(to bottom, transparent, rgba(255,0,0,0.95) 25%, rgba(255,0,0,0.95) 75%, transparent);
-      box-shadow: 0 0 40px rgba(255,0,0,0.9), inset 0 0 30px rgba(255,0,0,0.4);
-      animation: scanner-move 3s linear infinite;
-      border-radius:4px;
-      opacity:0.95;
-    }
-    @keyframes scanner-move{
-      0%{ transform: translateY(-100%); }
-      50%{ transform: translateY(100%); }
-      100%{ transform: translateY(-100%); }
-    }
-
-    .particle{
-      position:fixed;
-      width:4px;
-      height:4px;
-      border-radius:50%;
-      background: rgba(255,0,0,0.95);
-      box-shadow: 0 0 10px rgba(255,0,0,0.9);
-      pointer-events:none;
-      z-index:1;
-      will-change: transform, opacity;
-      opacity:0;
-    }
-
-    .meta{
-      margin-top:8px;
-      font-size:12px;
-      color:#aaa;
-      opacity:0.9;
-    }
-
-    @media (max-width:880px){
-      .panel{ grid-template-columns: 1fr; min-height:640px; padding:20px; }
-      .visual{ order:-1; padding-bottom:6px; height:300px; }
-      #heart{ width:120px; height:120px; }
-      #ring{ width:170px; height:170px; }
-    }
-  </style>
+@media(max-width:880px){
+.panel{grid-template-columns:1fr;}
+}
+</style>
 </head>
+
 <body>
-  <div class="panel" role="main" aria-label="KITT Franco-Belge interface">
-    <div class="left">
-      <h1><span class="dot">●</span> KITT FRANCO-BELGE <span class="dot">●</span></h1>
-      <h2>Intelligence Artificielle Locale – Projet Manix</h2>
 
-      <div id="terminal" aria-live="polite">
-        <div class="log-line" style="opacity:1">Système en cours d'initialisation...</div>
-      </div>
+<div class="panel">
+<div class="left">
+<h1>KITT FRANCO-BELGE</h1>
+<h2>Intelligence Artificielle Locale – Projet Manix</h2>
 
-      <button id="btn-init" aria-pressed="false">[ INITIALISER KITT ]</button>
-      <div class="meta" id="status" aria-hidden="false">En attente de commande...</div>
-    </div>
+<div id="terminal"></div>
 
-    <div class="visual" aria-hidden="true">
-      <div id="ring" style="transform:translate(-50%,-50%); top:50%; left:50%; position:absolute;"></div>
-      <div id="heart" role="img" aria-label="Cœur KITT" title="Cœur KITT"></div>
-      <div id="center-scanner" aria-hidden="true"></div>
-    </div>
-  </div>
+<button onclick="init()">INITIALISER KITT</button>
 
-  <script>
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = AudioCtx ? new AudioCtx() : null;
+<div class="meta">
+<strong>Transmission publique :</strong><br>
+Le système est actuellement en phase de construction active.<br>
+Des améliorations sont déployées régulièrement : parfois chaque jour,
+parfois chaque semaine, et durant certaines phases, presque heure par heure.<br>
+Revenez souvent pour observer l’évolution du projet.<br><br>
+Les retours et suggestions sont encouragés via le dépôt GitHub officiel.
+</div>
 
-    function safeResumeAudio() {
-      if (!audioCtx) return;
-      if (audioCtx.state === 'suspended') {
-        return audioCtx.resume();
-      }
-      return Promise.resolve();
-    }
+</div>
 
-    function playTone(freq=440, dur=0.2, type='sine', vol=0.25) {
-      if (!audioCtx) return;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = type;
-      o.frequency.value = freq;
-      g.gain.value = vol;
-      o.connect(g); g.connect(audioCtx.destination);
-      const now = audioCtx.currentTime;
-      g.gain.setValueAtTime(vol, now);
-      g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-      o.start(now);
-      o.stop(now + dur + 0.02);
-    }
+<div class="visual">
+<div id="scanner"></div>
+</div>
 
-    function playSweep(startF, endF, dur=0.35, vol=0.22) {
-      if (!audioCtx) return;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(startF, audioCtx.currentTime);
-      o.frequency.exponentialRampToValueAtTime(endF, audioCtx.currentTime + dur);
-      o.connect(g); g.connect(audioCtx.destination);
-      g.gain.setValueAtTime(vol, audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-      o.start();
-      o.stop(audioCtx.currentTime + dur + 0.02);
-    }
+</div>
 
-    function startupSequence() {
-      playTone(440, 0.28, 'sine', 0.26);
-      setTimeout(()=>playTone(550, 0.28, 'sine', 0.24), 160);
-      setTimeout(()=>playTone(660, 0.35, 'sine', 0.22), 320);
-      setTimeout(()=>playTone(880, 0.45, 'sine', 0.20), 500);
-    }
+<script>
 
-    function confirmBeep() {
-      playTone(1200, 0.08, 'sine', 0.18);
-      setTimeout(()=>playTone(1400, 0.06, 'sine', 0.14), 110);
-    }
+const terminal=document.getElementById("terminal");
 
-    function errorBeep() {
-      playSweep(700, 260, 0.28, 0.28);
-    }
+function log(text){
+const line=document.createElement("div");
+line.textContent=text;
+terminal.appendChild(line);
+terminal.scrollTop=terminal.scrollHeight;
+}
 
-    const terminal = document.getElementById('terminal');
-    const statusEl = document.getElementById('status');
-    const btn = document.getElementById('btn-init');
+function dynamicMessage(){
+const now=new Date();
+const hour=now.getHours();
 
-    const sequenceLines = [
-      '→ Synthèse vocale : OK',
-      '→ Reconnaissance vocale : OK',
-      '→ LLM local : OK',
-      '→ Mode hors-ligne : ACTIVÉ'
-    ];
+if(hour<6) return "→ Cycle nocturne : maintenance silencieuse active.";
+if(hour<12) return "→ Cycle matinal : optimisation des modules.";
+if(hour<18) return "→ Cycle diurne : intégration des améliorations.";
+return "→ Cycle crépusculaire : ajustements expérimentaux.";
+}
 
-    function appendLine(text, delay=0) {
-      const el = document.createElement('div');
-      el.className = 'log-line';
-      el.textContent = text;
-      el.style.opacity = 0;
-      el.style.transition = 'opacity .36s ease, transform .36s ease';
-      terminal.appendChild(el);
-      terminal.scrollTop = terminal.scrollHeight;
-      requestAnimationFrame(()=> {
-        el.style.opacity = 1;
-        el.style.transform = 'translateY(0)';
-      });
-    }
+function init(){
+terminal.innerHTML="";
+log("Système en cours d'initialisation...");
+setTimeout(()=>log(dynamicMessage()),700);
+setTimeout(()=>log("→ Interface en développement continu"),1400);
+setTimeout(()=>log("→ Déploiement progressif des fonctionnalités"),2100);
+setTimeout(()=>log("→ Synthèse vocale : OK"),2800);
+setTimeout(()=>log("→ Reconnaissance vocale : OK"),3400);
+setTimeout(()=>log("→ LLM local : OK"),4000);
+setTimeout(()=>log("→ Mode hors-ligne : ACTIVÉ"),4600);
+setTimeout(()=>log("⬡ Connexion au noyau KITT établie ⬡"),5200);
+}
 
-    async function initializeKITTFlow() {
-      await safeResumeAudio();
-      btn.disabled = true;
-      btn.setAttribute('aria-pressed','true');
-      statusEl.textContent = 'Initialisation en cours...';
-      statusEl.style.color = '#ffd24d';
-      startupSequence();
+window.onload=()=>log("Système en attente d'initialisation...");
 
-      terminal.innerHTML = '';
-      appendLine('Système en cours d\'initialisation...');
+</script>
 
-      for (let i=0;i<sequenceLines.length;i++){ 
-        await new Promise(r => setTimeout(r, 750));
-        appendLine(sequenceLines[i]);
-        confirmBeep();
-      }
-
-      await new Promise(r => setTimeout(r, 650));
-      appendLine('');
-      appendLine('⬡ Connexion au noyau KITT établie ⬡');
-      statusEl.textContent = '✓ KITT ACTIF ET OPÉRATIONNEL';
-      statusEl.style.color = '#00ff66';
-      confirmBeep();
-      btn.disabled = false;
-      btn.setAttribute('aria-pressed','false');
-    }
-
-    btn.addEventListener('click', (e)=>{
-      initializeKITTFlow().catch(err=>{
-        console.error(err);
-        errorBeep();
-        appendLine('! Erreur : impossible d\'initialiser le système.');
-        statusEl.textContent = 'Erreur d\'initialisation';
-        statusEl.style.color = '#ff5555';
-        btn.disabled = false;
-      });
-    });
-
-    function spawnParticle() {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      const size = 2 + Math.random()*5;
-      p.style.width = p.style.height = size + 'px';
-      p.style.left = (window.innerWidth*0.15 + Math.random()*window.innerWidth*0.7) + 'px';
-      p.style.top = (window.innerHeight*0.1 + Math.random()*window.innerHeight*0.8) + 'px';
-      document.body.appendChild(p);
-      const ang = (Math.random()-0.5)*Math.PI*2;
-      const dist = 60 + Math.random()*260;
-      const dx = Math.cos(ang)*dist;
-      const dy = Math.sin(ang)*dist - (100*Math.random());
-      p.animate([
-        { transform: 'translate(0,0) scale(0.6)', opacity: 0 },
-        { transform: `translate(${dx}px, ${dy}px) scale(1)`, opacity: 1 },
-        { transform: `translate(${dx*1.25}px, ${dy*1.25}px) scale(0.2)`, opacity: 0 }
-      ], {
-        duration: 3800 + Math.random()*4200,
-        easing: 'cubic-bezier(.2,.9,.2,1)'
-      });
-      setTimeout(()=>p.remove(), 9000);
-    }
-
-    const particleInterval = setInterval(spawnParticle, 260);
-
-    document.getElementById('heart').addEventListener('click', async ()=>{
-      await safeResumeAudio();
-      playTone(800, 0.09, 'square', 0.12);
-      setTimeout(()=>playTone(1100,0.07,'sine',0.09),110);
-    });
-
-    window.addEventListener('load', async ()=>{
-      await safeResumeAudio();
-      setTimeout(()=>{ playTone(240,0.16, 'sine', 0.22); setTimeout(()=>playTone(320,0.2,'sine',0.2),150); }, 350);
-      for (let i=0;i<10;i++) spawnParticle();
-    });
-
-    window.addEventListener('beforeunload', ()=>{ clearInterval(particleInterval); });
-  </script>
 </body>
 </html>
