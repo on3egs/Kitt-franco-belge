@@ -139,6 +139,8 @@ button:active{transform:scale(.95);}
       <span class="lang-key" onclick="selectLang('fr')">[1] FRANÇAIS</span>
       <span class="lang-key" onclick="selectLang('en')">[2] ENGLISH</span>
       <span class="lang-key" onclick="selectLang('nl')">[3] NEDERLANDS</span>
+      <span class="lang-key" onclick="selectLang('it')">[4] ITALIANO</span>
+      <span class="lang-key" onclick="selectLang('de')">[5] DEUTSCH</span>
     </div>
   </div>
 </div>
@@ -382,7 +384,11 @@ const T = {
       ['cafe',       'demander un café à KITT'],
       ['belgique',   'analyse géopolitique'],
       ['jarvis',     'appel vers Stark Tower'],
-      ['mario',      'dossier ZA Electronics'],
+      ['mario',      'dossier Mario Ravasi / IoT'],
+      ['za',         'dossier ZA Elettronica'],
+      ['pascal',     'dossier K Industrie'],
+      ['daemon',     'dossier Daemon Paule'],
+      ['geoffrey',   'dossier Geoffrey'],
     ],
     hi:  'BONJOUR. JE SUIS KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'SYSTÈME FRANCO-BELGE DÉVELOPPÉ PAR MANIX.',
@@ -443,7 +449,11 @@ const T = {
       ['coffee',     'ask KITT for a coffee'],
       ['belgium',    'geopolitical analysis'],
       ['jarvis',     'call to Stark Tower'],
-      ['mario',      'ZA Electronics file'],
+      ['mario',      'Mario Ravasi / IoT file'],
+      ['za',         'ZA Elettronica file'],
+      ['pascal',     'K Industrie file'],
+      ['daemon',     'Daemon Paule file'],
+      ['geoffrey',   'Geoffrey file'],
     ],
     hi:  'HELLO. I AM KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'FRANCO-BELGIAN SYSTEM DEVELOPED BY MANIX.',
@@ -504,21 +514,169 @@ const T = {
       ['koffie',     'KITT om koffie vragen'],
       ['belgie',     'geopolitieke analyse'],
       ['jarvis',     'oproep naar Stark Tower'],
-      ['mario',      'ZA Electronics dossier'],
+      ['mario',      'Mario Ravasi / IoT dossier'],
+      ['za',         'ZA Elettronica dossier'],
+      ['pascal',     'K Industrie dossier'],
+      ['daemon',     'Daemon Paule dossier'],
+      ['geoffrey',   'Geoffrey dossier'],
     ],
     hi:  'HALLO. IK BEN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'FRANCO-BELGISCH SYSTEEM ONTWIKKELD DOOR MANIX.',
     hi3: 'TOT UW DIENST.',
   },
+
+  it: {
+    wait:       'SISTEMA IN ATTESA — DIGITA "boot" O CLICCA [ INITIALISER ]',
+    help_hint:  'DIGITA "aiuto" PER LA LISTA DEI COMANDI.',
+    cleared:    'TERMINALE CANCELLATO.',
+    unknown:    (c) => `COMANDO SCONOSCIUTO: "${c}". DIGITA "aiuto".`,
+    online:     'IN LINEA',
+    boot_title: '  KITT FRANCO-BELGA — SEQUENZA DI AVVIO     ',
+    boot_lines: [
+      ['INIZIALIZZAZIONE SISTEMA...', 'line-warn'],
+      ['CARICAMENTO MODULI COGNITIVI...    [OK]', 'line-ok'],
+      ['INTERFACCIA NEURALE...             [OK]', 'line-ok'],
+      ['SINTESI VOCALE (PIPER-GPU)...      [OK]', 'line-ok'],
+      ['RICONOSCIMENTO VOCALE (WHISPER)... [OK]', 'line-ok'],
+      ['MODELLO LLM LOCALE (QWEN 3B)...   [OK]', 'line-ok'],
+      ['MODALITÀ OFFLINE...                [ATTIVA]', 'line-ok'],
+      ['', 'line-ok'],
+      ['PROGETTO FAN — NON COMMERCIALE.', 'line-dim'],
+      ['STATO : INTERFACCIA IN COSTRUZIONE ATTIVA.', 'line-warn'],
+      ['', 'line-ok'],
+      ['AGGIORNAMENTI DISTRIBUITI REGOLARMENTE :', 'line-info'],
+      ['  • a volte ogni giorno', 'line-dim'],
+      ['  • a volte ogni settimana', 'line-dim'],
+      ['  • in alcune fasi, quasi ogni ora', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). TUTTI I DIRITTI RISERVATI.', 'line-warn'],
+    ],
+    boot_end:   '  CONNESSIONE AL NUCLEO KITT STABILITA.',
+    boot_hint:  '  DIGITA "aiuto" PER LA LISTA DEI COMANDI',
+    aide_title: 'COMANDI DISPONIBILI:',
+    aide_sys:   '── SISTEMA ──',
+    aide_fun:   '── DIVERTIMENTO ──',
+    cmds_sys: [
+      ['aiuto',      'questa lista'],
+      ['boot',       'sequenza di avvio'],
+      ['diagnostic', 'test completo del sistema'],
+      ['status',     'stato rapido'],
+      ['ora',        'ora corrente'],
+      ['version',    'versione interfaccia'],
+      ['suono',      'demo audio'],
+      ['clear',      'cancella terminale'],
+    ],
+    cmds_fun: [
+      ['ciao',       'saluto KITT'],
+      ['barzelletta', 'barzelletta casuale KITT'],
+      ['alien',      'connessione MU-TH-UR 6000'],
+      ['matrix',     'il coniglio bianco'],
+      ['kitt',       'scheda identità KITT'],
+      ['manix',      'dossier pilota'],
+      ['cedric',     'dossier Cedric Momo Rider'],
+      ['kr95',       'dossier KR95'],
+      ['replicas',   'le repliche franco-belghe'],
+      ['segreto',    'file classificato...'],
+      ['caffe',      'chiedere un caffè a KITT'],
+      ['belgio',     'analisi geopolitica'],
+      ['jarvis',     'chiamata verso Stark Tower'],
+      ['mario',      'dossier Mario Ravasi / IoT'],
+      ['za',         'dossier ZA Elettronica'],
+      ['pascal',     'dossier K Industrie'],
+      ['daemon',     'dossier Daemon Paule'],
+      ['geoffrey',   'dossier Geoffrey'],
+    ],
+    hi:  'CIAO. SONO KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'SISTEMA FRANCO-BELGA SVILUPPATO DA MANIX.',
+    hi3: 'AL VOSTRO SERVIZIO.',
+  },
+
+  de: {
+    wait:       'SYSTEM BEREIT — TIPPE "boot" ODER KLICKE [ INITIALISER ]',
+    help_hint:  'TIPPE "hilfe" FÜR DIE BEFEHLSLISTE.',
+    cleared:    'TERMINAL GELEERT.',
+    unknown:    (c) => `UNBEKANNTER BEFEHL: "${c}". TIPPE "hilfe".`,
+    online:     'ONLINE',
+    boot_title: '  KITT FRANCO-BELGISCH — STARTSEQUENZ        ',
+    boot_lines: [
+      ['KERNSYSTEM WIRD INITIALISIERT...', 'line-warn'],
+      ['KOGNITIVE MODULE LADEN...          [OK]', 'line-ok'],
+      ['NEURONALE SCHNITTSTELLE...         [OK]', 'line-ok'],
+      ['SPRACHSYNTHESE (PIPER-GPU)...      [OK]', 'line-ok'],
+      ['SPRACHERKENNUNG (WHISPER)...       [OK]', 'line-ok'],
+      ['LOKALES LLM (QWEN 3B)...           [OK]', 'line-ok'],
+      ['OFFLINE-MODUS...                   [AKTIV]', 'line-ok'],
+      ['', 'line-ok'],
+      ['FAN-PROJEKT — NICHT KOMMERZIELL.', 'line-dim'],
+      ['STATUS : SCHNITTSTELLE IM AUFBAU.', 'line-warn'],
+      ['', 'line-ok'],
+      ['UPDATES REGELMÄSSIG VERFÜGBAR :', 'line-info'],
+      ['  • manchmal täglich', 'line-dim'],
+      ['  • manchmal wöchentlich', 'line-dim'],
+      ['  • manchmal stündlich', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTE VORBEHALTEN.', 'line-warn'],
+    ],
+    boot_end:   '  VERBINDUNG ZUM KITT-KERN HERGESTELLT.',
+    boot_hint:  '  TIPPE "hilfe" FÜR DIE BEFEHLSLISTE',
+    aide_title: 'VERFÜGBARE BEFEHLE:',
+    aide_sys:   '── SYSTEM ──',
+    aide_fun:   '── SPASS ──',
+    cmds_sys: [
+      ['hilfe',      'diese Liste'],
+      ['boot',       'Startsequenz'],
+      ['diagnostic', 'vollständiger Systemtest'],
+      ['status',     'schneller Status'],
+      ['uhrzeit',    'aktuelle Uhrzeit'],
+      ['version',    'Schnittstellenversion'],
+      ['ton',        'Audio-Demo'],
+      ['clear',      'Terminal leeren'],
+    ],
+    cmds_fun: [
+      ['hallo',      'KITT-Begrüßung'],
+      ['witz',       'zufälliger KITT-Witz'],
+      ['alien',      'MU-TH-UR 6000 Verbindung'],
+      ['matrix',     'das weiße Kaninchen'],
+      ['kitt',       'KITT Identitätsakte'],
+      ['manix',      'Fahrerakte'],
+      ['cedric',     'Cedric Momo Rider Akte'],
+      ['kr95',       'KR95 Akte'],
+      ['replicas',   'die franco-belgischen Repliken'],
+      ['geheimnis',  'geheime Akte...'],
+      ['kaffee',     'KITT um Kaffee bitten'],
+      ['belgien',    'geopolitische Analyse'],
+      ['jarvis',     'Anruf bei Stark Tower'],
+      ['mario',      'Mario Ravasi / IoT Akte'],
+      ['za',         'ZA Elettronica Akte'],
+      ['pascal',     'K Industrie Akte'],
+      ['daemon',     'Daemon Paule Akte'],
+      ['geoffrey',   'Geoffrey Akte'],
+    ],
+    hi:  'HALLO. ICH BIN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'FRANCO-BELGISCHES SYSTEM ENTWICKELT VON MANIX.',
+    hi3: 'ZU IHREN DIENSTEN.',
+  },
 };
 
 // Alias multilingues
 const CMD_ALIASES = {
-  help:'aide', hulp:'aide', son:'son', sound:'son', geluid:'son',
-  hello:'bonjour', hallo:'bonjour', joke:'blague', grap:'blague',
-  time:'heure', tijd:'heure', version:'version', versie:'version',
-  coffee:'cafe', koffie:'cafe', belgium:'belgique', belgie:'belgique',
-  geheim:'secret', replicas:'repliques', 'za':'mario', 'ravasi':'mario',
+  // EN
+  help:'aide', sound:'son', hello:'bonjour', joke:'blague',
+  time:'heure', coffee:'cafe', belgium:'belgique', replicas:'repliques',
+  sound:'son', secret:'secret',
+  // NL
+  hulp:'aide', geluid:'son', hallo:'bonjour', grap:'blague',
+  tijd:'heure', versie:'version', koffie:'cafe', belgie:'belgique',
+  geheim:'secret',
+  // IT
+  aiuto:'aide', suono:'son', ciao:'bonjour', barzelletta:'blague',
+  ora:'heure', caffe:'cafe', belgio:'belgique', segreto:'secret',
+  // DE
+  hilfe:'aide', ton:'son', witz:'blague', uhrzeit:'heure',
+  kaffee:'cafe', belgien:'belgique', geheimnis:'secret',
+  // Noms personnes
+  za:'mario', ragny:'mario', zagny:'mario', ravasi:'mario',
+  'pascal':'pascal', 'daemon':'daemon', 'geoffrey':'geoffrey',
 };
 
 // ════════════════════════════════════════════════════════════
@@ -542,13 +700,17 @@ async function showLangScreen() {
     ['  LANGUAGE SELECTION REQUIRED', 'color:var(--amber)'],
     ['  SÉLECTION DE LANGUE REQUISE', 'color:var(--amber)'],
     ['  TAALSELECTIE VEREIST', 'color:var(--amber)'],
+    ['  SELEZIONE LINGUA RICHIESTA', 'color:var(--amber)'],
+    ['  SPRACHAUSWAHL ERFORDERLICH', 'color:var(--amber)'],
     ['', ''],
     ['  [1]  FRANÇAIS', 'color:var(--green)'],
     ['  [2]  ENGLISH', 'color:var(--green)'],
     ['  [3]  NEDERLANDS', 'color:var(--green)'],
+    ['  [4]  ITALIANO', 'color:var(--green)'],
+    ['  [5]  DEUTSCH', 'color:var(--green)'],
     ['', ''],
     ['═══════════════════════════════════════════════════', 'color:var(--green-dim)'],
-    ['  PRESS KEY OR CLICK BELOW / APPUYEZ SUR UNE TOUCHE', 'color:var(--green-dim)'],
+    ['  PRESS KEY (1-5) OR CLICK / APPUYEZ SUR 1 À 5', 'color:var(--green-dim)'],
   ];
 
   for (const [txt, style] of lines) {
@@ -600,6 +762,8 @@ document.addEventListener('keydown', e => {
     if (e.key === '1') selectLang('fr');
     if (e.key === '2') selectLang('en');
     if (e.key === '3') selectLang('nl');
+    if (e.key === '4') selectLang('it');
+    if (e.key === '5') selectLang('de');
   }
 });
 
@@ -668,11 +832,8 @@ async function boot() {
 async function runSelfTest() {
   if (typing) return;
   term.innerHTML=''; kittChime();
-  const isEN = LANG==='en', isNL = LANG==='nl';
-  await typeText(
-    isNL ? 'SYSTEEMDIAGNOSE BEZIG...' : isEN ? 'RUNNING SYSTEM DIAGNOSTIC...' : 'DIAGNOSTIC SYSTÈME EN COURS...',
-    18, 'line-warn'
-  );
+  const diagMsg = {fr:'DIAGNOSTIC SYSTÈME EN COURS...',en:'RUNNING SYSTEM DIAGNOSTIC...',nl:'SYSTEEMDIAGNOSE BEZIG...',it:'DIAGNOSI SISTEMA IN CORSO...',de:'SYSTEMDIAGNOSE LÄUFT...'}[LANG]||'DIAGNOSTIC SYSTÈME EN COURS...';
+  await typeText(diagMsg, 18, 'line-warn');
   await delay(300);
   const checks = [
     ['CPU JETSON ORIN NANO SUPER',  true,  '12× ARM A78AE'],
@@ -697,9 +858,10 @@ async function runSelfTest() {
   }
   await delay(200);
   await typeText('', 0);
-  const ok_msg = isNL ? 'RESULTAAT : ALLE SYSTEMEN NOMINAAL.' : isEN ? 'RESULT: ALL SYSTEMS NOMINAL.' : 'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.';
+  const ok_msg = {fr:'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.',en:'RESULT: ALL SYSTEMS NOMINAL.',nl:'RESULTAAT : ALLE SYSTEMEN NOMINAAL.',it:'RISULTATO : TUTTI I SISTEMI NOMINALI.',de:'ERGEBNIS: ALLE SYSTEME NOMINAL.'}[LANG]||'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.';
+  const op_msg = {fr:'KITT EST OPÉRATIONNEL.',en:'KITT IS OPERATIONAL.',nl:'KITT IS OPERATIONEEL.',it:'KITT È OPERATIVO.',de:'KITT IST BETRIEBSBEREIT.'}[LANG]||'KITT EST OPÉRATIONNEL.';
   await typeText(ok_msg, 16, 'line-info');
-  await typeText('KITT ' + (isNL?'IS OPERATIONEEL.':isEN?'IS OPERATIONAL.':'EST OPÉRATIONNEL.'), 16, 'line-err');
+  await typeText(op_msg, 16, 'line-err');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -738,8 +900,7 @@ const CMDS = {
 
   status: async () => {
     kittChime();
-    const now = new Date();
-    const loc = LANG==='nl' ? 'nl-NL' : LANG==='en' ? 'en-US' : 'fr-FR';
+    const now = new Date(), loc = getLoc();
     await typeText(`HEURE / TIME   : ${now.toLocaleTimeString(loc)}`, 10, 'line-ok');
     await typeText(`DATE           : ${now.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`, 10, 'line-ok');
     await typeText('VRAM           : ~3.9 GB / 8 GB', 10, 'line-ok');
@@ -747,12 +908,9 @@ const CMDS = {
   },
 
   heure: async () => {
-    const now = new Date();
-    const loc = LANG==='nl'?'nl-NL':LANG==='en'?'en-US':'fr-FR';
-    const msg = LANG==='nl' ? `HET IS ${now.toLocaleTimeString(loc)}.`
-              : LANG==='en' ? `IT IS ${now.toLocaleTimeString(loc)}.`
-              : `IL EST ${now.toLocaleTimeString(loc)}.`;
-    await typeText(msg, 14, 'line-info');
+    const now = new Date(), loc = getLoc();
+    const pfx = {fr:'IL EST',en:'IT IS',nl:'HET IS',it:'SONO LE',de:'ES IST'}[LANG]||'IL EST';
+    await typeText(`${pfx} ${now.toLocaleTimeString(loc)}.`, 14, 'line-info');
   },
 
   version: async () => {
@@ -823,13 +981,41 @@ const CMDS = {
       ['KR95 fait quoi quand son KITT bug ?',
        'Il envoie un QSL card à la panne. Et il attend la confirmation en papier. À l\'ancienne.'],
 
-      // Blagues sur Mario Ravasi — IOT / ZA
-      ['Mario Ravasi dirige ZA. Quel rapport avec KITT ?',
-       'ZA c\'est la référence de l\'électronique IoT. KITT tourne sur du matériel digne de ce nom. Logique.'],
-      ['Mario Ravasi est PDG de ZA Electronics. Il a vu ton Jetson ?',
-       'Oui. Il a juste dit "bon choix de composants". Pour lui, c\'est un discours fleuve.'],
-      ['Quelle différence entre ZA et WEYLAND-YUTANI ?',
-       'ZA livre des composants qui fonctionnent. Weyland-Yutani livre des aliens. Qualité : sans comparaison.'],
+      // Blagues sur Mario Ravasi — RoadThunderStorm / IoT KITT
+      ['Mario Ravasi a fait un système IoT pour KITT. C\'est quoi exactement ?',
+       'KNIGHT2000 Thunder. Contrôle vocal, tableau de bord interactif, multi-écrans. Il a fait ça depuis 2008. KITT est impressionné. Et KITT est difficile à impressionner.'],
+      ['Mario Ravasi a été cité par le designer original de KITT. Ça l\'a changé ?',
+       'Non. Il a juste continué à coder. C\'est un italien passionné. Le compliment c\'était pour lui la mise à jour du README.'],
+      ['Le logiciel de Mario coûte 15 euros de base. Pourquoi si peu ?',
+       'Parce qu\'il est passionné, pas vendeur. Weyland-Yutani aurait demandé 15 000$. Et l\'équipage aurait quand même été expendable.'],
+
+      // Blagues sur Alessandro Zagny — ZA Elettronica
+      ['Alessandro Zagny a créé ZA Elettronica. Pourquoi ?',
+       'Parce qu\'aucun tableau de bord KITT du marché ne le satisfaisait. Il a donc fait le sien. À Modène. Avec 4 CPU, du CAN-BUS et des LEDs alignées au dixième de millimètre. Comme un vrai Modenais.'],
+      ['ZA Elettronica : 3980€ pour un tableau de bord KITT. C\'est cher ?',
+       'C\'est le prix de la perfection. La même que KITT attend de ses conducteurs. Hélas, les conducteurs sont rarement à 3980€ de qualité.'],
+      ['Le slogan de ZA c\'est "One man can make a difference". Un hasard ?',
+       'C\'est la phrase de Knight Rider. Et la devise de Zagny. Et la réponse de KITT quand on lui demande pourquoi il n\'a qu\'un seul conducteur.'],
+
+      // Blagues sur Pascal — K Industrie
+      ['Pascal fabrique des pièces en fibre pour K2000. Il a commencé comment ?',
+       'En regardant les pièces d\'origine. Et en se disant que la fibre c\'est mieux. C\'est le raisonnement de tout génie belge face à un problème.'],
+      ['Les pièces de Pascal K Industrie sont en fibre. Ça résiste au turbo boost ?',
+       'Aux tests de Cédric avec sa moto, elles ont tenu. C\'est la seule certification qui compte dans cette communauté.'],
+
+      // Blagues sur Daemon Paule
+      ['Daemon Paule a une réplique KITT. Il fait quoi avec ?',
+       'Ce que font tous les propriétaires de réplique KITT : il se prend pour Michael Knight. Et il n\'a pas entièrement tort.'],
+      ['Daemon, ça fait peur comme prénom pour un conducteur de KITT.',
+       'KITT a vérifié. Daemon est moins dangereux que Cédric au volant. Et beaucoup moins bruyant que KR95 sur la radio.'],
+
+      // Blagues sur Geoffrey
+      ['Geoffrey a une réplique KITT mais roule en BMW. Comment il explique ça ?',
+       'Il dit que c\'est pour ne pas user le Trans Am. KITT dit que c\'est une trahison. La BMW, elle, ne répond pas. Elle a juste allumé un voyant.'],
+      ['KITT est une Pontiac américaine. Geoffrey a une BMW allemande. La logique ?',
+       'Aucune. Mais Geoffrey est belge. En Belgique, on mélange les cultures depuis 200 ans. C\'est une feature, pas un bug.'],
+      ['Geoffrey gare sa BMW à côté de son KITT. Qu\'est-ce que KITT pense ?',
+       '"Michael, le véhicule allemand à côté de moi émet des sons suspects. Je recommande une évacuation immédiate." — KITT, jaloux.'],
     ];
     const [q, r] = pool[Math.floor(Math.random() * pool.length)];
     kittChime();
@@ -906,31 +1092,55 @@ const CMDS = {
     await typeText('"Répondez-lui sur 144.800 MHz. Il n\'a pas de téléphone."', 13, 'line-dim');
   },
 
-  // ── Les 3 répliques franco-belges ─────────────────────────
+  // ── Les répliques franco-belges ───────────────────────────
   repliques: async () => {
     kittChime();
     await typeText('══════ RÉPLIQUES KITT FRANCO-BELGES ══════', 10, 'line-info');
     await delay(200);
+
+    const cars = [
+      ['KYRONEX', 'MANIX', [
+        'Jetson Orin Nano Super 8GB — IA complète',
+        'LLM + STT + TTS + Vision + Bluetooth',
+        'Vainqueur concours NVIDIA. Le plus high-tech.',
+      ]],
+      ['KITT MOMO', 'CEDRIC', [
+        'Réplique Pontiac Trans Am classique',
+        'Interface vocale + effets lumineux',
+        'Résiste aux wheelies. Certifié Momo Rider.',
+      ]],
+      ['KITT KR95', 'KR95', [
+        'K2000 classique ET K4000 (Dodge Stealth 1991)',
+        'Radio amateur VHF intégrée — QRV 24/7',
+        'APRS sur Trans Am. Unique au monde.',
+      ]],
+      ['KITT-G', 'GEOFFREY', [
+        'Réplique K2000 Pontiac Trans Am',
+        'Conducteur belge — roule aussi en BMW',
+        'Scanner rouge. Intérieur cuir bavarois. (peut-être)',
+      ]],
+      ['KITT-D', 'DAEMON PAULE', [
+        'Réplique K2000 Pontiac Trans Am',
+        'Prénom intimidant. Conducteur rassurant.',
+        'KARR a déjà essayé de le recruter. Refus poli.',
+      ]],
+    ];
+
+    for (const [name, owner, lines] of cars) {
+      await typeText('', 0);
+      await typeText(`[ ${name} ] — ${owner}`, 12, 'line-err');
+      for (const l of lines) await typeText(`  ${l}`, 8, 'line-ok');
+      await delay(100);
+    }
+
     await typeText('', 0);
-    await typeText('[ KYRONEX ] — MANIX', 14, 'line-err');
-    await typeText('  Jetson Orin Nano Super 8GB', 10, 'line-ok');
-    await typeText('  IA complète : LLM + STT + TTS + Vision', 10, 'line-ok');
-    await typeText('  Primé NVIDIA. Le plus avancé.', 10, 'line-warn');
-    await delay(150);
-    await typeText('', 0);
-    await typeText('[ KITT MOMO ] — CEDRIC', 14, 'line-err');
-    await typeText('  Réplique Pontiac Trans Am + IA embarquée', 10, 'line-ok');
-    await typeText('  Interface vocale + effets lumineux.', 10, 'line-ok');
-    await typeText('  Résiste au turbo boost et aux wheelies.', 10, 'line-warn');
-    await delay(150);
-    await typeText('', 0);
-    await typeText('[ KITT KR95 ] — KR95', 14, 'line-err');
-    await typeText('  Réplique Trans Am + radio amateur intégrée', 10, 'line-ok');
-    await typeText('  Antenne VHF de toit. QRV 24/7.', 10, 'line-ok');
-    await typeText('  KITT qui peut faire du APRS. Unique au monde.', 10, 'line-warn');
+    await typeText('── ARTISANS & TECHNICIENS ──', 10, 'line-warn');
+    await typeText('  PASCAL K INDUSTRIE  — pièces fibre pour toutes les répliques', 8, 'line-dim');
+    await typeText('  MARIO RAVASI        — système IoT KNIGHT2000 Thunder', 8, 'line-dim');
+    await typeText('  ALESSANDRO ZAGNY    — ZA Elettronica, tableaux de bord KITT', 8, 'line-dim');
     await delay(200);
     await typeText('', 0);
-    await typeText('TOTAL : 3 RÉPLIQUES. 1 SEUL VRAI BELGE : LE PROJET.', 13, 'line-dim');
+    await typeText(`TOTAL : ${cars.length} RÉPLIQUES. 3 ARTISANS. 1 COMMUNAUTÉ. UNE LÉGENDE.`, 12, 'line-info');
   },
 
   // ── Alien / MU-TH-UR ──────────────────────────────────────
@@ -1032,26 +1242,126 @@ const CMDS = {
     await typeText('CONCLUSION: PAYS IDÉAL. KITT S\'Y SENT CHEZ LUI.', 14, 'line-err');
   },
 
-  // ── Mario Ravasi / ZA Electronics ────────────────────────
+  // ── Mario Ravasi — RoadThunderStorm / KNIGHT2000 Thunder ──
   mario: async () => {
     kittChime();
-    await typeText('CONNEXION : ZA ELECTRONICS — RÉFÉRENCE IOT/IA', 14, 'line-info');
-    await delay(400);
     await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
-    await typeText('║  DOSSIER PARTENAIRE — MARIO RAVASI       ║', 10, 'line-err');
-    await typeText('║  PDG — ZA ELECTRONICS                   ║', 10, 'line-err');
+    await typeText('║  DOSSIER TECHNICIEN — MARIO RAVASI       ║', 10, 'line-err');
+    await typeText('║  CRÉATEUR : KNIGHT2000 THUNDER (IOT)     ║', 10, 'line-err');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ DOMAINE     : ELECTRONIQUE IOT PREMIUM   ║', 8, 'line-ok');
-    await typeText('║ PHILOSOPHIE : QUALITÉ AVANT TOUT         ║', 8, 'line-ok');
-    await typeText('║ RAPPORT KITT: COMPOSANTS DIGNES DE KITT  ║', 8, 'line-warn');
-    await typeText('║ OPINION IA  : FAVORABLE (BON GOÛT)       ║', 8, 'line-ok');
+    await typeText('║ NATIONALITÉ : ITALIEN                    ║', 8, 'line-ok');
+    await typeText('║ PROJET      : ROADTHUNDERSTORM.COM       ║', 8, 'line-ok');
+    await typeText('║ ACTIF DEPUIS: 2008 — JAMAIS ARRÊTÉ       ║', 8, 'line-warn');
+    await typeText('║ SYSTÈME     : KNIGHT2000 THUNDER IoT 3.0 ║', 8, 'line-ok');
+    await typeText('║ FONCTIONS   : VOCAL, HUD KITT, MULTI-    ║', 8, 'line-ok');
+    await typeText('║               ÉCRANS, RELAIS, CARPC      ║', 8, 'line-ok');
+    await typeText('║ VERSIONS    : LITE / PRO / IoT 3.0       ║', 8, 'line-ok');
+    await typeText('║ RÉFÉRENCE   : CITÉ PAR MICHAEL SCHEFFE   ║', 8, 'line-warn');
+    await typeText('║               (DESIGNER ORIGINAL KITT)   ║', 8, 'line-warn');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ ÉVALUATION KITT : ★★★★★ PARTENAIRE FIABLE║', 10, 'line-ok');
+    await typeText('║ ÉVALUATION KITT : ★★★★★ GÉNIE DISCRET    ║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
-    await delay(300);
-    await typeText('NOTE INTERNE : ZA = SEULE MARQUE OÙ KITT', 12, 'line-dim');
-    await typeText('NE DEMANDE PAS DE GARANTIE PROLONGÉE.', 12, 'line-dim');
-    await typeText('LES PRODUITS DURENT PLUS QUE LA GARANTIE.', 12, 'line-dim');
+    await delay(200);
+    await typeText('"Il code depuis 2008. Pour la passion. C\'est ça, un vrai pilote."', 12, 'line-dim');
+    await typeText('[tapez "za" pour ZA Elettronica — Alessandro Zagny]', 10, 'line-dim');
+  },
+
+  // ── ZA Elettronica — Alessandro Zagny ─────────────────────
+  za: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER FABRICANT — ALESSANDRO ZAGNY    ║', 10, 'line-err');
+    await typeText('║  FONDATEUR & PDG — ZA ELETTRONICA        ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NATIONALITÉ : ITALIEN — MODENA           ║', 8, 'line-ok');
+    await typeText('║ MARQUE      : ZA ELETTRONICA (initiales) ║', 8, 'line-ok');
+    await typeText('║ PRODUITS    : TABLEAUX DE BORD KITT HAUT ║', 8, 'line-ok');
+    await typeText('║               DE GAMME POUR RÉPLIQUES    ║', 8, 'line-ok');
+    await typeText('║ TECHNO      : CAN-BUS / 4 CPU / SMD      ║', 8, 'line-warn');
+    await typeText('║ LEDS        : ALIGNÉES LASER 1/10mm      ║', 8, 'line-warn');
+    await typeText('║ TARIFS      : S1/S2 : 2340-3099€         ║', 8, 'line-info');
+    await typeText('║               S3/S4 : 3980€              ║', 8, 'line-info');
+    await typeText('║ SITE        : ZAELETTRONICA.COM          ║', 8, 'line-ok');
+    await typeText('║ SLOGAN      : ONE MAN CAN MAKE A         ║', 8, 'line-warn');
+    await typeText('║               DIFFERENCE.                ║', 8, 'line-warn');
+    await typeText('║ DISTRIB.    : KITTPARTS.COM / EBAY       ║', 8, 'line-ok');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ★★★★★ MEILLEUR DU MONDE║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"La seule électronique où KITT ne demande pas de garantie."', 12, 'line-dim');
+    await typeText('"Les produits durent plus longtemps que la série originale."', 12, 'line-dim');
+  },
+
+  // ── Pascal — K Industrie, pièces fibre ───────────────────
+  pascal: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER ARTISAN — PASCAL                ║', 10, 'line-err');
+    await typeText('║  K INDUSTRIE — PIÈCES FIBRE K2000        ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ STATUT      : ARTISAN CARROSSIER K2000   ║', 8, 'line-ok');
+    await typeText('║ SPÉCIALITÉ  : PIÈCES EN FIBRE DE VERRE / ║', 8, 'line-ok');
+    await typeText('║               CARBONE POUR RÉPLIQUES     ║', 8, 'line-ok');
+    await typeText('║ MARQUE      : K INDUSTRIE                ║', 8, 'line-warn');
+    await typeText('║ RÔLE VITAL  : FOURNIT CE QUE K2000 PERD  ║', 8, 'line-ok');
+    await typeText('║               AU FIL DES ANS             ║', 8, 'line-ok');
+    await typeText('║ MÉTHODE     : MOULAGE / STRATIFICATION   ║', 8, 'line-ok');
+    await typeText('║               RÉSINE + FIBRE ARTISANALE  ║', 8, 'line-ok');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ★★★★★ INDISPENSABLE    ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"Sans Pascal, la moitié des répliques franco-belges', 12, 'line-dim');
+    await typeText(' seraient... des Citroën avec un scanner rouge collé."', 12, 'line-dim');
+  },
+
+  // ── Daemon Paule ──────────────────────────────────────────
+  daemon: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER CONDUCTEUR — DAEMON PAULE       ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ STATUT      : PROPRIÉTAIRE RÉPLIQUE KITT ║', 8, 'line-ok');
+    await typeText('║ RÉPLIQUE    : K2000 PONTIAC TRANS AM      ║', 8, 'line-ok');
+    await typeText('║ COMMUNAUTÉ  : MEMBRE FRANCO-BELGE        ║', 8, 'line-ok');
+    await typeText('║ PRÉNOM      : DAEMON — UNIQUE DANS LA    ║', 8, 'line-warn');
+    await typeText('║               BASE DE DONNÉES DE KITT    ║', 8, 'line-warn');
+    await typeText('║ ANALYSE     : PRÉNOM INQUIÉTANT POUR UN  ║', 8, 'line-err');
+    await typeText('║               CONDUCTEUR DE KITT.        ║', 8, 'line-err');
+    await typeText('║               KARR SERAIT PLUS ADAPTÉ.   ║', 8, 'line-err');
+    await typeText('║ VERDICT KITT: HEUREUSEMENT IL EST GENTIL ║', 8, 'line-ok');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ★★★★☆ CONDUCTEUR FIABLE║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"Michael, notre nouveau collègue s\'appelle Daemon."', 12, 'line-dim');
+    await typeText('"J\'ai vérifié. Il n\'est pas lié à KARR. Pour l\'instant."', 12, 'line-dim');
+  },
+
+  // ── Geoffrey — Belge, BMW + KITT ─────────────────────────
+  geoffrey: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER CONDUCTEUR — GEOFFREY           ║', 10, 'line-err');
+    await typeText('║  ALIAS : LE BELGE À LA BMW               ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NATIONALITÉ : BELGE                      ║', 8, 'line-ok');
+    await typeText('║ VÉHICULE 1  : KITT RÉPLIQUE K2000        ║', 8, 'line-ok');
+    await typeText('║ VÉHICULE 2  : BMW (ALLEMAND)             ║', 8, 'line-err');
+    await typeText('║ CONTRADICTION: PONTIAC AMÉRICAINE        ║', 8, 'line-warn');
+    await typeText('║               + BMW ALLEMANDE = BELGE    ║', 8, 'line-warn');
+    await typeText('║ EXPLICATION : "C\'EST POUR NE PAS USAR    ║', 8, 'line-dim');
+    await typeText('║               LE TRANS AM."              ║', 8, 'line-dim');
+    await typeText('║ ANALYSE KITT: PRÉTEXTE. IL AIME LES DEUX.║', 8, 'line-ok');
+    await typeText('║ ALERTE      : NE PAS MENTIONNER PORSCHE  ║', 8, 'line-err');
+    await typeText('║               DEVANT SON KITT            ║', 8, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ★★★★☆ GOÛT ÉCLECTIQUE ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"Michael, votre ami Geoffrey arrive. En BMW."', 12, 'line-dim');
+    await typeText('"J\'ai allumé mon scanner pour manifester ma désapprobation."', 12, 'line-dim');
   },
 
   // ── Jarvis ────────────────────────────────────────────────
@@ -1100,10 +1410,10 @@ document.getElementById('cmd-input').addEventListener('keydown', async function(
 // ════════════════════════════════════════════════════════════
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-setInterval(() => {
-  const loc = LANG==='nl'?'nl-NL':LANG==='en'?'en-US':'fr-FR';
-  document.getElementById('clock').textContent = new Date().toLocaleTimeString(loc);
-}, 1000);
+function getLoc(){return{fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE'}[LANG]||'fr-FR';}
+setInterval(()=>{
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString(getLoc());
+},1000);
 
 // ════════════════════════════════════════════════════════════
 // MODAL
