@@ -8,7 +8,6 @@
 <style>
 :root{
 --green:#00ff66;
---dark:#000;
 --red:#ff1a1a;
 }
 
@@ -17,16 +16,15 @@ margin:0;
 height:100%;
 background:#000;
 color:var(--green);
-font-family: "Courier New", monospace;
+font-family:"Courier New",monospace;
 overflow:hidden;
 }
 
-/* CRT EFFECT */
+/* effet écran CRT */
 body::after{
 content:"";
 position:fixed;
-top:0;left:0;
-width:100%;height:100%;
+inset:0;
 background:repeating-linear-gradient(
 0deg,
 rgba(0,255,100,.05),
@@ -55,7 +53,7 @@ header{
 color:var(--red);
 font-size:22px;
 letter-spacing:3px;
-text-shadow:0 0 10px var(--red);
+text-shadow:0 0 12px var(--red);
 }
 
 #terminal{
@@ -98,103 +96,113 @@ animation:scan 2s linear infinite;
 100%{left:100%}
 }
 
-.panel{
-margin-top:10px;
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.9);
+display:none;
+flex-direction:column;
+padding:30px;
+overflow:auto;
 }
 
-.hidden{display:none;}
+.modal pre{
+white-space:pre-wrap;
+color:var(--green);
+font-family:monospace;
+}
+
+.close{
+position:absolute;
+top:20px;
+right:20px;
+font-size:20px;
+cursor:pointer;
+color:var(--red);
+}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-
-<header>
-KITT FRANCO-BELGE // INTERFACE CENTRALE
-</header>
+<header>KITT FRANCO-BELGE // INTERFACE CENTRALE</header>
 
 <div id="terminal"></div>
 
-<div class="panel">
+<div>
 <button onclick="boot()">INITIALISER</button>
-<button onclick="showSection('projet')">PROJET</button>
-<button onclick="showSection('licence')">LICENCE</button>
-<button onclick="showSection('evolution')">ÉVOLUTION</button>
-<button onclick="showSection('communaute')">COMMUNAUTÉ</button>
+<button onclick="openFile('MENTIONS.txt')">MENTIONS LÉGALES</button>
+<button onclick="openFile('LICENSE.txt')">LICENCE</button>
 </div>
 
 <div id="scanner"></div>
+</div>
 
+<!-- fenêtre modale -->
+<div id="modal" class="modal">
+<div class="close" onclick="closeModal()">✖</div>
+<pre id="modalContent"></pre>
 </div>
 
 <script>
 const term=document.getElementById("terminal");
 
-function beep(freq=500,dur=0.08){
+function beep(freq=600,dur=0.05){
 const ctx=new(window.AudioContext||window.webkitAudioContext)();
 const osc=ctx.createOscillator();
 const gain=ctx.createGain();
 osc.frequency.value=freq;
 osc.connect(gain);
 gain.connect(ctx.destination);
-gain.gain.value=.1;
+gain.gain.value=.08;
 osc.start();
 setTimeout(()=>osc.stop(),dur*1000);
 }
 
-function typeText(text,speed=25){
+function typeText(text,speed=18){
 return new Promise(resolve=>{
 let i=0;
-function typing(){
+function t(){
 if(i<text.length){
-term.innerHTML+=text.charAt(i);
-beep(800,0.02);
-i++;
-setTimeout(typing,speed);
+term.innerHTML+=text[i++];
+beep();
+setTimeout(t,speed);
 }else{
 term.innerHTML+="\n";
 resolve();
-}
-}
-typing();
+}}
+t();
 });
 }
 
 async function boot(){
 term.innerHTML="";
-await typeText("SYSTÈME EN COURS D'INITIALISATION...");
+await typeText("INITIALISATION DU SYSTÈME...");
 await typeText("CHARGEMENT MODULE VOCAL...");
 await typeText("SYNTHÈSE VOCALE : OK");
 await typeText("RECONNAISSANCE VOCALE : OK");
 await typeText("LLM LOCAL : OK");
 await typeText("MODE HORS-LIGNE : ACTIVÉ");
-await typeText("SITE EN CONSTRUCTION ACTIVE.");
-await typeText("MISES À JOUR RÉGULIÈRES : JOURNALIÈRES / HEBDOMADAIRES / EXPÉRIMENTALES.");
-await typeText("REJOIGNEZ LE GROUPE FACEBOOK : KITT FRANCO-BELGE");
-await typeText("CONNEXION AU NOYAU ÉTABLIE.");
+await typeText("PROJET FAN NON COMMERCIAL.");
+await typeText("PROTECTION PAR DROIT D'AUTEUR ACTIVE.");
+await typeText("CONNEXION AU NOYAU KITT ÉTABLIE.");
 }
 
-function showSection(section){
-term.innerHTML="";
-beep(600,0.1);
-
-if(section==="projet"){
-term.innerHTML="PROJET\n\nIA locale pour Jetson Nano / Orin / Xavier.\nDéveloppement progressif et expérimental.\nArchitecture autonome hors-ligne.";
+function openFile(file){
+fetch(file)
+.then(r=>r.text())
+.then(text=>{
+document.getElementById("modalContent").textContent=text;
+document.getElementById("modal").style.display="flex";
+});
 }
 
-if(section==="licence"){
-term.innerHTML="LICENCE\n\nProjet indépendant.\nDéveloppement collaboratif.\nAucune exploitation commerciale sans autorisation.";
+function closeModal(){
+document.getElementById("modal").style.display="none";
 }
 
-if(section==="evolution"){
-term.innerHTML="ÉVOLUTION\n\nAméliorations fréquentes.\nOptimisation graphique.\nAjout modules IA.\nTests expérimentaux permanents.";
-}
-
-if(section==="communaute"){
-term.innerHTML="COMMUNAUTÉ\n\nRejoignez le groupe Facebook :\nKITT FRANCO-BELGE\n\nPartagez idées, tests, suggestions.";
-}
-}
+window.onload=()=>typeText("SYSTÈME EN ATTENTE D'INITIALISATION...");
 </script>
 
 </body>
