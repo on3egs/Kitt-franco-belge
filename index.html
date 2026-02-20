@@ -175,6 +175,59 @@ button:active{transform:scale(.95);}
 #btn-tunnel.tunnel-offline{border-color:var(--red);color:var(--red);}
 #btn-tunnel.tunnel-checking{border-color:var(--amber);color:var(--amber);}
 @keyframes tpulse{0%,100%{box-shadow:0 0 5px rgba(0,255,102,.25)}50%{box-shadow:0 0 18px rgba(0,255,102,.65),inset 0 0 8px rgba(0,255,102,.08)}}
+
+/* ── FOND JARVIS HOLOGRAPHIQUE ──────────────────────────── */
+.container{position:relative;z-index:1;}
+#jarvis-svg{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%) translate3d(0,0,0);
+  width:min(80vw,80vh);height:min(80vw,80vh);
+  pointer-events:none;z-index:0;opacity:0.07;
+}
+#sphere-wrap{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:160px;height:160px;
+  perspective:500px;
+  pointer-events:none;z-index:0;opacity:0.06;
+}
+#sphere-3d{
+  width:100%;height:100%;
+  transform-style:preserve-3d;
+  animation:srot 22s linear infinite;
+}
+@keyframes srot{from{transform:rotateX(22deg) rotateY(0deg)}to{transform:rotateX(22deg) rotateY(360deg)}}
+.s-mer,.s-par{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  border-radius:50%;border:1px solid var(--green);box-sizing:border-box;
+}
+.s-core{
+  position:absolute;top:50%;left:50%;
+  width:18px;height:18px;margin:-9px 0 0 -9px;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--green),transparent);
+  box-shadow:0 0 16px var(--green);
+  animation:score 3s ease-in-out infinite;
+}
+@keyframes score{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ── COMPTEUR VISITES ───────────────────────────────────── */
+#visit-counter{
+  position:fixed;left:6px;top:50%;transform:translateY(-50%);
+  writing-mode:vertical-rl;text-orientation:mixed;
+  font-size:9px;color:var(--green-dim);letter-spacing:2px;
+  opacity:.35;pointer-events:none;z-index:100;
+  text-shadow:0 0 4px var(--green-dim);
+  user-select:none;
+}
+
+/* ── FOOTER VERSION ─────────────────────────────────────── */
+#site-footer{
+  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  font-size:9px;color:var(--green-dim);letter-spacing:2px;
+  opacity:.3;pointer-events:none;z-index:1001;
+  white-space:nowrap;user-select:none;
+}
 </style>
 </head>
 <body>
@@ -189,13 +242,58 @@ button:active{transform:scale(.95);}
   </div>
 </div>
 
+<!-- Fond Jarvis holographique -->
+<svg id="jarvis-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+  <g stroke="#00ff66" fill="none">
+    <circle cx="200" cy="200" r="175" stroke-opacity="0.28" stroke-width="0.7">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="200" cy="200" r="130" stroke-opacity="0.22" stroke-width="0.5">
+      <animateTransform attributeName="transform" type="rotate" from="360 200 200" to="0 200 200" dur="45s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="200" cy="200" r="85" stroke-opacity="0.18" stroke-width="0.5">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="32s" repeatCount="indefinite"/>
+    </circle>
+    <line x1="200" y1="25" x2="200" y2="375" stroke-opacity="0.08" stroke-width="0.4">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </line>
+    <line x1="25" y1="200" x2="375" y2="200" stroke-opacity="0.08" stroke-width="0.4">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </line>
+    <path d="M 200 25 A 175 175 0 0 1 375 200" stroke-opacity="0.55" stroke-width="1.5" stroke="#00ff66">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="8s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="200" cy="200" r="4" fill="#00ff66" opacity="0.4">
+      <animate attributeName="opacity" values="0.2;0.8;0.2" dur="3s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>
+<div id="sphere-wrap">
+  <div id="sphere-3d">
+    <div class="s-mer" style="transform:rotateY(0deg)"></div>
+    <div class="s-mer" style="transform:rotateY(30deg)"></div>
+    <div class="s-mer" style="transform:rotateY(60deg)"></div>
+    <div class="s-mer" style="transform:rotateY(90deg)"></div>
+    <div class="s-mer" style="transform:rotateY(120deg)"></div>
+    <div class="s-mer" style="transform:rotateY(150deg)"></div>
+    <div class="s-par" style="transform:translateY(-44px) rotateX(90deg)"></div>
+    <div class="s-par" style="transform:translateY(-22px) rotateX(90deg)"></div>
+    <div class="s-par" style="transform:translateY(0px) rotateX(90deg)"></div>
+    <div class="s-par" style="transform:translateY(22px) rotateX(90deg)"></div>
+    <div class="s-par" style="transform:translateY(44px) rotateX(90deg)"></div>
+    <div class="s-core"></div>
+  </div>
+</div>
+<div id="visit-counter"></div>
+<div id="site-footer">v3.0 &nbsp;—&nbsp; DERNIÈRE MISE À JOUR : 2026-02-20</div>
+
 <!-- Scanners -->
 <div id="sw"><div id="sb"></div></div>
 <div id="swb"><div id="sbb"></div></div>
 
 <div class="container">
   <header>
-    <div class="hdr-title">KITT FRANCO-BELGE // INTERFACE CENTRALE</div>
+    <div id="hdr-title" class="hdr-title">KITT FRANCO-BELGE // INTERFACE CENTRALE</div>
     <div class="hdr-right">
       <span id="lang-flag" onclick="showLangScreen()" title="Changer de langue">FR</span>
       <span><span class="sdot"></span><span id="status-txt">EN LIGNE</span></span>
@@ -216,11 +314,11 @@ button:active{transform:scale(.95);}
 
   <div class="btn-row">
     <button id="btn-boot" onclick="boot()">[ INITIALISER ]</button>
-    <button onclick="runSelfTest()" class="btn-cyan">[ DIAGNOSTIC ]</button>
-    <button onclick="openFile('Mentions.txt','MENTIONS LÉGALES')" class="btn-red">[ MENTIONS ]</button>
-    <button onclick="openFile('License.txt','LICENCE')" class="btn-red">[ LICENCE ]</button>
-    <button onclick="clearTerm()">[ EFFACER ]</button>
-    <button id="btn-tunnel" class="tunnel-checking" onclick="connectTunnel()" title="Vérification...">[ CONNEXION KITT ]</button>
+    <button id="btn-diag" onclick="runSelfTest()" class="btn-cyan">[ DIAGNOSTIC ]</button>
+    <button id="btn-mentions" onclick="openFile('Mentions.txt',T[LANG].modal_mentions)" class="btn-red">[ MENTIONS ]</button>
+    <button id="btn-licence" onclick="openFile('License.txt',T[LANG].modal_licence)" class="btn-red">[ LICENCE ]</button>
+    <button id="btn-clear" onclick="clearTerm()">[ EFFACER ]</button>
+    <button id="btn-tunnel" class="tunnel-checking" onclick="connectTunnel()" title="Vérification..."><span id="btn-tunnel-txt">[ CONNEXION KITT ]</span></button>
   </div>
 
   <div class="input-row">
@@ -375,6 +473,16 @@ let LANG = 'fr';
 
 const T = {
   fr: {
+    hdr_title:    'KITT FRANCO-BELGE // INTERFACE CENTRALE',
+    placeholder:  'entrez une commande...',
+    btn_boot:     '[ INITIALISER ]',
+    btn_diag:     '[ DIAGNOSTIC ]',
+    btn_mentions: '[ MENTIONS ]',
+    btn_licence:  '[ LICENCE ]',
+    btn_clear:    '[ EFFACER ]',
+    btn_tunnel:   '[ CONNEXION KITT ]',
+    modal_mentions:'MENTIONS LÉGALES',
+    modal_licence: 'LICENCE',
     wait:       'SYSTÈME EN ATTENTE — TAPEZ "boot" OU CLIQUEZ [ INITIALISER ]',
     help_hint:  'TAPEZ "aide" POUR LA LISTE DES COMMANDES.',
     cleared:    'TERMINAL EFFACÉ.',
@@ -434,13 +542,24 @@ const T = {
       ['pascal',     'dossier K Industrie'],
       ['daemon',     'dossier Daemon Paule'],
       ['geoffrey',   'dossier Geoffrey'],
+      ['covid',      'origine du projet — confinement 2020'],
     ],
     hi:  'BONJOUR. JE SUIS KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'SYSTÈME FRANCO-BELGE DÉVELOPPÉ PAR MANIX.',
     hi3: 'À VOTRE SERVICE.',
   },
   en: {
-    wait:       'SYSTEM STANDBY — TYPE "boot" OR CLICK [ INITIALISER ]',
+    hdr_title:    'KITT FRANCO-BELGIAN // CENTRAL INTERFACE',
+    placeholder:  'enter a command...',
+    btn_boot:     '[ INITIALIZE ]',
+    btn_diag:     '[ DIAGNOSTIC ]',
+    btn_mentions: '[ MENTIONS ]',
+    btn_licence:  '[ LICENSE ]',
+    btn_clear:    '[ CLEAR ]',
+    btn_tunnel:   '[ CONNECT KITT ]',
+    modal_mentions:'LEGAL NOTICES',
+    modal_licence: 'LICENSE',
+    wait:       'SYSTEM STANDBY — TYPE "boot" OR CLICK [ INITIALIZE ]',
     help_hint:  'TYPE "help" FOR THE LIST OF COMMANDS.',
     cleared:    'TERMINAL CLEARED.',
     unknown:    (c) => `UNKNOWN COMMAND: "${c}". TYPE "help".`,
@@ -499,13 +618,24 @@ const T = {
       ['pascal',     'K Industrie file'],
       ['daemon',     'Daemon Paule file'],
       ['geoffrey',   'Geoffrey file'],
+      ['covid',      'project origin — lockdown 2020'],
     ],
     hi:  'HELLO. I AM KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'FRANCO-BELGIAN SYSTEM DEVELOPED BY MANIX.',
     hi3: 'AT YOUR SERVICE.',
   },
   nl: {
-    wait:       'SYSTEEM WACHT — TYP "boot" OF KLIK [ INITIALISER ]',
+    hdr_title:    'KITT FRANCO-BELGISCH // CENTRALE INTERFACE',
+    placeholder:  'voer een commando in...',
+    btn_boot:     '[ OPSTARTEN ]',
+    btn_diag:     '[ DIAGNOSE ]',
+    btn_mentions: '[ VERMELDINGEN ]',
+    btn_licence:  '[ LICENTIE ]',
+    btn_clear:    '[ WISSEN ]',
+    btn_tunnel:   '[ VERBIND KITT ]',
+    modal_mentions:'WETTELIJKE VERMELDINGEN',
+    modal_licence: 'LICENTIE',
+    wait:       'SYSTEEM WACHT — TYP "boot" OF KLIK [ OPSTARTEN ]',
     help_hint:  'TYP "hulp" VOOR DE COMMANDOLIJST.',
     cleared:    'TERMINAL GEWIST.',
     unknown:    (c) => `ONBEKEND COMMANDO: "${c}". TYP "hulp".`,
@@ -564,6 +694,7 @@ const T = {
       ['pascal',     'K Industrie dossier'],
       ['daemon',     'Daemon Paule dossier'],
       ['geoffrey',   'Geoffrey dossier'],
+      ['covid',      'projectoorsprong — lockdown 2020'],
     ],
     hi:  'HALLO. IK BEN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'FRANCO-BELGISCH SYSTEEM ONTWIKKELD DOOR MANIX.',
@@ -571,7 +702,17 @@ const T = {
   },
 
   it: {
-    wait:       'SISTEMA IN ATTESA — DIGITA "boot" O CLICCA [ INITIALISER ]',
+    hdr_title:    'KITT FRANCO-BELGA // INTERFACCIA CENTRALE',
+    placeholder:  'inserisci un comando...',
+    btn_boot:     '[ INIZIALIZZA ]',
+    btn_diag:     '[ DIAGNOSI ]',
+    btn_mentions: '[ MENZIONI ]',
+    btn_licence:  '[ LICENZA ]',
+    btn_clear:    '[ CANCELLA ]',
+    btn_tunnel:   '[ CONNETTI KITT ]',
+    modal_mentions:'NOTE LEGALI',
+    modal_licence: 'LICENZA',
+    wait:       'SISTEMA IN ATTESA — DIGITA "boot" O CLICCA [ INIZIALIZZA ]',
     help_hint:  'DIGITA "aiuto" PER LA LISTA DEI COMANDI.',
     cleared:    'TERMINALE CANCELLATO.',
     unknown:    (c) => `COMANDO SCONOSCIUTO: "${c}". DIGITA "aiuto".`,
@@ -630,6 +771,7 @@ const T = {
       ['pascal',     'dossier K Industrie'],
       ['daemon',     'dossier Daemon Paule'],
       ['geoffrey',   'dossier Geoffrey'],
+      ['covid',      'origine del progetto — lockdown 2020'],
     ],
     hi:  'CIAO. SONO KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'SISTEMA FRANCO-BELGA SVILUPPATO DA MANIX.',
@@ -637,7 +779,17 @@ const T = {
   },
 
   de: {
-    wait:       'SYSTEM BEREIT — TIPPE "boot" ODER KLICKE [ INITIALISER ]',
+    hdr_title:    'KITT FRANCO-BELGISCH // ZENTRALE SCHNITTSTELLE',
+    placeholder:  'Befehl eingeben...',
+    btn_boot:     '[ INITIALISIEREN ]',
+    btn_diag:     '[ DIAGNOSE ]',
+    btn_mentions: '[ IMPRESSUM ]',
+    btn_licence:  '[ LIZENZ ]',
+    btn_clear:    '[ LÖSCHEN ]',
+    btn_tunnel:   '[ KITT VERBINDEN ]',
+    modal_mentions:'IMPRESSUM',
+    modal_licence: 'LIZENZ',
+    wait:       'SYSTEM BEREIT — TIPPE "boot" ODER KLICKE [ INITIALISIEREN ]',
     help_hint:  'TIPPE "hilfe" FÜR DIE BEFEHLSLISTE.',
     cleared:    'TERMINAL GELEERT.',
     unknown:    (c) => `UNBEKANNTER BEFEHL: "${c}". TIPPE "hilfe".`,
@@ -696,6 +848,7 @@ const T = {
       ['pascal',     'K Industrie Akte'],
       ['damon',      'Damon Paule Akte'],
       ['geoffrey',   'Geoffrey Akte'],
+      ['covid',      'Projektherkunft — Lockdown 2020'],
     ],
     hi:  'HALLO. ICH BIN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'FRANCO-BELGISCHES SYSTEM ENTWICKELT VON MANIX.',
@@ -703,7 +856,17 @@ const T = {
   },
 
   es: {
-    wait:       'SISTEMA EN ESPERA — ESCRIBE "boot" O HAZ CLIC EN [ INITIALISER ]',
+    hdr_title:    'KITT FRANCO-BELGA // INTERFAZ CENTRAL',
+    placeholder:  'escribe un comando...',
+    btn_boot:     '[ INICIALIZAR ]',
+    btn_diag:     '[ DIAGNÓSTICO ]',
+    btn_mentions: '[ MENCIONES ]',
+    btn_licence:  '[ LICENCIA ]',
+    btn_clear:    '[ BORRAR ]',
+    btn_tunnel:   '[ CONECTAR KITT ]',
+    modal_mentions:'AVISOS LEGALES',
+    modal_licence: 'LICENCIA',
+    wait:       'SISTEMA EN ESPERA — ESCRIBE "boot" O HAZ CLIC EN [ INICIALIZAR ]',
     help_hint:  'ESCRIBE "ayuda" PARA VER LOS COMANDOS.',
     cleared:    'TERMINAL BORRADO.',
     unknown:    (c) => `COMANDO DESCONOCIDO: "${c}". ESCRIBE "ayuda".`,
@@ -762,6 +925,7 @@ const T = {
       ['pascal',     'expediente K Industrie'],
       ['damon',      'expediente Damon Paule'],
       ['geoffrey',   'expediente Geoffrey'],
+      ['covid',      'origen del proyecto — confinamiento 2020'],
     ],
     hi:  'HOLA. SOY KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'SISTEMA FRANCO-BELGA DESARROLLADO POR MANIX.',
@@ -769,7 +933,17 @@ const T = {
   },
 
   pt: {
-    wait:       'SISTEMA EM ESPERA — DIGITE "boot" OU CLIQUE EM [ INITIALISER ]',
+    hdr_title:    'KITT FRANCO-BELGA // INTERFACE CENTRAL',
+    placeholder:  'introduz um comando...',
+    btn_boot:     '[ INICIALIZAR ]',
+    btn_diag:     '[ DIAGNÓSTICO ]',
+    btn_mentions: '[ MENÇÕES ]',
+    btn_licence:  '[ LICENÇA ]',
+    btn_clear:    '[ LIMPAR ]',
+    btn_tunnel:   '[ LIGAR KITT ]',
+    modal_mentions:'AVISOS LEGAIS',
+    modal_licence: 'LICENÇA',
+    wait:       'SISTEMA EM ESPERA — DIGITE "boot" OU CLIQUE EM [ INICIALIZAR ]',
     help_hint:  'DIGITE "ajuda" PARA VER OS COMANDOS.',
     cleared:    'TERMINAL LIMPO.',
     unknown:    (c) => `COMANDO DESCONHECIDO: "${c}". DIGITE "ajuda".`,
@@ -828,6 +1002,7 @@ const T = {
       ['pascal',     'dossier K Industrie'],
       ['damon',      'dossier Damon Paule'],
       ['geoffrey',   'dossier Geoffrey'],
+      ['covid',      'origem do projeto — confinamento 2020'],
     ],
     hi:  'OLÁ. SOU O KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2: 'SISTEMA FRANCO-BELGA DESENVOLVIDO POR MANIX.',
@@ -840,11 +1015,14 @@ const CMD_ALIASES = {
   // EN
   help:'aide', sound:'son', hello:'bonjour', joke:'blague',
   time:'heure', coffee:'cafe', belgium:'belgique', replicas:'repliques',
-  sound:'son', secret:'secret',
+  secret:'secret', version:'version', clear:'clear', status:'status',
+  diagnostic:'diagnostic', boot:'boot', alien:'alien', matrix:'matrix',
+  kitt:'kitt', manix:'manix', cedric:'cedric', kr95:'kr95',
+  jarvis:'jarvis', mario:'mario', za:'za', pascal:'pascal', geoffrey:'geoffrey',
   // NL
   hulp:'aide', geluid:'son', hallo:'bonjour', grap:'blague',
   tijd:'heure', versie:'version', koffie:'cafe', belgie:'belgique',
-  geheim:'secret',
+  geheim:'secret', klik:'boot',
   // IT
   aiuto:'aide', suono:'son', ciao:'bonjour', barzelletta:'blague',
   ora:'heure', caffe:'cafe', belgio:'belgique', segreto:'secret',
@@ -857,10 +1035,10 @@ const CMD_ALIASES = {
   damon:'damon', daemon:'damon',
   // ES
   ayuda:'aide', sonido:'son', hola:'bonjour', chiste:'blague',
-  hora:'heure', cafe:'cafe', belgica:'belgique', secreto:'secret',
+  hora:'heure', belgica:'belgique', secreto:'secret',
   // PT
   ajuda:'aide', som:'son', ola:'bonjour', piada:'blague',
-  hora:'heure', segredo:'secret',
+  segredo:'secret',
 };
 
 // ════════════════════════════════════════════════════════════
@@ -946,8 +1124,17 @@ function _langDelay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function selectLang(lang) {
   LANG = lang;
+  const t = T[lang];
   document.getElementById('lang-flag').textContent = lang.toUpperCase();
-  document.getElementById('status-txt').textContent = T[lang].online;
+  document.getElementById('status-txt').textContent = t.online;
+  document.getElementById('hdr-title').textContent  = t.hdr_title;
+  document.getElementById('cmd-input').placeholder  = t.placeholder;
+  document.getElementById('btn-boot').textContent    = t.btn_boot;
+  document.getElementById('btn-diag').textContent    = t.btn_diag;
+  document.getElementById('btn-mentions').textContent= t.btn_mentions;
+  document.getElementById('btn-licence').textContent = t.btn_licence;
+  document.getElementById('btn-clear').textContent   = t.btn_clear;
+  document.getElementById('btn-tunnel-txt').textContent = t.btn_tunnel;
   sndSelect();
   // Cacher l'overlay avec fondu
   const screen = document.getElementById('lang-screen');
@@ -1112,8 +1299,9 @@ const CMDS = {
   },
 
   version: async () => {
-    await typeText('KITT FRANCO-BELGE — INTERFACE v2.1', 12, 'line-err');
-    await typeText('BUILD 2026 — KYRONEX TECHNOLOGY', 12, 'line-dim');
+    await typeText('KITT FRANCO-BELGE — INTERFACE v3.0', 12, 'line-err');
+    await typeText('BUILD 2026-02-20 — KYRONEX TECHNOLOGY', 12, 'line-dim');
+    await typeText('ORIGINE : PROJET COVID-19 — CONFINEMENT 2020', 12, 'line-warn');
     await typeText('© EMMANUEL GELINNE (MANIX) — TOUS DROITS RÉSERVÉS', 12, 'line-dim');
   },
 
@@ -1232,11 +1420,13 @@ const CMDS = {
     await typeText('║ NATIONALITÉ  : FRANCO-BELGE              ║', 8, 'line-ok');
     await typeText('║ STATUT       : CRÉATEUR KYRONEX          ║', 8, 'line-ok');
     await typeText('║ AWARD        : VAINQUEUR NVIDIA JETSON   ║', 8, 'line-warn');
+    await typeText('║ ORIGINE      : PROJET COVID-19 — 2020    ║', 8, 'line-warn');
+    await typeText('║               "CONFINÉ AVEC DU TEMPS"    ║', 8, 'line-dim');
     await typeText('║ SPÉCIALITÉ   : CODE LA NUIT, DORT PEU    ║', 8, 'line-ok');
     await typeText('║ LANGAGE FAVO : PYTHON + CAFÉ             ║', 8, 'line-ok');
     await typeText('║ RÉPLIQUE     : KYRONEX — JETSON ORIN     ║', 8, 'line-info');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ NOTATION KITT : ★★★★★ EXCEPTIONNEL       ║', 10, 'line-ok');
+    await typeText('║ NOTATION KITT : ***** EXCEPTIONNEL       ║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
     await delay(300);
     await typeText('"Michael... je veux dire Manix... ne touche PAS ce bouton."', 14, 'line-dim');
@@ -1258,7 +1448,7 @@ const CMDS = {
     await typeText('║               AVEC KICK-START MOTO       ║', 8, 'line-err');
     await typeText('║ RÉPLIQUE     : KITT FRANCO-BELGE V.CÉDRIC║', 8, 'line-info');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ NOTATION KITT : ★★★★☆ CONDUCTEUR SPORTIF ║', 10, 'line-ok');
+    await typeText('║ NOTATION KITT : ****o CONDUCTEUR SPORTIF ║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
     await delay(300);
     await typeText('"Michael, votre ami a encore activé le turbo boost en troisième."', 13, 'line-dim');
@@ -1283,7 +1473,7 @@ const CMDS = {
     await typeText('║ PROBLÈME CONNU : PARLE EN QSL CODES      ║', 8, 'line-err');
     await typeText('║               MÊME AVEC SES PASSAGERS    ║', 8, 'line-err');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ NOTATION KITT : ★★★★★ HF GRADE — PARFAIT ║', 10, 'line-ok');
+    await typeText('║ NOTATION KITT : ***** HF GRADE -- PARFAIT ║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
     await delay(300);
     await typeText('"Michael — KR95 dit QRZ ? Il veut savoir qui je suis."', 13, 'line-dim');
@@ -1457,7 +1647,7 @@ const CMDS = {
     await typeText('║ RÉFÉRENCE   : CITÉ PAR MICHAEL SCHEFFE   ║', 8, 'line-warn');
     await typeText('║               (DESIGNER ORIGINAL KITT)   ║', 8, 'line-warn');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ ÉVALUATION KITT : ★★★★★ GÉNIE DISCRET    ║', 10, 'line-ok');
+    await typeText('║ ÉVALUATION KITT : ***** GÉNIE DISCRET    ║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
     await delay(200);
     await typeText('"Il code depuis 2008. Pour la passion. C\'est ça, un vrai pilote."', 12, 'line-dim');
@@ -1484,7 +1674,7 @@ const CMDS = {
     await typeText('║               DIFFERENCE.                ║', 8, 'line-warn');
     await typeText('║ DISTRIB.    : KITTPARTS.COM / EBAY       ║', 8, 'line-ok');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ ÉVALUATION KITT : ★★★★★ MEILLEUR DU MONDE║', 10, 'line-ok');
+    await typeText('║ ÉVALUATION KITT : ***** MEILLEUR DU MONDE║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
     await delay(200);
     await typeText('"La seule électronique où KITT ne demande pas de garantie."', 12, 'line-dim');
@@ -1507,7 +1697,7 @@ const CMDS = {
     await typeText('║ MÉTHODE     : MOULAGE / STRATIFICATION   ║', 8, 'line-ok');
     await typeText('║               RÉSINE + FIBRE ARTISANALE  ║', 8, 'line-ok');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ ÉVALUATION KITT : ★★★★★ INDISPENSABLE    ║', 10, 'line-ok');
+    await typeText('║ ÉVALUATION KITT : ***** INDISPENSABLE    ║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
     await delay(200);
     await typeText('"Sans Pascal, la moitié des répliques franco-belges', 12, 'line-dim');
@@ -1518,7 +1708,7 @@ const CMDS = {
   damon: async () => {
     kittChime();
     await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
-    await typeText('║  DOSSIER CONDUCTEUR — DAMON PAULE       ║', 10, 'line-err');
+    await typeText('║  DOSSIER CONDUCTEUR — DAMON PAULE        ║', 10, 'line-err');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
     await typeText('║ STATUT      : PROPRIÉTAIRE RÉPLIQUE KITT ║', 8, 'line-ok');
     await typeText('║ RÉPLIQUE    : K2000 PONTIAC TRANS AM      ║', 8, 'line-ok');
@@ -1530,7 +1720,7 @@ const CMDS = {
     await typeText('║               KARR SERAIT PLUS ADAPTÉ.   ║', 8, 'line-err');
     await typeText('║ VERDICT KITT: HEUREUSEMENT IL EST GENTIL ║', 8, 'line-ok');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ ÉVALUATION KITT : ★★★★☆ CONDUCTEUR FIABLE║', 10, 'line-ok');
+    await typeText('║ ÉVALUATION KITT : ****o CONDUCTEUR FIABLE║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
     await delay(200);
     await typeText('"Michael, notre nouveau collègue s\'appelle Daemon."', 12, 'line-dim');
@@ -1555,11 +1745,34 @@ const CMDS = {
     await typeText('║ ALERTE      : NE PAS MENTIONNER PORSCHE  ║', 8, 'line-err');
     await typeText('║               DEVANT SON KITT            ║', 8, 'line-err');
     await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ ÉVALUATION KITT : ★★★★☆ GOÛT ÉCLECTIQUE ║', 10, 'line-ok');
+    await typeText('║ ÉVALUATION KITT : ****o GOUT ECLECTIQUE  ║', 10, 'line-ok');
     await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
     await delay(200);
     await typeText('"Michael, votre ami Geoffrey arrive. En BMW."', 12, 'line-dim');
     await typeText('"J\'ai allumé mon scanner pour manifester ma désapprobation."', 12, 'line-dim');
+  },
+
+  // ── Origine du projet ─────────────────────────────────────
+  covid: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  ORIGINE DU PROJET KITT FRANCO-BELGE     ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ PÉRIODE     : CONFINEMENT COVID-19 2020  ║', 8, 'line-warn');
+    await typeText('║ INITIATEUR  : MANIX — ENFERMÉ CHEZ LUI   ║', 8, 'line-ok');
+    await typeText('║ MOTIVATION  : TROP DE TEMPS. TROP DE CAFÉ║', 8, 'line-ok');
+    await typeText('║               UNE PASSION DE VINGT ANS   ║', 8, 'line-ok');
+    await typeText('║ RÉSULTAT    : SYSTÈME KITT FRANCO-BELGE   ║', 8, 'line-info');
+    await typeText('║               KYRONEX — IA EMBARQUÉE      ║', 8, 'line-info');
+    await typeText('║ LEÇON       : LE CONFINEMENT FORCE LE     ║', 8, 'line-dim');
+    await typeText('║               GÉNIE OU LA FOLIE.          ║', 8, 'line-dim');
+    await typeText('║               MANIX A CHOISI LES DEUX.    ║', 8, 'line-dim');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ VERDICT KITT: EXCEPTIONNEL. ÉVIDEMMENT.  ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(300);
+    await typeText('"Michael, vous avez créé quelque chose pendant le confinement."', 12, 'line-dim');
+    await typeText('"Moi aussi j\'étais bloqué. Dans un garage. Depuis 1982."', 12, 'line-dim');
   },
 
   // ── Jarvis ────────────────────────────────────────────────
@@ -1723,6 +1936,21 @@ function startMain() {
     await typeText(T[LANG].help_hint, 12, 'line-dim');
   })();
 }
+
+// ════════════════════════════════════════════════════════════
+// COMPTEUR DE VISITES — localStorage + offset 1000
+// ════════════════════════════════════════════════════════════
+(function() {
+  try {
+    const BASE = 1000;
+    const KEY  = 'kitt_fb_v';
+    let n = parseInt(localStorage.getItem(KEY) || '0');
+    n++;
+    localStorage.setItem(KEY, n);
+    const el = document.getElementById('visit-counter');
+    if (el) el.textContent = 'VISITES : ' + (BASE + n);
+  } catch(e) {}
+})();
 
 // Lancer l'écran de sélection de langue au chargement
 window.addEventListener('load', () => showLangScreen());
