@@ -181,15 +181,15 @@ button:active{transform:scale(.95);}
 #jarvis-svg{
   position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%) translate3d(0,0,0);
-  width:min(80vw,80vh);height:min(80vw,80vh);
-  pointer-events:none;z-index:0;opacity:0.07;
+  width:min(90vw,90vh);height:min(90vw,90vh);
+  pointer-events:none;z-index:0;opacity:0.45;
 }
 #sphere-wrap{
   position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);
-  width:160px;height:160px;
+  width:180px;height:180px;
   perspective:500px;
-  pointer-events:none;z-index:0;opacity:0.06;
+  pointer-events:none;z-index:0;opacity:0.22;
 }
 #sphere-3d{
   width:100%;height:100%;
@@ -200,16 +200,17 @@ button:active{transform:scale(.95);}
 .s-mer,.s-par{
   position:absolute;top:0;left:0;width:100%;height:100%;
   border-radius:50%;border:1px solid var(--green);box-sizing:border-box;
+  opacity:0.7;
 }
 .s-core{
   position:absolute;top:50%;left:50%;
   width:18px;height:18px;margin:-9px 0 0 -9px;
   border-radius:50%;
   background:radial-gradient(circle,var(--green),transparent);
-  box-shadow:0 0 16px var(--green);
+  box-shadow:0 0 20px var(--green),0 0 40px rgba(0,255,102,.4);
   animation:score 3s ease-in-out infinite;
 }
-@keyframes score{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes score{0%,100%{opacity:.6}50%{opacity:1}}
 
 /* ── COMPTEUR VISITES ───────────────────────────────────── */
 #visit-counter{
@@ -245,26 +246,40 @@ button:active{transform:scale(.95);}
 <!-- Fond Jarvis holographique -->
 <svg id="jarvis-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
   <g stroke="#00ff66" fill="none">
-    <circle cx="200" cy="200" r="175" stroke-opacity="0.28" stroke-width="0.7">
+    <!-- Anneau externe -->
+    <circle cx="200" cy="200" r="185" stroke-opacity="0.6" stroke-width="1">
       <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="200" cy="200" r="130" stroke-opacity="0.22" stroke-width="0.5">
+    <!-- Anneau moyen -->
+    <circle cx="200" cy="200" r="135" stroke-opacity="0.5" stroke-width="0.8">
       <animateTransform attributeName="transform" type="rotate" from="360 200 200" to="0 200 200" dur="45s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="200" cy="200" r="85" stroke-opacity="0.18" stroke-width="0.5">
+    <!-- Anneau interne -->
+    <circle cx="200" cy="200" r="85" stroke-opacity="0.45" stroke-width="0.7">
       <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="32s" repeatCount="indefinite"/>
     </circle>
-    <line x1="200" y1="25" x2="200" y2="375" stroke-opacity="0.08" stroke-width="0.4">
+    <!-- Spokes -->
+    <line x1="200" y1="15" x2="200" y2="385" stroke-opacity="0.18" stroke-width="0.5">
       <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
     </line>
-    <line x1="25" y1="200" x2="375" y2="200" stroke-opacity="0.08" stroke-width="0.4">
+    <line x1="15" y1="200" x2="385" y2="200" stroke-opacity="0.18" stroke-width="0.5">
       <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
     </line>
-    <path d="M 200 25 A 175 175 0 0 1 375 200" stroke-opacity="0.55" stroke-width="1.5" stroke="#00ff66">
+    <!-- Arc scanner lumineux -->
+    <path d="M 200 15 A 185 185 0 0 1 385 200" stroke-opacity="0.9" stroke-width="2" stroke="#00ff66">
       <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="8s" repeatCount="indefinite"/>
     </path>
-    <circle cx="200" cy="200" r="4" fill="#00ff66" opacity="0.4">
-      <animate attributeName="opacity" values="0.2;0.8;0.2" dur="3s" repeatCount="indefinite"/>
+    <!-- Marqueurs HUD sur anneau externe -->
+    <line x1="200" y1="15" x2="200" y2="30" stroke-opacity="0.7" stroke-width="1.5">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </line>
+    <line x1="200" y1="15" x2="200" y2="25" stroke-opacity="0.5" stroke-width="1">
+      <animateTransform attributeName="transform" type="rotate" from="45 200 200" to="405 200 200" dur="70s" repeatCount="indefinite"/>
+    </line>
+    <!-- Centre pulsant -->
+    <circle cx="200" cy="200" r="5" fill="#00ff66" opacity="0.7">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="4;7;4" dur="3s" repeatCount="indefinite"/>
     </circle>
   </g>
 </svg>
