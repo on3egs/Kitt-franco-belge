@@ -214,20 +214,23 @@ button:active{transform:scale(.95);}
 
 /* ── COMPTEUR VISITES ───────────────────────────────────── */
 #visit-counter{
-  position:fixed;left:6px;top:50%;transform:translateY(-50%);
+  position:fixed;left:8px;top:50%;transform:translateY(-50%);
   writing-mode:vertical-rl;text-orientation:mixed;
-  font-size:9px;color:var(--green-dim);letter-spacing:2px;
-  opacity:.35;pointer-events:none;z-index:100;
-  text-shadow:0 0 4px var(--green-dim);
+  font-size:11px;color:var(--green);letter-spacing:3px;
+  opacity:.65;pointer-events:none;z-index:100;
+  text-shadow:0 0 8px var(--green),0 0 16px rgba(0,255,102,.4);
   user-select:none;
+  border-left:1px solid rgba(0,255,102,.3);
+  padding-left:4px;
 }
 
 /* ── FOOTER VERSION ─────────────────────────────────────── */
 #site-footer{
   position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
-  font-size:9px;color:var(--green-dim);letter-spacing:2px;
-  opacity:.3;pointer-events:none;z-index:1001;
+  font-size:10px;color:var(--green-dim);letter-spacing:2px;
+  opacity:.55;pointer-events:none;z-index:1001;
   white-space:nowrap;user-select:none;
+  text-shadow:0 0 6px var(--green-dim);
 }
 </style>
 </head>
