@@ -18,12 +18,12 @@
 *{box-sizing:border-box;}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--green);font-family:"Courier New",monospace;overflow:hidden;}
 
-/* CRT scanlines */
+ /* CRT scanlines */
 body::before{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18),rgba(0,0,0,.18) 1px,transparent 1px,transparent 3px);pointer-events:none;z-index:9998;}
 body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,255,80,.015);pointer-events:none;z-index:9999;animation:flicker .12s infinite;}
 @keyframes flicker{0%{opacity:.88}48%{opacity:1}52%{opacity:.92}100%{opacity:.96}}
 
-/* ── LANGUAGE SELECTION OVERLAY ─────────────────────────── */
+ /* ── LANGUAGE SELECTION OVERLAY ─────────────────────────── */
 #lang-screen{
   position:fixed;top:0;left:0;right:0;bottom:0;
   background:#000;z-index:8000;
@@ -95,17 +95,17 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
   gap:6px;
 }
 
-/* ── SCANNER KITT ───────────────────────────────────────── */
+ /* ── SCANNER KITT ───────────────────────────────────────── */
 #sw{position:fixed;top:0;left:0;right:0;height:3px;overflow:hidden;z-index:1000;}
 #sb{position:absolute;top:0;width:200px;height:3px;background:linear-gradient(90deg,transparent,var(--red),var(--red),transparent);box-shadow:0 0 14px 4px var(--red);animation:ks 1.8s ease-in-out infinite alternate;}
 #swb{position:fixed;bottom:0;left:0;right:0;height:3px;overflow:hidden;z-index:1000;}
 #sbb{position:absolute;top:0;width:200px;height:3px;background:linear-gradient(90deg,transparent,var(--red),var(--red),transparent);box-shadow:0 0 14px 4px var(--red);animation:ks 1.8s ease-in-out infinite alternate-reverse;}
 @keyframes ks{0%{left:-200px}100%{left:100%}}
 
-/* ── LAYOUT ─────────────────────────────────────────────── */
+ /* ── LAYOUT ─────────────────────────────────────────────── */
 .container{display:flex;flex-direction:column;height:100%;padding:16px 20px 20px;gap:0;}
 
-/* ── HEADER ─────────────────────────────────────────────── */
+ /* ── HEADER ─────────────────────────────────────────────── */
 header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;border-bottom:1px solid var(--red);}
 .hdr-title{color:var(--red);font-size:18px;letter-spacing:4px;text-shadow:0 0 16px var(--red);animation:pred 3s ease-in-out infinite;}
 @keyframes pred{0%,100%{text-shadow:0 0 12px var(--red)}50%{text-shadow:0 0 28px var(--red),0 0 50px rgba(255,26,26,.5)}}
@@ -115,10 +115,10 @@ header{flex-shrink:0;display:flex;align-items:center;justify-content:space-betwe
 #lang-flag{font-size:10px;border:1px solid var(--green-dim);padding:1px 5px;letter-spacing:1px;cursor:pointer;color:var(--green-dim);}
 #lang-flag:hover{color:var(--green);border-color:var(--green);}
 
-/* ── ASCII ──────────────────────────────────────────────── */
+ /* ── ASCII ──────────────────────────────────────────────── */
 #kitt-ascii{flex-shrink:0;text-align:center;color:var(--red);font-size:10px;line-height:1.2;text-shadow:0 0 8px var(--red);padding:6px 0 4px;opacity:.85;user-select:none;}
 
-/* ── TERMINAL ───────────────────────────────────────────── */
+ /* ── TERMINAL ───────────────────────────────────────────── */
 #terminal{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 4px;font-size:13px;line-height:1.65;scrollbar-width:thin;scrollbar-color:var(--red) #111;}
 #terminal::-webkit-scrollbar{width:4px}
 #terminal::-webkit-scrollbar-track{background:#111}
@@ -131,20 +131,20 @@ header{flex-shrink:0;display:flex;align-items:center;justify-content:space-betwe
 .cursor{display:inline-block;width:8px;height:13px;background:var(--green);vertical-align:text-bottom;animation:bc .7s step-end infinite;}
 @keyframes bc{0%,100%{opacity:1}50%{opacity:0}}
 
-/* ── BUTTONS ────────────────────────────────────────────── */
+ /* ── BUTTONS ────────────────────────────────────────────── */
 .btn-row{flex-shrink:0;display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 6px;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;}
 button{background:#000;border:1px solid var(--green);color:var(--green);padding:7px 14px;cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:1px;transition:all .15s;position:relative;overflow:hidden;}
 button::before{content:"";position:absolute;inset:0;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .15s;z-index:-1;}
-button:hover{color:#000;}button:hover::before{transform:scaleX(1);}button:active{transform:scale(.95);}
-.btn-red{border-color:var(--red);color:var(--red);}btn-red::before{background:var(--red);}btn-cyan{border-color:var(--cyan);color:var(--cyan);}btn-cyan::before{background:var(--cyan);}
+button:hover{color:#000;}button:hover::before{transform:scaleX(1);}button:active{transform:scale(.95;)}
+.btn-red{border-color:var(--red);color:var(--red);}.btn-red::before{background:var(--red);}.btn-cyan{border-color:var(--cyan);color:var(--cyan);}.btn-cyan::before{background:var(--cyan);}
 
-/* ── INPUT ──────────────────────────────────────────────── */
+ /* ── INPUT ──────────────────────────────────────────────── */
 .input-row{flex-shrink:0;display:flex;gap:8px;padding-top:8px;align-items:center;}
 .prompt-lbl{color:var(--red);font-size:13px;white-space:nowrap;text-shadow:0 0 8px var(--red);}
 #cmd-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--green);color:var(--green);font-family:inherit;font-size:13px;outline:none;padding:4px 0;caret-color:var(--green);}
 #cmd-input::placeholder{color:var(--green-dim);opacity:.55;}
 
-/* ── MODAL ──────────────────────────────────────────────── */
+ /* ── MODAL ──────────────────────────────────────────────── */
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.95);display:none;flex-direction:column;padding:30px;overflow:auto;z-index:5000;border:1px solid var(--red);}
 .modal.open{display:flex;}
 .modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--red);padding-bottom:8px;}
@@ -153,7 +153,7 @@ button:hover{color:#000;}button:hover::before{transform:scaleX(1);}button:active
 .close-btn:hover{background:var(--red);color:#000;}
 .modal pre{white-space:pre-wrap;color:var(--green);font-family:monospace;font-size:13px;line-height:1.7;}
 
-/* ── MOBILE ─────────────────────────────────────────────── */
+ /* ── MOBILE ─────────────────────────────────────────────── */
 @media(max-width:600px){
   .hdr-title{font-size:13px;letter-spacing:2px;}
   #kitt-ascii{font-size:8px;}
@@ -163,16 +163,16 @@ button:hover{color:#000;}button:hover::before{transform:scaleX(1);}button:active
 }
 @media(max-width:380px){#kitt-ascii{display:none;}}
 
-/* ── BOUTON TUNNEL CLOUDFLARE ───────────────────────────────── */
+ /* ── BOUTON TUNNEL CLOUDFLARE ───────────────────────────────── */
 #btn-tunnel{border-color:#333;color:#333;transition:all .2s;}
 #btn-tunnel.tunnel-online{
   border-color:var(--green);color:var(--green);
   animation:tpulse 2.4s ease-in-out infinite;}
 #btn-tunnel.tunnel-offline{border-color:var(--red);color:var(--red);}
 #btn-tunnel.tunnel-checking{border-color:var(--amber);color:var(--amber);}
-@keyframes tpulse{0%,100%{box-shadow:0 0 5px rgba(0,255,102,.25)}50%{box-shadow:0 0 18px rgba(0,255,102,.65),0 0 8px rgba(0,255,102,.08)}}
+@keyframes tpulse{0%,100%{box-shadow:0 0 5px rgba(0,255,102,.25)}50%{box-shadow:0 0 18px rgba(0,255,102,.65),0 0 8px rgba(0,255,102,.08);}}
 
-/* ── FOND JARVIS HOLOGRAPHIQUE ──────────────────────────── */
+ /* ── FOND JARVIS HOLOGRAPHIQUE ──────────────────────────── */
 .container{position:relative;z-index:1;}
 #jarvis-svg{
   position:fixed;top:50%;left:50%;
@@ -208,7 +208,7 @@ button:hover{color:#000;}button:hover::before{transform:scaleX(1);}button:active
 }
 @keyframes score{0%,100%{opacity:.6}50%{opacity:1}}
 
-/* ── COMPTEUR VISITES ───────────────────────────────────── */
+ /* ── COMPTEUR VISITES ───────────────────────────────────── */
 #visit-counter{
   position:fixed;left:8px;top:50%;transform:translateY(-50%);
   writing-mode:vertical-rl;text-orientation:mixed;
@@ -220,7 +220,7 @@ button:hover{color:#000;}button:hover::before{transform:scaleX(1);}button:active
   padding-left:4px;
 }
 
-/* ── FOOTER VERSION ─────────────────────────────────────── */
+ /* ── FOOTER VERSION ─────────────────────────────────────── */
 #site-footer{
   position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
   font-size:10px;color:var(--green-dim);letter-spacing:2px;
@@ -451,7 +451,8 @@ function sndSelect() {
 function sndError() {
   try {
     _resume(); const t = _ac.currentTime;
-    const o = _ac.createOscillator(); o.type='square'; o.frequency.value=180;
+    const o = _ac.createOscillator(); o.type='square';
+    o.frequency.value=180;
     const g = _ac.createGain(); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.08);
     o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.09);
   } catch(e){}
@@ -654,7 +655,7 @@ const T = {
     btn_licence:  '[ LICENTIE ]',
     btn_clear:    '[ WISSEN ]',
     btn_tunnel:   '[ VERBIND KITT ]',
-    modal_mentions:'WETTELIJKE VERMELDINGEN',
+    modal_mentions:'WETTELIJKE VERMLDINGEN',
     modal_licence: 'LICENTIE',
     wait:       'SYSTEEM WACHT — TYP "boot" OF KLIK [ OPSTARTEN ]',
     help_hint:  'TYP "hulp" VOOR DE COMMANDOLIJST.',
@@ -683,7 +684,7 @@ const T = {
     ],
     boot_end:   '  VERBINDING MET KITT-KERN TOT STAND GEBRACHT.',
     boot_hint:  '  TYP "hulp" VOOR DE COMMANDOLIJST',
-    aide_title: 'BESCHIKBARE COMMANDO\'S:',
+    aide_title: 'BESCHIKBARE COMMANDO'S:',
     aide_sys:   '── SYSTEEM ──',
     aide_fun:   '── PLEZIER ──',
     cmds_sys: [
@@ -705,7 +706,7 @@ const T = {
       ['manix',      'bestuurdersdossier'],
       ['cedric',     'Cedric Momo Rider dossier'],
       ['kr95',       'KR95 dossier'],
-      ['replicas',   'de franco-belgische replica\'s'],
+      ['replicas',   'de franco-belgische replica's'],
       ['geheim',     'geheim bestand...'],
       ['koffie',     'KITT om koffie vragen'],
       ['belgie',     'geopolitieke analyse'],
@@ -739,7 +740,7 @@ document.getElementById('cmd-input').addEventListener('keydown', async function(
   this.value = '';
   if (!raw || typing) return;
 
-  addLine(`KITT ${raw}`, 'line-warn');
+  addLine(`KITT> ${raw}`, 'line-warn');
   const cmd = CMD_ALIASES[raw] || raw;
 
   if (CMDS[cmd]) {
