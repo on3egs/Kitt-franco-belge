@@ -1132,7 +1132,10 @@ async function showLangScreen() {
     row.dataset.code = code;
     row.innerHTML = `<span class="lo-n">${num}</span><span class="lo-l">${label}</span>`;
     row.addEventListener('click', () => selectLang(code));
-    row.addEventListener('mouseenter', () => sndTick());
+       row.addEventListener('mouseenter', () => {
+      sndTick();
+      speakText(`${num} ${label}`, code);
+    });
     out.appendChild(row);
     sndClick();
     await _langDelay(55);
