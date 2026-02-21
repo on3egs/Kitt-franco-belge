@@ -384,7 +384,34 @@ function sndClick() {
     o.connect(og); og.connect(_ac.destination); o.start(t); o.stop(t+0.022);
   } catch(e){}
 }
+// ════════════════════════════════════════════════════════════
+// SYNTHÈSE VOCALE — Text-to-Speech multilingue
+// ════════════════════════════════════════════════════════════
+function stopSpeech() {
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+}
 
+function speakText(text, langCode) {
+  if (!window.speechSynthesis) return;
+  stopSpeech();
+  const utterance = new SpeechSynthesisUtterance(text);
+  const langMap = {
+    'fr': 'fr-FR',
+    'en': 'en-US',
+    'nl': 'nl-NL',
+    'it': 'it-IT',
+    'de': 'de-DE',
+    'es': 'es-ES',
+    'pt': 'pt-PT'
+  };
+  utterance.lang = langMap[langCode] || 'en-US';
+  utterance.rate = 0.9;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+  window.speechSynthesis.speak(utterance);
+}
 // ── Son 2 : tick léger (haute fréquence, sous-entendu) ──────
 function sndTick() {
   try {
