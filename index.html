@@ -1,165 +1,84 @@
-<!-- REMPLACEZ LA SECTION DU MENU DE LANGUES DANS VOTRE index.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KITT FRANCO-BELGE // INTERFACE CENTRALE</title>
+  <style>
+:root{
+  --green:#00ff66;
+  --green-dim:#00aa44;
+  --red:#ff3333;
+  --amber:#ffaa00;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;font-family:'Courier New',monospace;background:#000;color:var(--green);overflow:hidden;}
+body::before{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18),rgba(0,0,0,.18) 1px,transparent 1px,transparent 3px);pointer-events:none;z-index:9998;}
+body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,255,80,.015);pointer-events:none;z-index:9999;animation:flicker .12s infinite;}
+@keyframes flicker{0%{opacity:.88}48%{opacity:1}52%{opacity:.92}100%{opacity:.96}}
 
-<!-- ══════════════════════════════════════════════════════════════ -->
-<!-- LANGUAGE SELECTION OVERLAY — IMPROVED VERSION -->
-<!-- ══════════════════════════════════════════════════════════════ -->
-
-<style>
-/* ── LANGUAGE SELECTION OVERLAY — AMÉLIÉÉ ─────────────────────── */
+/* ── LANGUAGE SELECTION OVERLAY ─────────────────────────── */
 #lang-screen{
   position:fixed;top:0;left:0;right:0;bottom:0;
   background:#000;z-index:8000;
   display:flex;align-items:center;justify-content:center;
   padding:16px;
-  animation: fadeIn 0.3s ease-in;
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 #lang-box{
-  width:100%;max-width:500px;
-  border:2px solid var(--green);
+  width:100%;max-width:440px;
+  border:1px solid var(--green);
   box-shadow:0 0 40px rgba(0,255,100,.12),inset 0 0 30px rgba(0,255,100,.02);
   font-size:13px;
-  border-radius:2px;
 }
-
 #lang-hdr{
-  border-bottom:2px solid var(--green-dim);
-  padding:14px 20px;
+  border-bottom:1px solid var(--green-dim);
+  padding:10px 18px;
   color:var(--green);
   letter-spacing:3px;
   font-size:12px;
   text-align:center;
   text-shadow:0 0 10px var(--green);
-  font-weight:bold;
 }
-
 #lang-sub{
-  padding:10px 20px 8px;
+  padding:10px 18px 4px;
   color:var(--amber);
   letter-spacing:2px;
   font-size:11px;
-  border-bottom:1px solid #222;
-  background:rgba(0,0,0,.3);
+  border-bottom:1px solid #111;
 }
-
-#lang-output{
-  padding:12px 0;
-  max-height:280px;
-  overflow-y:auto;
-}
-
-/* Scrollbar styling */
-#lang-output::-webkit-scrollbar {
-  width:6px;
-}
-
-#lang-output::-webkit-scrollbar-track {
-  background:rgba(0,255,102,.05);
-}
-
-#lang-output::-webkit-scrollbar-thumb {
-  background:rgba(0,255,102,.2);
-  border-radius:3px;
-}
-
+#lang-output{padding:4px 0;}
 .lang-opt{
   display:flex;
   align-items:center;
-  gap:12px;
-  padding:10px 18px;
+  gap:14px;
+  padding:7px 22px;
   cursor:pointer;
-  transition:all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  border-left:3px solid transparent;
-  border-right:3px solid transparent;
-  position:relative;
-  outline:none;
+  transition:background .12s;
+  border-left:2px solid transparent;
 }
-
-.lang-opt:hover {
-  background:rgba(0,255,100,.08);
+.lang-opt:hover{
+  background:rgba(0,255,100,.07);
   border-left-color:var(--green);
-  transform:translateX(4px);
-  box-shadow:inset 0 0 15px rgba(0,255,100,.05);
 }
-
-.lang-opt:focus-visible {
-  background:rgba(0,255,100,.12);
-  border-left-color:var(--cyan);
-  outline:1px solid var(--cyan);
-  outline-offset:-2px;
-}
-
-.lang-opt.active {
-  background:rgba(0,255,100,.18);
-  border-left-color:var(--green);
-  border-right-color:var(--green);
-  color:var(--green);
-  font-weight:bold;
-  box-shadow:
-    inset 0 0 20px rgba(0,255,100,.08),
-    0 0 20px rgba(0,255,100,.1);
-}
-
-.lang-opt.keyboard-selected {
+.lang-opt.active{
   background:rgba(0,255,100,.15);
-  border-left-color:var(--cyan);
+  border-left-color:var(--green);
+  color:#000;
 }
-
-/* Flag emoji */
-.lo-f {
-  font-size:24px;
-  min-width:30px;
-  text-align:center;
-  filter:drop-shadow(0 0 4px rgba(0,255,102,.3));
-}
-
-/* Language number */
 .lo-n{
   color:var(--red);
   font-size:11px;
-  min-width:24px;
+  min-width:28px;
   text-align:center;
   border:1px solid var(--red);
-  padding:2px 5px;
+  padding:1px 4px;
   letter-spacing:1px;
   flex-shrink:0;
-  font-weight:bold;
-  border-radius:1px;
-  background:rgba(255,26,26,.05);
 }
-
-/* Language label container */
-.lo-info {
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-  flex:1;
-}
-
-/* Language full name */
-.lo-l {
-  color:var(--green);
-  letter-spacing:2px;
-  font-size:13px;
-  font-weight:500;
-}
-
-/* Language ISO code */
-.lo-iso {
-  color:var(--amber);
-  font-size:10px;
-  letter-spacing:1px;
-  opacity:0.7;
-}
-
+.lo-l{color:var(--green);letter-spacing:2px;font-size:13px;}
 #lang-ftr{
-  border-top:2px solid var(--green-dim);
-  padding:10px 20px;
+  border-top:1px solid var(--green-dim);
+  padding:8px 18px;
   color:var(--green-dim);
   font-size:10px;
   letter-spacing:2px;
@@ -168,263 +87,326 @@
   align-items:center;
   justify-content:center;
   gap:6px;
-  background:rgba(0,0,0,.2);
 }
 
-/* Curseur clignotant */
-.cursor {
+/* ── CURSEUR CLIGNOTANT ─────────────────────────────────── */
+.cursor{
   display:inline-block;
   width:8px;
-  height:10px;
+  height:14px;
   background:var(--green);
-  margin-left:3px;
-  animation:blink 0.8s infinite;
+  animation:blink .6s infinite;
+  margin-left:2px;
+}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.1}}
+
+/* ── MAIN LAYOUT ────────────────────────────────────────── */
+.container{
+  position:relative;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  border-bottom:1px solid var(--green-dim);
+  background:rgba(0,20,0,.3);
+}
+.hdr-title{
+  font-size:14px;
+  letter-spacing:2px;
+  text-shadow:0 0 10px var(--green);
+}
+.hdr-right{
+  display:flex;
+  gap:20px;
+  font-size:11px;
+  letter-spacing:1px;
+}
+.hdr-right span{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+#lang-flag{
+  cursor:pointer;
+  padding:4px 8px;
+  border:1px solid var(--red);
+  color:var(--red);
+  transition:.2s;
+}
+#lang-flag:hover{
+  background:rgba(255,51,51,.2);
+}
+.sdot{
+  display:inline-block;
+  width:6px;
+  height:6px;
+  background:var(--green);
+  border-radius:50%;
+  animation:pulse 1s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── MAIN CONTENT ──────────────────────────────────────── */
+#kitt-ascii{
+  flex:0 0 auto;
+  padding:16px 20px 12px;
+  font-size:10px;
+  line-height:1;
+  color:var(--green);
+  text-shadow:0 0 8px var(--green);
+  white-space:pre;
+  overflow:hidden;
+}
+#cmd-output{
+  flex:1;
+  overflow-y:auto;
+  padding:16px 20px;
+  font-size:12px;
+  line-height:1.6;
+  color:var(--green);
+}
+#cmd-output::-webkit-scrollbar{width:6px;}
+#cmd-output::-webkit-scrollbar-track{background:rgba(0,255,100,.05);}
+#cmd-output::-webkit-scrollbar-thumb{background:var(--green-dim);border-radius:3px;}
+#cmd-output::-webkit-scrollbar-thumb:hover{background:var(--green);}
+
+/* ── LINES STYLING ─────────────────────────────────────── */
+.line{
+  margin:4px 0;
+  word-wrap:break-word;
+  word-break:break-all;
+}
+.line-info{color:var(--green);}
+.line-err{color:var(--red);}
+.line-ok{color:#00ff00;}
+.line-dim{color:var(--green-dim);}
+.line-amber{color:var(--amber);}
+
+/* ── INPUT AREA ────────────────────────────────────────── */
+#cmd-input-area{
+  display:flex;
+  align-items:center;
+  padding:12px 20px;
+  border-top:1px solid var(--green-dim);
+  background:rgba(0,20,0,.2);
+  gap:8px;
+}
+#cmd-prompt{
+  flex-shrink:0;
+  color:var(--green);
+  letter-spacing:1px;
+  font-size:12px;
+}
+#cmd-input{
+  flex:1;
+  background:transparent;
+  border:none;
+  color:var(--green);
+  font-family:inherit;
+  font-size:12px;
+  outline:none;
+  padding:4px 0;
+}
+#cmd-input::placeholder{color:var(--green-dim);opacity:.5;}
+#cmd-input::selection{background:rgba(0,255,100,.3);}
+
+/* ── BUTTONS AREA ──────────────────────────────────────── */
+#buttons-area{
+  display:flex;
+  gap:8px;
+  padding:12px 20px;
+  flex-wrap:wrap;
+  border-top:1px solid var(--green-dim);
+}
+button{
+  padding:6px 12px;
+  background:transparent;
+  border:1px solid var(--green);
+  color:var(--green);
+  font-family:inherit;
+  font-size:10px;
+  letter-spacing:1px;
+  cursor:pointer;
+  transition:.2s;
+  text-shadow:0 0 4px var(--green);
+}
+button:hover{
+  background:rgba(0,255,100,.1);
+  box-shadow:0 0 10px var(--green);
+}
+button:active{
+  background:rgba(0,255,100,.2);
 }
 
-@keyframes blink {
-  0%, 49% { opacity:1; }
-  50%, 100% { opacity:0; }
+/* ── JARVIS SVG BACKGROUND ─────────────────────────────── */
+#jarvis-svg{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:120px;
+  height:120px;
+  opacity:.15;
+  z-index:1;
+  pointer-events:none;
 }
-</style>
 
+/* ── SCANNERS ──────────────────────────────────────────── */
+#sw,#swb{position:fixed;top:0;left:0;width:100%;height:8px;background:repeating-linear-gradient(90deg,transparent,transparent 2px,var(--green) 2px,var(--green) 4px);z-index:9997;pointer-events:none;animation:scan-h 8s linear infinite;}
+#sb,#sbb{position:absolute;left:0;top:0;width:8px;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--green) 2px,var(--green) 4px);animation:scan-v 6s linear infinite;}
+#swb{top:auto;bottom:0;animation:scan-h-rev 8s linear infinite;}
+#sbb{animation:scan-v-rev 6s linear infinite;}
+@keyframes scan-h{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes scan-h-rev{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@keyframes scan-v{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@keyframes scan-v-rev{0%{transform:translateY(100%)}100%{transform:translateY(-100%)}}
+
+/* ── MODAL ─────────────────────────────────────────────── */
+#modal{
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.95);
+  z-index:9000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+#modal.open{display:flex;}
+#modal-box{
+  width:100%;
+  max-width:700px;
+  border:1px solid var(--green);
+  box-shadow:0 0 30px rgba(0,255,100,.2);
+  display:flex;
+  flex-direction:column;
+  max-height:80vh;
+}
+#modal-title{
+  padding:12px 16px;
+  border-bottom:1px solid var(--green-dim);
+  color:var(--green);
+  font-size:13px;
+  letter-spacing:2px;
+  text-shadow:0 0 8px var(--green);
+}
+#modal-content{
+  flex:1;
+  overflow-y:auto;
+  padding:16px;
+  font-size:11px;
+  line-height:1.5;
+  color:var(--green-dim);
+  white-space:pre-wrap;
+  word-wrap:break-word;
+}
+#modal-content::-webkit-scrollbar{width:6px;}
+#modal-content::-webkit-scrollbar-track{background:rgba(0,255,100,.05);}
+#modal-content::-webkit-scrollbar-thumb{background:var(--green-dim);}
+
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media(max-width:768px){
+  .hdr-title{font-size:12px;}
+  #kitt-ascii{font-size:8px;}
+  button{font-size:9px;padding:5px 10px;}
+}
+  </style>
+</head>
+<body>
+
+<!-- Language selection overlay -->
 <div id="lang-screen">
   <div id="lang-box">
     <div id="lang-hdr"></div>
     <div id="lang-sub"></div>
-    <div id="lang-output" role="listbox" aria-label="Sélectionner une langue"></div>
+    <div id="lang-output"></div>
     <div id="lang-ftr"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════════ -->
-<!-- JAVASCRIPT — Language Selection IMPROVED -->
-<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- Fond Jarvis holographique -->
+<svg id="jarvis-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+  <g stroke="#00ff66" fill="none">
+    <!-- Anneau externe -->
+    <circle cx="200" cy="200" r="185" stroke-opacity="0.6" stroke-width="1">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Anneau moyen -->
+    <circle cx="200" cy="200" r="135" stroke-opacity="0.5" stroke-width="0.8">
+      <animateTransform attributeName="transform" type="rotate" from="360 200 200" to="0 200 200" dur="45s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Anneau interne -->
+    <circle cx="200" cy="200" r="85" stroke-opacity="0.4" stroke-width="0.6">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="25s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Croix centrale -->
+    <line x1="200" y1="50" x2="200" y2="350" stroke-opacity="0.3" stroke-width="0.5">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="60s" repeatCount="indefinite"/>
+    </line>
+    <line x1="50" y1="200" x2="350" y2="200" stroke-opacity="0.3" stroke-width="0.5">
+      <animateTransform attributeName="transform" type="rotate" from="360 200 200" to="0 200 200" dur="60s" repeatCount="indefinite"/>
+    </line>
+  </g>
+</svg>
+
+<div id="site-footer">v3.0 &nbsp;—&nbsp; DERNIÈRE MISE À JOUR : 2026-02-20</div>
+
+<!-- Scanners -->
+<div id="sw"><div id="sb"></div></div>
+<div id="swb"><div id="sbb"></div></div>
+
+<div class="container">
+  <header>
+    <div id="hdr-title" class="hdr-title">KITT FRANCO-BELGE // INTERFACE CENTRALE</div>
+    <div class="hdr-right">
+      <span id="lang-flag" onclick="showLangScreen()" title="Changer de langue">FR</span>
+      <span><span class="sdot"></span><span id="status-txt">EN LIGNE</span></span>
+      <span id="clock">00:00:00</span>
+    </div>
+  </header>
+
+  <div id="kitt-ascii"><pre>
+  ██╗  ██╗██╗████████╗████████╗
+  ██║ ██╔╝██║╚══██╔══╝╚══██╔══╝
+  █████╔╝ ██║   ██║      ██║
+  ██╔═██╗ ██║   ██║      ██║
+  ██║  ██╗██║   ██║      ██║
+  ╚═╝  ╚═╝╚═╝   ╚═╝      ╚═╝
+
+  FRANCO-BELGE // v3.0
+  </pre></div>
+
+  <div id="cmd-output"></div>
+
+  <div id="cmd-input-area">
+    <span id="cmd-prompt">>> </span>
+    <input type="text" id="cmd-input" placeholder="">
+  </div>
+
+  <div id="buttons-area">
+    <button id="btn-boot">[ INITIALISER ]</button>
+    <button id="btn-diag">[ DIAGNOSTIC ]</button>
+    <button id="btn-mentions">[ MENTIONS ]</button>
+    <button id="btn-licence">[ LICENCE ]</button>
+    <button id="btn-clear">[ EFFACER ]</button>
+    <button id="btn-tunnel-txt">[ CONNEXION KITT ]</button>
+  </div>
+</div>
+
+<!-- Modal for documents -->
+<div id="modal">
+  <div id="modal-box">
+    <div id="modal-title">DOCUMENT</div>
+    <div id="modal-content">Chargement...</div>
+  </div>
+</div>
 
 <script>
-// ════════════════════════════════════════════════════════════════
-// SÉLECTION DE LANGUE — Avec drapeaux, keyboard nav, persistence
-// ════════════════════════════════════════════════════════════════
-
-const LANG_LIST_IMPROVED = [
-  ['1', 'fr', 'FRANÇAIS',    '🇫🇷', 'fr-FR'],
-  ['2', 'en', 'ENGLISH',     '🇬🇧', 'en-US'],
-  ['3', 'nl', 'NEDERLANDS',  '🇳🇱', 'nl-NL'],
-  ['4', 'it', 'ITALIANO',    '🇮🇹', 'it-IT'],
-  ['5', 'de', 'DEUTSCH',     '🇩🇪', 'de-DE'],
-  ['6', 'es', 'ESPAÑOL',     '🇪🇸', 'es-ES'],
-  ['7', 'pt', 'PORTUGUÊS',   '🇵🇹', 'pt-PT'],
-];
-
-let _currentLangIndex = 0; // Pour la navigation au clavier
-
-async function showLangScreen() {
-  const screen = document.getElementById('lang-screen');
-  screen.style.display = 'flex';
-  screen.style.opacity = '1';
-
-  // Vider les zones
-  ['lang-hdr','lang-sub','lang-output','lang-ftr'].forEach(id => {
-    document.getElementById(id).innerHTML = '';
-  });
-
-  const hdr = document.getElementById('lang-hdr');
-  const sub = document.getElementById('lang-sub');
-  const out = document.getElementById('lang-output');
-  const ftr = document.getElementById('lang-ftr');
-
-  // ── Header tapé caractère par caractère
-  await _langType(hdr, 'MU-TH-UR 6000  //  INTERFACE PROTOCOL v2.1');
-  await _langDelay(80);
-
-  // ── Sous-titre
-  await _langType(sub, 'SELECT INTERFACE LANGUAGE  —  CHOISIR UNE LANGUE');
-  await _langDelay(60);
-
-  // ── Options avec drapeaux et codes
-  for (let idx = 0; idx < LANG_LIST_IMPROVED.length; idx++) {
-    const [num, code, label, flag, locale] = LANG_LIST_IMPROVED[idx];
-    
-    const row = document.createElement('div');
-    row.className = 'lang-opt';
-    row.dataset.code = code;
-    row.dataset.index = idx;
-    row.role = 'option';
-    row.tabIndex = 0;
-    row.setAttribute('aria-label', `${label} (${num})`);
-    
-    row.innerHTML = `
-      <span class="lo-n">${num}</span>
-      <span class="lo-f">${flag}</span>
-      <div class="lo-info">
-        <span class="lo-l">${label}</span>
-        <span class="lo-iso">${code.toUpperCase()}</span>
-      </div>
-    `;
-    
-    row.addEventListener('click', () => selectLang(code));
-    row.addEventListener('mouseenter', () => {
-      sndTick();
-      speakText(`${num} ${label}`, code);
-      _currentLangIndex = idx;
-      updateKeyboardSelection();
-    });
-    row.addEventListener('focus', () => {
-      _currentLangIndex = idx;
-      updateKeyboardSelection();
-    });
-    row.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        selectLang(code);
-      }
-    });
-    
-    out.appendChild(row);
-    sndClick();
-    await _langDelay(50);
-  }
-
-  await _langDelay(80);
-
-  // ── Footer avec instructions
-  const ftrTxt = document.createElement('span');
-  ftr.appendChild(ftrTxt);
-  await _langType(ftrTxt, 'PRESS [ 1–7 ] • ↑↓ ARROW • ENTER OR CLICK');
-
-  // ── Ajouter le curseur
-  const cur = document.createElement('span');
-  cur.className = 'cursor';
-  ftr.appendChild(cur);
-
-  // ── Charger la dernière langue utilisée (optionnel)
-  const savedLang = localStorage.getItem('kitt_lang');
-  if (savedLang) {
-    const row = out.querySelector(`[data-code="${savedLang}"]`);
-    if (row) {
-      row.classList.add('active');
-      _currentLangIndex = parseInt(row.dataset.index);
-    }
-  }
-
-  // ── Keyboard navigation
-  document.addEventListener('keydown', handleLangKeydown);
-}
-
-function updateKeyboardSelection() {
-  const rows = document.querySelectorAll('.lang-opt');
-  rows.forEach((r, i) => {
-    if (i === _currentLangIndex) {
-      r.classList.add('keyboard-selected');
-      r.focus();
-    } else {
-      r.classList.remove('keyboard-selected');
-    }
-  });
-}
-
-function handleLangKeydown(e) {
-  if (document.getElementById('lang-screen').style.display === 'none') {
-    document.removeEventListener('keydown', handleLangKeydown);
-    return;
-  }
-
-  const rows = document.querySelectorAll('.lang-opt');
-  const langMap = {'1':'fr','2':'en','3':'nl','4':'it','5':'de','6':'es','7':'pt'};
-
-  // Sélection par numéro
-  if (langMap[e.key]) {
-    e.preventDefault();
-    selectLang(langMap[e.key]);
-    return;
-  }
-
-  // Navigation avec flèches
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    _currentLangIndex = (_currentLangIndex + 1) % rows.length;
-    updateKeyboardSelection();
-    sndTick();
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    _currentLangIndex = (_currentLangIndex - 1 + rows.length) % rows.length;
-    updateKeyboardSelection();
-    sndTick();
-  } else if (e.key === 'Enter') {
-    e.preventDefault();
-    const selectedCode = rows[_currentLangIndex].dataset.code;
-    selectLang(selectedCode);
-  }
-}
-
-function _langType(el, txt) {
-  return new Promise(resolve => {
-    let i = 0;
-    function t() {
-      if (i < txt.length) {
-        el.textContent += txt[i++];
-        if (Math.random() > 0.35) sndClick();
-        setTimeout(t, 8 + Math.random() * 5);
-      } else {
-        sndLineEnd();
-        resolve();
-      }
-    }
-    t();
-  });
-}
-
-function _langDelay(ms) { 
-  return new Promise(r => setTimeout(r, ms)); 
-}
-
-function selectLang(lang) {
-  // Sauvegarder la langue
-  localStorage.setItem('kitt_lang', lang);
-  
-  LANG = lang;
-  const t = T[lang];
-  
-  document.getElementById('lang-flag').textContent = lang.toUpperCase();
-  document.getElementById('status-txt').textContent = t.online;
-  document.getElementById('hdr-title').textContent  = t.hdr_title;
-  document.getElementById('cmd-input').placeholder  = t.placeholder;
-  document.getElementById('btn-boot').textContent    = t.btn_boot;
-  document.getElementById('btn-diag').textContent    = t.btn_diag;
-  document.getElementById('btn-mentions').textContent= t.btn_mentions;
-  document.getElementById('btn-licence').textContent = t.btn_licence;
-  document.getElementById('btn-clear').textContent   = t.btn_clear;
-  document.getElementById('btn-tunnel-txt').textContent = t.btn_tunnel;
-  
-  sndSelect();
-  
-  // Cacher l'overlay avec fondu
-  const screen = document.getElementById('lang-screen');
-  screen.style.transition = 'opacity .4s ease-out';
-  screen.style.opacity = '0';
-  
-  setTimeout(() => { 
-    screen.style.display = 'none'; 
-    screen.style.opacity = '1'; 
-    screen.style.transition = ''; 
-    document.removeEventListener('keydown', handleLangKeydown);
-  }, 450);
-  
-  setTimeout(() => startMain(), 550);
-}
-
-// Récupérer la langue sauvegardée au démarrage
-window.addEventListener('load', () => {
-  const savedLang = localStorage.getItem('kitt_lang');
-  if (savedLang && T[savedLang]) {
-    LANG = savedLang;
-    // Appliquer la langue sauvegardée silencieusement
-    const t = T[LANG];
-    document.getElementById('lang-flag').textContent = LANG.toUpperCase();
-    document.getElementById('status-txt').textContent = t.online;
-  }
-  showLangScreen();
-});
-</script>
 // ── Son 3 : impulsion données (caractères spéciaux) ──────────
 function sndData() {
   try {
