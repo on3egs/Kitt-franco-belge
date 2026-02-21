@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://cds-volunteers-donated-medication.trycloudflare.com",
-  "last_update": "2026-02-21T00:53:03.105376+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-21T00:57:03.908392+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
