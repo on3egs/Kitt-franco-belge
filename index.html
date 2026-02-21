@@ -288,22 +288,22 @@ button:hover{color:#000;}button:hover::before{transform:scaleX(1);}button:active
 </svg>
 <div id="sphere-wrap">
   <div id="sphere-3d">
-    <div class="s-mer" style="transform:rotateY(0deg)"></div>
-    <div class="s-mer" style="transform:rotateY(30deg)"></div>
-    <div class="s-mer" style="transform:rotateY(60deg)"></div>
-    <div class="s-mer" style="transform:rotateY(90deg)"></div>
-    <div class="s-mer" style="transform:rotateY(120deg)"></div>
-    <div class="s-mer" style="transform:rotateY(150deg)"></div>
-    <div class="s-par" style="transform:translateY(-44px) rotateX(90deg)"></div>
-    <div class="s-par" style="transform:translateY(-22px) rotateX(90deg)"></div>
-    <div class="s-par" style="transform:translateY(0px) rotateX(90deg)"></div>
-    <div class="s-par" style="transform:translateY(22px) rotateX(90deg)"></div>
-    <div class="s-par" style="transform:translateY(44px) rotateX(90deg)"></div>
+    <div class="s-mer" style="transform:rotateY(0deg);"></div>
+    <div class="s-mer" style="transform:rotateY(30deg);"></div>
+    <div class="s-mer" style="transform:rotateY(60deg);"></div>
+    <div class="s-mer" style="transform:rotateY(90deg);"></div>
+    <div class="s-mer" style="transform:rotateY(120deg);"></div>
+    <div class="s-mer" style="transform:rotateY(150deg);"></div>
+    <div class="s-par" style="transform:translateY(-44px) rotateX(90deg);"></div>
+    <div class="s-par" style="transform:translateY(-22px) rotateX(90deg);"></div>
+    <div class="s-par" style="transform:translateY(0px) rotateX(90deg);"></div>
+    <div class="s-par" style="transform:translateY(22px) rotateX(90deg);"></div>
+    <div class="s-par" style="transform:translateY(44px) rotateX(90deg);"></div>
     <div class="s-core"></div>
   </div>
 </div>
 <div id="visit-counter"></div>
-<div id="site-footer">v3.0 &nbsp;—&nbsp; DERNIÈRE MISE À JOUR : 2026-02-21</div>
+<div id="site-footer">v3.0 &nbsp;—&nbsp; DERNIÈRE MISE À JOUR : 2026-02-21 16:48:09</div>
 
 <!-- Scanners -->
 <div id="sw"><div id="sb"></div></div>
@@ -362,128 +362,26 @@ const _ac = new (window.AudioContext || window.webkitAudioContext)();
 
 function _resume() { if (_ac.state === 'suspended') _ac.resume(); }
 
-// ── Son 1 : MU-TH-UR click (principal) ──────────────────────
-function sndClick() {
-  try {
-    _resume(); const t = _ac.currentTime;
-    const len = Math.floor(_ac.sampleRate * 0.020);
-    const buf = _ac.createBuffer(1, len, _ac.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/len, 3.5);
-    const src = _ac.createBufferSource(); src.buffer = buf;
-    const bp = _ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2700+Math.random()*400; bp.Q.value=4;
-    const hp = _ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=850;
-    const g = _ac.createGain(); g.gain.value=0.25;
-    src.connect(bp); bp.connect(hp); hp.connect(g); g.connect(_ac.destination); src.start(t);
-    // tick électronique
-    const o = _ac.createOscillator(); o.type='square';
-    o.frequency.setValueAtTime(1350+Math.random()*200, t);
-    o.frequency.exponentialRampToValueAtTime(680, t+0.017);
-    const og = _ac.createGain(); og.gain.setValueAtTime(0.04, t); og.gain.exponentialRampToValueAtTime(0.001, t+0.020);
-    o.connect(og); og.connect(_ac.destination); o.start(t); o.stop(t+0.022);
-  } catch(e){}
+// ... (audio functions unchanged) ...
+function sndClick() { try {_resume(); const t=_ac.currentTime; const len=Math.floor(_ac.sampleRate*0.020); const buf=_ac.createBuffer(1,len,_ac.sampleRate); const d=buf.getChannelData(0); for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.5); const src=_ac.createBufferSource(); src.buffer=buf; const bp=_ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2700+Math.random()*400; bp.Q.value=4; const hp=_ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=850; const g=_ac.createGain(); g.gain.value=0.25; src.connect(bp); bp.connect(hp); hp.connect(g); g.connect(_ac.destination); src.start(t); const o=_ac.createOscillator(); o.type='square'; o.frequency.setValueAtTime(1350+Math.random()*200,t); o.frequency.exponentialRampToValueAtTime(680,t+0.017); const og=_ac.createGain(); og.gain.setValueAtTime(0.04,t); og.gain.exponentialRampToValueAtTime(0.001,t+0.020); o.connect(og); og.connect(_ac.destination); o.start(t); o.stop(t+0.022);}catch(e){}
 }
-
-// ── Son 2 : tick léger (haute fréquence, sous-entendu) ──────
-function sndTick() {
-  try {
-    _resume(); const t = _ac.currentTime;
-    const o = _ac.createOscillator(); o.type='triangle';
-    o.frequency.setValueAtTime(3800+Math.random()*400, t);
-    o.frequency.exponentialRampToValueAtTime(2400, t+0.012);
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.015);
-    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.016);
-  } catch(e){}
+function sndTick(){try{_resume();const t=_ac.currentTime;const o=_ac.createOscillator();o.type='triangle';o.frequency.setValueAtTime(3800+Math.random()*400,t);o.frequency.exponentialRampToValueAtTime(2400,t+0.012);const g=_ac.createGain();g.gain.setValueAtTime(0.03,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.015);o.connect(g);g.connect(_ac.destination);o.start(t);o.stop(t+0.016);}catch(e){} }
+function sndData(){try{_resume();const t=_ac.currentTime;const o=_ac.createOscillator();o.type='sawtooth';o.frequency.value=1800+Math.random()*600;const g=_ac.createGain();g.gain.setValueAtTime(0.05,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.012);const lp=_ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=4000;o.connect(lp);lp.connect(g);g.connect(_ac.destination);o.start(t);o.stop(t+0.013);}catch(e){}
 }
-
-// ── Son 3 : impulsion données (caractères spéciaux) ──────────
-function sndData() {
-  try {
-    _resume(); const t = _ac.currentTime;
-    const o = _ac.createOscillator(); o.type='sawtooth';
-    o.frequency.value = 1800 + Math.random()*600;
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.012);
-    const lp = _ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=4000;
-    o.connect(lp); lp.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.013);
-  } catch(e){}
+function sndGlitch(){try{_resume();const t=_ac.currentTime;const len=Math.floor(_ac.sampleRate*0.035);const buf=_ac.createBuffer(1,len,_ac.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(Math.random()>0.5?0.9:0.05);const src=_ac.createBufferSource();src.buffer=buf;const bp=_ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1200;bp.Q.value=2;const g=_ac.createGain();g.gain.value=0.12;src.connect(bp);bp.connect(g);g.connect(_ac.destination);src.start(t);}catch(e){}
 }
-
-// ── Son 4 : glitch numérique (rare, surprenant) ──────────────
-function sndGlitch() {
-  try {
-    _resume(); const t = _ac.currentTime;
-    const len = Math.floor(_ac.sampleRate * 0.035);
-    const buf = _ac.createBuffer(1, len, _ac.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (Math.random() > 0.5 ? 0.9 : 0.05);
-    const src = _ac.createBufferSource(); src.buffer=buf;
-    const bp = _ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200; bp.Q.value=2;
-    const g = _ac.createGain(); g.gain.value=0.12;
-    src.connect(bp); bp.connect(g); g.connect(_ac.destination); src.start(t);
-  } catch(e){}
+function sndLineEnd(){try{_resume();const t=_ac.currentTime;const o=_ac.createOscillator();o.type='sine';o.frequency.setValueAtTime(900,t);o.frequency.exponentialRampToValueAtTime(600,t+0.06);const g=_ac.createGain();g.gain.setValueAtTime(0.028,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.07);o.connect(g);g.connect(_ac.destination);o.start(t);o.stop(t+0.08);}catch(e){}
 }
-
-// ── Son 5 : fin de ligne (souffle court) ────────────────────
-function sndLineEnd() {
-  try {
-    _resume(); const t = _ac.currentTime;
-    const o = _ac.createOscillator(); o.type='sine';
-    o.frequency.setValueAtTime(900, t);
-    o.frequency.exponentialRampToValueAtTime(600, t+0.06);
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.028, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.07);
-    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.08);
-  } catch(e){}
+function sndSelect(){try{_resume();const t=_ac.currentTime;[440,660,880].forEach((f,i)=>{const o=_ac.createOscillator();o.type='square';o.frequency.value=f;const g=_ac.createGain();g.gain.setValueAtTime(0.04,t+i*0.06);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.06+0.05);o.connect(g);g.connect(_ac.destination);o.start(t+i*0.06);o.stop(t+i*0.06+0.055);});}catch(e){}
 }
-
-// ── Son 6 : sélection / confirmation ────────────────────────
-function sndSelect() {
-  try {
-    _resume(); const t = _ac.currentTime;
-    [440,660,880].forEach((f,i) => {
-      const o = _ac.createOscillator(); o.type='square'; o.frequency.value=f;
-      const g = _ac.createGain(); g.gain.setValueAtTime(0.04, t+i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.06+0.05);
-      o.connect(g); g.connect(_ac.destination); o.start(t+i*0.06); o.stop(t+i*0.06+0.055);
-    });
-  } catch(e){}
+function sndError(){try{_resume();const t=_ac.currentTime;const o=_ac.createOscillator();o.type='square';o.frequency.value=180;const g=_ac.createGain();g.gain.setValueAtTime(0.07,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.08);o.connect(g);g.connect(_ac.destination);o.start(t);o.stop(t+0.09);}catch(e){}
 }
-
-// ── Son 7 : erreur (buzzer court) ────────────────────────────
-function sndError() {
-  try {
-    _resume(); const t = _ac.currentTime;
-    const o = _ac.createOscillator(); o.type='square';
-    o.frequency.value=180;
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.08);
-    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.09);
-  } catch(e){}
+function kittChime(){try{_resume();const t=_ac.currentTime;const o=_ac.createOscillator();o.type='sine';o.frequency.setValueAtTime(880,t);o.frequency.exponentialRampToValueAtTime(220,t+0.35);const g=_ac.createGain();g.gain.setValueAtTime(0.1,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.4);o.connect(g);g.connect(_ac.destination);o.start(t);o.stop(t+0.4);}catch(e){}
 }
-
-// ── Son 8 : chime KITT (sweep descendant) ───────────────────
-function kittChime() {
-  try {
-    _resume(); const t = _ac.currentTime;
-    const o = _ac.createOscillator(); o.type='sine';
-    o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(220, t+0.35);
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
-    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.4);
-  } catch(e){}
-}
-
-// ── Dispatch : choisit le bon son par caractère ──────────────
 const SPECIAL_CHARS = new Set([...'[]():=|─══╔╗╚╝║┌┐└┘├┤•★★']);
 let _charCount = 0;
-
-function playChar(ch) {
-  if (ch === ' ' || ch === '\n') return;
-  _charCount++;
-  const r = Math.random();
-  if (SPECIAL_CHARS.has(ch)) { sndData(); return; }
-  if (_charCount % 47 === 0) { sndGlitch(); return; }  // glitch rare
-  if (r < 0.03) { sndGlitch(); return; }
-  if (r < 0.14) { sndTick();   return; }
-  if (r < 0.72) { sndClick();  return; }
-  // ~28% silence = variété naturelle
-}
+function playChar(ch){if(ch===' '||ch==='
+')return;_charCount++;const r=Math.random();if(SPECIAL_CHARS.has(ch)){sndData();return;}if(_charCount%47===0){sndGlitch();return;}if(r<0.03){sndGlitch();return;}if(r<0.14){sndTick();return;}if(r<0.72){sndClick();return;}}
 
 // ════════════════════════════════════════════════════════════
 // LANGUE — Système de localisation
@@ -494,242 +392,79 @@ let voiceSelected = false;
 let LANG_VOICE = 'kitt';
 
 const T = {
-  fr: {
-    hdr_title:    'KITT FRANCO-BELGE // INTERFACE CENTRALE',
-    placeholder:  'entrez une commande...',
-    btn_boot:     '[ INITIALISER ]',
-    btn_diag:     '[ DIAGNOSTIC ]',
-    btn_mentions: '[ MENTIONS ]',
-    btn_licence:  '[ LICENCE ]',
-    btn_clear:    '[ EFFACER ]',
-    btn_tunnel:   '[ CONNEXION KITT ]',
-    modal_mentions:'MENTIONS LÉGALES',
-    modal_licence: 'LICENCE',
-    wait:       'SYSTÈME EN ATTENTE — TAPEZ "boot" OU CLIQUEZ [ INITIALISER ]',
-    help_hint:  'TAPEZ "aide" POUR LA LISTE DES COMMANDES.',
-    cleared:    'TERMINAL EFFACÉ.',
-    unknown:    (c) => `COMMANDE INCONNUE : "${c}". TAPEZ "aide".`,
-    online:     'EN LIGNE',
-    boot_title: '  KITT FRANCO-BELGE — SÉQUENCE DE BOOT   ',
-    boot_lines: [
-      ['INITIALISATION DU NOYAU SYSTÈME...', 'line-warn'],
-      ['CHARGEMENT MODULES COGNITIFS...    [OK]', 'line-ok'],
-      ['INTERFACE NEURONALE...             [OK]', 'line-ok'],
-      ['SYNTHÈSE VOCALE (PIPER-GPU)...     [OK]', 'line-ok'],
-      ['RECONNAISSANCE VOCALE (WHISPER)... [OK]', 'line-ok'],
-      ['MODÈLE LLM EMBARQUÉ (QWEN 3B)...  [OK]', 'line-ok'],
-      ['MODE HORS-LIGNE...                 [ACTIVÉ]', 'line-ok'],
-      ['', 'line-ok'],
-      ['PROJET FAN NON COMMERCIAL.', 'line-dim'],
-      ['STATUT : INTERFACE EN CONSTRUCTION ACTIVE.', 'line-warn'],
-      ['', 'line-ok'],
-      ['MISES À JOUR DÉPLOYÉES RÉGULIÈREMENT :', 'line-info'],
-      ['  • parfois chaque jour', 'line-dim'],
-      ['  • parfois chaque semaine', 'line-dim'],
-      ['  • lors de certaines phases, presque heure par heure', 'line-dim'],
-      ['', 'line-ok'],
-      ['© 2026 EMMANUEL GELINNE (MANIX). TOUS DROITS RÉSERVÉS.', 'line-warn'],
-    ],
-    boot_end:   '  CONNEXION AU NOYAU KITT ÉTABLIE.',
-    boot_hint:  '  TAPEZ "aide" POUR LA LISTE DES COMMANDES',
-    aide_title: 'COMMANDES DISPONIBLES :',
-    aide_sys:   '── SYSTÈME ──',
-    aide_fun:   '── FUN ──',
-    cmds_sys: [
-      ['aide',       'cette liste'],
-      ['boot',       "séquence d'initialisation"],
-      ['diagnostic', 'test complet des systèmes'],
-      ['status',     'état rapide'],
-      ['heure',      'heure actuelle'],
-      ['version',    "version de l'interface"],
-      ['son',        'démo audio'],
-      ['clear',      'efface le terminal'],
-    ],
-    cmds_fun: [
-      ['bonjour',    'salutation KITT'],
-      ['blague',     'blague KITT aléatoire'],
-      ['alien',      'connexion MU-TH-UR 6000'],
-      ['matrix',     'le lapin blanc'],
-      ['kitt',       'fiche identité KITT'],
-      ['manix',      'dossier conducteur'],
-      ['cedric',     'dossier Cedric Momo Rider'],
-      ['kr95',       'dossier KR95'],
-      ['repliques',  'les répliques franco-belges'],
-      ['secret',     'fichier classifié...'],
-      ['cafe',       'demander un café à KITT'],
-      ['belgique',   'analyse géopolitique'],
-      ['jarvis',     'appel vers Stark Tower'],
-      ['mario',      'dossier Mario Ravasi / IoT'],
-      ['za',         'dossier ZA Elettronica'],
-      ['pascal',     'dossier K Industrie'],
-      ['daemon',     'dossier Daemon Paule'],
-      ['geoffrey',   'dossier Geoffrey'],
-      ['covid',      'origine du projet — confinement 2020'],
-    ],
-    hi:  'BONJOUR. JE SUIS KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
-    hi2: 'SYSTÈME FRANCO-BELGE DÉVELOPPÉ PAR MANIX.',
-    hi3: 'À VOTRE SERVICE.',
-  },
-  en: {
-    hdr_title:    'KITT FRANCO-BELGIAN // CENTRAL INTERFACE',
-    placeholder:  'enter a command...',
-    btn_boot:     '[ INITIALIZE ]',
-    btn_diag:     '[ DIAGNOSTIC ]',
-    btn_mentions: '[ MENTIONS ]',
-    btn_licence:  '[ LICENSE ]',
-    btn_clear:    '[ CLEAR ]',
-    btn_tunnel:   '[ CONNECT KITT ]',
-    modal_mentions:'LEGAL NOTICES',
-    modal_licence: 'LICENSE',
-    wait:       'SYSTEM STANDBY — TYPE "boot" OR CLICK [ INITIALIZE ]',
-    help_hint:  'TYPE "help" FOR THE LIST OF COMMANDS.',
-    cleared:    'TERMINAL CLEARED.',
-    unknown:    (c) => `UNKNOWN COMMAND: "${c}". TYPE "help".`,
-    online:     'ONLINE',
-    boot_title: '  KITT FRANCO-BELGE — BOOT SEQUENCE        ',
-    boot_lines: [
-      ['INITIALIZING CORE SYSTEM...', 'line-warn'],
-      ['LOADING COGNITIVE MODULES...       [OK]', 'line-ok'],
-      ['NEURAL INTERFACE...                [OK]', 'line-ok'],
-      ['VOICE SYNTHESIS (PIPER-GPU)...     [OK]', 'line-ok'],
-      ['VOICE RECOGNITION (WHISPER)...     [OK]', 'line-ok'],
-      ['EMBEDDED LLM (QWEN 3B)...          [OK]', 'line-ok'],
-      ['OFFLINE MODE...                    [ACTIVE]', 'line-ok'],
-      ['', 'line-ok'],
-      ['FAN PROJECT — NON COMMERCIAL.', 'line-dim'],
-      ['STATUS : INTERFACE UNDER ACTIVE CONSTRUCTION.', 'line-warn'],
-      ['', 'line-ok'],
-      ['UPDATES DEPLOYED REGULARLY :', 'line-info'],
-      ['  • sometimes every day', 'line-dim'],
-      ['  • sometimes every week', 'line-dim'],
-      ['  • during some phases, almost hour by hour', 'line-dim'],
-      ['', 'line-ok'],
-      ['© 2026 EMMANUEL GELINNE (MANIX). ALL RIGHTS RESERVED.', 'line-warn'],
-    ],
-    boot_end:   '  CONNECTION TO KITT CORE ESTABLISHED.',
-    boot_hint:  '  TYPE "help" FOR THE COMMAND LIST',
-    aide_title: 'AVAILABLE COMMANDS:',
-    aide_sys:   '── SYSTEM ──',
-    aide_fun:   '── FUN ──',
-    cmds_sys: [
-      ['help',       'this list'],
-      ['boot',       'boot sequence'],
-      ['diagnostic', 'full system test'],
-      ['status',     'quick status'],
-      ['time',       'current time'],
-      ['version',    'interface version'],
-      ['sound',      'audio demo'],
-      ['clear',      'clear terminal'],
-    ],
-    cmds_fun: [
-      ['hello',      'KITT greeting'],
-      ['joke',       'random KITT joke'],
-      ['alien',      'MU-TH-UR 6000 connection'],
-      ['matrix',     'the white rabbit'],
-      ['kitt',       'KITT identity file'],
-      ['manix',      'driver file'],
-      ['cedric',     'Cedric Momo Rider file'],
-      ['kr95',       'KR95 file'],
-      ['replicas',   'the franco-belgian replicas'],
-      ['secret',     'classified file...'],
-      ['coffee',     'ask KITT for a coffee'],
-      ['belgium',    'geopolitical analysis'],
-      ['jarvis',     'call to Stark Tower'],
-      ['mario',      'Mario Ravasi / IoT file'],
-      ['za',         'ZA Elettronica file'],
-      ['pascal',     'K Industrie file'],
-      ['daemon',     'Daemon Paule file'],
-      ['geoffrey',   'Geoffrey file'],
-      ['covid',      'project origin — lockdown 2020'],
-    ],
-    hi:  'HELLO. I AM KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
-    hi2: 'FRANCO-BELGIAN SYSTEM DEVELOPED BY MANIX.',
-    hi3: 'AT YOUR SERVICE.',
-  },
-  nl: {
-    hdr_title:    'KITT FRANCO-BELGISCH // CENTRALE INTERFACE',
-    placeholder:  'voer een commando in...',
-    btn_boot:     '[ OPSTARTEN ]',
-    btn_diag:     '[ DIAGNOSE ]',
-    btn_mentions: '[ VERMELDINGEN ]',
-    btn_licence:  '[ LICENTIE ]',
-    btn_clear:    '[ WISSEN ]',
-    btn_tunnel:   '[ VERBIND KITT ]',
-    modal_mentions:"WETTELIJKE VERMELDINGEN",
-    modal_licence: 'LICENTIE',
-    wait:       'SYSTEEM WACHT — TYP "boot" OF KLIK [ OPSTARTEN ]',
-    help_hint:  'TYP "hulp" VOOR DE COMMANDOLIJST.',
-    cleared:    'TERMINAL GEWIST.',
-    unknown:    (c) => `ONBEKEND COMMANDO: "${c}". TYP "hulp".`,
-    online:     'ONLINE',
-    boot_title: '  KITT FRANCO-BELGE — OPSTARTSEQUENTIE     ',
-    boot_lines: [
-      ['KERNSYSTEEM INITIALISEREN...', 'line-warn'],
-      ['COGNITIEVE MODULES LADEN...        [OK]', 'line-ok'],
-      ['NEURALE INTERFACE...               [OK]', 'line-ok'],
-      ['SPRAAKSYNTHESE (PIPER-GPU)...      [OK]', 'line-ok'],
-      ['STEMHERKENNING (WHISPER)...        [OK]', 'line-ok'],
-      ['LOKALES LLM (QWEN 3B)...           [OK]', 'line-ok'],
-      ['OFFLINE MODUS...                   [ACTIEF]', 'line-ok'],
-      ['', 'line-ok'],
-      ['FAN PROJECT — NIET COMMERCIEEL.', 'line-dim'],
-      ['STATUS : INTERFACE IN ACTIEVE CONSTRUCTIE.', 'line-warn'],
-      ['', 'line-ok'],
-      ['UPDATES REGELMATIG UITGEROLD :', 'line-info'],
-      ['  • soms elke dag', 'line-dim'],
-      ['  • soms elke week', 'line-dim'],
-      ['  • soms elk uur', 'line-dim'],
-      ['', 'line-ok'],
-      ['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTEN VOORBEHOUDEN.', 'line-warn'],
-    ],
-    boot_end:   '  VERBINDING MET KITT-KERN TOT STAND GEBRACHT.',
-    boot_hint:  '  TYP "hulp" VOOR DE COMMANDOLIJST',
-    aide_title: "BESCHIKBARE COMMANDO'S:",
-    aide_sys:   '── SYSTEEM ──',
-    aide_fun:   '── PLEZIER ──',
-    cmds_sys: [
-      ['hulp',       'deze lijst'],
-      ['boot',       'opstartsequentie'],
-      ['diagnostic', 'volledig systeemtest'],
-      ['status',     'snelle status'],
-      ['tijd',       'huidige tijd'],
-      ['versie',     'interface versie'],
-      ['geluid',      'audio demo'],
-      ['clear',      'terminal wissen'],
-    ],
-    cmds_fun: [
-      ['hallo',      'KITT begroeting'],
-      ['grap',       'willekeurige KITT grap'],
-      ['alien',      'MU-TH-UR 6000 verbinding'],
-      ['matrix',     'het witte konijn'],
-      ['kitt',       'KITT identiteitsbestand'],
-      ['manix',      'bestuurdersdossier'],
-      ['cedric',     'Cedric Momo Rider dossier'],
-      ['kr95',       'KR95 dossier'],
-      ['replicas',   "de franco-belgische replica's"],
-      ['geheim',     'geheim bestand...'],
-      ['koffie',     'KITT om koffie vragen'],
-      ['belgie',     'geopolitieke analyse'],
-      ['jarvis',     'oproep naar Stark Tower'],
-      ['mario',      'Mario Ravasi / IoT dossier'],
-      ['za',         'ZA Elettronica dossier'],
-      ['pascal',     'K Industrie dossier'],
-      ['daemon',     'daemon dossier'],
-      ['geoffrey',   'geoffrey dossier'],
-      ['covid',      'projectoorsprong — lockdown 2020'],
-    ],
-    hi:  'HALLO. IK BEN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
-    hi2: 'FRANCO-BELGISCH SYSTEEM ONTWIKKELD DOOR MANIX.',
-    hi3: 'TOT UW DIENST.',
-  },
-
-// Additional languages omitted for brevity
-
+  fr: { hdr_title: 'KITT FRANCO-BELGE // INTERFACE CENTRALE', placeholder: 'entrez une commande...', btn_boot: '[ INITIALISER ]', btn_diag: '[ DIAGNOSTIC ]', btn_mentions: '[ MENTIONS ]', btn_licence: '[ LICENCE ]', btn_clear: '[ EFFACER ]', btn_tunnel: '[ CONNEXION KITT ]', modal_mentions:'MENTIONS LÉGALES', modal_licence: 'LICENCE', wait: 'SYSTÈME EN ATTENTE — TAPEZ "boot" OU CLIQUEZ [ INITIALISER ]', help_hint: 'TAPEZ "aide" POUR LA LISTE DES COMMANDES.', cleared: 'TERMINAL EFFACÉ.', unknown: (c) => `COMMANDE INCONNUE : "${c}". TAPEZ "aide".`, online: 'EN LIGNE', boot_title: '  KITT FRANCO-BELGE — SÉQUENCE DE BOOT   ', boot_lines: [['INITIALISATION DU NOYAU SYSTÈME...', 'line-warn'],['CHARGEMENT MODULES COGNITIFS...    [OK]', 'line-ok'],['INTERFACE NEURONALE...             [OK]', 'line-ok'],['SYNTHÈSE VOCALE (PIPER-GPU)...     [OK]', 'line-ok'],['RECONNAISSANCE VOCALE (WHISPER)... [OK]', 'line-ok'],['MODÈLE LLM EMBARQUÉ (QWEN 3B)...  [OK]', 'line-ok'],['MODE HORS-LIGNE...                 [ACTIVÉ]', 'line-ok'],['', 'line-ok'],['PROJET FAN NON COMMERCIAL.', 'line-dim'],['STATUT : INTERFACE EN CONSTRUCTION ACTIVE.', 'line-warn'],['', 'line-ok'],['MISES À JOUR DÉPLOYÉES RÉGULIÈREMENT :', 'line-info'],['  • parfois chaque jour', 'line-dim'],['  • parfois chaque semaine', 'line-dim'],['  • lors de certaines phases, presque heure par heure', 'line-dim'],['', 'line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). TOUS DROITS RÉSERVÉS.', 'line-warn']], boot_end: '  CONNEXION AU NOYAU KITT ÉTABLIE.', boot_hint: '  TAPEZ "aide" POUR LA LISTE DES COMMANDES', aide_title: 'COMMANDES DISPONIBLES :', aide_sys: '── SYSTÈME ──', aide_fun: '── FUN ──', cmds_sys: [['aide', 'cette liste'],['boot', "séquence d'initialisation"],['diagnostic', 'test complet des systèmes'],['status', 'état rapide'],['heure', 'heure actuelle'],['version', "version de l'interface"],['son', 'démo audio'],['clear', 'efface le terminal']], cmds_fun: [['bonjour', 'salutation KITT'],['blague', 'blague KITT aléatoire'],['alien', 'connexion MU-TH-UR 6000'],['matrix', 'le lapin blanc'],['kitt', 'fiche identité KITT'],['manix', 'dossier conducteur'],['cedric', 'dossier Cedric Momo Rider'],['kr95', 'dossier KR95'],['repliques', 'les répliques franco-belges'],['secret', 'fichier classifié...'],['cafe', 'demander un café à KITT'],['belgique', 'analyse géopolitique'],['jarvis', 'appel vers Stark Tower'],['mario', 'dossier Mario Ravasi / IoT'],['za', 'dossier ZA Elettronica'],['pascal', 'dossier K Industrie'],['daemon', 'dossier Daemon Paule'],['geoffrey', 'dossier Geoffrey'],['covid', 'origine du projet — confinement 2020']], hi: 'BONJOUR. JE SUIS KITT — KNIGHT INDUSTRIES TWO THOUSAND.', hi2: 'SYSTÈME FRANCO-BELGE DÉVELOPPÉ PAR MANIX.', hi3: 'À VOTRE SERVICE.' },
+  en: { hdr_title: 'KITT FRANCO-BELGIAN // CENTRAL INTERFACE', placeholder: 'enter a command...', btn_boot: '[ INITIALIZE ]', btn_diag: '[ DIAGNOSTIC ]', btn_mentions: '[ MENTIONS ]', btn_licence: '[ LICENSE ]', btn_clear: '[ CLEAR ]', btn_tunnel: '[ CONNECT KITT ]', modal_mentions:'LEGAL NOTICES', modal_licence: 'LICENSE', wait: 'SYSTEM STANDBY — TYPE "boot" OR CLICK [ INITIALIZE ]', help_hint: 'TYPE "help" FOR THE LIST OF COMMANDS.', cleared: 'TERMINAL CLEARED.', unknown: (c) => `UNKNOWN COMMAND: "${c}". TYPE "help".`, online: 'ONLINE', boot_title: '  KITT FRANCO-BELGE — BOOT SEQUENCE        ', boot_lines: [['INITIALIZING CORE SYSTEM...', 'line-warn'],['LOADING COGNITIVE MODULES...       [OK]', 'line-ok'],['NEURAL INTERFACE...                [OK]', 'line-ok'],['VOICE SYNTHESIS (PIPER-GPU)...     [OK]', 'line-ok'],['VOICE RECOGNITION (WHISPER)...     [OK]', 'line-ok'],['EMBEDDED LLM (QWEN 3B)...          [OK]', 'line-ok'],['OFFLINE MODE...                    [ACTIVE]', 'line-ok'],['', 'line-ok'],['FAN PROJECT — NON COMMERCIAL.', 'line-dim'],['STATUS : INTERFACE UNDER ACTIVE CONSTRUCTION.', 'line-warn'],['', 'line-ok'],['UPDATES DEPLOYED REGULARLY :', 'line-info'],['  • sometimes every day', 'line-dim'],['  • sometimes every week', 'line-dim'],['  • during some phases, almost hour by hour', 'line-dim'],['', 'line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). ALL RIGHTS RESERVED.', 'line-warn']], boot_end: '  CONNECTION TO KITT CORE ESTABLISHED.', boot_hint: '  TYPE "help" FOR THE COMMAND LIST', aide_title: 'AVAILABLE COMMANDS:', aide_sys: '── SYSTEM ──', aide_fun: '── FUN ──', cmds_sys: [['help', 'this list'],['boot', 'boot sequence'],['diagnostic', 'full system test'],['status', 'quick status'],['time', 'current time'],['version', 'interface version'],['sound', 'audio demo'],['clear', 'clear terminal']], cmds_fun: [['hello', 'KITT greeting'],['joke', 'random KITT joke'],['alien', 'MU-TH-UR 6000 connection'],['matrix', 'the white rabbit'],['kitt', 'KITT identity file'],['manix', 'driver file'],['cedric', 'Cedric Momo Rider file'],['kr95', 'KR95 file'],['replicas', 'the franco-belgian replicas'],['secret', 'classified file...'],['coffee', 'ask KITT for a coffee'],['belgium', 'geopolitical analysis'],['jarvis', 'call to Stark Tower'],['mario', 'Mario Ravasi / IoT file'],['za', 'ZA Elettronica file'],['pascal', 'K Industrie file'],['daemon', 'Daemon Paule file'],['geoffrey', 'Geoffrey file'],['covid', 'project origin — lockdown 2020']], hi: 'HELLO. I AM KITT — KNIGHT INDUSTRIES TWO THOUSAND.', hi2: 'FRANCO-BELGIAN SYSTEM DEVELOPED BY MANIX.', hi3: 'AT YOUR SERVICE.' },
+  nl: { hdr_title: 'KITT FRANCO-BELGISCH // CENTRALE INTERFACE', placeholder: 'voer een commando in...', btn_boot: '[ OPSTARTEN ]', btn_diag: '[ DIAGNOSE ]', btn_mentions: '[ VERMELDINGEN ]', btn_licence: '[ LICENTIE ]', btn_clear: '[ WISSEN ]', btn_tunnel: '[ VERBIND KITT ]', modal_mentions:"WETTELIJKE VERMELDINGEN", modal_licence: 'LICENTIE', wait: 'SYSTEEM WACHT — TYP "boot" OF KLIK [ OPSTARTEN ]', help_hint: 'TYP "hulp" VOOR DE COMMANDOLIJST.', cleared: 'TERMINAL GEWIST.', unknown: (c) => `ONBEKEND COMMANDO: "${c}". TYP "hulp".`, online: 'ONLINE', boot_title: '  KITT FRANCO-BELGE — OPSTARTSEQUENTIE     ', boot_lines: [['KERNSYSTEEM INITIALISEREN...', 'line-warn'],['COGNITIEVE MODULES LADEN...        [OK]', 'line-ok'],['NEURALE INTERFACE...               [OK]', 'line-ok'],['SPRAAKSYNTHESE (PIPER-GPU)...      [OK]', 'line-ok'],['STEMHERKENNING (WHISPER)...        [OK]', 'line-ok'],['LOKALES LLM (QWEN 3B)...           [OK]', 'line-ok'],['OFFLINE MODUS...                   [ACTIEF]', 'line-ok'],['', 'line-ok'],['FAN PROJECT — NIET COMMERCIEEL.', 'line-dim'],['STATUS : INTERFACE IN ACTIEVE CONSTRUCTIE.', 'line-warn'],['', 'line-ok'],['UPDATES REGELMATIG UITGEROLD :', 'line-info'],['  • soms elke dag', 'line-dim'],['  • soms elke week', 'line-dim'],['  • soms elk uur', 'line-dim'],['', 'line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTEN VOORBEHOUDEN.', 'line-warn']], boot_end: '  VERBINDING MET KITT-KERN TOT STAND GEBRACHT.', boot_hint: '  TYP "hulp" VOOR DE COMMANDOLIJST', aide_title: "BESCHIKBARE COMMANDO'S:", aide_sys: '── SYSTEEM ──', aide_fun: '── PLEZIER ──', cmds_sys: [['hulp', 'deze lijst'],['boot', 'opstartsequential'],['diagnostic', 'volledig systeemtest'],['status', 'snelle status'],['tijd', 'huidige tijd'],['versie', 'interface versie'],['geluid', 'audio demo'],['clear', 'terminal wissen']], cmds_fun: [['hallo', 'KITT begroeting'],['grap', 'willekeurige KITT grap'],['alien', 'MU-TH-UR 6000 verbinding'],['matrix', 'het witte konijn'],['kitt', 'KITT identiteitsbestand'],['manix', 'bestuurdersdossier'],['cedric', 'Cedric Momo Rider dossier'],['kr95', 'KR95 dossier'],['replicas', "de franco-belgische replica's"],['geheim', 'geheim bestand...'],['koffie', 'KITT om koffie vragen'],['belgie', 'geopolitieke analyse'],['jarvis', 'oproep naar Stark Tower'],['mario', 'Mario Ravasi / IoT dossier'],['za', 'ZA Elettronica dossier'],['pascal', 'K Industrie dossier'],['daemon', 'daemon dossier'],['geoffrey', 'geoffrey dossier'],['covid', 'projectoorsprong — lockdown 2020']], hi: 'HALLO. IK BEN KITT — KNIGHT INDUSTRIES TWO THOUSAND.', hi2: 'FRANCO-BELGISCH SYSTEEM ONTWIKKELD DOOR MANIX.', hi3: 'TOT UW DIENST.' },
 };
 
-// Alias commandes multilingues dans CMDS
-CMDS['replicas'] = CMDS['repliques'];
-CMDS['daemon']   = CMDS['damon'];   // compat ancien alias
+// -- Ensure minimal command system to avoid ReferenceError --
+window.CMDS = window.CMDS || {};
+window.CMD_ALIASES = window.CMD_ALIASES || {};
+let typing = false;
+
+function addLine(txt, cls) {
+  const t = document.getElementById('terminal');
+  if (!t) return;
+  const d = document.createElement('div');
+  if (cls) d.className = cls;
+  d.textContent = txt;
+  t.appendChild(d);
+  t.scrollTop = t.scrollHeight;
+}
+async function typeText(text, speed = 12, cls) {
+  // simple fallback: print whole line, play sounds per char
+  addLine('', cls);
+  const t = document.getElementById('terminal');
+  const last = t.lastChild;
+  for (let ch of text) {
+    last.textContent += ch;
+    playChar(ch);
+    await new Promise(r => setTimeout(r, speed));
+  }
+  sndLineEnd();
+}
+function clearTerm(){ const t=document.getElementById('terminal'); if(t) t.innerHTML=''; addLine(T[LANG].cleared,'line-dim'); }
+function showLangScreen(){
+  const s = document.getElementById('lang-screen');
+  const hdr = document.getElementById('lang-hdr');
+  const sub = document.getElementById('lang-sub');
+  const out = document.getElementById('lang-output');
+  const ftr = document.getElementById('lang-ftr');
+  hdr.textContent = 'KITT FRANCO-BELGE // SÉLECTION LANGUE';
+  sub.textContent = 'Choisissez votre langue / Kies uw taal / Choose language';
+  out.innerHTML = '';
+  [['fr','FR'],['en','EN'],['nl','NL']].forEach(([k,label])=>{
+    const el = document.createElement('div'); el.className='lang-opt'; el.onclick = ()=>{ LANG=k; s.style.display='none'; applyLocale(); startMain(); sndSelect(); };
+    const lo = document.createElement('div'); lo.className='lo-n'; lo.textContent=label;
+    const ll = document.createElement('div'); ll.className='lo-l'; ll.textContent = {'fr':'Français','en':'English','nl':'Nederlands'}[k];
+    el.appendChild(lo); el.appendChild(ll); out.appendChild(el);
+  });
+  ftr.textContent = 'Projet fan — Manix';
+  s.style.display='flex';
+}
+
+function applyLocale(){
+  document.getElementById('hdr-title').textContent = T[LANG].hdr_title || document.getElementById('hdr-title').textContent;
+  document.getElementById('cmd-input').placeholder = T[LANG].placeholder || '';
+  document.getElementById('btn-boot').textContent = T[LANG].btn_boot || document.getElementById('btn-boot').textContent;
+  document.getElementById('btn-diag').textContent = T[LANG].btn_diag || document.getElementById('btn-diag').textContent;
+  document.getElementById('btn-mentions').textContent = T[LANG].btn_mentions || document.getElementById('btn-mentions').textContent;
+  document.getElementById('btn-licence').textContent = T[LANG].btn_licence || document.getElementById('btn-licence').textContent;
+  document.getElementById('btn-clear').textContent = T[LANG].btn_clear || document.getElementById('btn-clear').textContent;
+}
+
+// Basic command implementations
+CMDS['aide'] = CMDS['help'] = async function(){ addLine(T[LANG].aide_title,'line-info'); addLine(T[LANG].aide_sys,'line-dim'); for(const c of T[LANG].cmds_sys) addLine('  '+c[0]+' — '+c[1],'line-dim'); addLine(T[LANG].aide_fun,'line-dim'); for(const c of T[LANG].cmds_fun) addLine('  '+c[0]+' — '+c[1],'line-dim'); };
+CMDS['boot'] = async function(){ addLine(T[LANG].boot_title,'line-warn'); for(const l of T[LANG].boot_lines){ addLine(l[0], l[1]); await new Promise(r=>setTimeout(r,120)); } addLine(T[LANG].boot_end,'line-ok'); addLine(T[LANG].boot_hint,'line-dim'); };
+CMDS['diagnostic'] = CMDS['diag'] = CMDS['diagnostic'] || (async function(){ addLine('[DIAGNOSTIC] Lancement...','line-warn'); await new Promise(r=>setTimeout(r,400)); addLine('[DIAGNOSTIC] Capteurs OK','line-ok'); await new Promise(r=>setTimeout(r,200)); addLine('[DIAGNOSTIC] Réseau OK','line-ok'); });
+CMDS['status'] = CMDS['status'] || (async function(){ addLine('[STATUS] '+T[LANG].online,'line-ok'); });
+CMDS['heure'] = CMDS['time'] = async function(){ addLine(new Date().toLocaleString(getLoc()),'line-info'); };
+CMDS['version'] = async function(){ addLine('KITT FRANCO-BELGE — v3.0','line-info'); };
+CMDS['son'] = CMDS['sound'] = async function(){ kittChime(); addLine('[SON] démo audio jouée','line-info'); };
+CMDS['clear'] = async function(){ clearTerm(); };
+
+// Map some aliases
+CMD_ALIASES['aide']='aide'; CMD_ALIASES['help']='aide'; CMD_ALIASES['son']='son'; CMD_ALIASES['sound']='son';
 
 // ════════════════════════════════════════════════════════════
 // INPUT handler
@@ -758,136 +493,40 @@ const TUNNEL_JSON_URL = 'tunnel.json';
 let _tunnelUrl    = null;
 let _tunnelStatus = 'unknown';
 
-// Domaines Cloudflare autorisés (whitelist sécurité)
 const _CF_ALLOWED = ['.trycloudflare.com', '.cfargotunnel.com'];
-
-function _isValidCfUrl(url) {
-  if (!url || !url.startsWith('https://')) return false;
-  return _CF_ALLOWED.some(d => url.includes(d));
-}
-
-async function fetchTunnelStatus() {
-  const btn = document.getElementById('btn-tunnel');
-  if (btn) { btn.className = 'tunnel-checking'; btn.title = 'Vérification...' ; }
-  try {
-    // Cache-bust : on recharge toutes les 60s côté navigateur
-    const r = await fetch(TUNNEL_JSON_URL + '?v=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-
-    // Validation URL (sécurité : on n'ouvre que des URLs Cloudflare connues)
-    const raw = (data.url || '').trim();
-    const valid = _isValidCfUrl(raw);
-
-    // Âge de la dernière mise à jour (> 5 min = considéré offline)
-    let tooOld = false;
-    if (data.last_update) {
-      const ageSec = (Date.now() - new Date(data.last_update).getTime()) / 1000;
-      if (ageSec > 300) tooOld = true;
-    }
-
-    if (data.status === 'online' && valid && !tooOld) {
-      _tunnelStatus = 'online';
-      _tunnelUrl    = raw;
-    } else {
-      _tunnelStatus = 'offline';
-      _tunnelUrl    = null;
-    }
-  } catch(e) {
-    _tunnelStatus = 'unknown';
-    _tunnelUrl    = null;
-  }
-  _updateTunnelBtn();
-}
-
-function _updateTunnelBtn() {
-  const btn = document.getElementById('btn-tunnel');
-  if (!btn) return;
-  btn.className = '';
-  if (_tunnelStatus === 'online' && _tunnelUrl) {
-    btn.classList.add('tunnel-online');
-    btn.title = 'KITT EN LIGNE — CLIQUER POUR SE CONNECTER';
-  } else if (_tunnelStatus === 'offline') {
-    btn.classList.add('tunnel-offline');
-    btn.title = 'KITT HORS LIGNE';
-  } else {
-    btn.classList.add('tunnel-checking');
-    btn.title = 'ÉTAT INCONNU — VÉRIFICATION...';
-  }
-}
-
-function connectTunnel() {
-  sndSelect();
-  if (_tunnelStatus === 'online' && _tunnelUrl && _isValidCfUrl(_tunnelUrl)) {
-    addLine('[ TUNNEL ] CONNEXION SÉCURISÉE → ' + _tunnelUrl, 'line-ok');
-    setTimeout(() => window.open(_tunnelUrl, '_blank', 'noopener,noreferrer'), 300);
-  } else if (_tunnelStatus === 'offline') {
-    sndError();
-    addLine('[ TUNNEL ] KITT HORS LIGNE — CONNEXION DISTANTE INDISPONIBLE.', 'line-err');
-  } else {
-    addLine('[ TUNNEL ] VÉRIFICATION EN COURS...', 'line-warn');
-    fetchTunnelStatus();
-  }
-}
-
-// Vérification immédiate puis toutes les 60 secondes
-window.addEventListener('load', () => { setTimeout(fetchTunnelStatus, 1500); });
-setInterval(fetchTunnelStatus, 60000);
+function _isValidCfUrl(url) { if (!url || !url.startsWith('https://')) return false; return _CF_ALLOWED.some(d => url.includes(d)); }
+async function fetchTunnelStatus(){ const btn=document.getElementById('btn-tunnel'); if(btn){btn.className='tunnel-checking';btn.title='Vérification...';} try{ const r=await fetch(TUNNEL_JSON_URL+'?v='+Math.floor(Date.now()/60000),{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); const data=await r.json(); const raw=(data.url||'').trim(); const valid=_isValidCfUrl(raw); let tooOld=false; if(data.last_update){ const ageSec=(Date.now()-new Date(data.last_update).getTime())/1000; if(ageSec>300) tooOld=true;} if(data.status==='online'&&valid&&!tooOld){ _tunnelStatus='online'; _tunnelUrl=raw;} else { _tunnelStatus='offline'; _tunnelUrl=null; } }catch(e){ _tunnelStatus='unknown'; _tunnelUrl=null;} _updateTunnelBtn(); }
+function _updateTunnelBtn(){ const btn=document.getElementById('btn-tunnel'); if(!btn) return; btn.className=''; if(_tunnelStatus==='online'&&_tunnelUrl){ btn.classList.add('tunnel-online'); btn.title='KITT EN LIGNE — CLIQUER POUR SE CONNECTER'; } else if(_tunnelStatus==='offline'){ btn.classList.add('tunnel-offline'); btn.title='KITT HORS LIGNE'; } else { btn.classList.add('tunnel-checking'); btn.title='ÉTAT INCONNU — VÉRIFICATION...'; } }
+function connectTunnel(){ sndSelect(); if(_tunnelStatus==='online'&&_tunnelUrl&&_isValidCfUrl(_tunnelUrl)){ addLine('[ TUNNEL ] CONNEXION SÉCURISÉE → '+_tunnelUrl,'line-ok'); setTimeout(()=>window.open(_tunnelUrl,'_blank','noopener,noreferrer'),300); } else if(_tunnelStatus==='offline'){ sndError(); addLine('[ TUNNEL ] KITT HORS LIGNE — CONNEXION DISTANTE INDISPONIBLE.','line-err'); } else { addLine('[ TUNNEL ] VÉRIFICATION EN COURS...','line-warn'); fetchTunnelStatus(); } }
+window.addEventListener('load', ()=>{ setTimeout(fetchTunnelStatus,1500); });
+setInterval(fetchTunnelStatus,60000);
 
 // ════════════════════════════════════════════════════════════
 // UTILS & HORLOGE
 // ════════════════════════════════════════════════════════════
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
 function getLoc(){return{fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE',es:'es-ES',pt:'pt-PT'}[LANG]||'fr-FR';}
-setInterval(() => {
-  document.getElementById('clock').textContent=new Date().toLocaleTimeString(getLoc());
-},1000);
+setInterval(()=>{ const clk=document.getElementById('clock'); if(clk) clk.textContent=new Date().toLocaleTimeString(getLoc()); },1000);
 
 // ════════════════════════════════════════════════════════════
 // MODAL
 // ════════════════════════════════════════════════════════════
-function openFile(file, title='DOCUMENT') {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-content').textContent = 'CHARGEMENT...';
-  document.getElementById('modal').classList.add('open');
-  kittChime();
-  fetch(file)
-    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-    .then(t  => { document.getElementById('modal-content').textContent = t; })
-    .catch(er => { document.getElementById('modal-content').textContent = `ERREUR\n${file}\n${er.message}`; });
-}
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
-document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+function openFile(file,title='DOCUMENT'){ document.getElementById('modal-title').textContent=title; document.getElementById('modal-content').textContent='CHARGEMENT...'; document.getElementById('modal').classList.add('open'); kittChime(); fetch(file).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }).then(t=>{ document.getElementById('modal-content').textContent=t; }).catch(er=>{ document.getElementById('modal-content').textContent=`ERREUR\n${file}\n${er.message}`; }); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
 // ════════════════════════════════════════════════════════════
 // DÉMARRAGE
 // ════════════════════════════════════════════════════════════
-function startMain() {
-  (async () => {
-    await delay(200);
-    await typeText(T[LANG].wait,      14, 'line-dim');
-    await typeText(T[LANG].help_hint, 12, 'line-dim');
-  })();
-}
+function startMain(){ (async ()=>{ await delay(200); await typeText(T[LANG].wait,14,'line-dim'); await typeText(T[LANG].help_hint,12,'line-dim'); })(); }
 
 // ════════════════════════════════════════════════════════════
 // COMPTEUR DE VISITES — localStorage + offset 1000
 // ════════════════════════════════════════════════════════════
-(function() {
-  try {
-    const BASE = 1000;
-    const KEY  = 'kitt_fb_v';
-    let n = parseInt(localStorage.getItem(KEY) || '0');
-    n++;
-    localStorage.setItem(KEY, n);
-    const el = document.getElementById('visit-counter');
-    if (el) el.textContent = 'VISITES : ' + (BASE + n);
-  } catch(e) {}
-})();
+(function(){ try{ const BASE=1000; const KEY='kitt_fb_v'; let n=parseInt(localStorage.getItem(KEY)||'0'); n++; localStorage.setItem(KEY,n); const el=document.getElementById('visit-counter'); if(el) el.textContent='VISITES : '+(BASE+n); }catch(e){} })();
 
 // Lancer l'écran de sélection de langue au chargement
-window.addEventListener('load', () => showLangScreen());
+window.addEventListener('load', ()=>{ showLangScreen(); applyLocale(); });
 </script>
 </body>
 </html>
