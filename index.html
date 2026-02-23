@@ -1405,7 +1405,6 @@ function selectLang(lang) {
     // Lancer l'écran d'accès dans la bonne langue
     runAccessScreen();
   }, 500);
-  _scheduleKittCall();
 }
 
 // ★ Applique la langue à TOUS les éléments de l'interface
@@ -2422,6 +2421,8 @@ function startMain() {
       pt:'★ NOVOS COMANDOS: mode, turbo, scan, velocidade, karr, credits',
     };
     await typeText(newCmds[LANG]||newCmds.en, 10, 'line-info');
+    // ★ KITT appelle APRÈS que l'interface est prête
+    _scheduleKittCall();
   })();
 }
 
