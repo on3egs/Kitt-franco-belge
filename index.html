@@ -381,6 +381,68 @@ button .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.
   color:rgba(255,26,26,.4);margin-top:3px;
 }
 
+/* ★ VISUALISEUR AUDIO */
+#kitt-visualizer{
+  display:flex;align-items:flex-end;justify-content:center;
+  gap:2px;height:22px;width:90px;
+  opacity:0;transition:opacity .4s ease;
+  position:absolute;top:6px;left:50%;transform:translateX(-50%);
+}
+#kitt-visualizer.speaking{ opacity:1; }
+.viz-bar{
+  width:3px;border-radius:2px 2px 0 0;
+  background:linear-gradient(180deg,#ff4400,#ff1a00 60%,rgba(255,26,26,.3));
+  animation:none;transform-origin:bottom;
+  box-shadow:0 0 4px rgba(255,60,0,.5);
+  height:3px;
+}
+.viz-bar.active{ animation:vizPulse var(--dur,0.4s) ease-in-out infinite alternate; }
+@keyframes vizPulse{
+  from{ height:2px;opacity:.4; }
+  to{ height:var(--h,18px);opacity:1; }
+}
+
+/* ★ HUD MISSIONS */
+#kitt-mission-hud{
+  position:fixed;top:50px;right:10px;z-index:500;
+  width:200px;background:rgba(2,0,0,.9);
+  border:1px solid rgba(255,26,26,.25);border-radius:8px;
+  padding:10px 12px;font-family:var(--font-mono);
+  backdrop-filter:blur(8px);
+  box-shadow:0 0 20px rgba(255,26,26,.1);
+  display:none;
+  animation:hudSlide .3s ease-out forwards;
+}
+#kitt-mission-hud.visible{ display:block; }
+@keyframes hudSlide{ from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+#mission-title{
+  font-family:var(--font-display);font-size:9px;letter-spacing:3px;
+  color:var(--red);text-shadow:0 0 8px var(--red);margin-bottom:8px;
+  border-bottom:1px solid rgba(255,26,26,.2);padding-bottom:5px;
+}
+#mission-progress-bar{
+  height:2px;background:rgba(255,26,26,.15);border-radius:1px;margin-bottom:8px;
+}
+#mission-progress-fill{
+  height:100%;background:var(--green);border-radius:1px;
+  transition:width .5s ease;box-shadow:0 0 6px var(--green);
+}
+.mission-item{
+  font-size:9px;letter-spacing:1px;padding:2px 0;
+  display:flex;gap:6px;align-items:center;
+  color:rgba(255,255,255,.35);transition:color .3s;
+}
+.mission-item.done{ color:var(--green); }
+.mission-item.done .m-check{ color:var(--green); }
+.m-check{ font-size:10px;width:10px;flex-shrink:0; }
+#mission-close{
+  margin-top:8px;font-size:8px;letter-spacing:2px;color:rgba(255,26,26,.4);
+  cursor:pointer;text-align:center;
+  border-top:1px solid rgba(255,26,26,.1);padding-top:6px;
+  transition:color .2s;font-family:var(--font-display);
+}
+#mission-close:hover{ color:var(--red); }
+
 /* ── APPEL ENTRANT ─────────────────────────────────────────── */
 @keyframes callRing{0%,100%{transform:scale(1)}10%,30%{transform:scale(1.04)}20%,40%{transform:scale(.98)}}
 @keyframes callPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,26,26,.4)}70%{box-shadow:0 0 0 16px rgba(255,26,26,0)}}
@@ -581,6 +643,7 @@ button .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.
     <button id="btn-mentions" onclick="ripple(event);openFile('Mentions.txt',T[LANG].modal_mentions)" class="btn-red">[ MENTIONS ]</button>
     <button id="btn-licence" onclick="ripple(event);openFile('License.txt',T[LANG].modal_licence)" class="btn-red">[ LICENCE ]</button>
     <button id="btn-clear" onclick="ripple(event);clearTerm()">[ EFFACER ]</button>
+    <button id="btn-missions" onclick="ripple(event);_toggleMissionHud()" style="border-color:rgba(255,180,0,.5);color:rgba(255,180,0,.7);">[ MISSIONS ]</button>
     <button id="btn-tunnel" class="tunnel-checking" onclick="ripple(event);connectTunnel()" title="Vérification..."><span id="btn-tunnel-txt">[ CONNEXION KITT ]</span></button>
   </div>
 
@@ -1137,6 +1200,9 @@ function speakMuther(text, lang) {
     if(voice) utt.voice=voice;
     utt.rate=0.78; utt.pitch=0.72; utt.volume=0.88;
     utt.lang={fr:"fr-FR",en:"en-US",nl:"nl-NL",de:"de-DE",it:"it-IT",es:"es-ES",pt:"pt-PT"}[lang||LANG]||"fr-FR";
+    utt.onstart = ()=>{ vizStart(); };
+    utt.onend = ()=>{ vizStop(); };
+    utt.onerror = ()=>{ vizStop(); };
     sndMutherBeep(); setTimeout(()=>_synth.speak(utt),140);
   } catch(e){}
 }
@@ -2029,6 +2095,7 @@ cmdInput.addEventListener('keydown', async function(e) {
   const cmd = CMD_ALIASES[raw] || raw;
   if (CMDS[cmd]) {
     _onCmdExecuted();
+    if(_MISSION_CMD_MAP[cmd]) _completeMission(_MISSION_CMD_MAP[cmd]);
     await CMDS[cmd]();
   } else {
     _onCmdExecuted();
@@ -2083,6 +2150,7 @@ function _updateTunnelBtn() {
 }
 function connectTunnel() {
   sndSelect();
+  try{ _completeMission('connexion'); }catch(e){}
   if (_tunnelStatus === 'online' && _tunnelUrl && _isValidCfUrl(_tunnelUrl)) {
     addLine('[ TUNNEL ] CONNEXION SÉCURISÉE → ' + _tunnelUrl, 'line-ok');
     setTimeout(() => window.open(_tunnelUrl, '_blank', 'noopener,noreferrer'), 300);
@@ -2474,6 +2542,243 @@ function showKittCall(){
     setTimeout(()=>{ call.style.display='none'; },320);
   };
 }
+
+// ════════════════════════════════════════════════════════════
+// ★ VISUALISEUR AUDIO — anime les barres quand KITT parle
+// ════════════════════════════════════════════════════════════
+function vizStart() {
+  const viz = document.getElementById('kitt-visualizer');
+  if(!viz) return;
+  viz.classList.add('speaking');
+  viz.querySelectorAll('.viz-bar').forEach(bar => bar.classList.add('active'));
+}
+function vizStop() {
+  const viz = document.getElementById('kitt-visualizer');
+  if(!viz) return;
+  viz.classList.remove('speaking');
+  viz.querySelectorAll('.viz-bar').forEach(bar => bar.classList.remove('active'));
+}
+
+// ════════════════════════════════════════════════════════════
+// ★ MOTEUR AMBIANT — ronronnement grave permanent
+// ════════════════════════════════════════════════════════════
+let _engineNode = null;
+function startEngineAmbient() {
+  try {
+    if(_engineNode) return;
+    _resume();
+    const mg = _ac.createGain(); mg.gain.value = 0;
+    mg.connect(_ac.destination);
+
+    // Oscillateur principal grave
+    const o1 = _ac.createOscillator(); o1.type='sine'; o1.frequency.value=38;
+    const g1 = _ac.createGain(); g1.gain.value=0.10; o1.connect(g1); g1.connect(mg);
+
+    // Harmonique
+    const o2 = _ac.createOscillator(); o2.type='triangle'; o2.frequency.value=76;
+    const g2 = _ac.createGain(); g2.gain.value=0.035; o2.connect(g2); g2.connect(mg);
+
+    // Vibration mécanique (LFO sur la fréquence)
+    const lfo = _ac.createOscillator(); lfo.type='sine'; lfo.frequency.value=3.2;
+    const lfoG = _ac.createGain(); lfoG.gain.value=1.8;
+    lfo.connect(lfoG); lfoG.connect(o1.frequency);
+
+    // Bruit de route ultra-filtré
+    const bufLen = _ac.sampleRate * 3;
+    const nBuf = _ac.createBuffer(1, bufLen, _ac.sampleRate);
+    const nd = nBuf.getChannelData(0);
+    for(let i=0; i<bufLen; i++) nd[i] = Math.random()*2-1;
+    const nSrc = _ac.createBufferSource(); nSrc.buffer=nBuf; nSrc.loop=true;
+    const lp = _ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=120; lp.Q.value=1.2;
+    const nGain = _ac.createGain(); nGain.gain.value=0.018;
+    nSrc.connect(lp); lp.connect(nGain); nGain.connect(mg);
+
+    o1.start(); o2.start(); lfo.start(); nSrc.start();
+
+    // Fade in progressif
+    mg.gain.setValueAtTime(0, _ac.currentTime);
+    mg.gain.linearRampToValueAtTime(0.55, _ac.currentTime+4);
+
+    _engineNode = mg;
+
+    // Variations légères toutes les 8 secondes (simulation accélération/décélération)
+    setInterval(()=>{
+      const variation = 0.45 + Math.random()*0.2;
+      mg.gain.setTargetAtTime(variation, _ac.currentTime, 1.5);
+      const fvar = 37 + Math.random()*3;
+      o1.frequency.setTargetAtTime(fvar, _ac.currentTime, 2);
+    }, 8000);
+  } catch(e){}
+}
+
+// Démarrer le moteur après interaction utilisateur
+document.addEventListener('click', ()=>{ startEngineAmbient(); }, {once:true});
+
+// ════════════════════════════════════════════════════════════
+// ★ SYSTÈME DE MISSIONS
+// ════════════════════════════════════════════════════════════
+const MISSIONS = {
+  fr: [
+    {id:'boot',     label:'Lance la séquence de démarrage (boot)',   cmd:'boot'},
+    {id:'aide',     label:'Consulte la liste des commandes (aide)',   cmd:'aide'},
+    {id:'diag',     label:'Effectue un diagnostic complet',           cmd:'diagnostic'},
+    {id:'scan',     label:'Scanne ton environnement',                 cmd:'scan'},
+    {id:'turbo',    label:'Active le TURBO BOOST',                    cmd:'turbo'},
+    {id:'mode',     label:'Change de mode de conduite',               cmd:'mode'},
+    {id:'karr',     label:'Consulte le dossier K.A.R.R.',             cmd:'karr'},
+    {id:'connexion',label:'Clique sur Connexion IA',                  cmd:null},
+  ],
+  en: [
+    {id:'boot',     label:'Launch boot sequence',                     cmd:'boot'},
+    {id:'aide',     label:'Consult the command list (help)',          cmd:'aide'},
+    {id:'diag',     label:'Run a full diagnostic',                    cmd:'diagnostic'},
+    {id:'scan',     label:'Scan your environment',                    cmd:'scan'},
+    {id:'turbo',    label:'Activate TURBO BOOST',                    cmd:'turbo'},
+    {id:'mode',     label:'Change driving mode',                      cmd:'mode'},
+    {id:'karr',     label:'Access K.A.R.R. file',                    cmd:'karr'},
+    {id:'connexion',label:'Click on AI Connection',                   cmd:null},
+  ],
+};
+// Fallback en pour les autres langues
+['nl','de','it','es','pt'].forEach(l=>{ MISSIONS[l]=MISSIONS.en; });
+
+let _missionsCompleted = new Set(JSON.parse(localStorage.getItem('kitt_missions')||'[]'));
+let _missionHudOpen = false;
+
+function _saveMissions() {
+  try{ localStorage.setItem('kitt_missions', JSON.stringify([..._missionsCompleted])); }catch(e){}
+}
+
+function _completeMission(id) {
+  if(_missionsCompleted.has(id)) return;
+  _missionsCompleted.add(id);
+  _saveMissions();
+  _renderMissions();
+  // Notification de succès dans le terminal
+  const labels = {boot:'SÉQUENCE DÉMARRÉE',aide:'COMMANDES CONSULTÉES',diag:'DIAGNOSTIC EFFECTUÉ',
+    scan:'SCAN COMPLÉTÉ',turbo:'TURBO ACTIVÉ',mode:'MODE CHANGÉ',karr:'K.A.R.R. CONSULTÉ',connexion:'CONNEXION IA CLIQUÉE'};
+  const msg = `✦ MISSION ACCOMPLIE : ${labels[id]||id.toUpperCase()} ✦`;
+  try{ addLine(msg, 'line-ok'); kittChime(); }catch(e){}
+  // Notification push
+  _sendPush('KITT — Mission accomplie', msg);
+}
+
+function _renderMissions() {
+  const list = document.getElementById('mission-list');
+  const fill = document.getElementById('mission-progress-fill');
+  if(!list) return;
+  const missions = MISSIONS[LANG]||MISSIONS.fr;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  if(fill) fill.style.width = `${Math.round(done/missions.length*100)}%`;
+  list.innerHTML = missions.map(m=>`
+    <div class="mission-item ${_missionsCompleted.has(m.id)?'done':''}">
+      <span class="m-check">${_missionsCompleted.has(m.id)?'▶':'○'}</span>
+      <span>${m.label}</span>
+    </div>`).join('');
+}
+
+function _toggleMissionHud() {
+  const hud = document.getElementById('kitt-mission-hud');
+  if(!hud) return;
+  _missionHudOpen = !_missionHudOpen;
+  if(_missionHudOpen) { _renderMissions(); hud.classList.add('visible'); }
+  else { hud.classList.remove('visible'); }
+}
+
+// Bouton fermer
+document.addEventListener('DOMContentLoaded', ()=>{
+  const mc = document.getElementById('mission-close');
+  if(mc) mc.addEventListener('click', _toggleMissionHud);
+});
+
+// Commande missions
+CMDS['missions'] = async function() {
+  _toggleMissionHud();
+  await typeText('── MISSIONS KITT ──', 10, 'line-info');
+  const missions = MISSIONS[LANG]||MISSIONS.fr;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  await typeText(`PROGRESSION : ${done}/${missions.length}`, 12, done===missions.length?'line-ok':'line-warn');
+  if(done===missions.length) await typeText('TOUTES LES MISSIONS ACCOMPLIES ! FÉLICITATIONS.', 12, 'line-ok');
+};
+CMD_ALIASES['mission'] = 'missions';
+CMD_ALIASES['quetes'] = 'missions';
+CMD_ALIASES['quêtes'] = 'missions';
+
+// Auto-tracker de commandes → missions
+const _MISSION_CMD_MAP = {
+  boot:'boot', aide:'aide', diagnostic:'diag', scan:'scan', turbo:'turbo', mode:'mode', karr:'karr',
+  hulp:'aide', geluid:'son', diagnostic2:'diag', hilfe:'aide', ayuda:'aide', ajuda:'aide', aiuto:'aide',
+};
+const _origOnCmdExecuted = _onCmdExecuted;
+// Override pour tracker les missions aussi
+(function(){
+  const origExec = _onCmdExecuted;
+  window._trackMissionCmd = function(cmdKey){
+    if(_MISSION_CMD_MAP[cmdKey]) _completeMission(_MISSION_CMD_MAP[cmdKey]);
+  };
+})();
+
+// ════════════════════════════════════════════════════════════
+// ★ NOTIFICATIONS PUSH
+// ════════════════════════════════════════════════════════════
+let _notifEnabled = false;
+async function _initNotifications() {
+  if(!('Notification' in window)) return;
+  if(Notification.permission==='granted') { _notifEnabled=true; _scheduleRandomNotifs(); return; }
+  if(Notification.permission==='default') {
+    // Demander après 20 secondes — moins intrusif
+    setTimeout(async()=>{
+      const perm = await Notification.requestPermission();
+      if(perm==='granted') { _notifEnabled=true; _scheduleRandomNotifs(); }
+    }, 20000);
+  }
+}
+
+function _sendPush(title, body) {
+  if(!_notifEnabled || Notification.permission!=='granted') return;
+  try{
+    const n = new Notification(title, {
+      body, icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23000"/><rect x="4" y="14" width="24" height="4" rx="2" fill="%23ff1a00"/></svg>',
+      badge:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23ff1a00"/></svg>',
+      silent:false,
+    });
+    setTimeout(()=>n.close(), 6000);
+  }catch(e){}
+}
+
+const KITT_NOTIFS = {
+  fr:['KITT à votre service. Tapez "aide" pour les commandes.','Alerte : secteur non sécurisé. Scan recommandé.','Mode turbo disponible. Conditions optimales.','Nouveau dossier disponible. Tapez "karr".','Connexion IA active. Testez l\'interface.','Surveillance radar : aucune menace détectée.','Carburant à 78%. Trajet possible : 340 km.'],
+  en:['KITT at your service. Type "help" for commands.','Alert: unsecured sector. Scan recommended.','Turbo mode available. Optimal conditions.','New file available. Type "karr".','AI connection active. Test the interface.','Radar surveillance: no threats detected.','Fuel at 78%. Possible range: 340 km.'],
+};
+['nl','de','it','es','pt'].forEach(l=>{ KITT_NOTIFS[l]=KITT_NOTIFS.en; });
+
+function _scheduleRandomNotifs() {
+  // Première notif après 5 minutes, puis toutes les 8-15 minutes
+  const schedule = ()=>{
+    const delay = (8+Math.random()*7)*60000;
+    setTimeout(()=>{
+      const msgs = KITT_NOTIFS[LANG]||KITT_NOTIFS.fr;
+      const msg = msgs[Math.floor(Math.random()*msgs.length)];
+      _sendPush('K · I · T · T', msg);
+      schedule();
+    }, delay);
+  };
+  setTimeout(()=>{
+    const msgs = KITT_NOTIFS[LANG]||KITT_NOTIFS.fr;
+    _sendPush('K · I · T · T', msgs[0]);
+    schedule();
+  }, 5*60000);
+}
+
+// Init après sélection de langue
+const _origSetLang = window.setLang;
+window.setLang = function(l){
+  if(_origSetLang) _origSetLang(l);
+  setTimeout(_initNotifications, 3000);
+};
+
+// Ajouter "missions" dans la liste des commandes connues
+if(typeof ALL_COMMANDS !== 'undefined') ALL_COMMANDS.push('missions');
 </script>
 
 <!-- ★ TABLEAU DE BORD KITT ENRICHI -->
@@ -2493,6 +2798,19 @@ function showKittCall(){
     </div>
     <!-- Scanner central -->
     <div id="kitt-scan-center">
+      <div id="kitt-visualizer">
+        <div class="viz-bar" style="--h:4px;--dur:.3s"></div>
+        <div class="viz-bar" style="--h:10px;--dur:.45s"></div>
+        <div class="viz-bar" style="--h:16px;--dur:.35s"></div>
+        <div class="viz-bar" style="--h:20px;--dur:.5s"></div>
+        <div class="viz-bar" style="--h:22px;--dur:.28s"></div>
+        <div class="viz-bar" style="--h:18px;--dur:.42s"></div>
+        <div class="viz-bar" style="--h:14px;--dur:.38s"></div>
+        <div class="viz-bar" style="--h:20px;--dur:.32s"></div>
+        <div class="viz-bar" style="--h:12px;--dur:.48s"></div>
+        <div class="viz-bar" style="--h:8px;--dur:.36s"></div>
+        <div class="viz-bar" style="--h:4px;--dur:.44s"></div>
+      </div>
       <div id="kitt-scan-track">
         <div id="kitt-scan-dot"></div>
         <div id="kitt-scan-trail"></div>
@@ -2523,6 +2841,14 @@ function showKittCall(){
     <button class="call-btn" id="call-accept">&#9742; ACCEPTER</button>
     <button class="call-btn" id="call-ignore">&#10005; IGNORER</button>
   </div>
+</div>
+
+<!-- ★ HUD MISSIONS -->
+<div id="kitt-mission-hud">
+  <div id="mission-title">⬡ MISSIONS KITT</div>
+  <div id="mission-progress-bar"><div id="mission-progress-fill" style="width:0%"></div></div>
+  <div id="mission-list"></div>
+  <div id="mission-close">[ FERMER ]</div>
 </div>
 
 </body>
