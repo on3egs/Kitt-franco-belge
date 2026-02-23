@@ -211,7 +211,7 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 #visit-counter{position:fixed;left:8px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;text-orientation:mixed;font-size:11px;color:var(--green);letter-spacing:3px;opacity:.65;pointer-events:none;z-index:100;text-shadow:0 0 8px var(--green),0 0 16px rgba(0,255,102,.4);user-select:none;border-left:1px solid rgba(0,255,102,.3);padding-left:4px;font-family:var(--font-mono);}
 
 /* ── FOOTER ────────────────────────────────────────────────── */
-#site-footer{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--green-dim);letter-spacing:2px;opacity:.55;pointer-events:none;z-index:1001;white-space:nowrap;user-select:none;text-shadow:0 0 6px var(--green-dim);font-family:var(--font-mono);}
+#site-footer{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--green-dim);letter-spacing:2px;opacity:.55;pointer-events:none;z-index:1001;white-space:nowrap;user-select:none;text-shadow:0 0 6px var(--green-dim);font-family:var(--font-mono);}
 
 /* ── HEADER ★ AMÉLIORÉ ────────────────────────────────────── */
 header{
@@ -424,12 +424,17 @@ button .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.
   padding:10px 16px 6px;
   max-width:760px;margin:0 auto;
   overflow:hidden;
+  transition:padding-bottom .5s ease;
+}
+.container.dash-visible{
+  padding-bottom:82px;
 }
 
 /* ── MOBILE ────────────────────────────────────────────────── */
 @media(max-width:600px){
   #cmd-input{font-size:16px !important;}
-  .container{padding-bottom:max(6px,env(safe-area-inset-bottom));}
+  .container:not(.dash-visible){padding-bottom:max(6px,env(safe-area-inset-bottom));}
+  .container.dash-visible{padding-bottom:max(88px,calc(82px + env(safe-area-inset-bottom)));}
   .input-row{padding-top:10px;padding-bottom:4px;}
   .hdr-title{font-size:10px;letter-spacing:1px;}
   button{padding:6px 10px;font-size:9px;}
@@ -1264,7 +1269,8 @@ function selectLang(lang) {
   screen.style.transition = "opacity .45s"; screen.style.opacity = "0";
   setTimeout(() => { screen.style.display="none"; screen.style.opacity="1"; screen.style.transition=""; }, 500);
   setTimeout(()=>{ try{showKittDash();}catch(e){} }, 600);
-  setTimeout(()=>{ try{showKittCall();}catch(e){} }, 2400);
+  // L'appel se déclenche après 3 commandes tapées ET minimum 2 minutes
+  _scheduleKittCall();
 }
 
 document.addEventListener('keydown', e => {
@@ -1310,8 +1316,29 @@ function typeText(text, speed=16, cls='line-ok') {
 function clearTerm() { term.innerHTML=''; addLine(T[LANG].cleared,'line-dim'); }
 
 // ════════════════════════════════════════════════════════════
-// ★ HISTORIQUE DES COMMANDES (↑/↓)
+// ★ APPEL KITT — déclenché après 3 commandes ET 2 minutes
 // ════════════════════════════════════════════════════════════
+let _cmdCount = 0;
+let _callReady = false;  // devient true après 2 minutes
+let _callScheduled = false;
+
+function _scheduleKittCall() {
+  // Fenêtre de 2 minutes minimum avant que l'appel puisse arriver
+  setTimeout(() => { _callReady = true; _tryKittCall(); }, 120000);
+}
+
+function _tryKittCall() {
+  if (_callScheduled || _callShown) return;
+  if (_callReady && _cmdCount >= 3) {
+    _callScheduled = true;
+    setTimeout(() => { try{ showKittCall(); }catch(e){} }, 2000);
+  }
+}
+
+function _onCmdExecuted() {
+  _cmdCount++;
+  _tryKittCall();
+}
 let cmdHistory = [];
 let historyIndex = -1;
 let currentInput = '';
@@ -1993,8 +2020,10 @@ cmdInput.addEventListener('keydown', async function(e) {
 
   const cmd = CMD_ALIASES[raw] || raw;
   if (CMDS[cmd]) {
+    _onCmdExecuted();
     await CMDS[cmd]();
   } else {
+    _onCmdExecuted();
     sndError();
     await typeText(T[LANG].unknown(raw), 14, 'line-err');
     // ★ Suggestion intelligente
@@ -2380,6 +2409,8 @@ if(window.visualViewport){
 function showKittDash(){
   const dash=document.getElementById('kitt-dash');
   if(dash) dash.classList.add('visible');
+  const container=document.querySelector('.container');
+  if(container) container.classList.add('dash-visible');
 }
 
 // ════════════════════════════════════════════════════════════
