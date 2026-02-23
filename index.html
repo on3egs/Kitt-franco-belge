@@ -119,7 +119,7 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 #lang-screen{
   position:fixed;top:0;left:0;right:0;bottom:0;
   background:radial-gradient(ellipse 600px 700px at center,rgba(0,4,1,.82) 0%,rgba(0,0,0,.5) 70%,rgba(0,0,0,.2) 100%);
-  z-index:8000;
+  z-index:9600;
   display:flex;align-items:center;justify-content:center;
   padding:16px;
 }
@@ -887,6 +887,15 @@ function ripple(e) {
 // ════════════════════════════════════════════════════════════
 let kittMode = 'normal';
 const MODES = ['normal', 'pursuit', 'turbo'];
+const _MODE_LABELS_BY_LANG = {
+  fr:{normal:'NORMAL',pursuit:'S.POURSUITE',turbo:'TURBO BOOST'},
+  en:{normal:'NORMAL',pursuit:'S.PURSUIT',turbo:'TURBO BOOST'},
+  nl:{normal:'NORMAAL',pursuit:'S.ACHTERVOLGING',turbo:'TURBO BOOST'},
+  it:{normal:'NORMALE',pursuit:'S.INSEGUIMENTO',turbo:'TURBO BOOST'},
+  de:{normal:'NORMAL',pursuit:'S.VERFOLGUNG',turbo:'TURBO BOOST'},
+  es:{normal:'NORMAL',pursuit:'S.PERSECUCIÓN',turbo:'TURBO BOOST'},
+  pt:{normal:'NORMAL',pursuit:'S.PERSEGUIÇÃO',turbo:'TURBO BOOST'},
+};
 const MODE_LABELS = { normal: 'NORMAL', pursuit: 'S.POURSUITE', turbo: 'TURBO BOOST' };
 let kittSpeed = 0;
 let speedInterval = null;
@@ -896,7 +905,8 @@ function setKittMode(mode) {
   const badge = document.getElementById('kitt-mode-badge');
   if (badge) {
     badge.className = mode;
-    badge.textContent = MODE_LABELS[mode] || mode.toUpperCase();
+    const ml = _MODE_LABELS_BY_LANG[LANG]||_MODE_LABELS_BY_LANG.en;
+    badge.textContent = ml[mode] || mode.toUpperCase();
   }
   // ★ Update speed gauge
   const speedEl = document.getElementById('kitt-speed-display');
@@ -956,31 +966,39 @@ async function runMotherIntro() {
     }
     sndMotherBeep();
   }
-  await typeMotherLine('WEYLAND-YUTANI CORPORATION', 'm-bright', 18);
+  // ★ Textes MU-TH-UR traduits
+  const MT = {
+    fr: {corp:'WEYLAND-YUTANI CORPORATION',sys:'SYSTÈME  :  MU-TH-UR 6000',acc:"ACCÈS    :  PROTOCOLE D'INTERFACE",ship:'NAVIRE   :  NOSTROMO  180924609',cls:'CLASSE   :  VÉHICULE DE REMORQUAGE COM',crew:'ÉQUIPAGE :  7 MEMBRES',op:'OPÉRATEUR:  MANIX  //  KYRONEX SYSTEMS',checks:[['VÉRIFICATION SYSTÈMES','[OK]'],['NOYAU NEURAL         ','[EN LIGNE]'],['MÉMOIRE PERSISTANTE  ','[STABLE]'],['MODULE KYRONEX       ','[ACTIF]'],['RÉSEAU KITT          ','[CHARGÉE]']],speech:"PROTOCOLE D'INTERFACE ACTIVÉ. MODULE KYRONEX EN LIGNE. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.",skip:'>>> CLIQUEZ OU APPUYEZ SUR UNE TOUCHE <<<'},
+    en: {corp:'WEYLAND-YUTANI CORPORATION',sys:'SYSTEM   :  MU-TH-UR 6000',acc:'ACCESS   :  INTERFACE PROTOCOL',ship:'VESSEL   :  NOSTROMO  180924609',cls:'CLASS    :  COM HAUL VEHICLE',crew:'CREW     :  7 MEMBERS',op:'OPERATOR :  MANIX  //  KYRONEX SYSTEMS',checks:[['SYSTEMS CHECK        ','[OK]'],['NEURAL CORE          ','[ONLINE]'],['PERSISTENT MEMORY    ','[STABLE]'],['KYRONEX MODULE       ','[ACTIVE]'],['KITT NETWORK         ','[LOADED]']],speech:"INTERFACE PROTOCOL ACTIVE. KYRONEX MODULE ONLINE. I AM MU-TH-UR. YOU MAY PROCEED.",skip:'>>> CLICK OR PRESS A KEY <<<'},
+    nl: {corp:'WEYLAND-YUTANI CORPORATION',sys:'SYSTEEM  :  MU-TH-UR 6000',acc:'TOEGANG  :  INTERFACEPROTOCOL',ship:'SCHIP    :  NOSTROMO  180924609',cls:'KLASSE   :  COM SLEEPVOERTUIG',crew:'BEMANNING:  7 LEDEN',op:'OPERATOR :  MANIX  //  KYRONEX SYSTEMS',checks:[['SYSTEEMCHECK         ','[OK]'],['NEURAAL KERN         ','[ONLINE]'],['PERSISTENT GEHEUGEN  ','[STABIEL]'],['KYRONEX MODULE       ','[ACTIEF]'],['KITT NETWERK         ','[GELADEN]']],speech:"INTERFACEPROTOCOL ACTIEF. KYRONEX MODULE ONLINE. IK BEN MU-TH-UR. U MAG DOORGAAN.",skip:'>>> KLIK OF DRUK OP EEN TOETS <<<'},
+    it: {corp:'WEYLAND-YUTANI CORPORATION',sys:'SISTEMA  :  MU-TH-UR 6000',acc:'ACCESSO  :  PROTOCOLLO INTERFACCIA',ship:'NAVE     :  NOSTROMO  180924609',cls:'CLASSE   :  VEICOLO DA TRAINO COM',crew:'EQUIPAG. :  7 MEMBRI',op:'OPERATORE:  MANIX  //  KYRONEX SYSTEMS',checks:[['VERIFICA SISTEMI     ','[OK]'],['NUCLEO NEURALE       ','[ONLINE]'],['MEMORIA PERSISTENTE  ','[STABILE]'],['MODULO KYRONEX       ','[ATTIVO]'],['RETE KITT            ','[CARICATA]']],speech:"PROTOCOLLO INTERFACCIA ATTIVO. MODULO KYRONEX ONLINE. SONO MU-TH-UR. PUOI PROCEDERE.",skip:'>>> CLICCA O PREMI UN TASTO <<<'},
+    de: {corp:'WEYLAND-YUTANI CORPORATION',sys:'SYSTEM   :  MU-TH-UR 6000',acc:'ZUGANG   :  SCHNITTSTELLENPROTOKOLL',ship:'SCHIFF   :  NOSTROMO  180924609',cls:'KLASSE   :  COM ZUGFAHRZEUG',crew:'BESATZUNG:  7 MITGLIEDER',op:'OPERATOR :  MANIX  //  KYRONEX SYSTEMS',checks:[['SYSTEMPRÜFUNG        ','[OK]'],['NEURONALER KERN      ','[ONLINE]'],['DAUERSPEICHER        ','[STABIL]'],['KYRONEX MODUL        ','[AKTIV]'],['KITT NETZWERK        ','[GELADEN]']],speech:"SCHNITTSTELLENPROTOKOLL AKTIV. KYRONEX MODUL ONLINE. ICH BIN MU-TH-UR. SIE KÖNNEN FORTFAHREN.",skip:'>>> KLICKEN ODER TASTE DRÜCKEN <<<'},
+    es: {corp:'WEYLAND-YUTANI CORPORATION',sys:'SISTEMA  :  MU-TH-UR 6000',acc:'ACCESO   :  PROTOCOLO DE INTERFAZ',ship:'NAVE     :  NOSTROMO  180924609',cls:'CLASE    :  VEHÍCULO DE REMOLQUE COM',crew:'TRIPULAC.:  7 MIEMBROS',op:'OPERADOR :  MANIX  //  KYRONEX SYSTEMS',checks:[['VERIFICACIÓN SISTEMA ','[OK]'],['NÚCLEO NEURONAL      ','[EN LÍNEA]'],['MEMORIA PERSISTENTE  ','[ESTABLE]'],['MÓDULO KYRONEX       ','[ACTIVO]'],['RED KITT             ','[CARGADA]']],speech:"PROTOCOLO DE INTERFAZ ACTIVO. MÓDULO KYRONEX EN LÍNEA. SOY MU-TH-UR. PUEDE PROCEDER.",skip:'>>> CLIC O PULSA UNA TECLA <<<'},
+    pt: {corp:'WEYLAND-YUTANI CORPORATION',sys:'SISTEMA  :  MU-TH-UR 6000',acc:'ACESSO   :  PROTOCOLO DE INTERFACE',ship:'NAVE     :  NOSTROMO  180924609',cls:'CLASSE   :  VEÍCULO DE REBOQUE COM',crew:'TRIPULAÇÃO: 7 MEMBROS',op:'OPERADOR :  MANIX  //  KYRONEX SYSTEMS',checks:[['VERIFICAÇÃO SISTEMA  ','[OK]'],['NÚCLEO NEURONAL      ','[EM LINHA]'],['MEMÓRIA PERSISTENTE  ','[ESTÁVEL]'],['MÓDULO KYRONEX       ','[ATIVO]'],['REDE KITT            ','[CARREGADA]']],speech:"PROTOCOLO DE INTERFACE ATIVO. MÓDULO KYRONEX EM LINHA. EU SOU MU-TH-UR. PODE PROSSEGUIR.",skip:'>>> CLIQUE OU PRIMA UMA TECLA <<<'},
+  };
+  const m = MT[LANG] || MT.en;
+  const langCode = {fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE',es:'es-ES',pt:'pt-PT'}[LANG]||'en-US';
+
+  if(skipMsg) skipMsg.textContent = m.skip;
+
+  await typeMotherLine(m.corp, 'm-bright', 18);
   await delay(120);
-  await typeMotherLine('SYSTÈME  :  MU-TH-UR 6000', 'm-normal', 18);
+  await typeMotherLine(m.sys, 'm-normal', 18);
   await delay(80);
-  await typeMotherLine('ACCÈS    :  PROTOCOLE D\'INTERFACE', 'm-normal', 18);
+  await typeMotherLine(m.acc, 'm-normal', 18);
   await delay(300);
   addLine('', 'm-dim');
   await delay(200);
-  await typeMotherLine('NAVIRE   :  NOSTROMO  180924609', 'm-normal', 16);
+  await typeMotherLine(m.ship, 'm-normal', 16);
   await delay(80);
-  await typeMotherLine('CLASSE   :  VÉHICULE DE REMORQUAGE COM', 'm-dim', 14);
+  await typeMotherLine(m.cls, 'm-dim', 14);
   await delay(80);
-  await typeMotherLine('ÉQUIPAGE :  7 MEMBRES', 'm-dim', 16);
+  await typeMotherLine(m.crew, 'm-dim', 16);
   await delay(80);
-  await typeMotherLine('OPÉRATEUR:  MANIX  //  KYRONEX SYSTEMS', 'm-dim', 14);
+  await typeMotherLine(m.op, 'm-dim', 14);
   await delay(400);
   addLine('', 'm-dim');
-  const checks = [
-    ['VÉRIFICATION SYSTÈMES', '[OK]'],
-    ['NOYAU NEURAL         ', '[EN LIGNE]'],
-    ['MÉMOIRE PERSISTANTE  ', '[STABLE]'],
-    ['MODULE KYRONEX       ', '[ACTIF]'],
-    ['RÉSEAU KITT          ', '[CHARGÉE]'],
-  ];
-  for (const [label, result] of checks) {
+  for (const [label, result] of m.checks) {
     if (skipped) { addLine(label + ' ...... ' + result, 'm-ok'); continue; }
     const div = addLine(label + ' ......', 'm-dim');
     sndMotherScan();
@@ -992,10 +1010,17 @@ async function runMotherIntro() {
   if (!skipped) { await delay(700); sndMotherChime(); await delay(900); }
   if (!skipped) {
     await new Promise(resolve => {
-      motherSpeak("PROTOCOLE D'INTERFACE ACTIVÉ. MODULE KYRONEX EN LIGNE. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.", resolve);
+      const utt = new SpeechSynthesisUtterance(m.speech);
+      utt.lang = langCode; utt.rate = 0.72; utt.pitch = 0.5; utt.volume = 0.85;
+      const vs = speechSynthesis.getVoices();
+      const v = vs.find(v=>v.lang.startsWith(langCode.split('-')[0])&&v.name.toLowerCase().includes('female'))||vs.find(v=>v.lang.startsWith(langCode.split('-')[0]));
+      if(v) utt.voice=v;
+      if(resolve) utt.onend=resolve;
+      if(window.speechSynthesis){ const lv=()=>{ speechSynthesis.speak(utt); }; if(speechSynthesis.getVoices().length>0) lv(); else{ speechSynthesis.onvoiceschanged=lv; speechSynthesis.speak(utt); } }
+      else resolve();
     });
   }
-  skipMsg.style.display = 'block';
+  if(skipMsg) skipMsg.style.display = 'block';
   document.removeEventListener('click', skipHandler);
   document.removeEventListener('keydown', skipHandler);
   if (!skipped) await delay(3000);
@@ -1005,7 +1030,9 @@ async function runMotherIntro() {
   intro.style.display = 'none';
   intro.style.opacity = '';
   intro.style.transition = '';
-  showLangScreen();
+  // ★ Afficher le dashboard et lancer l'interface principale
+  setTimeout(()=>{ try{showKittDash();}catch(e){} }, 100);
+  startMain();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1072,6 +1099,17 @@ const T = {
     hi:'BONJOUR. JE SUIS KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2:'SYSTÈME FRANCO-BELGE DÉVELOPPÉ PAR MANIX.',
     hi3:'À VOTRE SERVICE.',
+    btn_missions:'[ MISSIONS ]',
+    access_hdr:'WEYLAND-YUTANI CORP. // ACCÈS SÉCURISÉ',
+    access_prompt:'CODE D\'ACCÈS',
+    access_hint:'ENTREZ LE CODE D\'ACCÈS SYSTÈME',
+    mission_title:'⬡ MISSIONS KITT',
+    mission_close:'[ FERMER ]',
+    call_incoming:'APPEL ENTRANT ···',
+    call_accept:'☎ ACCEPTER',
+    call_ignore:'✕ IGNORER',
+    visits_label:'VISITES',
+    last_update:'DERNIÈRE MISE À JOUR',
   },
   en: {
     hdr_title:'KITT FRANCO-BELGIAN // CENTRAL INTERFACE',
@@ -1131,12 +1169,23 @@ const T = {
     hi:'HELLO. I AM KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
     hi2:'FRANCO-BELGIAN SYSTEM DEVELOPED BY MANIX.',
     hi3:'AT YOUR SERVICE.',
+    btn_missions:'[ MISSIONS ]',
+    access_hdr:'WEYLAND-YUTANI CORP. // SECURE ACCESS',
+    access_prompt:'ACCESS CODE',
+    access_hint:'ENTER SYSTEM ACCESS CODE',
+    mission_title:'⬡ KITT MISSIONS',
+    mission_close:'[ CLOSE ]',
+    call_incoming:'INCOMING CALL ···',
+    call_accept:'☎ ACCEPT',
+    call_ignore:'✕ IGNORE',
+    visits_label:'VISITS',
+    last_update:'LAST UPDATE',
   },
-  nl:{hdr_title:'KITT FRANCO-BELGISCH // CENTRALE INTERFACE',placeholder:'voer een commando in...',btn_boot:'[ OPSTARTEN ]',btn_diag:'[ DIAGNOSE ]',btn_mentions:'[ VERMELDINGEN ]',btn_licence:'[ LICENTIE ]',btn_clear:'[ WISSEN ]',btn_tunnel:'[ VERBIND KITT ]',modal_mentions:'WETTELIJKE VERMELDINGEN',modal_licence:'LICENTIE',wait:'SYSTEEM WACHT — TYP "boot" OF KLIK [ OPSTARTEN ]',help_hint:'TYP "hulp" VOOR DE COMMANDOLIJST.',cleared:'TERMINAL GEWIST.',unknown:(c)=>`ONBEKEND COMMANDO: "${c}". TYP "hulp".`,online:'ONLINE',boot_title:'  KITT FRANCO-BELGE — OPSTARTSEQUENTIE     ',boot_lines:[['KERNSYSTEEM INITIALISEREN...','line-warn'],['COGNITIEVE MODULES LADEN...        [OK]','line-ok'],['NEURALE INTERFACE...               [OK]','line-ok'],['SPRAAKSYNTHESE (PIPER-GPU)...      [OK]','line-ok'],['STEMHERKENNING (WHISPER)...        [OK]','line-ok'],['EMBEDDED LLM (QWEN 3B)...          [OK]','line-ok'],['OFFLINE MODUS...                   [ACTIEF]','line-ok'],['','line-ok'],['FAN PROJECT — NIET COMMERCIEEL.','line-dim'],['STATUS : INTERFACE IN ACTIEVE CONSTRUCTIE.','line-warn'],['','line-ok'],['UPDATES REGELMATIG UITGEROLD :','line-info'],['  • soms elke dag','line-dim'],['  • soms elke week','line-dim'],['  • soms elk uur','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTEN VOORBEHOUDEN.','line-warn']],boot_end:'  VERBINDING MET KITT-KERN TOT STAND GEBRACHT.',boot_hint:'  TYP "hulp" VOOR DE COMMANDOLIJST',aide_title:'BESCHIKBARE COMMANDO\'S:',aide_sys:'── SYSTEEM ──',aide_fun:'── PLEZIER ──',cmds_sys:[['hulp','deze lijst'],['boot','opstartsequentie'],['diagnostic','volledig systeemtest'],['status','snelle status'],['tijd','huidige tijd'],['versie','interface versie'],['geluid','audio demo'],['clear','terminal wissen'],['mode','KITT-modus wijzigen ★'],['turbo','TURBO BOOST ★'],['scan','omgeving scannen ★'],['snelheid','snelheid weergeven ★']],cmds_fun:[['hallo','KITT begroeting'],['grap','willekeurige KITT grap'],['alien','MU-TH-UR 6000 verbinding'],['matrix','het witte konijn'],['kitt','KITT identiteitsbestand'],['manix','bestuurdersdossier'],['cedric','Cedric Momo Rider dossier'],['kr95','KR95 dossier'],['replicas','de franco-belgische replica\'s'],['geheim','geheim bestand...'],['koffie','KITT om koffie vragen'],['belgie','geopolitieke analyse'],['jarvis','oproep naar Stark Tower'],['mario','Mario Ravasi / IoT dossier'],['za','ZA Elettronica dossier'],['pascal','K Industrie dossier'],['daemon','Daemon Paule dossier'],['geoffrey','Geoffrey dossier'],['covid','projectoorsprong — lockdown 2020'],['karr','K.A.R.R. dossier ★'],['credits','projectcredits ★']],hi:'HALLO. IK BEN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'FRANCO-BELGISCH SYSTEEM ONTWIKKELD DOOR MANIX.',hi3:'TOT UW DIENST.'},
-  it:{hdr_title:'KITT FRANCO-BELGA // INTERFACCIA CENTRALE',placeholder:'inserisci un comando...',btn_boot:'[ INIZIALIZZA ]',btn_diag:'[ DIAGNOSI ]',btn_mentions:'[ MENZIONI ]',btn_licence:'[ LICENZA ]',btn_clear:'[ CANCELLA ]',btn_tunnel:'[ CONNETTI KITT ]',modal_mentions:'NOTE LEGALI',modal_licence:'LICENZA',wait:'SISTEMA IN ATTESA — DIGITA "boot" O CLICCA [ INIZIALIZZA ]',help_hint:'DIGITA "aiuto" PER LA LISTA DEI COMANDI.',cleared:'TERMINALE CANCELLATO.',unknown:(c)=>`COMANDO SCONOSCIUTO: "${c}". DIGITA "aiuto".`,online:'IN LINEA',boot_title:'  KITT FRANCO-BELGA — SEQUENZA DI AVVIO     ',boot_lines:[['INIZIALIZZAZIONE SISTEMA...','line-warn'],['CARICAMENTO MODULI COGNITIVI...    [OK]','line-ok'],['INTERFACCIA NEURALE...             [OK]','line-ok'],['SINTESI VOCALE (PIPER-GPU)...      [OK]','line-ok'],['RICONOSCIMENTO VOCALE (WHISPER)... [OK]','line-ok'],['MODELLO LLM LOCALE (QWEN 3B)...   [OK]','line-ok'],['MODALITÀ OFFLINE...                [ATTIVA]','line-ok'],['','line-ok'],['PROGETTO FAN — NON COMMERCIALE.','line-dim'],['STATO : INTERFACCIA IN COSTRUZIONE ATTIVA.','line-warn'],['','line-ok'],['AGGIORNAMENTI DISTRIBUITI REGOLARMENTE :','line-info'],['  • a volte ogni giorno','line-dim'],['  • a volte ogni settimana','line-dim'],['  • in alcune fasi, quasi ogni ora','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). TUTTI I DIRITTI RISERVATI.','line-warn']],boot_end:'  CONNESSIONE AL NUCLEO KITT STABILITA.',boot_hint:'  DIGITA "aiuto" PER LA LISTA DEI COMANDI',aide_title:'COMANDI DISPONIBILI:',aide_sys:'── SISTEMA ──',aide_fun:'── DIVERTIMENTO ──',cmds_sys:[['aiuto','questa lista'],['boot','sequenza di avvio'],['diagnostic','test completo del sistema'],['status','stato rapido'],['ora','ora corrente'],['version','versione interfaccia'],['suono','demo audio'],['clear','cancella terminale'],['mode','cambia modalità KITT ★'],['turbo','TURBO BOOST ★'],['scan','scansiona ambiente ★'],['velocita','visualizza velocità ★']],cmds_fun:[['ciao','saluto KITT'],['barzelletta','barzelletta casuale KITT'],['alien','connessione MU-TH-UR 6000'],['matrix','il coniglio bianco'],['kitt','scheda identità KITT'],['manix','dossier pilota'],['cedric','dossier Cedric Momo Rider'],['kr95','dossier KR95'],['replicas','le repliche franco-belghe'],['segreto','file classificato...'],['caffe','chiedere un caffè a KITT'],['belgio','analisi geopolitica'],['jarvis','chiamata verso Stark Tower'],['mario','dossier Mario Ravasi / IoT'],['za','dossier ZA Elettronica'],['pascal','dossier K Industrie'],['daemon','dossier Daemon Paule'],['geoffrey','dossier Geoffrey'],['covid','origine del progetto — lockdown 2020'],['karr','dossier K.A.R.R. ★'],['credits','crediti del progetto ★']],hi:'CIAO. SONO KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'SISTEMA FRANCO-BELGA SVILUPPATO DA MANIX.',hi3:'AL VOSTRO SERVIZIO.'},
-  de:{hdr_title:'KITT FRANCO-BELGISCH // ZENTRALE SCHNITTSTELLE',placeholder:'Befehl eingeben...',btn_boot:'[ INITIALISIEREN ]',btn_diag:'[ DIAGNOSE ]',btn_mentions:'[ IMPRESSUM ]',btn_licence:'[ LIZENZ ]',btn_clear:'[ LÖSCHEN ]',btn_tunnel:'[ KITT VERBINDEN ]',modal_mentions:'IMPRESSUM',modal_licence:'LIZENZ',wait:'SYSTEM BEREIT — TIPPE "boot" ODER KLICKE [ INITIALISIEREN ]',help_hint:'TIPPE "hilfe" FÜR DIE BEFEHLSLISTE.',cleared:'TERMINAL GELEERT.',unknown:(c)=>`UNBEKANNTER BEFEHL: "${c}". TIPPE "hilfe".`,online:'ONLINE',boot_title:'  KITT FRANCO-BELGISCH — STARTSEQUENZ        ',boot_lines:[['KERNSYSTEM WIRD INITIALISIERT...','line-warn'],['KOGNITIVE MODULE LADEN...          [OK]','line-ok'],['NEURONALE SCHNITTSTELLE...         [OK]','line-ok'],['SPRACHSYNTHESE (PIPER-GPU)...      [OK]','line-ok'],['SPRACHERKENNUNG (WHISPER)...       [OK]','line-ok'],['LOKALES LLM (QWEN 3B)...           [OK]','line-ok'],['OFFLINE-MODUS...                   [AKTIV]','line-ok'],['','line-ok'],['FAN-PROJEKT — NICHT KOMMERZIELL.','line-dim'],['STATUS : SCHNITTSTELLE IM AUFBAU.','line-warn'],['','line-ok'],['UPDATES REGELMÄSSIG VERFÜGBAR :','line-info'],['  • manchmal täglich','line-dim'],['  • manchmal wöchentlich','line-dim'],['  • manchmal stündlich','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTE VORBEHALTEN.','line-warn']],boot_end:'  VERBINDUNG ZUM KITT-KERN HERGESTELLT.',boot_hint:'  TIPPE "hilfe" FÜR DIE BEFEHLSLISTE',aide_title:'VERFÜGBARE BEFEHLE:',aide_sys:'── SYSTEM ──',aide_fun:'── SPASS ──',cmds_sys:[['hilfe','diese Liste'],['boot','Startsequenz'],['diagnostic','vollständiger Systemtest'],['status','schneller Status'],['uhrzeit','aktuelle Uhrzeit'],['version','Schnittstellenversion'],['ton','Audio-Demo'],['clear','Terminal leeren'],['mode','KITT-Modus ändern ★'],['turbo','TURBO BOOST ★'],['scan','Umgebung scannen ★'],['geschwindigkeit','Geschwindigkeit anzeigen ★']],cmds_fun:[['hallo','KITT-Begrüßung'],['witz','zufälliger KITT-Witz'],['alien','MU-TH-UR 6000 Verbindung'],['matrix','das weiße Kaninchen'],['kitt','KITT Identitätsakte'],['manix','Fahrerakte'],['cedric','Cedric Momo Rider Akte'],['kr95','KR95 Akte'],['replicas','die franco-belgischen Repliken'],['geheimnis','geheime Akte...'],['kaffee','KITT um Kaffee bitten'],['belgien','geopolitische Analyse'],['jarvis','Anruf bei Stark Tower'],['mario','Mario Ravasi / IoT Akte'],['za','ZA Elettronica Akte'],['pascal','K Industrie Akte'],['damon','Damon Paule Akte'],['geoffrey','Geoffrey Akte'],['covid','Projektherkunft — Lockdown 2020'],['karr','K.A.R.R. Akte ★'],['credits','Projektcredits ★']],hi:'HALLO. ICH BIN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'FRANCO-BELGISCHES SYSTEM ENTWICKELT VON MANIX.',hi3:'ZU IHREN DIENSTEN.'},
-  es:{hdr_title:'KITT FRANCO-BELGA // INTERFAZ CENTRAL',placeholder:'escribe un comando...',btn_boot:'[ INICIALIZAR ]',btn_diag:'[ DIAGNÓSTICO ]',btn_mentions:'[ MENCIONES ]',btn_licence:'[ LICENCIA ]',btn_clear:'[ BORRAR ]',btn_tunnel:'[ CONECTAR KITT ]',modal_mentions:'AVISOS LEGALES',modal_licence:'LICENCIA',wait:'SISTEMA EN ESPERA — ESCRIBE "boot" O HAZ CLIC EN [ INICIALIZAR ]',help_hint:'ESCRIBE "ayuda" PARA VER LOS COMANDOS.',cleared:'TERMINAL BORRADO.',unknown:(c)=>`COMANDO DESCONOCIDO: "${c}". ESCRIBE "ayuda".`,online:'EN LÍNEA',boot_title:'  KITT FRANCO-BELGA — SECUENCIA DE INICIO   ',boot_lines:[['INICIALIZANDO SISTEMA...','line-warn'],['CARGANDO MÓDULOS COGNITIVOS...     [OK]','line-ok'],['INTERFAZ NEURONAL...               [OK]','line-ok'],['SÍNTESIS DE VOZ (PIPER-GPU)...     [OK]','line-ok'],['RECONOCIMIENTO DE VOZ (WHISPER)... [OK]','line-ok'],['MODELO LLM LOCAL (QWEN 3B)...      [OK]','line-ok'],['MODO SIN CONEXIÓN...               [ACTIVO]','line-ok'],['','line-ok'],['PROYECTO FAN — NO COMERCIAL.','line-dim'],['ESTADO : INTERFAZ EN CONSTRUCCIÓN ACTIVA.','line-warn'],['','line-ok'],['ACTUALIZACIONES PUBLICADAS REGULARMENTE :','line-info'],['  • a veces cada día','line-dim'],['  • a veces cada semana','line-dim'],['  • a veces cada hora','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). TODOS LOS DERECHOS RESERVADOS.','line-warn']],boot_end:'  CONEXIÓN AL NÚCLEO KITT ESTABLECIDA.',boot_hint:'  ESCRIBE "ayuda" PARA VER LOS COMANDOS',aide_title:'COMANDOS DISPONIBLES:',aide_sys:'── SISTEMA ──',aide_fun:'── DIVERSIÓN ──',cmds_sys:[['ayuda','esta lista'],['boot','secuencia de inicio'],['diagnostic','prueba completa del sistema'],['status','estado rápido'],['hora','hora actual'],['version','versión de la interfaz'],['sonido','demo de audio'],['clear','borrar terminal'],['mode','cambiar modo KITT ★'],['turbo','TURBO BOOST ★'],['scan','escanear entorno ★'],['velocidad','mostrar velocidad ★']],cmds_fun:[['hola','saludo KITT'],['chiste','chiste aleatorio KITT'],['alien','conexión MU-TH-UR 6000'],['matrix','el conejo blanco'],['kitt','ficha de identidad KITT'],['manix','expediente del conductor'],['cedric','expediente Cedric Momo Rider'],['kr95','expediente KR95'],['replicas','las réplicas franco-belgas'],['secreto','archivo clasificado...'],['cafe','pedir café a KITT'],['belgica','análisis geopolítico'],['jarvis','llamada a Stark Tower'],['mario','expediente Mario Ravasi / IoT'],['za','expediente ZA Elettronica'],['pascal','expediente K Industrie'],['damon','expediente Damon Paule'],['geoffrey','expediente Geoffrey'],['covid','origen del proyecto — confinamiento 2020'],['karr','expediente K.A.R.R. ★'],['credits','créditos del proyecto ★']],hi:'HOLA. SOY KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'SISTEMA FRANCO-BELGA DESARROLLADO POR MANIX.',hi3:'A SU SERVICIO.'},
-  pt:{hdr_title:'KITT FRANCO-BELGA // INTERFACE CENTRAL',placeholder:'introduz um comando...',btn_boot:'[ INICIALIZAR ]',btn_diag:'[ DIAGNÓSTICO ]',btn_mentions:'[ MENÇÕES ]',btn_licence:'[ LICENÇA ]',btn_clear:'[ LIMPAR ]',btn_tunnel:'[ LIGAR KITT ]',modal_mentions:'AVISOS LEGAIS',modal_licence:'LICENÇA',wait:'SISTEMA EM ESPERA — DIGITE "boot" OU CLIQUE EM [ INICIALIZAR ]',help_hint:'DIGITE "ajuda" PARA VER OS COMANDOS.',cleared:'TERMINAL LIMPO.',unknown:(c)=>`COMANDO DESCONHECIDO: "${c}". DIGITE "ajuda".`,online:'EM LINHA',boot_title:'  KITT FRANCO-BELGA — SEQUÊNCIA DE ARRANQUE  ',boot_lines:[['A INICIALIZAR O SISTEMA...','line-warn'],['A CARREGAR MÓDULOS COGNITIVOS...   [OK]','line-ok'],['INTERFACE NEURONAL...              [OK]','line-ok'],['SÍNTESE DE VOZ (PIPER-GPU)...      [OK]','line-ok'],['RECONHECIMENTO DE VOZ (WHISPER)... [OK]','line-ok'],['MODELO LLM LOCAL (QWEN 3B)...      [OK]','line-ok'],['MODO OFFLINE...                    [ATIVO]','line-ok'],['','line-ok'],['PROJETO FÃ — NÃO COMERCIAL.','line-dim'],['ESTADO : INTERFACE EM CONSTRUÇÃO ATIVA.','line-warn'],['','line-ok'],['ATUALIZAÇÕES PUBLICADAS REGULARMENTE :','line-info'],['  • às vezes todos os dias','line-dim'],['  • às vezes semanalmente','line-dim'],['  • às vezes de hora em hora','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). TODOS OS DIREITOS RESERVADOS.','line-warn']],boot_end:'  LIGAÇÃO AO NÚCLEO KITT ESTABELECIDA.',boot_hint:'  DIGITE "ajuda" PARA VER OS COMANDOS',aide_title:'COMANDOS DISPONÍVEIS:',aide_sys:'── SISTEMA ──',aide_fun:'── DIVERSÃO ──',cmds_sys:[['ajuda','esta lista'],['boot','sequência de arranque'],['diagnostic','teste completo do sistema'],['status','estado rápido'],['hora','hora atual'],['version','versão da interface'],['som','demonstração de áudio'],['clear','limpar terminal'],['mode','mudar modo KITT ★'],['turbo','TURBO BOOST ★'],['scan','verificar ambiente ★'],['velocidade','exibir velocidade ★']],cmds_fun:[['ola','saudação KITT'],['piada','piada aleatória KITT'],['alien','ligação MU-TH-UR 6000'],['matrix','o coelho branco'],['kitt','ficha de identidade KITT'],['manix','dossier do condutor'],['cedric','dossier Cedric Momo Rider'],['kr95','dossier KR95'],['replicas','as réplicas franco-belgas'],['segredo','ficheiro classificado...'],['cafe','pedir café ao KITT'],['belgica','análise geopolítica'],['jarvis','chamada para Stark Tower'],['mario','dossier Mario Ravasi / IoT'],['za','dossier ZA Elettronica'],['pascal','dossier K Industrie'],['damon','dossier Damon Paule'],['geoffrey','dossier Geoffrey'],['covid','origem do projeto — confinamento 2020'],['karr','dossier K.A.R.R. ★'],['credits','créditos do projeto ★']],hi:'OLÁ. SOU O KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'SISTEMA FRANCO-BELGA DESENVOLVIDO POR MANIX.',hi3:'AO SEU SERVIÇO.'},
+  nl:{hdr_title:'KITT FRANCO-BELGISCH // CENTRALE INTERFACE',placeholder:'voer een commando in...',btn_boot:'[ OPSTARTEN ]',btn_diag:'[ DIAGNOSE ]',btn_mentions:'[ VERMELDINGEN ]',btn_licence:'[ LICENTIE ]',btn_clear:'[ WISSEN ]',btn_tunnel:'[ VERBIND KITT ]',modal_mentions:'WETTELIJKE VERMELDINGEN',modal_licence:'LICENTIE',wait:'SYSTEEM WACHT — TYP "boot" OF KLIK [ OPSTARTEN ]',help_hint:'TYP "hulp" VOOR DE COMMANDOLIJST.',cleared:'TERMINAL GEWIST.',unknown:(c)=>`ONBEKEND COMMANDO: "${c}". TYP "hulp".`,online:'ONLINE',boot_title:'  KITT FRANCO-BELGE — OPSTARTSEQUENTIE     ',boot_lines:[['KERNSYSTEEM INITIALISEREN...','line-warn'],['COGNITIEVE MODULES LADEN...        [OK]','line-ok'],['NEURALE INTERFACE...               [OK]','line-ok'],['SPRAAKSYNTHESE (PIPER-GPU)...      [OK]','line-ok'],['STEMHERKENNING (WHISPER)...        [OK]','line-ok'],['EMBEDDED LLM (QWEN 3B)...          [OK]','line-ok'],['OFFLINE MODUS...                   [ACTIEF]','line-ok'],['','line-ok'],['FAN PROJECT — NIET COMMERCIEEL.','line-dim'],['STATUS : INTERFACE IN ACTIEVE CONSTRUCTIE.','line-warn'],['','line-ok'],['UPDATES REGELMATIG UITGEROLD :','line-info'],['  • soms elke dag','line-dim'],['  • soms elke week','line-dim'],['  • soms elk uur','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTEN VOORBEHOUDEN.','line-warn']],boot_end:'  VERBINDING MET KITT-KERN TOT STAND GEBRACHT.',boot_hint:'  TYP "hulp" VOOR DE COMMANDOLIJST',aide_title:'BESCHIKBARE COMMANDO\'S:',aide_sys:'── SYSTEEM ──',aide_fun:'── PLEZIER ──',cmds_sys:[['hulp','deze lijst'],['boot','opstartsequentie'],['diagnostic','volledig systeemtest'],['status','snelle status'],['tijd','huidige tijd'],['versie','interface versie'],['geluid','audio demo'],['clear','terminal wissen'],['mode','KITT-modus wijzigen ★'],['turbo','TURBO BOOST ★'],['scan','omgeving scannen ★'],['snelheid','snelheid weergeven ★']],cmds_fun:[['hallo','KITT begroeting'],['grap','willekeurige KITT grap'],['alien','MU-TH-UR 6000 verbinding'],['matrix','het witte konijn'],['kitt','KITT identiteitsbestand'],['manix','bestuurdersdossier'],['cedric','Cedric Momo Rider dossier'],['kr95','KR95 dossier'],['replicas','de franco-belgische replica\'s'],['geheim','geheim bestand...'],['koffie','KITT om koffie vragen'],['belgie','geopolitieke analyse'],['jarvis','oproep naar Stark Tower'],['mario','Mario Ravasi / IoT dossier'],['za','ZA Elettronica dossier'],['pascal','K Industrie dossier'],['daemon','Daemon Paule dossier'],['geoffrey','Geoffrey dossier'],['covid','projectoorsprong — lockdown 2020'],['karr','K.A.R.R. dossier ★'],['credits','projectcredits ★']],hi:'HALLO. IK BEN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'FRANCO-BELGISCH SYSTEEM ONTWIKKELD DOOR MANIX.',btn_missions:'[ MISSIES ]',access_hdr:'WEYLAND-YUTANI CORP. // BEVEILIGDE TOEGANG',access_prompt:'TOEGANGSCODE',access_hint:'VOER SYSTEEMTOEGANSCODE IN',mission_title:'⬡ KITT MISSIES',mission_close:'[ SLUITEN ]',call_incoming:'INKOMEND GESPREK ···',call_accept:'☎ ACCEPTEREN',call_ignore:'✕ NEGEREN',visits_label:'BEZOEKEN',last_update:'LAATSTE UPDATE'},
+  it:{hdr_title:'KITT FRANCO-BELGA // INTERFACCIA CENTRALE',placeholder:'inserisci un comando...',btn_boot:'[ INIZIALIZZA ]',btn_diag:'[ DIAGNOSI ]',btn_mentions:'[ MENZIONI ]',btn_licence:'[ LICENZA ]',btn_clear:'[ CANCELLA ]',btn_tunnel:'[ CONNETTI KITT ]',modal_mentions:'NOTE LEGALI',modal_licence:'LICENZA',wait:'SISTEMA IN ATTESA — DIGITA "boot" O CLICCA [ INIZIALIZZA ]',help_hint:'DIGITA "aiuto" PER LA LISTA DEI COMANDI.',cleared:'TERMINALE CANCELLATO.',unknown:(c)=>`COMANDO SCONOSCIUTO: "${c}". DIGITA "aiuto".`,online:'IN LINEA',boot_title:'  KITT FRANCO-BELGA — SEQUENZA DI AVVIO     ',boot_lines:[['INIZIALIZZAZIONE SISTEMA...','line-warn'],['CARICAMENTO MODULI COGNITIVI...    [OK]','line-ok'],['INTERFACCIA NEURALE...             [OK]','line-ok'],['SINTESI VOCALE (PIPER-GPU)...      [OK]','line-ok'],['RICONOSCIMENTO VOCALE (WHISPER)... [OK]','line-ok'],['MODELLO LLM LOCALE (QWEN 3B)...   [OK]','line-ok'],['MODALITÀ OFFLINE...                [ATTIVA]','line-ok'],['','line-ok'],['PROGETTO FAN — NON COMMERCIALE.','line-dim'],['STATO : INTERFACCIA IN COSTRUZIONE ATTIVA.','line-warn'],['','line-ok'],['AGGIORNAMENTI DISTRIBUITI REGOLARMENTE :','line-info'],['  • a volte ogni giorno','line-dim'],['  • a volte ogni settimana','line-dim'],['  • in alcune fasi, quasi ogni ora','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). TUTTI I DIRITTI RISERVATI.','line-warn']],boot_end:'  CONNESSIONE AL NUCLEO KITT STABILITA.',boot_hint:'  DIGITA "aiuto" PER LA LISTA DEI COMANDI',aide_title:'COMANDI DISPONIBILI:',aide_sys:'── SISTEMA ──',aide_fun:'── DIVERTIMENTO ──',cmds_sys:[['aiuto','questa lista'],['boot','sequenza di avvio'],['diagnostic','test completo del sistema'],['status','stato rapido'],['ora','ora corrente'],['version','versione interfaccia'],['suono','demo audio'],['clear','cancella terminale'],['mode','cambia modalità KITT ★'],['turbo','TURBO BOOST ★'],['scan','scansiona ambiente ★'],['velocita','visualizza velocità ★']],cmds_fun:[['ciao','saluto KITT'],['barzelletta','barzelletta casuale KITT'],['alien','connessione MU-TH-UR 6000'],['matrix','il coniglio bianco'],['kitt','scheda identità KITT'],['manix','dossier pilota'],['cedric','dossier Cedric Momo Rider'],['kr95','dossier KR95'],['replicas','le repliche franco-belghe'],['segreto','file classificato...'],['caffe','chiedere un caffè a KITT'],['belgio','analisi geopolitica'],['jarvis','chiamata verso Stark Tower'],['mario','dossier Mario Ravasi / IoT'],['za','dossier ZA Elettronica'],['pascal','dossier K Industrie'],['daemon','dossier Daemon Paule'],['geoffrey','dossier Geoffrey'],['covid','origine del progetto — lockdown 2020'],['karr','dossier K.A.R.R. ★'],['credits','crediti del progetto ★']],hi:'CIAO. SONO KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'SISTEMA FRANCO-BELGA SVILUPPATO DA MANIX.',btn_missions:'[ MISSIONI ]',access_hdr:'WEYLAND-YUTANI CORP. // ACCESSO SICURO',access_prompt:'CODICE ACCESSO',access_hint:'INSERIRE IL CODICE DI ACCESSO',mission_title:'⬡ MISSIONI KITT',mission_close:'[ CHIUDI ]',call_incoming:'CHIAMATA IN ARRIVO ···',call_accept:'☎ ACCETTA',call_ignore:'✕ IGNORA',visits_label:'VISITE',last_update:'ULTIMO AGGIORNAMENTO'},
+  de:{hdr_title:'KITT FRANCO-BELGISCH // ZENTRALE SCHNITTSTELLE',placeholder:'Befehl eingeben...',btn_boot:'[ INITIALISIEREN ]',btn_diag:'[ DIAGNOSE ]',btn_mentions:'[ IMPRESSUM ]',btn_licence:'[ LIZENZ ]',btn_clear:'[ LÖSCHEN ]',btn_tunnel:'[ KITT VERBINDEN ]',modal_mentions:'IMPRESSUM',modal_licence:'LIZENZ',wait:'SYSTEM BEREIT — TIPPE "boot" ODER KLICKE [ INITIALISIEREN ]',help_hint:'TIPPE "hilfe" FÜR DIE BEFEHLSLISTE.',cleared:'TERMINAL GELEERT.',unknown:(c)=>`UNBEKANNTER BEFEHL: "${c}". TIPPE "hilfe".`,online:'ONLINE',boot_title:'  KITT FRANCO-BELGISCH — STARTSEQUENZ        ',boot_lines:[['KERNSYSTEM WIRD INITIALISIERT...','line-warn'],['KOGNITIVE MODULE LADEN...          [OK]','line-ok'],['NEURONALE SCHNITTSTELLE...         [OK]','line-ok'],['SPRACHSYNTHESE (PIPER-GPU)...      [OK]','line-ok'],['SPRACHERKENNUNG (WHISPER)...       [OK]','line-ok'],['LOKALES LLM (QWEN 3B)...           [OK]','line-ok'],['OFFLINE-MODUS...                   [AKTIV]','line-ok'],['','line-ok'],['FAN-PROJEKT — NICHT KOMMERZIELL.','line-dim'],['STATUS : SCHNITTSTELLE IM AUFBAU.','line-warn'],['','line-ok'],['UPDATES REGELMÄSSIG VERFÜGBAR :','line-info'],['  • manchmal täglich','line-dim'],['  • manchmal wöchentlich','line-dim'],['  • manchmal stündlich','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTE VORBEHALTEN.','line-warn']],boot_end:'  VERBINDUNG ZUM KITT-KERN HERGESTELLT.',boot_hint:'  TIPPE "hilfe" FÜR DIE BEFEHLSLISTE',aide_title:'VERFÜGBARE BEFEHLE:',aide_sys:'── SYSTEM ──',aide_fun:'── SPASS ──',cmds_sys:[['hilfe','diese Liste'],['boot','Startsequenz'],['diagnostic','vollständiger Systemtest'],['status','schneller Status'],['uhrzeit','aktuelle Uhrzeit'],['version','Schnittstellenversion'],['ton','Audio-Demo'],['clear','Terminal leeren'],['mode','KITT-Modus ändern ★'],['turbo','TURBO BOOST ★'],['scan','Umgebung scannen ★'],['geschwindigkeit','Geschwindigkeit anzeigen ★']],cmds_fun:[['hallo','KITT-Begrüßung'],['witz','zufälliger KITT-Witz'],['alien','MU-TH-UR 6000 Verbindung'],['matrix','das weiße Kaninchen'],['kitt','KITT Identitätsakte'],['manix','Fahrerakte'],['cedric','Cedric Momo Rider Akte'],['kr95','KR95 Akte'],['replicas','die franco-belgischen Repliken'],['geheimnis','geheime Akte...'],['kaffee','KITT um Kaffee bitten'],['belgien','geopolitische Analyse'],['jarvis','Anruf bei Stark Tower'],['mario','Mario Ravasi / IoT Akte'],['za','ZA Elettronica Akte'],['pascal','K Industrie Akte'],['damon','Damon Paule Akte'],['geoffrey','Geoffrey Akte'],['covid','Projektherkunft — Lockdown 2020'],['karr','K.A.R.R. Akte ★'],['credits','Projektcredits ★']],hi:'HALLO. ICH BIN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'FRANCO-BELGISCHES SYSTEM ENTWICKELT VON MANIX.',btn_missions:'[ MISSIONEN ]',access_hdr:'WEYLAND-YUTANI CORP. // SICHERER ZUGANG',access_prompt:'ZUGANGSCODE',access_hint:'SYSTEMZUGANGSCODE EINGEBEN',mission_title:'⬡ KITT MISSIONEN',mission_close:'[ SCHLIESSEN ]',call_incoming:'EINGEHENDER ANRUF ···',call_accept:'☎ ANNEHMEN',call_ignore:'✕ IGNORIEREN',visits_label:'BESUCHE',last_update:'LETZTES UPDATE'},
+  es:{hdr_title:'KITT FRANCO-BELGA // INTERFAZ CENTRAL',placeholder:'escribe un comando...',btn_boot:'[ INICIALIZAR ]',btn_diag:'[ DIAGNÓSTICO ]',btn_mentions:'[ MENCIONES ]',btn_licence:'[ LICENCIA ]',btn_clear:'[ BORRAR ]',btn_tunnel:'[ CONECTAR KITT ]',modal_mentions:'AVISOS LEGALES',modal_licence:'LICENCIA',wait:'SISTEMA EN ESPERA — ESCRIBE "boot" O HAZ CLIC EN [ INICIALIZAR ]',help_hint:'ESCRIBE "ayuda" PARA VER LOS COMANDOS.',cleared:'TERMINAL BORRADO.',unknown:(c)=>`COMANDO DESCONOCIDO: "${c}". ESCRIBE "ayuda".`,online:'EN LÍNEA',boot_title:'  KITT FRANCO-BELGA — SECUENCIA DE INICIO   ',boot_lines:[['INICIALIZANDO SISTEMA...','line-warn'],['CARGANDO MÓDULOS COGNITIVOS...     [OK]','line-ok'],['INTERFAZ NEURONAL...               [OK]','line-ok'],['SÍNTESIS DE VOZ (PIPER-GPU)...     [OK]','line-ok'],['RECONOCIMIENTO DE VOZ (WHISPER)... [OK]','line-ok'],['MODELO LLM LOCAL (QWEN 3B)...      [OK]','line-ok'],['MODO SIN CONEXIÓN...               [ACTIVO]','line-ok'],['','line-ok'],['PROYECTO FAN — NO COMERCIAL.','line-dim'],['ESTADO : INTERFAZ EN CONSTRUCCIÓN ACTIVA.','line-warn'],['','line-ok'],['ACTUALIZACIONES PUBLICADAS REGULARMENTE :','line-info'],['  • a veces cada día','line-dim'],['  • a veces cada semana','line-dim'],['  • a veces cada hora','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). TODOS LOS DERECHOS RESERVADOS.','line-warn']],boot_end:'  CONEXIÓN AL NÚCLEO KITT ESTABLECIDA.',boot_hint:'  ESCRIBE "ayuda" PARA VER LOS COMANDOS',aide_title:'COMANDOS DISPONIBLES:',aide_sys:'── SISTEMA ──',aide_fun:'── DIVERSIÓN ──',cmds_sys:[['ayuda','esta lista'],['boot','secuencia de inicio'],['diagnostic','prueba completa del sistema'],['status','estado rápido'],['hora','hora actual'],['version','versión de la interfaz'],['sonido','demo de audio'],['clear','borrar terminal'],['mode','cambiar modo KITT ★'],['turbo','TURBO BOOST ★'],['scan','escanear entorno ★'],['velocidad','mostrar velocidad ★']],cmds_fun:[['hola','saludo KITT'],['chiste','chiste aleatorio KITT'],['alien','conexión MU-TH-UR 6000'],['matrix','el conejo blanco'],['kitt','ficha de identidad KITT'],['manix','expediente del conductor'],['cedric','expediente Cedric Momo Rider'],['kr95','expediente KR95'],['replicas','las réplicas franco-belgas'],['secreto','archivo clasificado...'],['cafe','pedir café a KITT'],['belgica','análisis geopolítico'],['jarvis','llamada a Stark Tower'],['mario','expediente Mario Ravasi / IoT'],['za','expediente ZA Elettronica'],['pascal','expediente K Industrie'],['damon','expediente Damon Paule'],['geoffrey','expediente Geoffrey'],['covid','origen del proyecto — confinamiento 2020'],['karr','expediente K.A.R.R. ★'],['credits','créditos del proyecto ★']],hi:'HOLA. SOY KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'SISTEMA FRANCO-BELGA DESARROLLADO POR MANIX.',btn_missions:'[ MISIONES ]',access_hdr:'WEYLAND-YUTANI CORP. // ACCESO SEGURO',access_prompt:'CÓDIGO DE ACCESO',access_hint:'INTRODUZCA EL CÓDIGO DE ACCESO',mission_title:'⬡ MISIONES KITT',mission_close:'[ CERRAR ]',call_incoming:'LLAMADA ENTRANTE ···',call_accept:'☎ ACEPTAR',call_ignore:'✕ IGNORAR',visits_label:'VISITAS',last_update:'ÚLTIMA ACTUALIZACIÓN'},
+  pt:{hdr_title:'KITT FRANCO-BELGA // INTERFACE CENTRAL',placeholder:'introduz um comando...',btn_boot:'[ INICIALIZAR ]',btn_diag:'[ DIAGNÓSTICO ]',btn_mentions:'[ MENÇÕES ]',btn_licence:'[ LICENÇA ]',btn_clear:'[ LIMPAR ]',btn_tunnel:'[ LIGAR KITT ]',modal_mentions:'AVISOS LEGAIS',modal_licence:'LICENÇA',wait:'SISTEMA EM ESPERA — DIGITE "boot" OU CLIQUE EM [ INICIALIZAR ]',help_hint:'DIGITE "ajuda" PARA VER OS COMANDOS.',cleared:'TERMINAL LIMPO.',unknown:(c)=>`COMANDO DESCONHECIDO: "${c}". DIGITE "ajuda".`,online:'EM LINHA',boot_title:'  KITT FRANCO-BELGA — SEQUÊNCIA DE ARRANQUE  ',boot_lines:[['A INICIALIZAR O SISTEMA...','line-warn'],['A CARREGAR MÓDULOS COGNITIVOS...   [OK]','line-ok'],['INTERFACE NEURONAL...              [OK]','line-ok'],['SÍNTESE DE VOZ (PIPER-GPU)...      [OK]','line-ok'],['RECONHECIMENTO DE VOZ (WHISPER)... [OK]','line-ok'],['MODELO LLM LOCAL (QWEN 3B)...      [OK]','line-ok'],['MODO OFFLINE...                    [ATIVO]','line-ok'],['','line-ok'],['PROJETO FÃ — NÃO COMERCIAL.','line-dim'],['ESTADO : INTERFACE EM CONSTRUÇÃO ATIVA.','line-warn'],['','line-ok'],['ATUALIZAÇÕES PUBLICADAS REGULARMENTE :','line-info'],['  • às vezes todos os dias','line-dim'],['  • às vezes semanalmente','line-dim'],['  • às vezes de hora em hora','line-dim'],['','line-ok'],['© 2026 EMMANUEL GELINNE (MANIX). TODOS OS DIREITOS RESERVADOS.','line-warn']],boot_end:'  LIGAÇÃO AO NÚCLEO KITT ESTABELECIDA.',boot_hint:'  DIGITE "ajuda" PARA VER OS COMANDOS',aide_title:'COMANDOS DISPONÍVEIS:',aide_sys:'── SISTEMA ──',aide_fun:'── DIVERSÃO ──',cmds_sys:[['ajuda','esta lista'],['boot','sequência de arranque'],['diagnostic','teste completo do sistema'],['status','estado rápido'],['hora','hora atual'],['version','versão da interface'],['som','demonstração de áudio'],['clear','limpar terminal'],['mode','mudar modo KITT ★'],['turbo','TURBO BOOST ★'],['scan','verificar ambiente ★'],['velocidade','exibir velocidade ★']],cmds_fun:[['ola','saudação KITT'],['piada','piada aleatória KITT'],['alien','ligação MU-TH-UR 6000'],['matrix','o coelho branco'],['kitt','ficha de identidade KITT'],['manix','dossier do condutor'],['cedric','dossier Cedric Momo Rider'],['kr95','dossier KR95'],['replicas','as réplicas franco-belgas'],['segredo','ficheiro classificado...'],['cafe','pedir café ao KITT'],['belgica','análise geopolítica'],['jarvis','chamada para Stark Tower'],['mario','dossier Mario Ravasi / IoT'],['za','dossier ZA Elettronica'],['pascal','dossier K Industrie'],['damon','dossier Damon Paule'],['geoffrey','dossier Geoffrey'],['covid','origem do projeto — confinamento 2020'],['karr','dossier K.A.R.R. ★'],['credits','créditos do projeto ★']],hi:'OLÁ. SOU O KITT — KNIGHT INDUSTRIES TWO THOUSAND.',hi2:'SISTEMA FRANCO-BELGA DESENVOLVIDO POR MANIX.',btn_missions:'[ MISSÕES ]',access_hdr:'WEYLAND-YUTANI CORP. // ACESSO SEGURO',access_prompt:'CÓDIGO DE ACESSO',access_hint:'INTRODUZA O CÓDIGO DE ACESSO',mission_title:'⬡ MISSÕES KITT',mission_close:'[ FECHAR ]',call_incoming:'CHAMADA RECEBIDA ···',call_accept:'☎ ACEITAR',call_ignore:'✕ IGNORAR',visits_label:'VISITAS',last_update:'ÚLTIMA ATUALIZAÇÃO'},
 };
 
 // ★ ALIAS enrichis
@@ -1328,15 +1377,82 @@ function selectLang(lang) {
   if(el('btn-clear')) el('btn-clear').textContent = t.btn_clear;
   if(el('btn-tunnel-txt')) el('btn-tunnel-txt').textContent = t.btn_tunnel;
   sndSelect();
+  // ★ Mise à jour complète de tous les textes dans la langue choisie
+  _applyLangToAll(lang);
+  // ★ Notifications push dans la bonne langue
+  setTimeout(_initNotifications, 3000);
   const greet = LANG_LIST.find(l=>l[1]===lang);
   if(greet && _langVoiceEnabled) setTimeout(()=>speakMuther(greet[5], lang), 400);
   stopAlienAmbient();
   const screen = document.getElementById("lang-screen");
   screen.style.transition = "opacity .45s"; screen.style.opacity = "0";
-  setTimeout(() => { screen.style.display="none"; screen.style.opacity="1"; screen.style.transition=""; }, 500);
-  setTimeout(()=>{ try{showKittDash();}catch(e){} }, 600);
-  // L'appel se déclenche après 3 commandes tapées ET minimum 2 minutes
+  setTimeout(() => {
+    screen.style.display="none"; screen.style.opacity="1"; screen.style.transition="";
+    // Lancer l'écran d'accès dans la bonne langue
+    runAccessScreen();
+  }, 500);
   _scheduleKittCall();
+}
+
+// ★ Applique la langue à TOUS les éléments de l'interface
+function _applyLangToAll(lang) {
+  const t = T[lang];
+  const el = (id) => document.getElementById(id);
+  if(el('lang-flag')) el('lang-flag').textContent = lang.toUpperCase();
+  if(el('status-txt')) el('status-txt').textContent = t.online;
+  if(el('hdr-title')) el('hdr-title').textContent = t.hdr_title;
+  if(el('cmd-input')) el('cmd-input').placeholder = t.placeholder;
+  if(el('btn-boot')) el('btn-boot').textContent = t.btn_boot;
+  if(el('btn-diag')) el('btn-diag').textContent = t.btn_diag;
+  if(el('btn-mentions')) el('btn-mentions').textContent = t.btn_mentions;
+  if(el('btn-licence')) el('btn-licence').textContent = t.btn_licence;
+  if(el('btn-clear')) el('btn-clear').textContent = t.btn_clear;
+  if(el('btn-tunnel-txt')) el('btn-tunnel-txt').textContent = t.btn_tunnel;
+  if(el('btn-missions')) el('btn-missions').textContent = t.btn_missions || '[ MISSIONS ]';
+  // ★ Écran d'accès traduit
+  if(el('access-hdr')) el('access-hdr').textContent = t.access_hdr || 'WEYLAND-YUTANI CORP. // SECURE ACCESS';
+  if(el('access-prompt')) el('access-prompt').textContent = (t.access_prompt || 'ACCESS CODE') + ' >';
+  if(el('access-hint')) el('access-hint').textContent = t.access_hint || 'ENTER SYSTEM ACCESS CODE';
+  // ★ Mission HUD
+  if(el('mission-title')) el('mission-title').textContent = t.mission_title || '⬡ MISSIONS KITT';
+  if(el('mission-close')) el('mission-close').textContent = t.mission_close || '[ CLOSE ]';
+  // ★ Call status
+  if(el('call-status')) el('call-status').textContent = t.call_incoming || 'INCOMING CALL ···';
+  if(el('call-accept')) el('call-accept').textContent = t.call_accept || '☎ ACCEPT';
+  if(el('call-ignore')) el('call-ignore').textContent = t.call_ignore || '✕ IGNORE';
+  // ★ Visit counter
+  try {
+    const BASE=1000, KEY='kitt_fb_v';
+    const n = parseInt(localStorage.getItem(KEY)||'0');
+    const vcEl = el('visit-counter');
+    if(vcEl) vcEl.textContent = (t.visits_label||'VISITS') + ' : ' + (BASE+n);
+  } catch(e){}
+  // ★ Footer
+  const footer = document.getElementById('site-footer');
+  if(footer) {
+    const upd = t.last_update || 'LAST UPDATE';
+    footer.innerHTML = `v3.1 &nbsp;—&nbsp; ${upd} : 2026-02-23`;
+  }
+  // ★ Tunnel button tooltip
+  _updateTunnelBtnLang(lang);
+}
+
+function _updateTunnelBtnLang(lang) {
+  const btn = document.getElementById('btn-tunnel');
+  if(!btn) return;
+  const labels = {
+    fr:['KITT EN LIGNE — CLIQUER POUR CONNECTER','KITT HORS LIGNE','ÉTAT INCONNU — VÉRIFICATION...'],
+    en:['KITT ONLINE — CLICK TO CONNECT','KITT OFFLINE','UNKNOWN STATE — CHECKING...'],
+    nl:['KITT ONLINE — KLIK OM VERBINDING TE MAKEN','KITT OFFLINE','ONBEKENDE STATUS — CONTROLEREN...'],
+    it:['KITT ONLINE — CLICCA PER CONNETTERE','KITT OFFLINE','STATO SCONOSCIUTO — VERIFICA...'],
+    de:['KITT ONLINE — KLICKEN ZUM VERBINDEN','KITT OFFLINE','UNBEKANNTER STATUS — PRÜFE...'],
+    es:['KITT EN LÍNEA — CLIC PARA CONECTAR','KITT DESCONECTADO','ESTADO DESCONOCIDO — COMPROBANDO...'],
+    pt:['KITT EM LINHA — CLIQUE PARA LIGAR','KITT OFFLINE','ESTADO DESCONHECIDO — A VERIFICAR...'],
+  };
+  const l = labels[lang] || labels.en;
+  if(_tunnelStatus==='online'&&_tunnelUrl) btn.title=l[0];
+  else if(_tunnelStatus==='offline') btn.title=l[1];
+  else btn.title=l[2];
 }
 
 document.addEventListener('keydown', e => {
@@ -1492,7 +1608,8 @@ async function runSelfTest() {
   await typeText('', 0);
   const ok_msg = {fr:'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.',en:'RESULT: ALL SYSTEMS NOMINAL.',nl:'RESULTAAT : ALLE SYSTEMEN NOMINAAL.',it:'RISULTATO : TUTTI I SISTEMI NOMINALI.',de:'ERGEBNIS: ALLE SYSTEME NOMINAL.',es:'RESULTADO: TODOS LOS SISTEMAS NOMINALES.',pt:'RESULTADO: TODOS OS SISTEMAS NOMINAIS.'}[LANG]||'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.';
   await typeText(ok_msg, 16, 'line-info');
-  await typeText('KITT EST OPÉRATIONNEL. MODE : ' + MODE_LABELS[kittMode], 16, 'line-err');
+  const op_msg = {fr:'KITT EST OPÉRATIONNEL. MODE : ',en:'KITT OPERATIONAL. MODE: ',nl:'KITT OPERATIONEEL. MODUS: ',it:'KITT OPERATIVO. MODALITÀ: ',de:'KITT BETRIEBSBEREIT. MODUS: ',es:'KITT OPERACIONAL. MODO: ',pt:'KITT OPERACIONAL. MODO: '}[LANG]||'KITT OPERATIONAL. MODE: ';
+  await typeText(op_msg + MODE_LABELS[kittMode], 16, 'line-err');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1567,11 +1684,13 @@ const CMDS = {
       [sndTurbo,   'TURBO BOOST       (nouveau ★)'],
       [sndScan,    'SCANNER           (nouveau ★)'],
     ];
-    await typeText('─── DÉMONSTRATION DES SONS ───', 10, 'line-info');
+    const sonTitle={fr:'─── DÉMONSTRATION DES SONS ───',en:'─── AUDIO DEMONSTRATION ───',nl:'─── AUDIO DEMONSTRATIE ───',it:'─── DIMOSTRAZIONE AUDIO ───',de:'─── AUDIO-DEMONSTRATION ───',es:'─── DEMOSTRACIÓN DE AUDIO ───',pt:'─── DEMONSTRAÇÃO DE ÁUDIO ───'}[LANG]||'─── AUDIO DEMONSTRATION ───';
+    await typeText(sonTitle, 10, 'line-info');
     for (const [fn, name] of demos) {
       fn(); await typeText(`  ${name}`, 8, 'line-dim'); await delay(280);
     }
-    await typeText('FIN DE LA DÉMONSTRATION.', 12, 'line-ok');
+    const sonEnd={fr:'FIN DE LA DÉMONSTRATION.',en:'END OF DEMONSTRATION.',nl:'EINDE VAN DEMONSTRATIE.',it:'FINE DELLA DIMOSTRAZIONE.',de:'ENDE DER DEMONSTRATION.',es:'FIN DE LA DEMOSTRACIÓN.',pt:'FIM DA DEMONSTRAÇÃO.'}[LANG]||'END OF DEMONSTRATION.';
+    await typeText(sonEnd, 12, 'line-ok');
   },
 
   // ★ MODE — Changement de mode KITT
@@ -1580,23 +1699,32 @@ const CMDS = {
     const modes = ['normal', 'pursuit', 'turbo'];
     const idx = (modes.indexOf(kittMode) + 1) % modes.length;
     const newMode = modes[idx];
-    const labels = {
-      normal: 'MODE NORMAL — CONDUITE STANDARD',
-      pursuit: 'MODE SUPER POURSUITE ACTIVÉ',
-      turbo: 'TURBO BOOST EN ATTENTE — PRÊT',
+    const modeLabels = {
+      fr:{normal:'MODE NORMAL — CONDUITE STANDARD',pursuit:'MODE SUPER POURSUITE ACTIVÉ',turbo:'TURBO BOOST EN ATTENTE — PRÊT'},
+      en:{normal:'NORMAL MODE — STANDARD DRIVING',pursuit:'SUPER PURSUIT MODE ACTIVATED',turbo:'TURBO BOOST STANDBY — READY'},
+      nl:{normal:'NORMALE MODUS — STANDAARD RIJDEN',pursuit:'SUPER ACHTERVOLGING MODUS ACTIEF',turbo:'TURBO BOOST STAND-BY — KLAAR'},
+      it:{normal:'MODALITÀ NORMALE — GUIDA STANDARD',pursuit:'MODALITÀ SUPER INSEGUIMENTO ATTIVA',turbo:'TURBO BOOST IN ATTESA — PRONTO'},
+      de:{normal:'NORMALMODUS — STANDARDFAHREN',pursuit:'SUPER-VERFOLGUNGSMODUS AKTIVIERT',turbo:'TURBO BOOST BEREIT — STANDBY'},
+      es:{normal:'MODO NORMAL — CONDUCCIÓN ESTÁNDAR',pursuit:'MODO SUPER PERSECUCIÓN ACTIVADO',turbo:'TURBO BOOST EN ESPERA — LISTO'},
+      pt:{normal:'MODO NORMAL — CONDUÇÃO PADRÃO',pursuit:'MODO SUPER PERSEGUIÇÃO ATIVADO',turbo:'TURBO BOOST EM ESPERA — PRONTO'},
     };
-    await typeText('CHANGEMENT DE MODE EN COURS...', 14, 'line-warn');
+    const labels = modeLabels[LANG] || modeLabels.en;
+    const modeChangeTxt={fr:'CHANGEMENT DE MODE EN COURS...',en:'SWITCHING MODE...',nl:'MODUS WIJZIGEN...',it:'CAMBIO MODALITÀ IN CORSO...',de:'MODUS WECHSELN...',es:'CAMBIANDO MODO...',pt:'A MUDAR MODO...'}[LANG]||'SWITCHING MODE...';
+    await typeText(modeChangeTxt, 14, 'line-warn');
     await delay(400);
     setKittMode(newMode);
     await typeText(labels[newMode], 14, 'line-err');
     if (newMode === 'pursuit') {
-      await typeText('VITESSE MAXIMALE : 220 KM/H', 12, 'line-ok');
-      await typeText('BLINDAGE RENFORCÉ. MICROPROCESSEUR ACTIF.', 12, 'line-ok');
+      const pursuitTxt={fr:['VITESSE MAXIMALE : 220 KM/H','BLINDAGE RENFORCÉ. MICROPROCESSEUR ACTIF.'],en:['MAX SPEED: 220 KM/H','ARMOR REINFORCED. MICROPROCESSOR ACTIVE.'],nl:['MAX SNELHEID: 220 KM/H','PANTSER VERSTERKT. MICROPROCESSOR ACTIEF.'],it:['VELOCITÀ MAX: 220 KM/H','BLINDATURA RINFORZATA. MICROPROCESSORE ATTIVO.'],de:['MAX GESCHWINDIGKEIT: 220 KM/H','PANZERUNG VERSTÄRKT. MIKROPROZESSOR AKTIV.'],es:['VELOCIDAD MÁX: 220 KM/H','BLINDAJE REFORZADO. MICROPROCESADOR ACTIVO.'],pt:['VELOCIDADE MÁX: 220 KM/H','BLINDAGEM REFORÇADA. MICROPROCESSADOR ATIVO.']}[LANG]||['MAX SPEED: 220 KM/H','ARMOR REINFORCED. MICROPROCESSOR ACTIVE.'];
+      await typeText(pursuitTxt[0], 12, 'line-ok');
+      await typeText(pursuitTxt[1], 12, 'line-ok');
     } else if (newMode === 'turbo') {
-      await typeText('MOTEUR TURBO-JET CHARGÉ.', 12, 'line-ok');
-      await typeText('ALTITUDE MAXIMALE : 15M. DURÉE : 3 SEC.', 12, 'line-warn');
+      const turboTxt={fr:['MOTEUR TURBO-JET CHARGÉ.','ALTITUDE MAXIMALE : 15M. DURÉE : 3 SEC.'],en:['TURBO-JET ENGINE LOADED.','MAX ALTITUDE: 15M. DURATION: 3 SEC.'],nl:['TURBO-JET MOTOR GELADEN.','MAX HOOGTE: 15M. DUUR: 3 SEC.'],it:['MOTORE TURBO-JET CARICATO.','ALTITUDINE MAX: 15M. DURATA: 3 SEC.'],de:['TURBO-JET MOTOR GELADEN.','MAX HÖHE: 15M. DAUER: 3 SEK.'],es:['MOTOR TURBO-JET CARGADO.','ALTITUD MÁX: 15M. DURACIÓN: 3 SEG.'],pt:['MOTOR TURBO-JET CARREGADO.','ALTITUDE MÁX: 15M. DURAÇÃO: 3 SEG.']}[LANG]||['TURBO-JET ENGINE LOADED.','MAX ALTITUDE: 15M. DURATION: 3 SEC.'];
+      await typeText(turboTxt[0], 12, 'line-ok');
+      await typeText(turboTxt[1], 12, 'line-warn');
     } else {
-      await typeText('SYSTÈMES EN VEILLE. CONDUITE MANUELLE.', 12, 'line-dim');
+      const normalTxt={fr:'SYSTÈMES EN VEILLE. CONDUITE MANUELLE.',en:'SYSTEMS STANDBY. MANUAL DRIVING.',nl:'SYSTEMEN IN STAND-BY. HANDMATIG RIJDEN.',it:'SISTEMI IN STANDBY. GUIDA MANUALE.',de:'SYSTEME IM STANDBY. MANUELLES FAHREN.',es:'SISTEMAS EN ESPERA. CONDUCCIÓN MANUAL.',pt:'SISTEMAS EM ESPERA. CONDUÇÃO MANUAL.'}[LANG]||'SYSTEMS STANDBY. MANUAL DRIVING.';
+      await typeText(normalTxt, 12, 'line-dim');
     }
   },
 
@@ -2140,24 +2268,44 @@ function _updateTunnelBtn() {
   const btn = document.getElementById('btn-tunnel');
   if (!btn) return;
   btn.className = '';
+  const labels = {
+    fr:['KITT EN LIGNE — CLIQUER POUR SE CONNECTER','KITT HORS LIGNE','ÉTAT INCONNU — VÉRIFICATION...'],
+    en:['KITT ONLINE — CLICK TO CONNECT','KITT OFFLINE','UNKNOWN STATE — CHECKING...'],
+    nl:['KITT ONLINE — KLIK OM VERBINDING TE MAKEN','KITT OFFLINE','ONBEKENDE STATUS — CONTROLEREN...'],
+    it:['KITT ONLINE — CLICCA PER CONNETTERE','KITT OFFLINE','STATO SCONOSCIUTO — VERIFICA...'],
+    de:['KITT ONLINE — KLICKEN ZUM VERBINDEN','KITT OFFLINE','UNBEKANNTER STATUS — PRÜFE...'],
+    es:['KITT EN LÍNEA — CLIC PARA CONECTAR','KITT DESCONECTADO','ESTADO DESCONOCIDO — COMPROBANDO...'],
+    pt:['KITT EM LINHA — CLIQUE PARA LIGAR','KITT OFFLINE','ESTADO DESCONHECIDO — A VERIFICAR...'],
+  };
+  const l = labels[LANG] || labels.en;
   if (_tunnelStatus === 'online' && _tunnelUrl) {
-    btn.classList.add('tunnel-online'); btn.title = 'KITT EN LIGNE — CLIQUER POUR SE CONNECTER';
+    btn.classList.add('tunnel-online'); btn.title = l[0];
   } else if (_tunnelStatus === 'offline') {
-    btn.classList.add('tunnel-offline'); btn.title = 'KITT HORS LIGNE';
+    btn.classList.add('tunnel-offline'); btn.title = l[1];
   } else {
-    btn.classList.add('tunnel-checking'); btn.title = 'ÉTAT INCONNU — VÉRIFICATION...';
+    btn.classList.add('tunnel-checking'); btn.title = l[2];
   }
 }
 function connectTunnel() {
   sndSelect();
   try{ _completeMission('connexion'); }catch(e){}
+  const tunnelMsg = {
+    fr:['[ TUNNEL ] CONNEXION SÉCURISÉE → ','[ TUNNEL ] KITT HORS LIGNE — CONNEXION DISTANTE INDISPONIBLE.','[ TUNNEL ] VÉRIFICATION EN COURS...'],
+    en:['[ TUNNEL ] SECURE CONNECTION → ','[ TUNNEL ] KITT OFFLINE — REMOTE CONNECTION UNAVAILABLE.','[ TUNNEL ] CHECKING...'],
+    nl:['[ TUNNEL ] BEVEILIGDE VERBINDING → ','[ TUNNEL ] KITT OFFLINE — EXTERNE VERBINDING NIET BESCHIKBAAR.','[ TUNNEL ] CONTROLEREN...'],
+    it:['[ TUNNEL ] CONNESSIONE SICURA → ','[ TUNNEL ] KITT OFFLINE — CONNESSIONE REMOTA NON DISPONIBILE.','[ TUNNEL ] VERIFICA IN CORSO...'],
+    de:['[ TUNNEL ] SICHERE VERBINDUNG → ','[ TUNNEL ] KITT OFFLINE — FERNVERBINDUNG NICHT VERFÜGBAR.','[ TUNNEL ] ÜBERPRÜFUNG...'],
+    es:['[ TUNNEL ] CONEXIÓN SEGURA → ','[ TUNNEL ] KITT OFFLINE — CONEXIÓN REMOTA NO DISPONIBLE.','[ TUNNEL ] COMPROBANDO...'],
+    pt:['[ TUNNEL ] LIGAÇÃO SEGURA → ','[ TUNNEL ] KITT OFFLINE — LIGAÇÃO REMOTA INDISPONÍVEL.','[ TUNNEL ] A VERIFICAR...'],
+  };
+  const tm = tunnelMsg[LANG] || tunnelMsg.en;
   if (_tunnelStatus === 'online' && _tunnelUrl && _isValidCfUrl(_tunnelUrl)) {
-    addLine('[ TUNNEL ] CONNEXION SÉCURISÉE → ' + _tunnelUrl, 'line-ok');
+    addLine(tm[0] + _tunnelUrl, 'line-ok');
     setTimeout(() => window.open(_tunnelUrl, '_blank', 'noopener,noreferrer'), 300);
   } else if (_tunnelStatus === 'offline') {
-    sndError(); addLine('[ TUNNEL ] KITT HORS LIGNE — CONNEXION DISTANTE INDISPONIBLE.', 'line-err');
+    sndError(); addLine(tm[1], 'line-err');
   } else {
-    addLine('[ TUNNEL ] VÉRIFICATION EN COURS...', 'line-warn'); fetchTunnelStatus();
+    addLine(tm[2], 'line-warn'); fetchTunnelStatus();
   }
 }
 window.addEventListener('load', () => { setTimeout(fetchTunnelStatus, 1500); });
@@ -2175,13 +2323,15 @@ setInterval(()=>{ document.getElementById('clock').textContent=new Date().toLoca
 // ════════════════════════════════════════════════════════════
 function openFile(file, title='DOCUMENT') {
   document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-content').textContent = 'CHARGEMENT...';
+  const loadTxt = {fr:'CHARGEMENT...',en:'LOADING...',nl:'LADEN...',it:'CARICAMENTO...',de:'LADEN...',es:'CARGANDO...',pt:'A CARREGAR...'};
+  const errTxt = {fr:'ERREUR',en:'ERROR',nl:'FOUT',it:'ERRORE',de:'FEHLER',es:'ERROR',pt:'ERRO'};
+  document.getElementById('modal-content').textContent = loadTxt[LANG]||'LOADING...';
   document.getElementById('modal').classList.add('open');
   kittChime();
   fetch(file)
     .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
     .then(t  => { document.getElementById('modal-content').textContent = t; })
-    .catch(er => { document.getElementById('modal-content').textContent = `ERREUR\n${file}\n${er.message}`; });
+    .catch(er => { document.getElementById('modal-content').textContent = `${errTxt[LANG]||'ERROR'}\n${file}\n${er.message}`; });
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
@@ -2194,7 +2344,16 @@ function startMain() {
     await delay(200);
     await typeText(T[LANG].wait, 14, 'line-dim');
     await typeText(T[LANG].help_hint, 12, 'line-dim');
-    await typeText('★ NOUVELLES COMMANDES : mode, turbo, scan, vitesse, karr, credits', 10, 'line-info');
+    const newCmds = {
+      fr:'★ NOUVELLES COMMANDES : mode, turbo, scan, vitesse, karr, credits',
+      en:'★ NEW COMMANDS: mode, turbo, scan, speed, karr, credits',
+      nl:'★ NIEUWE COMMANDO\'S: mode, turbo, scan, snelheid, karr, credits',
+      it:'★ NUOVI COMANDI: mode, turbo, scan, velocita, karr, credits',
+      de:'★ NEUE BEFEHLE: mode, turbo, scan, geschwindigkeit, karr, credits',
+      es:'★ NUEVOS COMANDOS: mode, turbo, scan, velocidad, karr, credits',
+      pt:'★ NOVOS COMANDOS: mode, turbo, scan, velocidade, karr, credits',
+    };
+    await typeText(newCmds[LANG]||newCmds.en, 10, 'line-info');
   })();
 }
 
@@ -2207,7 +2366,8 @@ function startMain() {
     let n = parseInt(localStorage.getItem(KEY) || '0'); n++;
     localStorage.setItem(KEY, n);
     const el = document.getElementById('visit-counter');
-    if (el) el.textContent = 'VISITES : ' + (BASE + n);
+    // Will be updated by _applyLangToAll after language selection
+    if (el) el.textContent = 'VISITS : ' + (BASE + n);
   } catch(e) {}
 })();
 
@@ -2222,13 +2382,33 @@ function runAccessScreen() {
   const progressBar = document.getElementById('access-progress-bar');
   screen.style.display = 'flex';
 
-  const lines = [
-    'INITIALISATION DU PROTOCOLE...',
-    'CONNEXION AU NOYAU MU-TH-UR...',
-    'INTERFACE SÉCURISÉE ACTIVE.',
-  ];
+  // ★ Textes de l'écran d'accès traduits
+  const accessLines = {
+    fr:['INITIALISATION DU PROTOCOLE...','CONNEXION AU NOYAU MU-TH-UR...','INTERFACE SÉCURISÉE ACTIVE.'],
+    en:['PROTOCOL INITIALIZATION...','CONNECTING TO MU-TH-UR CORE...','SECURE INTERFACE ACTIVE.'],
+    nl:['PROTOCOL INITIALISEREN...','VERBINDING MET MU-TH-UR KERN...','BEVEILIGDE INTERFACE ACTIEF.'],
+    it:['INIZIALIZZAZIONE PROTOCOLLO...','CONNESSIONE AL NUCLEO MU-TH-UR...','INTERFACCIA SICURA ATTIVA.'],
+    de:['PROTOKOLL INITIALISIERUNG...','VERBINDUNG ZUM MU-TH-UR KERN...','SICHERE SCHNITTSTELLE AKTIV.'],
+    es:['INICIALIZANDO PROTOCOLO...','CONECTANDO AL NÚCLEO MU-TH-UR...','INTERFAZ SEGURA ACTIVA.'],
+    pt:['INICIALIZAÇÃO DO PROTOCOLO...','LIGAÇÃO AO NÚCLEO MU-TH-UR...','INTERFACE SEGURA ATIVA.'],
+  };
+  const accessOk = {
+    fr:'> ACCÈS ACCORDÉ. BIENVENUE.',en:'> ACCESS GRANTED. WELCOME.',nl:'> TOEGANG VERLEEND. WELKOM.',
+    it:'> ACCESSO CONCESSO. BENVENUTO.',de:'> ZUGANG GEWÄHRT. WILLKOMMEN.',es:'> ACCESO CONCEDIDO. BIENVENIDO.',pt:'> ACESSO CONCEDIDO. BEM-VINDO.',
+  };
+  const accessErr = {
+    fr:'> CODE INCORRECT. ACCÈS REFUSÉ.',en:'> WRONG CODE. ACCESS DENIED.',nl:'> ONJUISTE CODE. TOEGANG GEWEIGERD.',
+    it:'> CODICE ERRATO. ACCESSO NEGATO.',de:'> FALSCHER CODE. ZUGANG VERWEIGERT.',es:'> CÓDIGO INCORRECTO. ACCESO DENEGADO.',pt:'> CÓDIGO ERRADO. ACESSO NEGADO.',
+  };
+  const accessVoice = {
+    fr:"Accès accordé. Je suis MU-TH-UR. Bienvenue.",
+    en:"Access granted. I am MU-TH-UR. Welcome.",nl:"Toegang verleend. Ik ben MU-TH-UR. Welkom.",
+    it:"Accesso concesso. Sono MU-TH-UR. Benvenuto.",de:"Zugang gewährt. Ich bin MU-TH-UR. Willkommen.",
+    es:"Acceso concedido. Soy MU-TH-UR. Bienvenido.",pt:"Acesso concedido. Eu sou MU-TH-UR. Bem-vindo.",
+  };
+
+  const lines = accessLines[LANG] || accessLines.en;
   let li = 0;
-  // ★ Animer la barre de progression pendant l'init
   let progress = 0;
   const progInterval = setInterval(() => {
     if (progress < 75) { progress += 2; if(progressBar) progressBar.style.width = progress + '%'; }
@@ -2255,14 +2435,16 @@ function runAccessScreen() {
     if (val === '1982') {
       input.disabled = true;
       if(progressBar){ progressBar.style.opacity='1'; progressBar.style.width='100%'; progressBar.style.background='linear-gradient(90deg,#00aa44,#00ff66)'; }
-      const ok = document.createElement('div'); ok.className = 'a-ok'; ok.textContent = '> ACCÈS ACCORDÉ. BIENVENUE.';
+      const ok = document.createElement('div'); ok.className = 'a-ok'; ok.textContent = accessOk[LANG]||accessOk.en;
       log.appendChild(ok);
       try{ sndMotherChime(); }catch(e){}
       setTimeout(()=>{
         try{
-          const utt = new SpeechSynthesisUtterance('Accès accordé. Je suis MU-TH-UR. Bienvenue.');
-          utt.lang='fr-FR'; utt.rate=0.72; utt.pitch=0.5; utt.volume=0.9;
-          const vs=speechSynthesis.getVoices(); const v=vs.find(v=>v.lang.startsWith('fr'))||vs[0];
+          const msg = accessVoice[LANG]||accessVoice.en;
+          const langCode = {fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE',es:'es-ES',pt:'pt-PT'}[LANG]||'en-US';
+          const utt = new SpeechSynthesisUtterance(msg);
+          utt.lang=langCode; utt.rate=0.72; utt.pitch=0.5; utt.volume=0.9;
+          const vs=speechSynthesis.getVoices(); const v=vs.find(v=>v.lang.startsWith(langCode.split('-')[0]))||vs[0];
           if(v) utt.voice=v; speechSynthesis.speak(utt);
         }catch(e){}
       }, 300);
@@ -2273,7 +2455,7 @@ function runAccessScreen() {
     } else {
       input.value='';
       if(progressBar){ progressBar.style.background='linear-gradient(90deg,#ff1a1a,#ff6600)'; progressBar.style.width='100%'; setTimeout(()=>{ progressBar.style.width='0'; progressBar.style.background='linear-gradient(90deg,#FF6600,#FF9900)'; },600); }
-      const err = document.createElement('div'); err.className='a-err'; err.textContent='> CODE INCORRECT. ACCÈS REFUSÉ.';
+      const err = document.createElement('div'); err.className='a-err'; err.textContent=accessErr[LANG]||accessErr.en;
       log.appendChild(err);
       try{ sndMotherBeep(); setTimeout(()=>sndMotherBeep(),160); }catch(e){}
       box.classList.add('wrong');
@@ -2284,7 +2466,13 @@ function runAccessScreen() {
   input.addEventListener('keydown', e=>{ if(e.key==='Enter') doAccess(); });
 }
 
-window.addEventListener('load', () => runAccessScreen());
+window.addEventListener('load', () => {
+  // ★ LANG SCREEN EN PREMIER — puis accès — puis MU-TH-UR — puis main
+  document.getElementById('access-screen').style.display = 'none';
+  document.getElementById('mother-intro').style.display = 'none';
+  document.getElementById('lang-screen').style.display = 'flex';
+  showLangScreen();
+});
 
 // ★ Fix mobile clavier virtuel
 if(window.visualViewport){
@@ -2771,11 +2959,7 @@ function _scheduleRandomNotifs() {
 }
 
 // Init après sélection de langue
-const _origSetLang = window.setLang;
-window.setLang = function(l){
-  if(_origSetLang) _origSetLang(l);
-  setTimeout(_initNotifications, 3000);
-};
+// ★ Init notifications après sélection de langue — déclenché via selectLang
 
 // Ajouter "missions" dans la liste des commandes connues
 if(typeof ALL_COMMANDS !== 'undefined') ALL_COMMANDS.push('missions');
