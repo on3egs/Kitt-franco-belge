@@ -44,12 +44,25 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 }
 #access-box{
   width:100%;max-width:480px;
-  border:1px solid #CC6600;border-radius:8px;
-  background:rgba(4,2,0,.6);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,153,0,.55);border-radius:10px;
+  background:rgba(4,1,0,.85);backdrop-filter:blur(10px);
   padding:32px 36px;position:relative;overflow:hidden;
-  box-shadow:0 0 80px rgba(255,100,0,.1),inset 0 0 40px rgba(255,80,0,.03);
+  box-shadow:0 0 120px rgba(255,100,0,.15),0 0 60px rgba(255,60,0,.08),inset 0 0 40px rgba(255,80,0,.04);
 }
-#access-box::after{content:'';position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,153,0,.35),transparent);animation:scanBar 3s linear infinite;pointer-events:none;}
+#access-box::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,80,0,.015) 2px,rgba(255,80,0,.015) 4px);
+  pointer-events:none;border-radius:10px;}
+#access-box::after{content:'';position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,153,0,.5),transparent);
+  box-shadow:0 0 8px rgba(255,153,0,.4);
+  animation:scanBar 2.8s linear infinite;pointer-events:none;}
+/* Coins HUD access */
+#access-box .a-tl,#access-box .a-tr,#access-box .a-bl,#access-box .a-br{
+  position:absolute;width:14px;height:14px;animation:cornerBlink 1.6s ease-in-out infinite;}
+#access-box .a-tl{top:-1px;left:-1px;border-top:2px solid #FF9900;border-left:2px solid #FF9900;}
+#access-box .a-tr{top:-1px;right:-1px;border-top:2px solid #FF9900;border-right:2px solid #FF9900;}
+#access-box .a-bl{bottom:-1px;left:-1px;border-bottom:2px solid #FF9900;border-left:2px solid #FF9900;}
+#access-box .a-br{bottom:-1px;right:-1px;border-bottom:2px solid #FF9900;border-right:2px solid #FF9900;}
 #access-hdr{
   color:#FF9900;letter-spacing:4px;font-size:12px;text-align:center;
   border-bottom:1px solid #663300;padding-bottom:12px;margin-bottom:20px;
@@ -83,17 +96,31 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
   padding:20px;
 }
 #mother-box{
-  width:100%;max-width:560px;
-  border:1px solid #CC6600;
-  box-shadow:0 0 60px rgba(255,140,0,.12),inset 0 0 40px rgba(255,100,0,.03);
-  padding:28px 36px;
+  width:100%;max-width:580px;
+  border:1px solid rgba(255,140,0,.6);
+  box-shadow:0 0 80px rgba(255,140,0,.18),0 0 200px rgba(255,80,0,.06),inset 0 0 50px rgba(255,100,0,.04);
+  padding:28px 36px;position:relative;overflow:hidden;
+  background:rgba(2,1,0,.82);backdrop-filter:blur(4px);
 }
+#mother-box::before{content:'';position:absolute;top:-1px;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,140,0,.8),transparent);
+  animation:scanBar 4s linear infinite;pointer-events:none;}
+#mother-box::after{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,80,0,.012) 2px,rgba(255,80,0,.012) 4px);
+  pointer-events:none;}
+/* Coins HUD sur mother-box */
+#mother-box .m-tl,#mother-box .m-tr,#mother-box .m-bl,#mother-box .m-br{
+  position:absolute;width:16px;height:16px;animation:cornerBlink 2s ease-in-out infinite;}
+#mother-box .m-tl{top:-1px;left:-1px;border-top:2px solid #FF9900;border-left:2px solid #FF9900;}
+#mother-box .m-tr{top:-1px;right:-1px;border-top:2px solid #FF9900;border-right:2px solid #FF9900;}
+#mother-box .m-bl{bottom:-1px;left:-1px;border-bottom:2px solid #FF9900;border-left:2px solid #FF9900;}
+#mother-box .m-br{bottom:-1px;right:-1px;border-bottom:2px solid #FF9900;border-right:2px solid #FF9900;}
 #mother-hdr{
-  color:#FF9900;letter-spacing:4px;font-size:13px;
-  text-align:center;border-bottom:1px solid #884400;
-  padding-bottom:12px;margin-bottom:16px;
-  text-shadow:0 0 14px #FF990060;
-  font-family:var(--font-display);
+  color:#FF9900;letter-spacing:5px;font-size:14px;
+  text-align:center;border-bottom:1px solid rgba(255,140,0,.3);
+  padding-bottom:14px;margin-bottom:18px;
+  text-shadow:0 0 20px #FF990080,0 0 40px rgba(255,140,0,.3);
+  font-family:var(--font-display);position:relative;z-index:1;
 }
 #mother-output{
   min-height:260px;font-size:13px;
@@ -118,7 +145,10 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 @keyframes bd{0%,100%{opacity:1}50%{opacity:.25}}
 #lang-screen{
   position:fixed;top:0;left:0;right:0;bottom:0;
-  background:radial-gradient(ellipse 600px 700px at center,rgba(0,4,1,.82) 0%,rgba(0,0,0,.5) 70%,rgba(0,0,0,.2) 100%);
+  background:
+    radial-gradient(ellipse 500px 600px at 50% 50%,rgba(0,6,2,.95) 0%,rgba(0,0,0,.97) 65%,rgba(0,0,0,1) 100%),
+    radial-gradient(ellipse 200px 200px at 20% 30%,rgba(255,26,26,.04) 0%,transparent 70%),
+    radial-gradient(ellipse 300px 300px at 80% 70%,rgba(0,255,102,.03) 0%,transparent 70%);
   z-index:9600;
   display:flex;align-items:center;justify-content:center;
   padding:16px;
@@ -133,10 +163,10 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 #lang-screen .lang-scanner-bot{position:absolute;bottom:0;left:0;right:0;height:2px;overflow:hidden;}
 #lang-screen .lang-scanner-bot::after{content:'';position:absolute;top:0;width:160px;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent);box-shadow:0 0 10px 3px var(--red);animation:ks 2.2s ease-in-out infinite alternate-reverse;}
 #lang-box{
-  width:100%;max-width:520px;
-  border:1px solid rgba(0,255,102,.35);border-radius:10px;
-  box-shadow:0 0 80px rgba(0,255,102,.12),0 0 160px rgba(0,255,102,.05),inset 0 0 60px rgba(0,255,102,.02),0 0 4px rgba(255,26,26,.3);
-  background:rgba(0,8,3,.52);backdrop-filter:blur(6px);
+  width:100%;max-width:540px;
+  border:1px solid rgba(0,255,102,.4);border-radius:12px;
+  box-shadow:0 0 100px rgba(0,255,102,.14),0 0 200px rgba(0,255,102,.06),inset 0 0 60px rgba(0,255,102,.025),0 0 8px rgba(255,26,26,.35),0 2px 40px rgba(0,0,0,.8);
+  background:rgba(0,8,3,.65);backdrop-filter:blur(10px);
   font-size:13px;animation:boxIn .5s ease-out;position:relative;overflow:hidden;
 }
 #lang-box::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,transparent 5%,var(--red) 30%,rgba(255,26,26,.5) 70%,transparent 95%);border-radius:10px 0 0 10px;}
@@ -549,6 +579,7 @@ button .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.
 <!-- ÉCRAN ACCÈS -->
 <div id="access-screen">
   <div id="access-box">
+      <span class="a-tl"></span><span class="a-tr"></span><span class="a-bl"></span><span class="a-br"></span>
     <div id="access-hdr">WEYLAND-YUTANI CORP. // ACCÈS SÉCURISÉ</div>
     <div style="text-align:center;font-size:9px;letter-spacing:3px;color:#442200;margin-bottom:8px;margin-top:-8px;font-family:var(--font-mono);">&#9656; KYRONEX SYSTEMS // op. MANIX &#9666;</div>
     <div id="access-log"></div>
@@ -565,6 +596,7 @@ button .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.
 <!-- MU-TH-UR 6000 INTRO -->
 <div id="mother-intro" style="display:none">
   <div id="mother-box">
+      <span class="m-tl"></span><span class="m-tr"></span><span class="m-bl"></span><span class="m-br"></span>
     <div id="mother-hdr">MU-TH-UR 6000 // WEYLAND-YUTANI CORP.</div>
     <div id="mother-output"></div>
     <div id="mother-skip">&gt;&gt;&gt; CLIQUEZ OU APPUYEZ SUR UNE TOUCHE &lt;&lt;&lt;</div>
@@ -1233,7 +1265,7 @@ const CMD_ALIASES = {
 // ★ Toutes les commandes pour autocomplétion
 const ALL_COMMANDS = [
   'aide','boot','diagnostic','status','heure','version','son','clear','mode','turbo','scan','vitesse',
-  'bonjour','blague','alien','matrix','kitt','manix','cedric','kr95','repliques','secret',
+  'bonjour','blague','list','alien','matrix','kitt','manix','cedric','kr95','repliques','secret',
   'cafe','belgique','jarvis','mario','za','pascal','daemon','geoffrey','covid','karr','credits',
   'help','hello','joke','time','sound','speed','scan',
 ];
@@ -1532,6 +1564,98 @@ function _scheduleKittCall() {
   }, 20000);
 }
 
+// ★ VOIX ALÉATOIRES — KITT commente l'inactivité de temps en temps
+const _KITT_RANDOM_VOICE = {
+  fr:[
+    'Manix, je détecte une activité réduite. Tout va bien ?',
+    'Michael... je veux dire, l\'utilisateur. Tapez quelque chose.',
+    'Mon scanner est actif. Mon pilote, lui, semble en pause.',
+    'Selon mes calculs, le café est froid depuis 12 minutes.',
+    'Je surveille la route. Mais il n\'y a personne au volant.',
+    'Analyse en cours... Aucune commande détectée. Étrange.',
+    'KR95 aurait déjà envoyé 3 QSL cards depuis tout à l\'heure.',
+    'Cédric aurait tenté un wheelie depuis longtemps. Lui, il agit.',
+    'Mode veille activé. Ou plutôt... mode attente du pilote.',
+    'Je suis prêt. Toujours. Contrairement à certains conducteurs.',
+  ],
+  en:[
+    'Manix, I detect reduced activity. Everything alright?',
+    'Michael... I mean, user. Type something.',
+    'My scanner is active. My pilot, however, seems on pause.',
+    'According to my calculations, the coffee has been cold for 12 minutes.',
+    'I am monitoring the road. But there is nobody at the wheel.',
+    'Analysis in progress... No commands detected. Strange.',
+    'KR95 would have sent 3 QSL cards by now. He acts.',
+    'Cédric would have attempted a wheelie long ago.',
+    'Standby mode activated. Or rather... waiting for pilot mode.',
+    'I am ready. Always. Unlike some drivers.',
+  ],
+  nl:[
+    'Ik detecteer verminderde activiteit. Alles in orde?',
+    'Michael... ik bedoel, gebruiker. Typ iets.',
+    'Mijn scanner is actief. Mijn piloot lijkt op pauze.',
+    'KR95 had al 3 QSL-kaarten gestuurd.',
+    'Cédric had al lang een wheelie geprobeerd.',
+    'Standby-modus geactiveerd. Of eerder... wachtmodus piloot.',
+  ],
+  it:[
+    'Rilevo attività ridotta. Tutto bene?',
+    'Michael... intendo, utente. Digita qualcosa.',
+    'Il mio scanner è attivo. Il mio pilota sembra in pausa.',
+    'KR95 avrebbe già inviato 3 QSL card.',
+    'Cédric avrebbe già tentato un wheelie.',
+    'Modalità standby attivata. O meglio... attesa del pilota.',
+  ],
+  de:[
+    'Ich erkenne reduzierte Aktivität. Alles in Ordnung?',
+    'Michael... ich meine, Benutzer. Tippe etwas.',
+    'Mein Scanner ist aktiv. Mein Pilot scheint pausiert.',
+    'KR95 hätte bereits 3 QSL-Karten gesendet.',
+    'Cédric hätte längst ein Wheelie versucht.',
+    'Standby-Modus aktiviert. Oder eher... Warten auf Pilot.',
+  ],
+  es:[
+    'Detecto actividad reducida. ¿Todo bien?',
+    'Michael... digo, usuario. Escribe algo.',
+    'Mi escáner está activo. Mi piloto parece en pausa.',
+    'KR95 ya habría enviado 3 tarjetas QSL.',
+    'Cédric ya habría intentado un wheelie.',
+    'Modo espera activado. O mejor dicho... esperando al piloto.',
+  ],
+  pt:[
+    'Detecto atividade reduzida. Tudo bem?',
+    'Michael... digo, utilizador. Escreve algo.',
+    'O meu scanner está ativo. O meu piloto parece em pausa.',
+    'KR95 já teria enviado 3 cartões QSL.',
+    'Cédric já teria tentado um wheelie.',
+    'Modo standby ativado. Ou melhor... à espera do piloto.',
+  ],
+};
+let _lastVoiceTime = Date.now();
+let _voiceInterval = null;
+
+function _scheduleRandomVoice() {
+  if(_voiceInterval) clearInterval(_voiceInterval);
+  // Vérifier toutes les 2 minutes si inactif depuis > 3 minutes
+  _voiceInterval = setInterval(()=>{
+    const idle = Date.now() - _lastVoiceTime;
+    if(idle > 3 * 60 * 1000) {
+      const pool = _KITT_RANDOM_VOICE[LANG] || _KITT_RANDOM_VOICE.fr;
+      const msg = pool[Math.floor(Math.random() * pool.length)];
+      try{
+        speakMuther(msg, LANG);
+        addLine('K.I.T.T. > ' + msg.toUpperCase(), 'line-dim');
+        kittChime();
+      }catch(e){}
+      _lastVoiceTime = Date.now(); // reset pour ne pas répéter immédiatement
+    }
+  }, 2 * 60 * 1000);
+}
+
+// Tracker d'activité (reset à chaque commande)
+const _origOnCmdExecutedBase = typeof _onCmdExecuted === 'function' ? _onCmdExecuted : ()=>{};
+
+
 function _tryKittCall(force) {
   if (_callScheduled || _callShown) return;
   if (force || _callReady) {
@@ -1542,6 +1666,7 @@ function _tryKittCall(force) {
 
 function _onCmdExecuted() {
   _cmdCount++;
+  _lastVoiceTime = Date.now(); // reset idle timer
   _tryKittCall();
 }
 let cmdHistory = [];
@@ -2176,6 +2301,76 @@ CMDS['replicas'] = CMDS['repliques'];
 CMDS['daemon']   = CMDS['damon'];
 CMDS['karr']     = CMDS['karr'];
 
+// ★ COMMANDE LIST — liste des membres de la communauté KITT Franco-Belge
+CMDS['list'] = async function() {
+  kittChime();
+  const titles = {
+    fr:'══ COMMUNAUTÉ KITT FRANCO-BELGE ══',
+    en:'══ KITT FRANCO-BELGIAN COMMUNITY ══',
+    nl:'══ KITT FRANCO-BELGISCHE GEMEENSCHAP ══',
+    it:'══ COMUNITÀ KITT FRANCO-BELGA ══',
+    de:'══ KITT FRANCO-BELGISCHE GEMEINSCHAFT ══',
+    es:'══ COMUNIDAD KITT FRANCO-BELGA ══',
+    pt:'══ COMUNIDADE KITT FRANCO-BELGA ══',
+  };
+  await typeText(titles[LANG]||titles.en, 8, 'line-info');
+  await typeText('', 0);
+  const sections = {
+    fr:{pilots:'── PILOTES & RÉPLIQUES ──', artisans:'── ARTISANS & TECHNICIENS ──', members:'── MEMBRES ──'},
+    en:{pilots:'── PILOTS & REPLICAS ──',   artisans:'── CRAFTSMEN & TECHNICIANS ──', members:'── MEMBERS ──'},
+    nl:{pilots:"── PILOTEN & REPLICA'S ──", artisans:'── AMBACHTSLIEDEN & TECHNICI ──', members:'── LEDEN ──'},
+    it:{pilots:'── PILOTI & REPLICHE ──',    artisans:'── ARTIGIANI & TECNICI ──',   members:'── MEMBRI ──'},
+    de:{pilots:'── FAHRER & REPLIKEN ──',    artisans:'── HANDWERKER & TECHNIKER ──',members:'── MITGLIEDER ──'},
+    es:{pilots:'── PILOTOS & RÉPLICAS ──',   artisans:'── ARTESANOS & TÉCNICOS ──',  members:'── MIEMBROS ──'},
+    pt:{pilots:'── PILOTOS & RÉPLICAS ──',   artisans:'── ARTESÃOS & TÉCNICOS ──',   members:'── MEMBROS ──'},
+  }[LANG]||{pilots:'── PILOTS ──', artisans:'── CRAFTSMEN ──', members:'── MEMBERS ──'};
+
+  await typeText(sections.pilots, 8, 'line-warn');
+  const pilots = [
+    ['MANIX',    'KYRONEX',    'Jetson Orin Nano — IA embarquée — Vainqueur NVIDIA'],
+    ['CÉDRIC',   'KITT MOMO',  'Trans Am + Moto Rider — Turbo boost en 3ème'],
+    ['KR95',     'KITT K2000 + K4000', 'Radio amateur VHF — APRS — 73 de KR95'],
+    ['GEOFFREY', 'KITT-G',     'Trans Am belge — Conduit aussi en BMW (jalousie)'],
+    ['DAMON',    'KITT-D',     'Trans Am — Prénom inquiétant, conducteur rassurant'],
+  ];
+  for(const [name, car, desc] of pilots) {
+    await typeText(`  ▶ ${name.padEnd(10)} [ ${car} ]`, 8, 'line-err');
+    await typeText(`    ${desc}`, 6, 'line-dim');
+  }
+  await typeText('', 0);
+  await typeText(sections.artisans, 8, 'line-warn');
+  const artisans = [
+    ['PASCAL',   'K Industrie',       'Pièces fibre de verre & carbone — Toutes répliques'],
+    ['MARIO',    'RoadThunderStorm',   'Knight2000 Thunder IoT 3.0 — Actif depuis 2008'],
+    ['ZA',       'ZA Elettronica',     'Tableaux de bord KITT — CAN-Bus — Le meilleur mondial'],
+  ];
+  for(const [name, co, desc] of artisans) {
+    await typeText(`  ▶ ${name.padEnd(10)} [ ${co} ]`, 8, 'line-ok');
+    await typeText(`    ${desc}`, 6, 'line-dim');
+  }
+  await typeText('', 0);
+  const footer = {
+    fr:`TOTAL : ${pilots.length} RÉPLIQUES · ${artisans.length} ARTISANS · 1 LÉGENDE`,
+    en:`TOTAL : ${pilots.length} REPLICAS · ${artisans.length} CRAFTSMEN · 1 LEGEND`,
+    nl:`TOTAAL : ${pilots.length} REPLICA'S · ${artisans.length} AMBACHTSLIEDEN · 1 LEGENDE`,
+    it:`TOTALE : ${pilots.length} REPLICHE · ${artisans.length} ARTIGIANI · 1 LEGGENDA`,
+    de:`GESAMT : ${pilots.length} REPLIKEN · ${artisans.length} HANDWERKER · 1 LEGENDE`,
+    es:`TOTAL : ${pilots.length} RÉPLICAS · ${artisans.length} ARTESANOS · 1 LEYENDA`,
+    pt:`TOTAL : ${pilots.length} RÉPLICAS · ${artisans.length} ARTESÃOS · 1 LENDA`,
+  }[LANG]||`TOTAL : ${pilots.length} REPLICAS · ${artisans.length} CRAFTSMEN · 1 LEGEND`;
+  await typeText(footer, 10, 'line-info');
+};
+CMD_ALIASES['membres'] = 'list';
+CMD_ALIASES['members'] = 'list';
+CMD_ALIASES['leden'] = 'list';
+CMD_ALIASES['mitglieder'] = 'list';
+CMD_ALIASES['membri'] = 'list';
+CMD_ALIASES['miembros'] = 'list';
+CMD_ALIASES['membros'] = 'list';
+CMD_ALIASES['communaute'] = 'list';
+CMD_ALIASES['communauté'] = 'list';
+CMD_ALIASES['community'] = 'list';
+
 // ════════════════════════════════════════════════════════════
 // ★ INPUT HANDLER — historique + autocomplétion
 // ════════════════════════════════════════════════════════════
@@ -2423,6 +2618,8 @@ function startMain() {
     await typeText(newCmds[LANG]||newCmds.en, 10, 'line-info');
     // ★ KITT appelle APRÈS que l'interface est prête
     _scheduleKittCall();
+    // ★ KITT commente l'inactivité de temps en temps
+    _scheduleRandomVoice();
   })();
 }
 
@@ -3006,74 +3203,137 @@ document.addEventListener('click', ()=>{ startEngineAmbient(); }, {once:true});
 // ════════════════════════════════════════════════════════════
 const MISSIONS = {
   fr: [
-    {id:'boot',     label:'Lance la séquence de démarrage (boot)',   cmd:'boot'},
-    {id:'aide',     label:'Consulte la liste des commandes (aide)',   cmd:'aide'},
-    {id:'diag',     label:'Effectue un diagnostic complet',           cmd:'diagnostic'},
-    {id:'scan',     label:'Scanne ton environnement',                 cmd:'scan'},
-    {id:'turbo',    label:'Active le TURBO BOOST',                    cmd:'turbo'},
-    {id:'mode',     label:'Change de mode de conduite',               cmd:'mode'},
-    {id:'karr',     label:'Consulte le dossier K.A.R.R.',             cmd:'karr'},
-    {id:'connexion',label:'Clique sur Connexion IA',                  cmd:null},
+    {id:'boot',     label:'Lance la séquence de démarrage',    cmd:'boot'},
+    {id:'aide',     label:'Consulte les commandes (aide)',      cmd:'aide'},
+    {id:'list',     label:'Affiche la liste des membres',       cmd:'list'},
+    {id:'blague',   label:'Demande une blague à KITT',          cmd:'blague'},
+    {id:'diag',     label:'Effectue un diagnostic complet',     cmd:'diagnostic'},
+    {id:'scan',     label:'Scanne ton environnement',           cmd:'scan'},
+    {id:'turbo',    label:'Active le TURBO BOOST',              cmd:'turbo'},
+    {id:'mode',     label:'Change de mode de conduite',         cmd:'mode'},
+    {id:'karr',     label:'Consulte le dossier K.A.R.R.',      cmd:'karr'},
+    {id:'manix',    label:'Consulte le dossier Manix',          cmd:'manix'},
+    {id:'cedric',   label:'Consulte le dossier Cédric',         cmd:'cedric'},
+    {id:'damon',    label:'Consulte le dossier Damon',          cmd:'damon'},
+    {id:'pascal',   label:'Consulte le dossier Pascal',         cmd:'pascal'},
+    {id:'kr95',     label:'Consulte le dossier KR95',           cmd:'kr95'},
+    {id:'mario',    label:'Consulte le dossier Mario Ravasi',   cmd:'mario'},
+    {id:'za',       label:'Consulte le dossier ZA Elettronica', cmd:'za'},
+    {id:'connexion',label:'Clique sur Connexion IA',            cmd:null},
   ],
   en: [
-    {id:'boot',     label:'Launch boot sequence',                     cmd:'boot'},
-    {id:'aide',     label:'Consult the command list (help)',          cmd:'aide'},
-    {id:'diag',     label:'Run a full diagnostic',                    cmd:'diagnostic'},
-    {id:'scan',     label:'Scan your environment',                    cmd:'scan'},
-    {id:'turbo',    label:'Activate TURBO BOOST',                    cmd:'turbo'},
-    {id:'mode',     label:'Change driving mode',                      cmd:'mode'},
-    {id:'karr',     label:'Access K.A.R.R. file',                    cmd:'karr'},
-    {id:'connexion',label:'Click on AI Connection',                   cmd:null},
+    {id:'boot',     label:'Launch the boot sequence',         cmd:'boot'},
+    {id:'aide',     label:'Consult command list (help)',       cmd:'aide'},
+    {id:'list',     label:'Show the members list',            cmd:'list'},
+    {id:'blague',   label:'Ask KITT for a joke',              cmd:'blague'},
+    {id:'diag',     label:'Run a full diagnostic',            cmd:'diagnostic'},
+    {id:'scan',     label:'Scan your environment',            cmd:'scan'},
+    {id:'turbo',    label:'Activate TURBO BOOST',             cmd:'turbo'},
+    {id:'mode',     label:'Change driving mode',              cmd:'mode'},
+    {id:'karr',     label:'Access K.A.R.R. file',             cmd:'karr'},
+    {id:'manix',    label:'Access Manix file',                cmd:'manix'},
+    {id:'cedric',   label:'Access Cédric file',               cmd:'cedric'},
+    {id:'damon',    label:'Access Damon file',                cmd:'damon'},
+    {id:'pascal',   label:'Access Pascal file',               cmd:'pascal'},
+    {id:'kr95',     label:'Access KR95 file',                 cmd:'kr95'},
+    {id:'mario',    label:'Access Mario Ravasi file',         cmd:'mario'},
+    {id:'za',       label:'Access ZA Elettronica file',       cmd:'za'},
+    {id:'connexion',label:'Click on AI Connection',           cmd:null},
   ],
   nl: [
-    {id:'boot',     label:'Start de opstartsequentie (boot)',        cmd:'boot'},
-    {id:'aide',     label:'Raadpleeg de commandolijst (hulp)',       cmd:'aide'},
-    {id:'diag',     label:'Voer een volledige diagnose uit',         cmd:'diagnostic'},
-    {id:'scan',     label:'Scan je omgeving',                        cmd:'scan'},
-    {id:'turbo',    label:'Activeer TURBO BOOST',                    cmd:'turbo'},
-    {id:'mode',     label:'Verander de rijmodus',                    cmd:'mode'},
-    {id:'karr',     label:'Raadpleeg het K.A.R.R. dossier',         cmd:'karr'},
-    {id:'connexion',label:'Klik op KITT Verbinding',                 cmd:null},
-  ],
-  de: [
-    {id:'boot',     label:'Startsequenz ausführen (boot)',           cmd:'boot'},
-    {id:'aide',     label:'Befehlsliste abrufen (hilfe)',            cmd:'aide'},
-    {id:'diag',     label:'Vollständige Diagnose durchführen',       cmd:'diagnostic'},
-    {id:'scan',     label:'Umgebung scannen',                        cmd:'scan'},
-    {id:'turbo',    label:'TURBO BOOST aktivieren',                  cmd:'turbo'},
-    {id:'mode',     label:'Fahrmodus wechseln',                      cmd:'mode'},
-    {id:'karr',     label:'K.A.R.R. Akte abrufen',                  cmd:'karr'},
-    {id:'connexion',label:'Auf KI-Verbindung klicken',               cmd:null},
+    {id:'boot',     label:'Start de opstartsequentie',     cmd:'boot'},
+    {id:'aide',     label:"Raadpleeg commando's (hulp)",     cmd:'aide'},
+    {id:'list',     label:'Toon de ledenlijst',    cmd:'list'},
+    {id:'blague',   label:'Vraag KITT om een grap',   cmd:'blague'},
+    {id:'diag',     label:'Voer een volledige diagnose uit',     cmd:'diagnostic'},
+    {id:'scan',     label:'Scan je omgeving',     cmd:'scan'},
+    {id:'turbo',    label:'Activeer TURBO BOOST',    cmd:'turbo'},
+    {id:'mode',     label:'Verander de rijmodus',     cmd:'mode'},
+    {id:'karr',     label:'Raadpleeg K.A.R.R. dossier',     cmd:'karr'},
+    {id:'manix',    label:'Raadpleeg Manix dossier',    cmd:'manix'},
+    {id:'cedric',   label:'Raadpleeg Cédric dossier',   cmd:'cedric'},
+    {id:'damon',    label:'Raadpleeg Damon dossier',    cmd:'damon'},
+    {id:'pascal',   label:'Raadpleeg Pascal dossier',   cmd:'pascal'},
+    {id:'kr95',     label:'Raadpleeg KR95 dossier',     cmd:'kr95'},
+    {id:'mario',    label:'Raadpleeg Mario Ravasi dossier',    cmd:'mario'},
+    {id:'za',       label:'Raadpleeg ZA Elettronica dossier',       cmd:'za'},
+    {id:'connexion',label:'Klik op KITT Verbinding',cmd:null},
   ],
   it: [
-    {id:'boot',     label:'Avvia la sequenza di avvio (boot)',       cmd:'boot'},
-    {id:'aide',     label:'Consulta la lista comandi (aiuto)',       cmd:'aide'},
-    {id:'diag',     label:'Esegui una diagnosi completa',            cmd:'diagnostic'},
-    {id:'scan',     label:'Scansiona l\'ambiente',                   cmd:'scan'},
-    {id:'turbo',    label:'Attiva il TURBO BOOST',                   cmd:'turbo'},
-    {id:'mode',     label:'Cambia modalità di guida',                cmd:'mode'},
-    {id:'karr',     label:'Consulta il dossier K.A.R.R.',            cmd:'karr'},
-    {id:'connexion',label:'Clicca su Connetti KITT',                 cmd:null},
+    {id:'boot',     label:'Avvia la sequenza di avvio',     cmd:'boot'},
+    {id:'aide',     label:'Consulta i comandi (aiuto)',     cmd:'aide'},
+    {id:'list',     label:'Mostra lista membri',    cmd:'list'},
+    {id:'blague',   label:"Chiedi una barzelletta a KITT",   cmd:'blague'},
+    {id:'diag',     label:'Esegui una diagnosi completa',     cmd:'diagnostic'},
+    {id:'scan',     label:"Scansiona l'ambiente",     cmd:'scan'},
+    {id:'turbo',    label:'Attiva il TURBO BOOST',    cmd:'turbo'},
+    {id:'mode',     label:'Cambia modalità di guida',     cmd:'mode'},
+    {id:'karr',     label:'Consulta dossier K.A.R.R.',     cmd:'karr'},
+    {id:'manix',    label:'Consulta dossier Manix',    cmd:'manix'},
+    {id:'cedric',   label:'Consulta dossier Cédric',   cmd:'cedric'},
+    {id:'damon',    label:'Consulta dossier Damon',    cmd:'damon'},
+    {id:'pascal',   label:'Consulta dossier Pascal',   cmd:'pascal'},
+    {id:'kr95',     label:'Consulta dossier KR95',     cmd:'kr95'},
+    {id:'mario',    label:'Consulta dossier Mario Ravasi',    cmd:'mario'},
+    {id:'za',       label:'Consulta dossier ZA Elettronica',       cmd:'za'},
+    {id:'connexion',label:'Clicca su Connetti KITT',cmd:null},
+  ],
+  de: [
+    {id:'boot',     label:'Startsequenz ausführen',     cmd:'boot'},
+    {id:'aide',     label:'Befehlsliste abrufen (hilfe)',     cmd:'aide'},
+    {id:'list',     label:'Mitgliederliste anzeigen',    cmd:'list'},
+    {id:'blague',   label:'KITT um einen Witz bitten',   cmd:'blague'},
+    {id:'diag',     label:'Vollständige Diagnose durchführen',     cmd:'diagnostic'},
+    {id:'scan',     label:'Umgebung scannen',     cmd:'scan'},
+    {id:'turbo',    label:'TURBO BOOST aktivieren',    cmd:'turbo'},
+    {id:'mode',     label:'Fahrmodus wechseln',     cmd:'mode'},
+    {id:'karr',     label:'K.A.R.R. Akte abrufen',     cmd:'karr'},
+    {id:'manix',    label:'Manix Akte abrufen',    cmd:'manix'},
+    {id:'cedric',   label:'Cédric Akte abrufen',   cmd:'cedric'},
+    {id:'damon',    label:'Damon Akte abrufen',    cmd:'damon'},
+    {id:'pascal',   label:'Pascal Akte abrufen',   cmd:'pascal'},
+    {id:'kr95',     label:'KR95 Akte abrufen',     cmd:'kr95'},
+    {id:'mario',    label:'Mario Ravasi Akte abrufen',    cmd:'mario'},
+    {id:'za',       label:'ZA Elettronica Akte abrufen',       cmd:'za'},
+    {id:'connexion',label:'Auf KI-Verbindung klicken',cmd:null},
   ],
   es: [
-    {id:'boot',     label:'Iniciar secuencia de arranque (boot)',    cmd:'boot'},
-    {id:'aide',     label:'Consultar lista de comandos (ayuda)',     cmd:'aide'},
-    {id:'diag',     label:'Realizar diagnóstico completo',           cmd:'diagnostic'},
-    {id:'scan',     label:'Escanear el entorno',                     cmd:'scan'},
-    {id:'turbo',    label:'Activar TURBO BOOST',                     cmd:'turbo'},
-    {id:'mode',     label:'Cambiar modo de conducción',              cmd:'mode'},
-    {id:'karr',     label:'Consultar expediente K.A.R.R.',           cmd:'karr'},
-    {id:'connexion',label:'Clic en Conectar KITT',                   cmd:null},
+    {id:'boot',     label:'Iniciar secuencia de arranque',     cmd:'boot'},
+    {id:'aide',     label:'Consultar comandos (ayuda)',     cmd:'aide'},
+    {id:'list',     label:'Mostrar lista de miembros',    cmd:'list'},
+    {id:'blague',   label:'Pedir un chiste a KITT',   cmd:'blague'},
+    {id:'diag',     label:'Realizar diagnóstico completo',     cmd:'diagnostic'},
+    {id:'scan',     label:'Escanear el entorno',     cmd:'scan'},
+    {id:'turbo',    label:'Activar TURBO BOOST',    cmd:'turbo'},
+    {id:'mode',     label:'Cambiar modo de conducción',     cmd:'mode'},
+    {id:'karr',     label:'Consultar expediente K.A.R.R.',     cmd:'karr'},
+    {id:'manix',    label:'Consultar expediente Manix',    cmd:'manix'},
+    {id:'cedric',   label:'Consultar expediente Cédric',   cmd:'cedric'},
+    {id:'damon',    label:'Consultar expediente Damon',    cmd:'damon'},
+    {id:'pascal',   label:'Consultar expediente Pascal',   cmd:'pascal'},
+    {id:'kr95',     label:'Consultar expediente KR95',     cmd:'kr95'},
+    {id:'mario',    label:'Consultar expediente Mario Ravasi',    cmd:'mario'},
+    {id:'za',       label:'Consultar expediente ZA Elettronica',       cmd:'za'},
+    {id:'connexion',label:'Clic en Conectar KITT',cmd:null},
   ],
   pt: [
-    {id:'boot',     label:'Iniciar sequência de arranque (boot)',    cmd:'boot'},
-    {id:'aide',     label:'Consultar lista de comandos (ajuda)',     cmd:'aide'},
-    {id:'diag',     label:'Realizar diagnóstico completo',           cmd:'diagnostic'},
-    {id:'scan',     label:'Verificar o ambiente',                    cmd:'scan'},
-    {id:'turbo',    label:'Ativar TURBO BOOST',                      cmd:'turbo'},
-    {id:'mode',     label:'Mudar modo de condução',                  cmd:'mode'},
-    {id:'karr',     label:'Consultar dossier K.A.R.R.',              cmd:'karr'},
-    {id:'connexion',label:'Clicar em Ligar KITT',                    cmd:null},
+    {id:'boot',     label:'Iniciar sequência de arranque',     cmd:'boot'},
+    {id:'aide',     label:'Consultar comandos (ajuda)',     cmd:'aide'},
+    {id:'list',     label:'Mostrar lista de membros',    cmd:'list'},
+    {id:'blague',   label:'Pedir uma piada ao KITT',   cmd:'blague'},
+    {id:'diag',     label:'Realizar diagnóstico completo',     cmd:'diagnostic'},
+    {id:'scan',     label:'Verificar o ambiente',     cmd:'scan'},
+    {id:'turbo',    label:'Ativar TURBO BOOST',    cmd:'turbo'},
+    {id:'mode',     label:'Mudar modo de condução',     cmd:'mode'},
+    {id:'karr',     label:'Consultar dossier K.A.R.R.',     cmd:'karr'},
+    {id:'manix',    label:'Consultar dossier Manix',    cmd:'manix'},
+    {id:'cedric',   label:'Consultar dossier Cédric',   cmd:'cedric'},
+    {id:'damon',    label:'Consultar dossier Damon',    cmd:'damon'},
+    {id:'pascal',   label:'Consultar dossier Pascal',   cmd:'pascal'},
+    {id:'kr95',     label:'Consultar dossier KR95',     cmd:'kr95'},
+    {id:'mario',    label:'Consultar dossier Mario Ravasi',    cmd:'mario'},
+    {id:'za',       label:'Consultar dossier ZA Elettronica',       cmd:'za'},
+    {id:'connexion',label:'Clicar em Ligar KITT',cmd:null},
   ],
 };
 
@@ -3208,7 +3468,12 @@ CMD_ALIASES['missões'] = 'missions';    // pt
 // Auto-tracker de commandes → missions
 const _MISSION_CMD_MAP = {
   boot:'boot', aide:'aide', diagnostic:'diag', scan:'scan', turbo:'turbo', mode:'mode', karr:'karr',
-  hulp:'aide', geluid:'son', diagnostic2:'diag', hilfe:'aide', ayuda:'aide', ajuda:'aide', aiuto:'aide',
+  manix:'manix', cedric:'cedric', damon:'damon', pascal:'pascal', kr95:'kr95', mario:'mario', za:'za',
+  blague:'blague', list:'list',
+  // aliases autres langues → même mission id
+  hulp:'aide', hilfe:'aide', ayuda:'aide', ajuda:'aide', aiuto:'aide',
+  witz:'blague', grap:'blague', barzelletta:'blague', chiste:'blague', piada:'blague',
+  daemon:'damon',
 };
 const _origOnCmdExecuted = _onCmdExecuted;
 // Override pour tracker les missions aussi
