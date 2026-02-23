@@ -323,39 +323,41 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 /* ── APPEL ENTRANT KITT ─────────────────────────────────── */
 @keyframes callRing{0%,100%{transform:scale(1)}10%,30%{transform:scale(1.04)}20%,40%{transform:scale(.98)}}
 @keyframes callPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,26,26,.4)}70%{box-shadow:0 0 0 16px rgba(255,26,26,0)}}
-@keyframes callIn{from{opacity:0;transform:translate(-50%,-50%) scale(.88)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+/* Notification coin bas-droit : glisse depuis la droite */
+@keyframes callIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
 #kitt-call{
-  position:fixed;top:50%;left:50%;
-  transform:translate(-50%,-50%);
+  position:fixed;
+  bottom:82px;   /* au-dessus du dashboard (68px) */
+  right:14px;
   z-index:9200;
-  background:rgba(2,0,0,.92);
+  background:rgba(2,0,0,.94);
   border:1px solid var(--red);
-  border-radius:12px;
-  padding:28px 32px;
-  width:min(340px,92vw);
+  border-radius:10px;
+  padding:16px 20px 14px;
+  width:min(240px,85vw);
   text-align:center;
   font-family:"Courier New",monospace;
-  backdrop-filter:blur(8px);
+  backdrop-filter:blur(10px);
   display:none;
-  box-shadow:0 0 60px rgba(255,26,26,.2);
+  box-shadow:0 0 30px rgba(255,26,26,.25),0 4px 20px rgba(0,0,0,.6);
 }
-#kitt-call.active{display:block;animation:callIn .35s cubic-bezier(.34,1.56,.64,1) forwards;}
+#kitt-call.active{display:block;animation:callIn .3s cubic-bezier(.34,1.56,.64,1) forwards;}
 #call-avatar{
-  width:64px;height:64px;border-radius:50%;
-  border:2px solid var(--red);margin:0 auto 14px;
+  width:48px;height:48px;border-radius:50%;
+  border:2px solid var(--red);margin:0 auto 10px;
   display:flex;align-items:center;justify-content:center;
-  font-size:22px;letter-spacing:2px;color:var(--red);
+  font-size:16px;letter-spacing:2px;color:var(--red);
   background:rgba(40,0,0,.6);
   animation:callRing 1.2s ease-in-out infinite,callPulse 1.4s ease-in-out infinite;
   font-family:"Courier New",monospace;
 }
-#call-name{color:var(--red);font-size:16px;letter-spacing:5px;text-shadow:0 0 16px var(--red);margin-bottom:4px;}
-#call-status{color:rgba(255,100,0,.7);font-size:9px;letter-spacing:3px;margin-bottom:20px;animation:bd 1.1s ease-in-out infinite;}
-.call-btns{display:flex;gap:14px;justify-content:center;}
+#call-name{color:var(--red);font-size:14px;letter-spacing:4px;text-shadow:0 0 14px var(--red);margin-bottom:3px;}
+#call-status{color:rgba(255,100,0,.7);font-size:8px;letter-spacing:3px;margin-bottom:14px;animation:bd 1.1s ease-in-out infinite;}
+.call-btns{display:flex;gap:10px;justify-content:center;}
 .call-btn{
-  flex:1;padding:10px 0;border:1px solid;border-radius:6px;
+  flex:1;padding:8px 0;border:1px solid;border-radius:5px;
   cursor:pointer;font-family:"Courier New",monospace;
-  font-size:11px;letter-spacing:2px;background:transparent;
+  font-size:10px;letter-spacing:2px;background:transparent;
   transition:all .15s;pointer-events:all;
 }
 #call-accept{border-color:var(--green);color:var(--green);}
@@ -405,7 +407,13 @@ button:active{transform:scale(.95);}
 /* ── MOBILE ─────────────────────────────────────────────── */
 /* Empêcher le zoom iOS sur focus input (min 16px) */
 #access-input{font-size:16px;}
-@media(max-width:600px){#cmd-input{font-size:16px !important;}}
+@media(max-width:600px){
+  #cmd-input{font-size:16px !important;}
+  /* Padding bas pour la barre home iPhone X+ */
+  .container{padding-bottom:max(6px,env(safe-area-inset-bottom));}
+  /* input-row bien visible et cliquable */
+  .input-row{padding-top:10px;padding-bottom:4px;}
+}
 /* Touch: désactiver hover transform sur tactile */
 @media(hover:none){
   .lang-opt:hover{transform:none;box-shadow:none;}
@@ -444,7 +452,16 @@ button:active{transform:scale(.95);}
 @keyframes tpulse{0%,100%{box-shadow:0 0 5px rgba(0,255,102,.25)}50%{box-shadow:0 0 18px rgba(0,255,102,.65),inset 0 0 8px rgba(0,255,102,.08)}}
 
 /* ── FOND JARVIS HOLOGRAPHIQUE ──────────────────────────── */
-.container{position:relative;z-index:1;}
+/* Container principal : flex column plein écran, s'adapte au clavier virtuel */
+.container{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  height:100vh;          /* fallback */
+  height:100dvh;         /* dynamic: rétrécit quand le clavier s'ouvre */
+  padding:10px 16px 6px;
+  max-width:760px;margin:0 auto;
+  overflow:hidden;
+}
 #jarvis-svg{
   position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%) translate3d(0,0,0);
@@ -2646,6 +2663,18 @@ function runAccessScreen() {
 
 // Lancer l'écran d'accès au chargement
 window.addEventListener('load', () => runAccessScreen());
+
+// ── FIX MOBILE : garder l'input visible quand le clavier virtuel s'ouvre ──
+// visualViewport s'adapte à la zone réellement visible (clavier exclu)
+if(window.visualViewport){
+  function _vpResize(){
+    const vp=window.visualViewport;
+    const c=document.querySelector('.container');
+    if(c) c.style.height=vp.height+'px';
+  }
+  window.visualViewport.addEventListener('resize',_vpResize);
+  window.visualViewport.addEventListener('scroll',_vpResize);
+}
 
 // ════════════════════════════════════════════════════════════
 // ROUTE NOCTURNE KITT — canvas fond d'écran
