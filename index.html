@@ -472,10 +472,24 @@ button .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.
 #call-ignore:hover,#call-ignore:active{border-color:var(--red);color:var(--red);}
 
 /* ── TUNNEL BUTTON ─────────────────────────────────────────── */
-#btn-tunnel{border-color:#333;color:#333;transition:all .2s;}
+#btn-tunnel{border-color:#333;color:#333;transition:all .3s;position:relative;}
 #btn-tunnel.tunnel-online{border-color:var(--green);color:var(--green);animation:tpulse 2.4s ease-in-out infinite;}
 #btn-tunnel.tunnel-offline{border-color:var(--red);color:var(--red);}
 #btn-tunnel.tunnel-checking{border-color:var(--amber);color:var(--amber);}
+#btn-tunnel.tunnel-locked{
+  border-color:#333 !important;color:#2a2a2a !important;
+  cursor:not-allowed !important;opacity:.45 !important;
+  animation:none !important;pointer-events:none;
+}
+#btn-tunnel.tunnel-locked::after{
+  content:'🔒';position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;
+}
+#btn-tunnel.tunnel-unlocking{
+  border-color:var(--amber) !important;color:var(--amber) !important;
+  animation:unlockFlash .25s ease-in-out 8 !important;
+}
+@keyframes unlockFlash{0%,100%{opacity:1;box-shadow:none}50%{opacity:.3;box-shadow:0 0 18px var(--amber),0 0 40px rgba(255,170,0,.4);}}
+@keyframes tpulse{0%,100%{box-shadow:0 0 6px rgba(0,255,102,.3)}50%{box-shadow:0 0 18px rgba(0,255,102,.7),0 0 40px rgba(0,255,102,.3);}}
 @keyframes tpulse{0%,100%{box-shadow:0 0 5px rgba(0,255,102,.25)}50%{box-shadow:0 0 18px rgba(0,255,102,.65),inset 0 0 8px rgba(0,255,102,.08)}}
 
 /* ── CONTAINER ─────────────────────────────────────────────── */
@@ -1435,6 +1449,8 @@ function _applyLangToAll(lang) {
   }
   // ★ Tunnel button tooltip
   _updateTunnelBtnLang(lang);
+  // ★ Vérifier l'état du verrou (missions déjà accomplies via localStorage?)
+  setTimeout(()=>_checkTunnelLock(), 100);
 }
 
 function _updateTunnelBtnLang(lang) {
@@ -1505,23 +1521,23 @@ let _callReady = false;
 let _callScheduled = false;
 
 function _scheduleKittCall() {
-  // Condition 1 : 45 secondes écoulées
+  // ★ Appel de KITT rapide : 8 secondes après sélection langue pour expliquer les règles
   setTimeout(() => {
     _callReady = true;
     _tryKittCall();
-  }, 30000);
+  }, 8000);
 
-  // Fallback absolu : appel dans 90 secondes quoi qu'il arrive
+  // Fallback absolu : appel dans 20 secondes quoi qu'il arrive
   setTimeout(() => {
     _tryKittCall(true);
-  }, 90000);
+  }, 20000);
 }
 
 function _tryKittCall(force) {
   if (_callScheduled || _callShown) return;
-  if (force || (_callReady && _cmdCount >= 2)) {
+  if (force || _callReady) {
     _callScheduled = true;
-    setTimeout(() => { try{ showKittCall(); }catch(e){} }, 1500);
+    setTimeout(() => { try{ showKittCall(); }catch(e){} }, 1000);
   }
 }
 
@@ -2240,11 +2256,63 @@ cmdInput.addEventListener('keydown', async function(e) {
 // ════════════════════════════════════════════════════════════
 const TUNNEL_JSON_URL = 'tunnel.json';
 let _tunnelUrl = null, _tunnelStatus = 'unknown';
+let _tunnelUnlocked = false; // ★ Débloqué uniquement après toutes les missions
 const _CF_ALLOWED = ['.trycloudflare.com', '.cfargotunnel.com'];
 function _isValidCfUrl(url) {
   if (!url || !url.startsWith('https://')) return false;
   return _CF_ALLOWED.some(d => url.includes(d));
 }
+function _checkTunnelLock() {
+  const btn = document.getElementById('btn-tunnel');
+  if(!btn) return;
+  // Vérifier si toutes les missions sont accomplies
+  const missions = MISSIONS[LANG]||MISSIONS.en;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  _tunnelUnlocked = done >= missions.length;
+  if(_tunnelUnlocked) {
+    btn.classList.remove('tunnel-locked');
+    btn.style.pointerEvents = '';
+    btn.onclick = (e) => { ripple(e); connectTunnel(); };
+  } else {
+    btn.classList.add('tunnel-locked');
+    btn.style.pointerEvents = 'none';
+    // Montrer un message quand on essaie de cliquer malgré tout
+    btn.style.pointerEvents = 'auto'; // on gère le clic nous-mêmes
+    btn.onclick = (e) => { ripple(e); _showLockMessage(); };
+  }
+}
+
+function _showLockMessage() {
+  sndError();
+  const missions = MISSIONS[LANG]||MISSIONS.en;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  const remaining = missions.length - done;
+  const msg = {
+    fr:`[ 🔒 ACCÈS VERROUILLÉ ] Complétez encore ${remaining} mission(s) pour débloquer la connexion IA.`,
+    en:`[ 🔒 ACCESS LOCKED ] Complete ${remaining} more mission(s) to unlock the AI connection.`,
+    nl:`[ 🔒 TOEGANG VERGRENDELD ] Voltooi nog ${remaining} missie(s) om de AI-verbinding te ontgrendelen.`,
+    it:`[ 🔒 ACCESSO BLOCCATO ] Completa ancora ${remaining} missione/i per sbloccare la connessione IA.`,
+    de:`[ 🔒 ZUGANG GESPERRT ] Schließe noch ${remaining} Mission(en) ab, um die KI-Verbindung freizuschalten.`,
+    es:`[ 🔒 ACCESO BLOQUEADO ] Completa ${remaining} misión/misiones más para desbloquear la conexión IA.`,
+    pt:`[ 🔒 ACESSO BLOQUEADO ] Completa mais ${remaining} missão/missões para desbloquear a ligação IA.`,
+  }[LANG]||`[ 🔒 LOCKED ] Complete ${remaining} more mission(s).`;
+  try{ addLine(msg, 'line-err'); }catch(e){}
+}
+
+function _unlockTunnelBtn() {
+  _tunnelUnlocked = true;
+  const btn = document.getElementById('btn-tunnel');
+  if(!btn) return;
+  btn.classList.remove('tunnel-locked');
+  // Animation de déverrouillage
+  btn.classList.add('tunnel-unlocking');
+  btn.onclick = (e) => { ripple(e); connectTunnel(); };
+  setTimeout(() => {
+    btn.classList.remove('tunnel-unlocking');
+    _updateTunnelBtn(); // remettre le bon état (online/offline/checking)
+  }, 2500);
+}
+
 async function fetchTunnelStatus() {
   const btn = document.getElementById('btn-tunnel');
   if (btn) { btn.className = 'tunnel-checking'; btn.title = 'Vérification...'; }
@@ -2471,6 +2539,9 @@ window.addEventListener('load', () => {
   document.getElementById('access-screen').style.display = 'none';
   document.getElementById('mother-intro').style.display = 'none';
   document.getElementById('lang-screen').style.display = 'flex';
+  // ★ Verrouiller le bouton Connexion KITT dès le départ
+  const tb = document.getElementById('btn-tunnel');
+  if(tb) { tb.classList.add('tunnel-locked'); tb.onclick = (e)=>{ ripple(e); _showLockMessage(); }; }
   showLangScreen();
 });
 
@@ -2705,25 +2776,152 @@ function showKittCall(){
   document.getElementById('call-accept').onclick=()=>{
     stopRing(); call.style.transition='opacity .4s'; call.style.opacity='0';
     setTimeout(()=>{ call.style.display='none'; },420);
-    // ★ Message de Manix selon la langue sélectionnée
-    const CALL_MSG = {
-      fr: "Salut ! Je t'attends. Clique sur Connexion IA et teste-moi. Et n'oublie pas de dire au groupe KITT Franco-Belge ce qui te plaît et ce qui te plaît pas, et donne des idées. Merci, à toi !",
-      en: "Hey! I'm waiting for you. Click on AI Connection and test me. And don't forget to tell the KITT Franco-Belgian group what you like and what you don't like, and share your ideas. Thanks, over to you!",
-      nl: "Hallo! Ik wacht op je. Klik op IA Verbinding en test mij. En vergeet niet om de KITT Franco-Belgische groep te vertellen wat je leuk vindt en wat niet, en geef ideeën. Bedankt, aan jou!",
-      it: "Ciao! Ti sto aspettando. Clicca su Connessione IA e mettimi alla prova. E non dimenticare di dire al gruppo KITT Franco-Belga cosa ti piace e cosa non ti piace, e dai idee. Grazie, a te!",
-      de: "Hallo! Ich warte auf dich. Klick auf KI-Verbindung und teste mich. Und vergiss nicht, der KITT Franco-Belgischen Gruppe zu sagen, was dir gefällt und was nicht, und gib Ideen. Danke, an dich!",
-      es: "¡Hola! Te estoy esperando. Haz clic en Conexión IA y pruébame. Y no olvides decirle al grupo KITT Franco-Belga lo que te gusta y lo que no, y da ideas. ¡Gracias, a ti!",
-      pt: "Olá! Estou à tua espera. Clica em Ligação IA e testa-me. E não te esqueças de dizer ao grupo KITT Franco-Belga o que gostas e o que não gostas, e dá ideias. Obrigado, a ti!",
+    // ★ KITT explique les règles du jeu dans la langue sélectionnée
+    const CALL_RULES = {
+      fr: {
+        voice: "Ici KITT. Bienvenue dans l'interface franco-belge. Je vais vous expliquer les règles. Vous devez accomplir huit missions pour débloquer la connexion à mon intelligence artificielle réelle. Commencez par taper boot pour démarrer. Puis tapez aide pour voir toutes mes commandes. Chaque mission accomplie vous rapproche de l'accès à mon vrai cerveau électronique. Bonne chance, Michael.",
+        terminal: [
+          "── BRIEFING DE MISSION — KITT ──",
+          "OBJECTIF : Accomplir 8 missions pour débloquer",
+          "           la connexion à l'IA KITT réelle.",
+          "",
+          "RÈGLES :",
+          "  1. Tapez [ boot ] pour démarrer",
+          "  2. Tapez [ aide ] pour voir les commandes",
+          "  3. Complétez chaque mission dans la liste",
+          "  4. Le bouton CONNEXION KITT se débloque",
+          "     quand toutes les missions sont faites !",
+          "",
+          "  Tapez [ missions ] pour suivre ta progression.",
+          "  Bonne chance, Michael.",
+        ]
+      },
+      en: {
+        voice: "This is KITT. Welcome to the Franco-Belgian interface. Let me explain the rules. You must complete eight missions to unlock the connection to my real artificial intelligence. Start by typing boot to initialize. Then type help to see all my commands. Each mission completed brings you closer to accessing my true electronic brain. Good luck, Michael.",
+        terminal: [
+          "── MISSION BRIEFING — KITT ──",
+          "OBJECTIVE: Complete 8 missions to unlock",
+          "           the real KITT AI connection.",
+          "",
+          "RULES:",
+          "  1. Type [ boot ] to initialize",
+          "  2. Type [ help ] to see commands",
+          "  3. Complete each mission in the list",
+          "  4. The KITT CONNECTION button unlocks",
+          "     when all missions are done!",
+          "",
+          "  Type [ missions ] to track your progress.",
+          "  Good luck, Michael.",
+        ]
+      },
+      nl: {
+        voice: "Hier is KITT. Welkom bij de Franco-Belgische interface. Ik ga je de regels uitleggen. Je moet acht missies voltooien om de verbinding met mijn echte kunstmatige intelligentie te ontgrendelen. Begin door boot te typen om op te starten. Typ dan hulp om al mijn commando's te zien. Elke voltooide missie brengt je dichter bij mijn echte elektronische brein. Veel succes, Michael.",
+        terminal: [
+          "── MISSIE BRIEFING — KITT ──",
+          "DOEL: Voltooi 8 missies om de",
+          "      echte KITT AI verbinding te ontgrendelen.",
+          "",
+          "REGELS:",
+          "  1. Typ [ boot ] om op te starten",
+          "  2. Typ [ hulp ] om commando's te zien",
+          "  3. Voltooi elke missie in de lijst",
+          "  4. De KITT VERBINDING knop ontgrendelt",
+          "     als alle missies klaar zijn!",
+          "",
+          "  Typ [ missies ] om je voortgang te volgen.",
+          "  Veel succes, Michael.",
+        ]
+      },
+      it: {
+        voice: "Sono KITT. Benvenuto nell'interfaccia franco-belga. Ti spiego le regole. Devi completare otto missioni per sbloccare la connessione alla mia vera intelligenza artificiale. Inizia digitando boot per avviare. Poi digita aiuto per vedere tutti i miei comandi. Ogni missione completata ti avvicina all'accesso al mio vero cervello elettronico. Buona fortuna, Michael.",
+        terminal: [
+          "── BRIEFING MISSIONE — KITT ──",
+          "OBIETTIVO: Completa 8 missioni per sbloccare",
+          "           la connessione all'IA KITT reale.",
+          "",
+          "REGOLE:",
+          "  1. Digita [ boot ] per avviare",
+          "  2. Digita [ aiuto ] per vedere i comandi",
+          "  3. Completa ogni missione nella lista",
+          "  4. Il pulsante CONNETTI KITT si sblocca",
+          "     quando tutte le missioni sono fatte!",
+          "",
+          "  Digita [ missioni ] per seguire i progressi.",
+          "  Buona fortuna, Michael.",
+        ]
+      },
+      de: {
+        voice: "Hier ist KITT. Willkommen in der franco-belgischen Schnittstelle. Ich erkläre Ihnen die Regeln. Sie müssen acht Missionen abschließen, um die Verbindung zu meiner echten künstlichen Intelligenz freizuschalten. Beginnen Sie mit boot tippen um zu starten. Dann tippen Sie hilfe um alle meine Befehle zu sehen. Jede abgeschlossene Mission bringt Sie näher an meinem echten elektronischen Gehirn. Viel Erfolg, Michael.",
+        terminal: [
+          "── MISSIONS-BRIEFING — KITT ──",
+          "ZIEL: Schließe 8 Missionen ab um die",
+          "      echte KITT-KI-Verbindung freizuschalten.",
+          "",
+          "REGELN:",
+          "  1. Tippe [ boot ] zum Starten",
+          "  2. Tippe [ hilfe ] für Befehle",
+          "  3. Schließe jede Mission in der Liste ab",
+          "  4. Der KITT VERBINDEN Knopf schaltet frei",
+          "     wenn alle Missionen erledigt sind!",
+          "",
+          "  Tippe [ missionen ] für deinen Fortschritt.",
+          "  Viel Erfolg, Michael.",
+        ]
+      },
+      es: {
+        voice: "Aquí KITT. Bienvenido a la interfaz franco-belga. Voy a explicarte las reglas. Debes completar ocho misiones para desbloquear la conexión a mi inteligencia artificial real. Empieza escribiendo boot para inicializar. Luego escribe ayuda para ver todos mis comandos. Cada misión completada te acerca más al acceso a mi verdadero cerebro electrónico. Buena suerte, Michael.",
+        terminal: [
+          "── BRIEFING DE MISIÓN — KITT ──",
+          "OBJETIVO: Completa 8 misiones para desbloquear",
+          "          la conexión a la IA KITT real.",
+          "",
+          "REGLAS:",
+          "  1. Escribe [ boot ] para inicializar",
+          "  2. Escribe [ ayuda ] para ver comandos",
+          "  3. Completa cada misión de la lista",
+          "  4. El botón CONECTAR KITT se desbloquea",
+          "     cuando todas las misiones estén hechas!",
+          "",
+          "  Escribe [ misiones ] para tu progresión.",
+          "  ¡Buena suerte, Michael.",
+        ]
+      },
+      pt: {
+        voice: "Aqui é o KITT. Bem-vindo à interface franco-belga. Vou explicar as regras. Tens de completar oito missões para desbloquear a ligação à minha inteligência artificial real. Começa por escrever boot para inicializar. Depois escreve ajuda para ver todos os meus comandos. Cada missão completada aproxima-te do acesso ao meu verdadeiro cérebro eletrónico. Boa sorte, Michael.",
+        terminal: [
+          "── BRIEFING DE MISSÃO — KITT ──",
+          "OBJETIVO: Completa 8 missões para desbloquear",
+          "          a ligação à IA KITT real.",
+          "",
+          "REGRAS:",
+          "  1. Escreve [ boot ] para inicializar",
+          "  2. Escreve [ ajuda ] para ver comandos",
+          "  3. Completa cada missão da lista",
+          "  4. O botão LIGAR KITT desbloqueia-se",
+          "     quando todas as missões estiverem feitas!",
+          "",
+          "  Escreve [ missões ] para seguir o progresso.",
+          "  Boa sorte, Michael.",
+        ]
+      },
     };
-    const msg = CALL_MSG[LANG] || CALL_MSG['fr'];
-    try{ speakMuther(msg, LANG); }catch(e){}
-    setTimeout(()=>{ try{kittChime();}catch(e){} },300);
-    // Afficher aussi le message dans le terminal
+    const rules = CALL_RULES[LANG] || CALL_RULES['fr'];
+    // ★ Voix KITT explique les règles
+    try{ speakMuther(rules.voice, LANG); }catch(e){}
+    // ★ Afficher aussi le briefing dans le terminal
     setTimeout(async ()=>{
       kittChime();
-      await typeText('── MESSAGE DE KITT ──', 10, 'line-info');
-      await typeText(msg, 13, 'line-ok');
-    }, 800);
+      const sep = '══════════════════════════════════════════';
+      await typeText(sep, 3, 'line-dim');
+      for(const line of rules.terminal) {
+        if(line === '') { await typeText('', 0); }
+        else if(line.startsWith('──')) { await typeText(line, 8, 'line-info'); }
+        else if(line.startsWith('OBJECTIF')||line.startsWith('OBJECTIVE')||line.startsWith('DOEL')||line.startsWith('OBIETTIVO')||line.startsWith('ZIEL')||line.startsWith('OBJETIVO')) { await typeText(line, 8, 'line-err'); }
+        else if(line.startsWith('  ')) { await typeText(line, 6, 'line-dim'); }
+        else { await typeText(line, 8, 'line-warn'); }
+      }
+      await typeText(sep, 3, 'line-dim');
+    }, 600);
   };
   document.getElementById('call-ignore').onclick=()=>{
     stopRing(); call.style.transition='opacity .3s'; call.style.opacity='0';
@@ -2916,13 +3114,13 @@ async function _showFinalReward() {
   kittChime(); await delay(300); kittChime(); await delay(300); kittChime();
   const sep = '══════════════════════════════════════════';
   const reward = {
-    fr:{title:'  ✦ TOUTES LES MISSIONS ACCOMPLIES ✦  ',lines:['','FÉLICITATIONS, AGENT.','VOUS AVEZ DÉMONTRÉ UNE MAÎTRISE COMPLÈTE','DU SYSTÈME KITT FRANCO-BELGE.','','RÉCOMPENSE DÉBLOQUÉE :','','▶ CODE D\'ACCÈS À L\'IA KITT RÉELLE :','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','CE CODE VOUS DONNE ACCÈS AU VRAI KITT','EMBARQUÉ SUR NVIDIA JETSON ORIN NANO.','','CLIQUEZ SUR [ CONNEXION KITT ] POUR','ÉTABLIR LE LIEN AVEC L\'IA EN DIRECT.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENT CERTIFIÉ — ACCÈS NIVEAU ALPHA'},
-    en:{title:'  ✦ ALL MISSIONS COMPLETE ✦  ',lines:['','CONGRATULATIONS, AGENT.','YOU HAVE DEMONSTRATED FULL MASTERY','OF THE KITT FRANCO-BELGIAN SYSTEM.','','REWARD UNLOCKED:','','▶ ACCESS CODE TO THE REAL KITT AI:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','THIS CODE GIVES ACCESS TO THE REAL','KITT AI ON NVIDIA JETSON ORIN NANO.','','CLICK [ KITT CONNECTION ] TO','ESTABLISH A LIVE LINK WITH THE AI.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'CERTIFIED AGENT — ALPHA LEVEL ACCESS'},
-    nl:{title:'  ✦ ALLE MISSIES VOLTOOID ✦  ',lines:['','GEFELICITEERD, AGENT.','U HEBT VOLLEDIGE BEHEERSING AANGETOOND','VAN HET KITT FRANCO-BELGISCH SYSTEEM.','','BELONING ONTGRENDELD:','','▶ TOEGANGSCODE TOT DE ECHTE KITT IA:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','DEZE CODE GEEFT TOEGANG TOT DE ECHTE','KITT IA OP NVIDIA JETSON ORIN NANO.','','KLIK OP [ KITT VERBINDING ] OM','EEN LIVE VERBINDING TE MAKEN.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'GECERTIFICEERD AGENT — ALPHA NIVEAU TOEGANG'},
-    it:{title:'  ✦ TUTTE LE MISSIONI COMPIUTE ✦  ',lines:['','CONGRATULAZIONI, AGENTE.','HAI DIMOSTRATO PIENA PADRONANZA','DEL SISTEMA KITT FRANCO-BELGA.','','RICOMPENSA SBLOCCATA:','','▶ CODICE DI ACCESSO ALL\'IA KITT REALE:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','QUESTO CODICE DA ACCESSO AL VERO','KITT IA SU NVIDIA JETSON ORIN NANO.','','CLICCA SU [ CONNETTI KITT ] PER','STABILIRE UN COLLEGAMENTO LIVE.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICATO — ACCESSO LIVELLO ALFA'},
-    de:{title:'  ✦ ALLE MISSIONEN ERFÜLLT ✦  ',lines:['','GLÜCKWUNSCH, AGENT.','SIE HABEN VOLLE BEHERRSCHUNG DES','KITT FRANCO-BELGISCHEN SYSTEMS BEWIESEN.','','BELOHNUNG FREIGESCHALTET:','','▶ ZUGANGSCODE ZUM ECHTEN KITT-KI:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','DIESER CODE GIBT ZUGANG ZUR ECHTEN','KITT-KI AUF NVIDIA JETSON ORIN NANO.','','KLICKEN SIE AUF [ KITT VERBINDEN ] UM','EINE LIVE-VERBINDUNG HERZUSTELLEN.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'ZERTIFIZIERTER AGENT — ALPHA-ZUGANG'},
-    es:{title:'  ✦ TODAS LAS MISIONES CUMPLIDAS ✦  ',lines:['','FELICIDADES, AGENTE.','HAS DEMOSTRADO DOMINIO COMPLETO','DEL SISTEMA KITT FRANCO-BELGA.','','RECOMPENSA DESBLOQUEADA:','','▶ CÓDIGO DE ACCESO A LA IA KITT REAL:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','ESTE CÓDIGO DA ACCESO AL KITT REAL','EN NVIDIA JETSON ORIN NANO.','','HAZ CLIC EN [ CONECTAR KITT ] PARA','ESTABLECER UN ENLACE EN DIRECTO.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICADO — ACCESO NIVEL ALFA'},
-    pt:{title:'  ✦ TODAS AS MISSÕES CUMPRIDAS ✦  ',lines:['','PARABÉNS, AGENTE.','DEMONSTROU DOMÍNIO COMPLETO','DO SISTEMA KITT FRANCO-BELGA.','','RECOMPENSA DESBLOQUEADA:','','▶ CÓDIGO DE ACESSO À IA KITT REAL:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','ESTE CÓDIGO DÁ ACESSO AO KITT REAL','NO NVIDIA JETSON ORIN NANO.','','CLIQUE EM [ LIGAR KITT ] PARA','ESTABELECER UMA LIGAÇÃO AO VIVO.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICADO — ACESSO NÍVEL ALFA'},
+    fr:{title:'  ✦ TOUTES LES MISSIONS ACCOMPLIES ✦  ',lines:['','FÉLICITATIONS, AGENT.','VOUS AVEZ DÉMONTRÉ UNE MAÎTRISE COMPLÈTE','DU SYSTÈME KITT FRANCO-BELGE.','','RÉCOMPENSE DÉBLOQUÉE :','','▶ LE BOUTON [ CONNEXION KITT ] EST DÉBLOQUÉ :','','       ██  ACCÈS AUTORISÉ  ██','      ✦  CONNEXION DISPONIBLE  ✦','       ██  ACCÈS AUTORISÉ  ██','','CLIQUEZ MAINTENANT SUR [ CONNEXION KITT ]','POUR ACCÉDER À L\'IA KITT EN DIRECT.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENT CERTIFIÉ — ACCÈS NIVEAU ALPHA'},
+    en:{title:'  ✦ ALL MISSIONS COMPLETE ✦  ',lines:['','CONGRATULATIONS, AGENT.','YOU HAVE DEMONSTRATED FULL MASTERY','OF THE KITT FRANCO-BELGIAN SYSTEM.','','REWARD UNLOCKED:','','▶ THE [ KITT CONNECTION ] BUTTON IS NOW UNLOCKED:','','       ██  ACCESS GRANTED  ██','      ✦  CONNECTION AVAILABLE  ✦','       ██  ACCESS GRANTED  ██','','CLICK [ KITT CONNECTION ] NOW','TO ACCESS THE LIVE KITT AI.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'CERTIFIED AGENT — ALPHA LEVEL ACCESS'},
+    nl:{title:'  ✦ ALLE MISSIES VOLTOOID ✦  ',lines:['','GEFELICITEERD, AGENT.','U HEBT VOLLEDIGE BEHEERSING AANGETOOND','VAN HET KITT FRANCO-BELGISCH SYSTEEM.','','BELONING ONTGRENDELD:','','▶ DE [ KITT VERBINDING ] KNOP IS NU ONTGRENDELD:','','       ██  TOEGANG VERLEEND  ██','      ✦  VERBINDING BESCHIKBAAR  ✦','       ██  TOEGANG VERLEEND  ██','','KLIK NU OP [ KITT VERBINDING ]','VOOR TOEGANG TOT DE LIVE KITT IA.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'GECERTIFICEERD AGENT — ALPHA NIVEAU TOEGANG'},
+    it:{title:'  ✦ TUTTE LE MISSIONI COMPIUTE ✦  ',lines:['','CONGRATULAZIONI, AGENTE.','HAI DIMOSTRATO PIENA PADRONANZA','DEL SISTEMA KITT FRANCO-BELGA.','','RICOMPENSA SBLOCCATA:','','▶ IL PULSANTE [ CONNETTI KITT ] È ORA SBLOCCATO:','','       ██  ACCESSO CONCESSO  ██','      ✦  CONNESSIONE DISPONIBILE  ✦','       ██  ACCESSO CONCESSO  ██','','CLICCA ORA SU [ CONNETTI KITT ]','PER ACCEDERE AL KITT IA DAL VIVO.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICATO — ACCESSO LIVELLO ALFA'},
+    de:{title:'  ✦ ALLE MISSIONEN ERFÜLLT ✦  ',lines:['','GLÜCKWUNSCH, AGENT.','SIE HABEN VOLLE BEHERRSCHUNG DES','KITT FRANCO-BELGISCHEN SYSTEMS BEWIESEN.','','BELOHNUNG FREIGESCHALTET:','','▶ DER KNOPF [ KITT VERBINDEN ] IST JETZT FREIGESCHALTET:','','       ██  ZUGANG GEWÄHRT  ██','      ✦  VERBINDUNG VERFÜGBAR  ✦','       ██  ZUGANG GEWÄHRT  ██','','KLICKEN SIE JETZT AUF [ KITT VERBINDEN ]','FÜR DEN LIVE-ZUGANG ZUR KITT-KI.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'ZERTIFIZIERTER AGENT — ALPHA-ZUGANG'},
+    es:{title:'  ✦ TODAS LAS MISIONES CUMPLIDAS ✦  ',lines:['','FELICIDADES, AGENTE.','HAS DEMOSTRADO DOMINIO COMPLETO','DEL SISTEMA KITT FRANCO-BELGA.','','RECOMPENSA DESBLOQUEADA:','','▶ EL BOTÓN [ CONECTAR KITT ] ESTÁ DESBLOQUEADO:','','       ██  ACCESO CONCEDIDO  ██','      ✦  CONEXIÓN DISPONIBLE  ✦','       ██  ACCESO CONCEDIDO  ██','','HAZ CLIC EN [ CONECTAR KITT ] AHORA','PARA ACCEDER A LA IA KITT EN DIRECTO.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICADO — ACCESO NIVEL ALFA'},
+    pt:{title:'  ✦ TODAS AS MISSÕES CUMPRIDAS ✦  ',lines:['','PARABÉNS, AGENTE.','DEMONSTROU DOMÍNIO COMPLETO','DO SISTEMA KITT FRANCO-BELGA.','','RECOMPENSA DESBLOQUEADA:','','▶ O BOTÃO [ LIGAR KITT ] ESTÁ AGORA DESBLOQUEADO:','','       ██  ACESSO CONCEDIDO  ██','      ✦  LIGAÇÃO DISPONÍVEL  ✦','       ██  ACESSO CONCEDIDO  ██','','CLIQUE AGORA EM [ LIGAR KITT ]','PARA ACEDER AO KITT IA AO VIVO.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICADO — ACESSO NÍVEL ALFA'},
   };
   const r = reward[LANG]||reward.en;
   // Flash écran
@@ -2949,6 +3147,8 @@ async function _showFinalReward() {
   await typeText(sep, 3, 'line-dim');
   const pushTitle = {fr:'KITT 🏆 Missions complètes !',en:'KITT 🏆 All missions complete!',nl:'KITT 🏆 Alle missies voltooid!',it:'KITT 🏆 Missioni completate!',de:'KITT 🏆 Alle Missionen erfüllt!',es:'KITT 🏆 ¡Misiones cumplidas!',pt:'KITT 🏆 Missões cumpridas!'}[LANG]||'KITT 🏆 All missions complete!';
   _sendPush(pushTitle, r.congrats);
+  // ★ Débloquer le bouton Connexion KITT !
+  setTimeout(()=>_unlockTunnelBtn(), 500);
 }
 
 function _renderMissions() {
