@@ -2731,14 +2731,14 @@ if(window.visualViewport){
       gyroTarget = Math.max(-40,Math.min(40,g)) / 40 * W * 0.28;
     });
   }
-  // iOS 13+ nécessite une permission explicite
+  // iOS 13+ nécessite une permission explicite — écouter le premier tap n'importe où
   if(typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function'){
-    // Demander la permission au premier tap sur le canvas
-    document.getElementById('starfield').addEventListener('click',function _gio(){
+    document.addEventListener('click',function _gio(){
       DeviceOrientationEvent.requestPermission().then(r=>{ if(r==='granted') _setupGyro(); });
-      this.removeEventListener('click',_gio);
+      document.removeEventListener('click',_gio);
     },{once:true});
   } else {
+    // Android & desktop : actif directement, pas besoin de permission
     _setupGyro();
   }
 
