@@ -2826,9 +2826,57 @@ const MISSIONS = {
     {id:'karr',     label:'Access K.A.R.R. file',                    cmd:'karr'},
     {id:'connexion',label:'Click on AI Connection',                   cmd:null},
   ],
+  nl: [
+    {id:'boot',     label:'Start de opstartsequentie (boot)',        cmd:'boot'},
+    {id:'aide',     label:'Raadpleeg de commandolijst (hulp)',       cmd:'aide'},
+    {id:'diag',     label:'Voer een volledige diagnose uit',         cmd:'diagnostic'},
+    {id:'scan',     label:'Scan je omgeving',                        cmd:'scan'},
+    {id:'turbo',    label:'Activeer TURBO BOOST',                    cmd:'turbo'},
+    {id:'mode',     label:'Verander de rijmodus',                    cmd:'mode'},
+    {id:'karr',     label:'Raadpleeg het K.A.R.R. dossier',         cmd:'karr'},
+    {id:'connexion',label:'Klik op KITT Verbinding',                 cmd:null},
+  ],
+  de: [
+    {id:'boot',     label:'Startsequenz ausführen (boot)',           cmd:'boot'},
+    {id:'aide',     label:'Befehlsliste abrufen (hilfe)',            cmd:'aide'},
+    {id:'diag',     label:'Vollständige Diagnose durchführen',       cmd:'diagnostic'},
+    {id:'scan',     label:'Umgebung scannen',                        cmd:'scan'},
+    {id:'turbo',    label:'TURBO BOOST aktivieren',                  cmd:'turbo'},
+    {id:'mode',     label:'Fahrmodus wechseln',                      cmd:'mode'},
+    {id:'karr',     label:'K.A.R.R. Akte abrufen',                  cmd:'karr'},
+    {id:'connexion',label:'Auf KI-Verbindung klicken',               cmd:null},
+  ],
+  it: [
+    {id:'boot',     label:'Avvia la sequenza di avvio (boot)',       cmd:'boot'},
+    {id:'aide',     label:'Consulta la lista comandi (aiuto)',       cmd:'aide'},
+    {id:'diag',     label:'Esegui una diagnosi completa',            cmd:'diagnostic'},
+    {id:'scan',     label:'Scansiona l\'ambiente',                   cmd:'scan'},
+    {id:'turbo',    label:'Attiva il TURBO BOOST',                   cmd:'turbo'},
+    {id:'mode',     label:'Cambia modalità di guida',                cmd:'mode'},
+    {id:'karr',     label:'Consulta il dossier K.A.R.R.',            cmd:'karr'},
+    {id:'connexion',label:'Clicca su Connetti KITT',                 cmd:null},
+  ],
+  es: [
+    {id:'boot',     label:'Iniciar secuencia de arranque (boot)',    cmd:'boot'},
+    {id:'aide',     label:'Consultar lista de comandos (ayuda)',     cmd:'aide'},
+    {id:'diag',     label:'Realizar diagnóstico completo',           cmd:'diagnostic'},
+    {id:'scan',     label:'Escanear el entorno',                     cmd:'scan'},
+    {id:'turbo',    label:'Activar TURBO BOOST',                     cmd:'turbo'},
+    {id:'mode',     label:'Cambiar modo de conducción',              cmd:'mode'},
+    {id:'karr',     label:'Consultar expediente K.A.R.R.',           cmd:'karr'},
+    {id:'connexion',label:'Clic en Conectar KITT',                   cmd:null},
+  ],
+  pt: [
+    {id:'boot',     label:'Iniciar sequência de arranque (boot)',    cmd:'boot'},
+    {id:'aide',     label:'Consultar lista de comandos (ajuda)',     cmd:'aide'},
+    {id:'diag',     label:'Realizar diagnóstico completo',           cmd:'diagnostic'},
+    {id:'scan',     label:'Verificar o ambiente',                    cmd:'scan'},
+    {id:'turbo',    label:'Ativar TURBO BOOST',                      cmd:'turbo'},
+    {id:'mode',     label:'Mudar modo de condução',                  cmd:'mode'},
+    {id:'karr',     label:'Consultar dossier K.A.R.R.',              cmd:'karr'},
+    {id:'connexion',label:'Clicar em Ligar KITT',                    cmd:null},
+  ],
 };
-// Fallback en pour les autres langues
-['nl','de','it','es','pt'].forEach(l=>{ MISSIONS[l]=MISSIONS.en; });
 
 let _missionsCompleted = new Set(JSON.parse(localStorage.getItem('kitt_missions')||'[]'));
 let _missionHudOpen = false;
@@ -2842,13 +2890,65 @@ function _completeMission(id) {
   _missionsCompleted.add(id);
   _saveMissions();
   _renderMissions();
-  // Notification de succès dans le terminal
-  const labels = {boot:'SÉQUENCE DÉMARRÉE',aide:'COMMANDES CONSULTÉES',diag:'DIAGNOSTIC EFFECTUÉ',
-    scan:'SCAN COMPLÉTÉ',turbo:'TURBO ACTIVÉ',mode:'MODE CHANGÉ',karr:'K.A.R.R. CONSULTÉ',connexion:'CONNEXION IA CLIQUÉE'};
-  const msg = `✦ MISSION ACCOMPLIE : ${labels[id]||id.toUpperCase()} ✦`;
+  // Labels traduits
+  const labels = {
+    fr:{boot:'SÉQUENCE DÉMARRÉE',aide:'COMMANDES CONSULTÉES',diag:'DIAGNOSTIC EFFECTUÉ',scan:'SCAN COMPLÉTÉ',turbo:'TURBO ACTIVÉ',mode:'MODE CHANGÉ',karr:'K.A.R.R. CONSULTÉ',connexion:'CONNEXION IA CLIQUÉE'},
+    en:{boot:'BOOT SEQUENCE RUN',aide:'COMMANDS CONSULTED',diag:'DIAGNOSTIC COMPLETE',scan:'SCAN COMPLETE',turbo:'TURBO ACTIVATED',mode:'MODE CHANGED',karr:'K.A.R.R. ACCESSED',connexion:'AI CONNECTION CLICKED'},
+    nl:{boot:'OPSTART UITGEVOERD',aide:'COMMANDO\'S GERAADPLEEGD',diag:'DIAGNOSE VOLTOOID',scan:'SCAN VOLTOOID',turbo:'TURBO GEACTIVEERD',mode:'MODUS GEWIJZIGD',karr:'K.A.R.R. GERAADPLEEGD',connexion:'AI VERBINDING GEKLIKT'},
+    it:{boot:'SEQUENZA DI AVVIO',aide:'COMANDI CONSULTATI',diag:'DIAGNOSI COMPLETATA',scan:'SCANSIONE COMPLETATA',turbo:'TURBO ATTIVATO',mode:'MODALITÀ CAMBIATA',karr:'K.A.R.R. CONSULTATO',connexion:'CONNESSIONE IA CLICCATA'},
+    de:{boot:'STARTSEQUENZ AUSGEFÜHRT',aide:'BEFEHLE ABGERUFEN',diag:'DIAGNOSE ABGESCHLOSSEN',scan:'SCAN ABGESCHLOSSEN',turbo:'TURBO AKTIVIERT',mode:'MODUS GEWECHSELT',karr:'K.A.R.R. ABGERUFEN',connexion:'KI-VERBINDUNG GEKLICKT'},
+    es:{boot:'SECUENCIA DE INICIO',aide:'COMANDOS CONSULTADOS',diag:'DIAGNÓSTICO COMPLETADO',scan:'ESCANEO COMPLETADO',turbo:'TURBO ACTIVADO',mode:'MODO CAMBIADO',karr:'K.A.R.R. CONSULTADO',connexion:'CONEXIÓN IA PULSADA'},
+    pt:{boot:'SEQUÊNCIA DE ARRANQUE',aide:'COMANDOS CONSULTADOS',diag:'DIAGNÓSTICO COMPLETO',scan:'SCAN COMPLETO',turbo:'TURBO ATIVADO',mode:'MODO ALTERADO',karr:'K.A.R.R. CONSULTADO',connexion:'LIGAÇÃO IA CLICADA'},
+  };
+  const pfx = {fr:'✦ MISSION ACCOMPLIE',en:'✦ MISSION COMPLETE',nl:'✦ MISSIE VOLTOOID',it:'✦ MISSIONE COMPIUTA',de:'✦ MISSION ERFÜLLT',es:'✦ MISIÓN CUMPLIDA',pt:'✦ MISSÃO CUMPRIDA'}[LANG]||'✦ MISSION COMPLETE';
+  const lset = labels[LANG]||labels.en;
+  const msg = `${pfx} : ${lset[id]||id.toUpperCase()} ✦`;
   try{ addLine(msg, 'line-ok'); kittChime(); }catch(e){}
-  // Notification push
-  _sendPush('KITT — Mission accomplie', msg);
+  const pushTitle = {fr:'KITT — Mission accomplie',en:'KITT — Mission complete',nl:'KITT — Missie voltooid',it:'KITT — Missione compiuta',de:'KITT — Mission erfüllt',es:'KITT — Misión cumplida',pt:'KITT — Missão cumprida'}[LANG]||'KITT — Mission complete';
+  _sendPush(pushTitle, msg);
+  // Vérifier si TOUTES les missions sont complètes → RÉCOMPENSE FINALE
+  const missions = MISSIONS[LANG]||MISSIONS.en;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  if(done === missions.length) setTimeout(()=>_showFinalReward(), 1200);
+}
+
+async function _showFinalReward() {
+  kittChime(); await delay(300); kittChime(); await delay(300); kittChime();
+  const sep = '══════════════════════════════════════════';
+  const reward = {
+    fr:{title:'  ✦ TOUTES LES MISSIONS ACCOMPLIES ✦  ',lines:['','FÉLICITATIONS, AGENT.','VOUS AVEZ DÉMONTRÉ UNE MAÎTRISE COMPLÈTE','DU SYSTÈME KITT FRANCO-BELGE.','','RÉCOMPENSE DÉBLOQUÉE :','','▶ CODE D\'ACCÈS À L\'IA KITT RÉELLE :','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','CE CODE VOUS DONNE ACCÈS AU VRAI KITT','EMBARQUÉ SUR NVIDIA JETSON ORIN NANO.','','CLIQUEZ SUR [ CONNEXION KITT ] POUR','ÉTABLIR LE LIEN AVEC L\'IA EN DIRECT.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENT CERTIFIÉ — ACCÈS NIVEAU ALPHA'},
+    en:{title:'  ✦ ALL MISSIONS COMPLETE ✦  ',lines:['','CONGRATULATIONS, AGENT.','YOU HAVE DEMONSTRATED FULL MASTERY','OF THE KITT FRANCO-BELGIAN SYSTEM.','','REWARD UNLOCKED:','','▶ ACCESS CODE TO THE REAL KITT AI:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','THIS CODE GIVES ACCESS TO THE REAL','KITT AI ON NVIDIA JETSON ORIN NANO.','','CLICK [ KITT CONNECTION ] TO','ESTABLISH A LIVE LINK WITH THE AI.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'CERTIFIED AGENT — ALPHA LEVEL ACCESS'},
+    nl:{title:'  ✦ ALLE MISSIES VOLTOOID ✦  ',lines:['','GEFELICITEERD, AGENT.','U HEBT VOLLEDIGE BEHEERSING AANGETOOND','VAN HET KITT FRANCO-BELGISCH SYSTEEM.','','BELONING ONTGRENDELD:','','▶ TOEGANGSCODE TOT DE ECHTE KITT IA:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','DEZE CODE GEEFT TOEGANG TOT DE ECHTE','KITT IA OP NVIDIA JETSON ORIN NANO.','','KLIK OP [ KITT VERBINDING ] OM','EEN LIVE VERBINDING TE MAKEN.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'GECERTIFICEERD AGENT — ALPHA NIVEAU TOEGANG'},
+    it:{title:'  ✦ TUTTE LE MISSIONI COMPIUTE ✦  ',lines:['','CONGRATULAZIONI, AGENTE.','HAI DIMOSTRATO PIENA PADRONANZA','DEL SISTEMA KITT FRANCO-BELGA.','','RICOMPENSA SBLOCCATA:','','▶ CODICE DI ACCESSO ALL\'IA KITT REALE:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','QUESTO CODICE DA ACCESSO AL VERO','KITT IA SU NVIDIA JETSON ORIN NANO.','','CLICCA SU [ CONNETTI KITT ] PER','STABILIRE UN COLLEGAMENTO LIVE.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICATO — ACCESSO LIVELLO ALFA'},
+    de:{title:'  ✦ ALLE MISSIONEN ERFÜLLT ✦  ',lines:['','GLÜCKWUNSCH, AGENT.','SIE HABEN VOLLE BEHERRSCHUNG DES','KITT FRANCO-BELGISCHEN SYSTEMS BEWIESEN.','','BELOHNUNG FREIGESCHALTET:','','▶ ZUGANGSCODE ZUM ECHTEN KITT-KI:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','DIESER CODE GIBT ZUGANG ZUR ECHTEN','KITT-KI AUF NVIDIA JETSON ORIN NANO.','','KLICKEN SIE AUF [ KITT VERBINDEN ] UM','EINE LIVE-VERBINDUNG HERZUSTELLEN.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'ZERTIFIZIERTER AGENT — ALPHA-ZUGANG'},
+    es:{title:'  ✦ TODAS LAS MISIONES CUMPLIDAS ✦  ',lines:['','FELICIDADES, AGENTE.','HAS DEMOSTRADO DOMINIO COMPLETO','DEL SISTEMA KITT FRANCO-BELGA.','','RECOMPENSA DESBLOQUEADA:','','▶ CÓDIGO DE ACCESO A LA IA KITT REAL:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','ESTE CÓDIGO DA ACCESO AL KITT REAL','EN NVIDIA JETSON ORIN NANO.','','HAZ CLIC EN [ CONECTAR KITT ] PARA','ESTABLECER UN ENLACE EN DIRECTO.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICADO — ACCESO NIVEL ALFA'},
+    pt:{title:'  ✦ TODAS AS MISSÕES CUMPRIDAS ✦  ',lines:['','PARABÉNS, AGENTE.','DEMONSTROU DOMÍNIO COMPLETO','DO SISTEMA KITT FRANCO-BELGA.','','RECOMPENSA DESBLOQUEADA:','','▶ CÓDIGO DE ACESSO À IA KITT REAL:','','       ██████████████████████','              1  9  8  2','       ██████████████████████','','ESTE CÓDIGO DÁ ACESSO AO KITT REAL','NO NVIDIA JETSON ORIN NANO.','','CLIQUE EM [ LIGAR KITT ] PARA','ESTABELECER UMA LIGAÇÃO AO VIVO.','','— MANIX // KYRONEX SYSTEMS —',''],congrats:'AGENTE CERTIFICADO — ACESSO NÍVEL ALFA'},
+  };
+  const r = reward[LANG]||reward.en;
+  // Flash écran
+  try{
+    for(let i=0;i<4;i++){
+      setTimeout(()=>document.body.style.background='rgba(0,255,100,0.06)',i*250);
+      setTimeout(()=>document.body.style.background='#000',i*250+125);
+    }
+    setTimeout(()=>document.body.style.background='',1200);
+  }catch(e){}
+  await typeText(sep, 3, 'line-dim');
+  await typeText(r.title, 8, 'line-err');
+  await typeText(sep, 3, 'line-dim');
+  for(const line of r.lines) {
+    if(line.includes('████')) { await typeText(line, 3, 'line-warn'); }
+    else if(line.includes('1  9  8  2')) { await typeText(line, 10, 'line-err'); }
+    else if(line.startsWith('▶')) { await typeText(line, 10, 'line-info'); }
+    else if(line==='') { await typeText('', 0); await delay(80); }
+    else if(line.startsWith('—')) { await typeText(line, 8, 'line-dim'); }
+    else { await typeText(line, 10, 'line-ok'); }
+  }
+  await typeText(sep, 3, 'line-dim');
+  await typeText(r.congrats, 12, 'line-err');
+  await typeText(sep, 3, 'line-dim');
+  const pushTitle = {fr:'KITT 🏆 Missions complètes !',en:'KITT 🏆 All missions complete!',nl:'KITT 🏆 Alle missies voltooid!',it:'KITT 🏆 Missioni completate!',de:'KITT 🏆 Alle Missionen erfüllt!',es:'KITT 🏆 ¡Misiones cumplidas!',pt:'KITT 🏆 Missões cumpridas!'}[LANG]||'KITT 🏆 All missions complete!';
+  _sendPush(pushTitle, r.congrats);
 }
 
 function _renderMissions() {
@@ -2882,15 +2982,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // Commande missions
 CMDS['missions'] = async function() {
   _toggleMissionHud();
-  await typeText('── MISSIONS KITT ──', 10, 'line-info');
-  const missions = MISSIONS[LANG]||MISSIONS.fr;
+  const mTitle={fr:'── MISSIONS KITT ──',en:'── KITT MISSIONS ──',nl:'── KITT MISSIES ──',it:'── MISSIONI KITT ──',de:'── KITT MISSIONEN ──',es:'── MISIONES KITT ──',pt:'── MISSÕES KITT ──'}[LANG]||'── KITT MISSIONS ──';
+  await typeText(mTitle, 10, 'line-info');
+  const missions = MISSIONS[LANG]||MISSIONS.en;
   const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
-  await typeText(`PROGRESSION : ${done}/${missions.length}`, 12, done===missions.length?'line-ok':'line-warn');
-  if(done===missions.length) await typeText('TOUTES LES MISSIONS ACCOMPLIES ! FÉLICITATIONS.', 12, 'line-ok');
+  const progLabel={fr:'PROGRESSION',en:'PROGRESS',nl:'VOORTGANG',it:'PROGRESSIONE',de:'FORTSCHRITT',es:'PROGRESIÓN',pt:'PROGRESSO'}[LANG]||'PROGRESS';
+  await typeText(`${progLabel} : ${done}/${missions.length}`, 12, done===missions.length?'line-ok':'line-warn');
+  if(done===missions.length) {
+    const allDone={fr:'TOUTES LES MISSIONS ACCOMPLIES ! FÉLICITATIONS.',en:'ALL MISSIONS COMPLETE! CONGRATULATIONS.',nl:'ALLE MISSIES VOLTOOID! GEFELICITEERD.',it:'TUTTE LE MISSIONI COMPIUTE! CONGRATULAZIONI.',de:'ALLE MISSIONEN ERFÜLLT! GLÜCKWUNSCH.',es:'¡TODAS LAS MISIONES CUMPLIDAS! FELICIDADES.',pt:'TODAS AS MISSÕES CUMPRIDAS! PARABÉNS.'}[LANG]||'ALL MISSIONS COMPLETE!';
+    await typeText(allDone, 12, 'line-ok');
+  }
 };
 CMD_ALIASES['mission'] = 'missions';
 CMD_ALIASES['quetes'] = 'missions';
 CMD_ALIASES['quêtes'] = 'missions';
+CMD_ALIASES['missionen'] = 'missions';   // de
+CMD_ALIASES['missies'] = 'missions';    // nl
+CMD_ALIASES['missioni'] = 'missions';   // it
+CMD_ALIASES['misiones'] = 'missions';   // es
+CMD_ALIASES['missoes'] = 'missions';    // pt
+CMD_ALIASES['missões'] = 'missions';    // pt
 
 // Auto-tracker de commandes → missions
 const _MISSION_CMD_MAP = {
