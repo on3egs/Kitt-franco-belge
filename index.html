@@ -3,1869 +3,2186 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>MU-TH-UR 9000 × KITT // KYRONEX DEEP SPACE</title>
-<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<title>KITT FRANCO-BELGE // SYSTÈME CENTRAL</title>
+<meta name="description" content="Interface KITT Franco-Belge — IA embarquée sur NVIDIA Jetson. Projet fan non commercial par Manix."/>
+<meta name="theme-color" content="#000000"/>
 <style>
 :root{
+  --green:#00ff66;
+  --green-dim:#00aa44;
+  --red:#ff1a1a;
   --amber:#ffaa00;
-  --amber-dim:#7a4f00;
-  --amber-glow:rgba(255,170,0,0.18);
-  --amber-faint:rgba(255,170,0,0.06);
-  --green:#00ff41;
-  --green-dim:#003d0f;
-  --red:#ff2200;
-  --red-glow:rgba(255,34,0,0.25);
-  --cyan:#00ccdd;
+  --cyan:#00ccff;
   --bg:#000;
-  --vt:'VT323',monospace;
-  --mono:'Share Tech Mono',monospace;
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;width:100%;background:#000;overflow:hidden;cursor:none;}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--green);font-family:"Courier New",monospace;overflow:hidden;}
 
-/* ── ÉCRAN DE DÉMARRAGE ─────────────────────────────────── */
-#boot-screen{
-  position:fixed;inset:0;background:#000;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  z-index:9000;gap:32px;
+/* CRT scanlines */
+body::before{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18),rgba(0,0,0,.18) 1px,transparent 1px,transparent 3px);pointer-events:none;z-index:9998;}
+body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,255,80,.015);pointer-events:none;z-index:9999;animation:flicker .12s infinite;}
+@keyframes flicker{0%{opacity:.88}48%{opacity:1}52%{opacity:.92}100%{opacity:.96}}
+
+/* ── MU-TH-UR 6000 INTRO ───────────────────────────────── */
+#mother-intro{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:#000;z-index:9000;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;font-family:"Courier New",monospace;
 }
-#boot-logo{
-  font-family:var(--vt);font-size:11px;color:var(--amber);
-  text-align:center;line-height:1.15;
-  text-shadow:0 0 20px var(--amber),0 0 40px rgba(255,170,0,0.4);
-  opacity:0;animation:fadeIn 2s ease 0.5s forwards;
+#mother-box{
+  width:100%;max-width:560px;
+  border:1px solid #CC6600;
+  box-shadow:0 0 60px rgba(255,140,0,.12),inset 0 0 40px rgba(255,100,0,.03);
+  padding:28px 36px;
+}
+#mother-hdr{
+  color:#FF9900;letter-spacing:4px;font-size:13px;
+  text-align:center;border-bottom:1px solid #884400;
+  padding-bottom:12px;margin-bottom:16px;
+  text-shadow:0 0 14px #FF990060;
+}
+#mother-output{
+  min-height:260px;font-size:12px;
+  letter-spacing:2px;line-height:1.9;
+}
+.m-bright{color:#FFAA00;text-shadow:0 0 10px #FF990050;}
+.m-normal{color:#FF8800;}
+.m-dim{color:#885500;}
+.m-ok{color:#FFAA00;}
+#mother-skip{
+  margin-top:18px;font-size:10px;color:#663300;
+  letter-spacing:3px;text-align:center;display:none;
+  animation:mskip 1.1s step-end infinite;
+}
+@keyframes mskip{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* ── LANGUAGE SELECTION OVERLAY ─────────────────────────── */
+#lang-screen{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:#000;z-index:8000;
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
+}
+#lang-box{
+  width:100%;max-width:440px;
+  border:1px solid var(--green);
+  box-shadow:0 0 40px rgba(0,255,100,.12),inset 0 0 30px rgba(0,255,100,.02);
+  font-size:13px;
+}
+#lang-hdr{
+  border-bottom:1px solid var(--green-dim);
+  padding:10px 18px;
+  color:var(--green);
+  letter-spacing:3px;
+  font-size:12px;
+  text-align:center;
+  text-shadow:0 0 10px var(--green);
+}
+#lang-sub{
+  padding:10px 18px 4px;
+  color:var(--amber);
   letter-spacing:2px;
+  font-size:11px;
+  border-bottom:1px solid #111;
 }
-#boot-logo pre{display:inline-block;}
-#start-btn{
-  font-family:var(--vt);font-size:28px;color:#000;
-  background:var(--amber);border:none;
-  padding:12px 40px;cursor:pointer;letter-spacing:4px;
-  animation:fadeIn 2s ease 1.5s forwards, btnPulse 2s ease-in-out 3s infinite;
-  opacity:0;
-  text-shadow:none;
-  transition:all 0.2s;
-}
-#start-btn:hover{background:#fff;color:#000;box-shadow:0 0 30px var(--amber);}
-@keyframes fadeIn{to{opacity:1}}
-@keyframes btnPulse{0%,100%{box-shadow:0 0 10px var(--amber)}50%{box-shadow:0 0 30px var(--amber),0 0 60px rgba(255,170,0,0.3)}}
-
-/* ── SCANLINES + PHOSPHOR ───────────────────────────────── */
-#overlay-scanlines{
-  position:fixed;inset:0;pointer-events:none;z-index:8000;
-  background:repeating-linear-gradient(
-    0deg,
-    rgba(0,0,0,0.22) 0px,rgba(0,0,0,0.22) 1px,
-    transparent 1px,transparent 3px
-  );
-}
-#overlay-phosphor{
-  position:fixed;inset:0;pointer-events:none;z-index:7999;
-  background:rgba(255,140,0,0.022);
-  animation:phosphorFlicker 0.1s infinite;
-}
-#overlay-vignette{
-  position:fixed;inset:0;pointer-events:none;z-index:7998;
-  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.85) 100%);
-}
-@keyframes phosphorFlicker{
-  0%{opacity:0.9}30%{opacity:1}60%{opacity:0.95}80%{opacity:1}100%{opacity:0.92}
-}
-
-/* ── LAYOUT PRINCIPAL ───────────────────────────────────── */
-#main{
-  display:none;
-  position:fixed;inset:0;
-  padding:10px;gap:8px;
-  flex-direction:column;
-}
-#main.active{display:flex;}
-
-/* Ligne haute */
-#row-top{
-  display:flex;gap:8px;flex-shrink:0;height:36px;
+#lang-output{padding:4px 0;}
+.lang-opt{
+  display:flex;
   align-items:center;
+  gap:14px;
+  padding:7px 22px;
+  cursor:pointer;
+  transition:background .12s;
+  border-left:2px solid transparent;
 }
-/* Ligne centrale */
-#row-mid{
-  display:flex;gap:8px;flex:1;min-height:0;
+.lang-opt:hover{
+  background:rgba(0,255,100,.07);
+  border-left-color:var(--green);
 }
-/* Ligne basse */
-#row-bot{
-  display:flex;gap:8px;flex-shrink:0;height:80px;
+.lang-opt.active{
+  background:rgba(0,255,100,.15);
+  border-left-color:var(--green);
+  color:#000;
 }
-
-/* ── PANNEAUX ────────────────────────────────────────────── */
-.panel{
-  border:1px solid var(--amber-dim);
-  background:rgba(255,140,0,0.03);
-  position:relative;
-  overflow:hidden;
-}
-.panel::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(255,170,0,0.04) 0%,transparent 100%);
-  pointer-events:none;
-}
-.pnl-hdr{
-  font-family:var(--vt);font-size:16px;color:var(--amber-dim);
-  letter-spacing:2px;padding:4px 8px 2px;
-  border-bottom:1px solid var(--amber-dim);
-  background:rgba(255,170,0,0.04);
-  display:flex;justify-content:space-between;align-items:center;
-}
-.pnl-hdr span{font-size:12px;color:var(--amber-dim);}
-.pnl-body{padding:6px 8px;overflow:hidden;height:calc(100% - 28px);}
-
-/* Glow amber sur texte actif */
-.amber{color:var(--amber);text-shadow:0 0 8px rgba(255,170,0,0.5);}
-.amber-bright{color:var(--amber);text-shadow:0 0 14px var(--amber),0 0 28px rgba(255,170,0,0.3);}
-.green-txt{color:var(--green);text-shadow:0 0 8px rgba(0,255,65,0.4);}
-.red-txt{color:var(--red);text-shadow:0 0 10px var(--red-glow),0 0 20px rgba(255,34,0,0.2);}
-.dim{color:var(--amber-dim);}
-
-/* ── HEADER BARRE ────────────────────────────────────────── */
-#hdr-bar{
-  flex:1;display:flex;align-items:center;justify-content:space-between;
-  padding:0 10px;border:1px solid var(--amber-dim);
-  background:rgba(255,170,0,0.04);
-}
-#hdr-title-txt{
-  font-family:var(--vt);font-size:20px;
-  color:var(--amber);letter-spacing:4px;
-  text-shadow:0 0 12px var(--amber),0 0 30px rgba(255,170,0,0.3);
-}
-#hdr-right{
-  font-family:var(--mono);font-size:10px;color:var(--amber-dim);
-  letter-spacing:2px;display:flex;gap:20px;align-items:center;
-}
-.blink-dot{
-  display:inline-block;width:6px;height:6px;border-radius:50%;
-  background:var(--green);box-shadow:0 0 6px var(--green);
-  animation:blink 1.2s step-end infinite;margin-right:4px;
-}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.blink-dot.red{background:var(--red);box-shadow:0 0 6px var(--red);}
-.blink-dot.amber-d{background:var(--amber);box-shadow:0 0 6px var(--amber);}
-
-/* ── PANNEAU SCHÉMA VAISSEAU ─────────────────────────────── */
-#panel-ship{flex:2.2;min-width:0; display:flex; flex-direction:column;}
-#ship-svg{width:100%;flex:1;}
-
-/* ── PANNEAU COMM KITT × MU-TH-UR ───────────────────────── */
-#panel-comm{
-  flex-shrink:0;
-  border-top:1px solid rgba(255,34,0,0.3);
-  background:rgba(0,0,0,0.6);
-  display:none;
-  flex-direction:row;
-  align-items:stretch;
-  min-height:110px;
-  max-height:130px;
-  position:relative;
-  overflow:hidden;
-}
-#panel-comm.active{display:flex;}
-#panel-comm::before{
-  content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(0deg,rgba(0,0,0,.18),rgba(0,0,0,.18) 1px,transparent 1px,transparent 3px);
-  pointer-events:none;z-index:0;
-}
-
-/* Côté KITT */
-#comm-kitt{
-  width:155px;flex-shrink:0;
-  border-right:1px solid rgba(255,34,0,0.25);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:5px 4px;gap:3px;
-  position:relative;z-index:1;
-  background:linear-gradient(180deg,rgba(255,34,0,0.04),rgba(0,0,0,0.6));
-}
-#kitt-avatar{
-  font-family:'VT323',monospace;font-size:8.5px;line-height:1.15;
-  color:#ff2200;text-align:center;
-  text-shadow:0 0 8px #ff2200,0 0 16px rgba(255,34,0,0.4);
-  white-space:pre;
-  border:1px solid rgba(255,34,0,0.2);
-  padding:3px 5px;
-  background:rgba(255,34,0,0.02);
-}
-#kitt-label{
-  font-family:'VT323',monospace;font-size:14px;color:#ff2200;
-  letter-spacing:4px;text-shadow:0 0 12px #ff2200;
-}
-#kitt-scanner-bar{
-  width:80px;height:4px;background:rgba(255,34,0,0.1);border:1px solid rgba(255,34,0,0.3);
-  border-radius:2px;overflow:hidden;position:relative;
-}
-#kitt-scanner-dot{
-  position:absolute;top:0;width:18px;height:100%;
-  background:linear-gradient(90deg,transparent,#ff2200,transparent);
-  box-shadow:0 0 8px #ff2200;
-  animation:kittScan 1.4s ease-in-out infinite alternate;
-}
-@keyframes kittScan{from{left:-18px}to{left:80px}}
-
-#kitt-wave{
-  width:80px;height:20px;
-}
-
-/* Côté dialogue central */
-#comm-dialog{
-  flex:1;display:flex;flex-direction:column;
-  padding:6px 10px;position:relative;z-index:1;
-  overflow:hidden;
-}
-#comm-hdr{
-  font-family:'VT323',monospace;font-size:13px;
-  color:var(--amber);letter-spacing:2px;
-  border-bottom:1px solid rgba(255,170,0,0.2);
-  padding-bottom:3px;margin-bottom:4px;
-  display:flex;align-items:center;gap:8px;
-}
-#comm-status-dot{
-  width:6px;height:6px;border-radius:50%;
-  background:#ff2200;box-shadow:0 0 6px #ff2200;
-  animation:blink 0.6s step-end infinite;
+.lo-n{
+  color:var(--red);
+  font-size:11px;
+  min-width:28px;
+  text-align:center;
+  border:1px solid var(--red);
+  padding:1px 4px;
+  letter-spacing:1px;
   flex-shrink:0;
 }
-#comm-lines{
-  flex:1;overflow:hidden;
-  font-family:'VT323',monospace;font-size:16px;
-  line-height:1.35;
-}
-.comm-line{animation:lineReveal 0.15s ease-out;}
-.comm-kitt-line{color:#ff4422;}
-.comm-muther-line{color:#ffaa00;}
-.comm-kitt-line::before{content:'KITT  ▶ ';font-size:13px;opacity:0.8;}
-.comm-muther-line::before{content:'MU-TH-UR ▶ ';font-size:11px;opacity:0.8;}
-
-/* Côté MU-TH-UR */
-#comm-muther{
-  width:155px;flex-shrink:0;
-  border-left:1px solid rgba(255,170,0,0.25);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:5px 4px;gap:3px;
-  position:relative;z-index:1;
-  background:linear-gradient(180deg,rgba(255,170,0,0.03),rgba(0,0,0,0.6));
-}
-#muther-avatar{
-  font-family:'VT323',monospace;font-size:8.5px;line-height:1.15;
-  color:var(--amber);text-align:center;
-  text-shadow:0 0 8px var(--amber),0 0 16px rgba(255,170,0,0.4);
-  white-space:pre;
-  border:1px solid rgba(255,170,0,0.2);
-  padding:3px 5px;
-  background:rgba(255,170,0,0.02);
-}
-#muther-label{
-  font-family:'VT323',monospace;font-size:12px;color:var(--amber);
-  letter-spacing:3px;text-shadow:0 0 10px var(--amber);
-}
-#muther-wave{width:80px;height:20px;}
-#muther-pulse{
-  width:80px;height:4px;background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.3);
-  border-radius:2px;overflow:hidden;position:relative;
-}
-#muther-pulse-inner{
-  position:absolute;top:0;height:100%;width:0%;
-  background:var(--amber);box-shadow:0 0 6px var(--amber);
-  transition:width 0.1s;
+.lo-l{color:var(--green);letter-spacing:2px;font-size:13px;}
+#lang-ftr{
+  border-top:1px solid var(--green-dim);
+  padding:8px 18px;
+  color:var(--green-dim);
+  font-size:10px;
+  letter-spacing:2px;
+  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
 }
 
-/* Waveform canvas speaking indicator */
-.speaking-kitt #kitt-avatar{animation:kittGlow 0.3s ease-in-out infinite alternate;}
-.speaking-muther #muther-avatar{animation:mutherGlow 0.3s ease-in-out infinite alternate;}
-@keyframes kittGlow{from{text-shadow:0 0 8px #ff2200}to{text-shadow:0 0 24px #ff2200,0 0 40px rgba(255,34,0,0.6)}}
-@keyframes mutherGlow{from{text-shadow:0 0 8px var(--amber)}to{text-shadow:0 0 24px var(--amber),0 0 40px rgba(255,170,0,0.6)}}
+/* ── SCANNER KITT ───────────────────────────────────────── */
+#sw{position:fixed;top:0;left:0;right:0;height:3px;overflow:hidden;z-index:1000;}
+#sb{position:absolute;top:0;width:200px;height:3px;background:linear-gradient(90deg,transparent,var(--red),var(--red),transparent);box-shadow:0 0 14px 4px var(--red);animation:ks 1.8s ease-in-out infinite alternate;}
+#swb{position:fixed;bottom:0;left:0;right:0;height:3px;overflow:hidden;z-index:1000;}
+#sbb{position:absolute;top:0;width:200px;height:3px;background:linear-gradient(90deg,transparent,var(--red),var(--red),transparent);box-shadow:0 0 14px 4px var(--red);animation:ks 1.8s ease-in-out infinite alternate-reverse;}
+@keyframes ks{0%{left:-200px}100%{left:100%}}
 
-/* ── PANNEAU TERMINAL CENTRAL ────────────────────────────── */
-#panel-terminal{flex:2;min-width:0;}
-#terminal-out{
-  height:100%;overflow-y:auto;overflow-x:hidden;
-  font-family:var(--vt);font-size:18px;line-height:1.4;
-  scrollbar-width:thin;scrollbar-color:var(--amber-dim) transparent;
-  padding:2px 4px;
-}
-#terminal-out::-webkit-scrollbar{width:3px;}
-#terminal-out::-webkit-scrollbar-thumb{background:var(--amber-dim);}
-.t-line{animation:lineReveal 0.1s ease-out;}
-@keyframes lineReveal{from{opacity:0}to{opacity:1}}
-.t-cursor{
-  display:inline-block;width:10px;height:17px;
-  background:var(--amber);vertical-align:text-bottom;
-  animation:cursorBlink 0.6s step-end infinite;
-  box-shadow:0 0 8px var(--amber);
-}
-@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.container{display:flex;flex-direction:column;height:100%;padding:16px 20px 20px;gap:0;}
 
-/* ── PANNEAU RADAR ───────────────────────────────────────── */
-#panel-radar{flex:1;min-width:0;}
-#radar-svg{width:100%;height:100%;}
+/* ── HEADER ─────────────────────────────────────────────── */
+header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;border-bottom:1px solid var(--red);}
+.hdr-title{color:var(--red);font-size:18px;letter-spacing:4px;text-shadow:0 0 16px var(--red);animation:pred 3s ease-in-out infinite;}
+@keyframes pred{0%,100%{text-shadow:0 0 12px var(--red)}50%{text-shadow:0 0 28px var(--red),0 0 50px rgba(255,26,26,.5)}}
+.hdr-right{display:flex;gap:14px;font-size:11px;color:var(--green-dim);align-items:center;}
+.sdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:bd 2s ease-in-out infinite;margin-right:4px;vertical-align:middle;}
+@keyframes bd{0%,100%{opacity:1}50%{opacity:.25}}
+#lang-flag{font-size:10px;border:1px solid var(--green-dim);padding:1px 5px;letter-spacing:1px;cursor:pointer;color:var(--green-dim);}
+#lang-flag:hover{color:var(--green);border-color:var(--green);}
 
-/* ── PANNEAU STATUS ÉQUIPAGE ─────────────────────────────── */
-#panel-crew{width:170px;flex-shrink:0;}
-.crew-entry{
-  font-family:var(--mono);font-size:9px;
-  color:var(--amber-dim);
-  padding:4px 6px 3px;
-  border-bottom:1px solid rgba(255,170,0,0.08);
-  transition:color 0.5s;
-}
-.crew-entry .cn{color:var(--amber);letter-spacing:1px;font-size:10px;}
-.crew-entry .cs{float:right;font-size:9px;}
-.crew-entry.ok .cs{color:var(--green);}
-.crew-entry.warn .cs{color:var(--amber);}
-.crew-entry.crit .cs{color:var(--red);animation:textBlink 0.8s step-end infinite;}
-@keyframes textBlink{0%,100%{opacity:1}50%{opacity:0}}
+/* ── ASCII ──────────────────────────────────────────────── */
+#kitt-ascii{flex-shrink:0;text-align:center;color:var(--red);font-size:10px;line-height:1.2;text-shadow:0 0 8px var(--red);padding:6px 0 4px;opacity:.85;user-select:none;}
 
-/* ── PANNEAU METRICS BAS ─────────────────────────────────── */
-#panel-metrics{flex:1;}
-.metric-row{
-  display:flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:9px;color:var(--amber-dim);
-  padding:2px 0;letter-spacing:1px;
-}
-.metric-label{width:90px;flex-shrink:0;}
-.metric-bar-wrap{flex:1;height:8px;background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.15);position:relative;overflow:hidden;}
-.metric-bar{height:100%;background:var(--amber);box-shadow:0 0 6px rgba(255,170,0,0.4);width:0%;transition:width 2s ease;}
-.metric-bar.green{background:var(--green);box-shadow:0 0 6px rgba(0,255,65,0.4);}
-.metric-bar.red{background:var(--red);box-shadow:0 0 6px var(--red-glow);}
-.metric-val{width:38px;text-align:right;color:var(--amber);font-size:9px;}
+/* ── TERMINAL ───────────────────────────────────────────── */
+#terminal{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 4px;font-size:13px;line-height:1.65;scrollbar-width:thin;scrollbar-color:var(--red) #111;}
+#terminal::-webkit-scrollbar{width:4px}
+#terminal::-webkit-scrollbar-track{background:#111}
+#terminal::-webkit-scrollbar-thumb{background:var(--red)}
+.line-ok{color:var(--green);}
+.line-warn{color:var(--amber);}
+.line-err{color:var(--red);}
+.line-info{color:var(--cyan);}
+.line-dim{color:var(--green-dim);}
+.cursor{display:inline-block;width:8px;height:13px;background:var(--green);vertical-align:text-bottom;animation:bc .7s step-end infinite;}
+@keyframes bc{0%,100%{opacity:1}50%{opacity:0}}
 
-/* ── PANNEAU ALERTE ──────────────────────────────────────── */
-#panel-alert{flex:1;display:none;align-items:center;justify-content:center;}
-#panel-alert.show{display:flex;}
-#alert-inner{
-  font-family:var(--vt);font-size:20px;color:var(--red);
-  letter-spacing:3px;text-align:center;
-  text-shadow:0 0 16px var(--red),0 0 30px rgba(255,34,0,0.3);
-  animation:alertPulse 1s ease-in-out infinite;
-}
-@keyframes alertPulse{0%,100%{opacity:1}50%{opacity:0.4}}
+/* ── BUTTONS ────────────────────────────────────────────── */
+.btn-row{flex-shrink:0;display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 6px;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;}
+button{background:#000;border:1px solid var(--green);color:var(--green);padding:7px 14px;cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:1px;transition:all .15s;position:relative;overflow:hidden;}
+button::before{content:"";position:absolute;inset:0;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .15s;z-index:-1;}
+button:hover{color:#000;}button:hover::before{transform:scaleX(1);}
+button:active{transform:scale(.95);}
+.btn-red{border-color:var(--red);color:var(--red);}
+.btn-red::before{background:var(--red);}
+.btn-cyan{border-color:var(--cyan);color:var(--cyan);}
+.btn-cyan::before{background:var(--cyan);}
 
-/* ── PANNEAU NAVIGATION ──────────────────────────────────── */
-#panel-nav{flex:1;min-width:0;}
-.nav-data{font-family:var(--mono);font-size:9px;color:var(--amber-dim);padding:2px 0;letter-spacing:1px;}
-.nav-data .nv{color:var(--amber);}
+/* ── INPUT ──────────────────────────────────────────────── */
+.input-row{flex-shrink:0;display:flex;gap:8px;padding-top:8px;align-items:center;}
+.prompt-lbl{color:var(--red);font-size:13px;white-space:nowrap;text-shadow:0 0 8px var(--red);}
+#cmd-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--green);color:var(--green);font-family:inherit;font-size:13px;outline:none;padding:4px 0;caret-color:var(--green);}
+#cmd-input::placeholder{color:var(--green-dim);opacity:.55;}
 
-/* ── BOUTON TRANSITION ───────────────────────────────────── */
-#transition-btn{
-  display:none;
-  position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
-  font-family:var(--vt);font-size:26px;
-  color:#000;background:var(--amber);
-  border:none;padding:10px 36px;cursor:pointer;
-  letter-spacing:4px;z-index:6000;
-  animation:btnAppear 0.5s ease forwards, btnPulse2 1.6s ease-in-out infinite;
-}
-#transition-btn::before{
-  content:'K·I·T·T // ';font-size:14px;letter-spacing:2px;opacity:0.7;
-}
-#transition-btn::after{
-  content:' // ALIEN';font-size:14px;letter-spacing:2px;opacity:0.7;
-}
-@keyframes btnAppear{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-@keyframes btnPulse2{0%,100%{box-shadow:0 0 15px var(--amber),0 0 30px rgba(255,34,0,0.15)}50%{box-shadow:0 0 50px var(--amber),0 0 80px rgba(255,170,0,0.35),0 0 4px rgba(255,34,0,0.4)}}
-#transition-btn:hover{background:#fff;color:#000;}
-
-/* ── OVERRIDE OVERLAY ────────────────────────────────────── */
-#override-overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(255,0,0,0.04);
-  pointer-events:none;z-index:5000;
-  animation:overrideFlash 0.3s ease-in-out 3;
-}
-#override-overlay.show{display:block;}
-@keyframes overrideFlash{0%{background:rgba(255,0,0,0.12)}100%{background:rgba(255,0,0,0.03)}}
-
-/* ── RÉTICULE CURSEUR ────────────────────────────────────── */
-#cursor-cross{
-  position:fixed;pointer-events:none;z-index:8500;
-  width:20px;height:20px;margin:-10px 0 0 -10px;
-  opacity:0.7;transition:opacity 0.3s;
-}
-#cursor-cross::before,#cursor-cross::after{
-  content:'';position:absolute;background:var(--amber);
-  box-shadow:0 0 4px var(--amber);
-}
-#cursor-cross::before{width:1px;height:100%;left:50%;transform:translateX(-50%);}
-#cursor-cross::after{width:100%;height:1px;top:50%;transform:translateY(-50%);}
+/* ── MODAL ──────────────────────────────────────────────── */
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.95);display:none;flex-direction:column;padding:30px;overflow:auto;z-index:5000;border:1px solid var(--red);}
+.modal.open{display:flex;}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--red);padding-bottom:8px;}
+.modal-title{color:var(--red);font-size:16px;letter-spacing:3px;text-shadow:0 0 10px var(--red);}
+.close-btn{cursor:pointer;color:var(--red);font-size:20px;padding:4px 8px;border:1px solid var(--red);transition:all .15s;}
+.close-btn:hover{background:var(--red);color:#000;}
+.modal pre{white-space:pre-wrap;color:var(--green);font-family:monospace;font-size:13px;line-height:1.7;}
 
 /* ── MOBILE ─────────────────────────────────────────────── */
-@media(max-width:700px){
-  #panel-crew{display:none;}
-  #panel-ship{flex:1.5;}
-  #panel-radar{display:none;}
-  #terminal-out{font-size:15px;}
-  #hdr-title-txt{font-size:15px;letter-spacing:2px;}
-  #boot-logo pre{font-size:8px;}
+@media(max-width:600px){
+  .hdr-title{font-size:13px;letter-spacing:2px;}
+  #kitt-ascii{font-size:8px;}
+  button{padding:6px 10px;font-size:11px;}
+  #terminal{font-size:12px;}
+  #lang-box{padding:20px;}
+}
+@media(max-width:380px){#kitt-ascii{display:none;}}
+
+/* ── BOUTON TUNNEL CLOUDFLARE ───────────────────────────────── */
+#btn-tunnel{border-color:#333;color:#333;transition:all .2s;}
+#btn-tunnel.tunnel-online{
+  border-color:var(--green);color:var(--green);
+  animation:tpulse 2.4s ease-in-out infinite;}
+#btn-tunnel.tunnel-offline{border-color:var(--red);color:var(--red);}
+#btn-tunnel.tunnel-checking{border-color:var(--amber);color:var(--amber);}
+@keyframes tpulse{0%,100%{box-shadow:0 0 5px rgba(0,255,102,.25)}50%{box-shadow:0 0 18px rgba(0,255,102,.65),inset 0 0 8px rgba(0,255,102,.08)}}
+
+/* ── FOND JARVIS HOLOGRAPHIQUE ──────────────────────────── */
+.container{position:relative;z-index:1;}
+#jarvis-svg{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%) translate3d(0,0,0);
+  width:min(90vw,90vh);height:min(90vw,90vh);
+  pointer-events:none;z-index:0;opacity:0.45;
+}
+#sphere-wrap{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:180px;height:180px;
+  perspective:500px;
+  pointer-events:none;z-index:0;opacity:0.22;
+}
+#sphere-3d{
+  width:100%;height:100%;
+  transform-style:preserve-3d;
+  animation:srot 22s linear infinite;
+}
+@keyframes srot{from{transform:rotateX(22deg) rotateY(0deg)}to{transform:rotateX(22deg) rotateY(360deg)}}
+.s-mer,.s-par{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  border-radius:50%;border:1px solid var(--green);box-sizing:border-box;
+  opacity:0.7;
+}
+.s-core{
+  position:absolute;top:50%;left:50%;
+  width:18px;height:18px;margin:-9px 0 0 -9px;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--green),transparent);
+  box-shadow:0 0 20px var(--green),0 0 40px rgba(0,255,102,.4);
+  animation:score 3s ease-in-out infinite;
+}
+@keyframes score{0%,100%{opacity:.6}50%{opacity:1}}
+
+/* ── COMPTEUR VISITES ───────────────────────────────────── */
+#visit-counter{
+  position:fixed;left:8px;top:50%;transform:translateY(-50%);
+  writing-mode:vertical-rl;text-orientation:mixed;
+  font-size:11px;color:var(--green);letter-spacing:3px;
+  opacity:.65;pointer-events:none;z-index:100;
+  text-shadow:0 0 8px var(--green),0 0 16px rgba(0,255,102,.4);
+  user-select:none;
+  border-left:1px solid rgba(0,255,102,.3);
+  padding-left:4px;
+}
+
+/* ── FOOTER VERSION ─────────────────────────────────────── */
+#site-footer{
+  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  font-size:10px;color:var(--green-dim);letter-spacing:2px;
+  opacity:.55;pointer-events:none;z-index:1001;
+  white-space:nowrap;user-select:none;
+  text-shadow:0 0 6px var(--green-dim);
 }
 </style>
 </head>
 <body>
 
-<!-- Curseur réticule -->
-<div id="cursor-cross"></div>
-
-<!-- Overlay effets visuels -->
-<div id="overlay-scanlines"></div>
-<div id="overlay-phosphor"></div>
-<div id="overlay-vignette"></div>
-<div id="override-overlay"></div>
-
-<!-- ÉCRAN DE DÉMARRAGE -->
-<div id="boot-screen">
-  <div id="boot-logo"><pre>
-██╗  ██╗██╗   ██╗██████╗  ██████╗ ███╗   ██╗███████╗██╗  ██╗
-██║ ██╔╝╚██╗ ██╔╝██╔══██╗██╔═══██╗████╗  ██║██╔════╝╚██╗██╔╝
-█████╔╝  ╚████╔╝ ██████╔╝██║   ██║██╔██╗ ██║█████╗   ╚███╔╝
-██╔═██╗   ╚██╔╝  ██╔══██╗██║   ██║██║╚██╗██║██╔══╝   ██╔██╗
-██║  ██╗   ██║   ██║  ██║╚██████╔╝██║ ╚████║███████╗██╔╝ ██╗
-╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
-              DEEP SPACE VESSEL  ·  K-1979 FRANCO
-         ARTIFICIAL INTELLIGENCE MANAGEMENT SYSTEM
-  </pre></div>
-  <button id="start-btn" onclick="initSystem()">▶  ACTIVER SYSTÈME</button>
-</div>
-
-<!-- INTERFACE PRINCIPALE -->
-<div id="main">
-  <!-- Barre haute -->
-  <div id="row-top">
-    <div id="hdr-bar">
-      <div id="hdr-title-txt">MU-TH-UR 9000 × K·I·T·T // SYSTÈME KYRONEX FRANCO-BELGE</div>
-      <div id="hdr-right">
-        <span><span class="blink-dot" id="dot-power"></span>ALIMENTATION</span>
-        <span><span class="blink-dot" id="dot-ai"></span>IA ACTIVE</span>
-        <span id="sys-clock">00:00:00</span>
-        <span id="sys-date">STARDATE ---</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Zone centrale -->
-  <div id="row-mid">
-    <!-- Schéma vaisseau -->
-    <div class="panel" id="panel-ship">
-      <div class="pnl-hdr">SCHÉMA STRUCTUREL — K-1979 FRANCO <span id="ship-status">NOMINAL</span></div>
-      <div class="pnl-body" style="padding:4px;">
-        <svg id="ship-svg" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <filter id="glow-amber">
-              <feGaussianBlur stdDeviation="2.5" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="glow-amber-strong">
-              <feGaussianBlur stdDeviation="4" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="glow-green">
-              <feGaussianBlur stdDeviation="1.8" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="glow-red">
-              <feGaussianBlur stdDeviation="3.5" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="glow-red-strong">
-              <feGaussianBlur stdDeviation="6" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <linearGradient id="hull-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style="stop-color:#ffaa00;stop-opacity:0.9"/>
-              <stop offset="100%" style="stop-color:#7a4f00;stop-opacity:0.7"/>
-            </linearGradient>
-            <linearGradient id="engine-grad" x1="100%" y1="0%" x2="0%" y2="0%">
-              <stop offset="0%" style="stop-color:#ffaa00;stop-opacity:1"/>
-              <stop offset="100%" style="stop-color:#ff6600;stop-opacity:0.3"/>
-            </linearGradient>
-          </defs>
-
-          <!-- Grille de fond HUD -->
-          <g stroke="rgba(255,170,0,0.05)" stroke-width="0.4">
-            <line x1="0" y1="40" x2="600" y2="40"/>
-            <line x1="0" y1="80" x2="600" y2="80"/>
-            <line x1="0" y1="110" x2="600" y2="110"/>
-            <line x1="0" y1="140" x2="600" y2="140"/>
-            <line x1="0" y1="180" x2="600" y2="180"/>
-            <line x1="60" y1="0" x2="60" y2="220"/>
-            <line x1="120" y1="0" x2="120" y2="220"/>
-            <line x1="200" y1="0" x2="200" y2="220"/>
-            <line x1="300" y1="0" x2="300" y2="220"/>
-            <line x1="400" y1="0" x2="400" y2="220"/>
-            <line x1="500" y1="0" x2="500" y2="220"/>
-          </g>
-
-          <!-- ══ COQUE PRINCIPALE ══ -->
-          <!-- Fuselage central principal -->
-          <rect x="80" y="84" width="400" height="52" rx="4" stroke="url(#hull-grad)" stroke-width="1.5" fill="rgba(255,170,0,0.03)" filter="url(#glow-amber)"/>
-          <!-- Double paroi intérieure -->
-          <rect x="82" y="86" width="396" height="48" rx="3" stroke="rgba(255,170,0,0.2)" stroke-width="0.5" fill="none"/>
-
-          <!-- Nez effilé complexe -->
-          <path d="M80,84 L50,100 L50,110 M80,136 L50,110" stroke="#ffaa00" stroke-width="1.5" fill="none" filter="url(#glow-amber)"/>
-          <path d="M50,100 L22,108 L50,110" stroke="#ffaa00" stroke-width="1" fill="rgba(255,170,0,0.04)"/>
-          <!-- Pointe laser avant -->
-          <line x1="22" y1="108" x2="8" y2="110" stroke="#ffaa00" stroke-width="0.8"/>
-          <circle cx="8" cy="110" r="2" fill="#ffaa00" filter="url(#glow-amber)">
-            <animate attributeName="opacity" values="0.4;1;0.4" dur="1.8s" repeatCount="indefinite"/>
-          </circle>
-          <!-- Renforts nez -->
-          <line x1="50" y1="100" x2="60" y2="95" stroke="rgba(255,170,0,0.4)" stroke-width="0.6"/>
-          <line x1="50" y1="110" x2="60" y2="110" stroke="rgba(255,170,0,0.4)" stroke-width="0.6"/>
-          <line x1="50" y1="110" x2="60" y2="125" stroke="rgba(255,170,0,0.4)" stroke-width="0.6"/>
-
-          <!-- ══ SUPERSTRUCTURE / PONT DE COMMANDEMENT ══ -->
-          <path d="M85,84 L100,65 L160,60 L180,84" stroke="#ffaa00" stroke-width="1.2" fill="rgba(255,170,0,0.04)" filter="url(#glow-amber)"/>
-          <!-- Hublots pont de commandement -->
-          <rect x="108" y="66" width="16" height="8" rx="1" stroke="#00ccdd" stroke-width="0.8" fill="rgba(0,204,221,0.08)">
-            <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
-          </rect>
-          <rect x="130" y="65" width="16" height="8" rx="1" stroke="#00ccdd" stroke-width="0.8" fill="rgba(0,204,221,0.08)">
-            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2.2s" repeatCount="indefinite"/>
-          </rect>
-          <rect x="152" y="66" width="12" height="7" rx="1" stroke="#00ccdd" stroke-width="0.8" fill="rgba(0,204,221,0.08)">
-            <animate attributeName="opacity" values="0.6;1;0.6" dur="4s" repeatCount="indefinite"/>
-          </rect>
-          <!-- Dôme comm -->
-          <ellipse cx="130" cy="60" rx="35" ry="6" stroke="rgba(255,170,0,0.5)" stroke-width="0.8" fill="rgba(255,170,0,0.02)"/>
-          <!-- Antennes communication -->
-          <line x1="120" y1="60" x2="115" y2="38" stroke="#ffaa00" stroke-width="0.7"/>
-          <line x1="130" y1="60" x2="130" y2="32" stroke="#ffaa00" stroke-width="0.7"/>
-          <line x1="140" y1="60" x2="145" y2="38" stroke="#ffaa00" stroke-width="0.7"/>
-          <!-- Antenne principale avec boule -->
-          <circle cx="130" cy="32" r="2.5" fill="#ffaa00" filter="url(#glow-amber)">
-            <animate attributeName="r" values="2;3.5;2" dur="2s" repeatCount="indefinite"/>
-          </circle>
-          <circle cx="115" cy="38" r="1.5" fill="rgba(255,170,0,0.7)"/>
-          <circle cx="145" cy="38" r="1.5" fill="rgba(255,170,0,0.7)"/>
-
-          <!-- ══ SÉPARATIONS INTERNES DU FUSELAGE ══ -->
-          <!-- Cloison A — Sas avant -->
-          <rect x="122" y="84" width="3" height="52" fill="rgba(255,170,0,0.25)" stroke="#7a4f00" stroke-width="0.5"/>
-          <!-- Hublot sas -->
-          <circle cx="135" cy="110" r="4" stroke="rgba(255,170,0,0.4)" stroke-width="0.8" fill="rgba(0,0,0,0)"/>
-          <!-- Cloison B — Cryogénie -->
-          <rect x="218" y="84" width="3" height="52" fill="rgba(255,170,0,0.25)" stroke="#7a4f00" stroke-width="0.5"/>
-          <!-- Cloison C — Fret -->
-          <rect x="318" y="84" width="3" height="52" fill="rgba(255,170,0,0.25)" stroke="#7a4f00" stroke-width="0.5"/>
-          <!-- Cloison D — Réacteur -->
-          <rect x="398" y="84" width="3" height="52" fill="rgba(255,170,0,0.25)" stroke="#7a4f00" stroke-width="0.5"/>
-
-          <!-- ══ DÉTAILS INTERNES CRYOGÉNIE ══ -->
-          <!-- Capsules cryo (5 capsules) -->
-          <g stroke="rgba(0,204,221,0.5)" stroke-width="0.8" fill="rgba(0,204,221,0.04)">
-            <rect x="130" y="91" width="16" height="22" rx="2"/>
-            <rect x="150" y="91" width="16" height="22" rx="2"/>
-            <rect x="170" y="91" width="16" height="22" rx="2"/>
-            <rect x="130" y="116" width="16" height="14" rx="2"/>
-            <rect x="150" y="116" width="16" height="14" rx="2"/>
-          </g>
-          <!-- Voyants cryo verts -->
-          <circle cx="138" cy="95" r="1.5" fill="#00ff41"><animate attributeName="opacity" values="1;0.2;1" dur="2.1s" repeatCount="indefinite"/></circle>
-          <circle cx="158" cy="95" r="1.5" fill="#00ff41"><animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite"/></circle>
-          <circle cx="178" cy="95" r="1.5" fill="#00ff41"><animate attributeName="opacity" values="1;0.4;1" dur="2.5s" repeatCount="indefinite"/></circle>
-          <circle cx="138" cy="120" r="1.5" fill="#00ff41"><animate attributeName="opacity" values="1;0.2;1" dur="1.6s" repeatCount="indefinite"/></circle>
-          <circle cx="158" cy="120" r="1.5" fill="#00ff41"><animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite"/></circle>
-
-          <!-- ══ DÉTAILS SECTION FRET ══ -->
-          <!-- Conteneurs de fret -->
-          <rect x="228" y="88" width="28" height="20" rx="1" stroke="rgba(255,170,0,0.3)" stroke-width="0.8" fill="rgba(255,170,0,0.03)"/>
-          <rect x="260" y="88" width="22" height="20" rx="1" stroke="rgba(255,170,0,0.3)" stroke-width="0.8" fill="rgba(255,170,0,0.03)"/>
-          <rect x="228" y="112" width="50" height="16" rx="1" stroke="rgba(255,170,0,0.3)" stroke-width="0.8" fill="rgba(255,170,0,0.03)"/>
-          <!-- Lignes de tuyaux section fret -->
-          <line x1="228" y1="100" x2="286" y2="100" stroke="rgba(255,170,0,0.2)" stroke-width="2"/>
-          <line x1="240" y1="88" x2="240" y2="84" stroke="rgba(255,170,0,0.2)" stroke-width="1.5"/>
-          <line x1="260" y1="88" x2="260" y2="84" stroke="rgba(255,170,0,0.2)" stroke-width="1.5"/>
-          <!-- ZONE ALIEN DÉTECTÉE — clignotante en rouge -->
-          <rect id="alien-zone" x="226" y="86" width="94" height="48" rx="2" fill="rgba(255,34,0,0)" stroke="rgba(255,34,0,0)" stroke-width="1.5">
-          </rect>
-          <!-- Indicateur alien (caché initialement) -->
-          <g id="alien-indicator" opacity="0">
-            <circle cx="267" cy="110" r="8" fill="rgba(255,34,0,0.15)" stroke="#ff2200" stroke-width="1" filter="url(#glow-red)">
-              <animate attributeName="r" values="6;12;6" dur="1.2s" repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite"/>
-            </circle>
-            <text x="258" y="114" font-family="'VT323'" font-size="10" fill="#ff2200" filter="url(#glow-red)">⚠ XEN</text>
-          </g>
-
-          <!-- ══ SECTION RÉACTEUR — DÉTAILS ══ -->
-          <!-- Cœur réacteur -->
-          <rect x="330" y="88" width="65" height="44" rx="3" stroke="rgba(255,170,0,0.6)" stroke-width="1" fill="rgba(255,170,0,0.02)"/>
-          <!-- Barres de combustible -->
-          <line x1="342" y1="88" x2="342" y2="132" stroke="rgba(0,255,65,0.4)" stroke-width="2"/>
-          <line x1="354" y1="88" x2="354" y2="132" stroke="rgba(0,255,65,0.5)" stroke-width="2"/>
-          <line x1="366" y1="88" x2="366" y2="132" stroke="rgba(0,255,65,0.4)" stroke-width="2"/>
-          <line x1="378" y1="88" x2="378" y2="132" stroke="rgba(0,255,65,0.3)" stroke-width="2"/>
-          <!-- Noyau central -->
-          <circle cx="358" cy="110" r="10" stroke="#ffaa00" stroke-width="1" fill="rgba(255,170,0,0.06)" filter="url(#glow-amber)">
-            <animate attributeName="r" values="9;13;9" dur="2.5s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/>
-          </circle>
-          <!-- Tuyaux refroidissement -->
-          <path d="M395,96 Q410,90 430,90" stroke="rgba(0,204,221,0.5)" stroke-width="1.2" fill="none"/>
-          <path d="M395,110 Q415,110 430,110" stroke="rgba(0,204,221,0.5)" stroke-width="1.2" fill="none"/>
-          <path d="M395,124 Q410,130 430,130" stroke="rgba(0,204,221,0.5)" stroke-width="1.2" fill="none"/>
-
-          <!-- ══ SYSTÈME PROPULSION ARRIÈRE ══ -->
-          <!-- Raccord arrière -->
-          <path d="M480,84 L510,78 L530,84 M480,136 L510,142 L530,136" stroke="#ffaa00" stroke-width="1.2" fill="none" filter="url(#glow-amber)"/>
-          <!-- Pod moteur supérieur — détaillé -->
-          <rect x="510" y="52" width="72" height="24" rx="3" stroke="#ffaa00" stroke-width="1.2" fill="rgba(255,170,0,0.04)" filter="url(#glow-amber)"/>
-          <rect x="513" y="55" width="66" height="18" rx="2" stroke="rgba(255,170,0,0.3)" stroke-width="0.5" fill="none"/>
-          <!-- Nervures pod sup -->
-          <line x1="530" y1="52" x2="530" y2="76" stroke="rgba(255,170,0,0.25)" stroke-width="0.8"/>
-          <line x1="548" y1="52" x2="548" y2="76" stroke="rgba(255,170,0,0.25)" stroke-width="0.8"/>
-          <line x1="564" y1="52" x2="564" y2="76" stroke="rgba(255,170,0,0.25)" stroke-width="0.8"/>
-
-          <!-- Pod moteur inférieur — détaillé -->
-          <rect x="510" y="144" width="72" height="24" rx="3" stroke="#ffaa00" stroke-width="1.2" fill="rgba(255,170,0,0.04)" filter="url(#glow-amber)"/>
-          <rect x="513" y="147" width="66" height="18" rx="2" stroke="rgba(255,170,0,0.3)" stroke-width="0.5" fill="none"/>
-          <!-- Nervures pod inf -->
-          <line x1="530" y1="144" x2="530" y2="168" stroke="rgba(255,170,0,0.25)" stroke-width="0.8"/>
-          <line x1="548" y1="144" x2="548" y2="168" stroke="rgba(255,170,0,0.25)" stroke-width="0.8"/>
-          <line x1="564" y1="144" x2="564" y2="168" stroke="rgba(255,170,0,0.25)" stroke-width="0.8"/>
-
-          <!-- Pod moteur central principal -->
-          <rect x="520" y="92" width="68" height="36" rx="4" stroke="#ffaa00" stroke-width="1.5" fill="rgba(255,170,0,0.05)" filter="url(#glow-amber-strong)"/>
-          <rect x="523" y="95" width="62" height="30" rx="3" stroke="rgba(255,170,0,0.35)" stroke-width="0.6" fill="none"/>
-          <!-- Chambre de combustion -->
-          <ellipse cx="548" cy="110" rx="16" ry="10" stroke="rgba(255,170,0,0.6)" stroke-width="1" fill="rgba(255,170,0,0.04)"/>
-
-          <!-- Pylônes moteurs renforcés -->
-          <line x1="480" y1="84" x2="510" y2="64" stroke="#ffaa00" stroke-width="1.8"/>
-          <line x1="480" y1="84" x2="510" y2="84" stroke="#ffaa00" stroke-width="1"/>
-          <line x1="480" y1="136" x2="510" y2="156" stroke="#ffaa00" stroke-width="1.8"/>
-          <line x1="480" y1="136" x2="510" y2="136" stroke="#ffaa00" stroke-width="1"/>
-
-          <!-- ══ TUYÈRES PROPULSION ══ -->
-          <!-- Tuyère sup -->
-          <path d="M582,52 L594,56 L596,68 L582,76 Z" stroke="#ffaa00" stroke-width="1" fill="rgba(255,170,0,0.06)"/>
-          <!-- Flamme tuyère sup -->
-          <ellipse cx="596" cy="64" rx="4" ry="6" fill="url(#engine-grad)" filter="url(#glow-amber)">
-            <animate attributeName="rx" values="3;6;3" dur="0.3s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.5;1;0.5" dur="0.25s" repeatCount="indefinite"/>
-          </ellipse>
-          <!-- Tuyère inf -->
-          <path d="M582,144 L594,148 L596,160 L582,168 Z" stroke="#ffaa00" stroke-width="1" fill="rgba(255,170,0,0.06)"/>
-          <!-- Flamme tuyère inf -->
-          <ellipse cx="596" cy="156" rx="4" ry="6" fill="url(#engine-grad)" filter="url(#glow-amber)">
-            <animate attributeName="rx" values="4;7;4" dur="0.28s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.6;1;0.6" dur="0.32s" repeatCount="indefinite"/>
-          </ellipse>
-          <!-- Tuyère centrale principale -->
-          <path d="M588,92 L598,96 L600,124 L588,128 Z" stroke="#ffaa00" stroke-width="1.5" fill="rgba(255,170,0,0.06)"/>
-          <!-- Flamme centrale -->
-          <ellipse cx="600" cy="110" rx="6" ry="14" fill="url(#engine-grad)" filter="url(#glow-amber-strong)">
-            <animate attributeName="rx" values="5;9;5" dur="0.22s" repeatCount="indefinite"/>
-            <animate attributeName="ry" values="12;18;12" dur="0.3s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.7;1;0.7" dur="0.18s" repeatCount="indefinite"/>
-          </ellipse>
-
-          <!-- ══ TUYAUX ET CONDUITS ══ -->
-          <!-- Conduit dorsale principal -->
-          <path d="M82,84 Q200,78 400,84" stroke="rgba(255,170,0,0.3)" stroke-width="1.5" fill="none"/>
-          <path d="M82,136 Q200,142 400,136" stroke="rgba(255,170,0,0.3)" stroke-width="1.5" fill="none"/>
-          <!-- Conduit refroidissement latéral supérieur -->
-          <path d="M160,80 Q230,72 318,80" stroke="rgba(0,204,221,0.3)" stroke-width="1" fill="none"/>
-          <!-- Câbles électriques -->
-          <path d="M122,88 Q170,94 218,88" stroke="rgba(255,255,0,0.15)" stroke-width="0.6" fill="none" stroke-dasharray="3,4"/>
-          <path d="M122,125 Q170,119 218,125" stroke="rgba(255,255,0,0.15)" stroke-width="0.6" fill="none" stroke-dasharray="3,4"/>
-
-          <!-- ══ SCANNER SWEEP HORIZONTAL ══ -->
-          <line id="ship-scan" x1="80" y1="70" x2="80" y2="155" stroke="rgba(255,170,0,0.35)" stroke-width="1.5">
-            <animate attributeName="x1" values="80;480;80" dur="5s" repeatCount="indefinite"/>
-            <animate attributeName="x2" values="80;480;80" dur="5s" repeatCount="indefinite"/>
-          </line>
-
-          <!-- ══ LABELS ══ -->
-          <g font-family="'VT323',monospace" font-size="9" fill="rgba(255,170,0,0.5)" text-anchor="middle">
-            <text x="95" y="77">PONT.A</text>
-            <text x="170" y="57">CMD / NAV</text>
-            <text x="170" y="145">CRYO</text>
-            <text x="267" y="77">SECTION FRET — NV.C</text>
-            <text x="358" y="77">RÉACTEUR</text>
-            <text x="548" y="48">POD Σ1</text>
-            <text x="548" y="188">POD Σ2</text>
-            <text x="548" y="110" fill="#ffaa00" font-size="10">PROPULSION</text>
-          </g>
-          <!-- Label coordonnées -->
-          <text x="5" y="12" font-family="'VT323'" font-size="8" fill="rgba(255,170,0,0.3)">K-1979 FRANCO — VUE LATÉRALE — ÉCHELLE 1:800</text>
-          <text x="5" y="215" font-family="'VT323'" font-size="8" fill="rgba(255,170,0,0.3)">SECTION : AVANT [Σ-NORD] — RÉACTEUR ION DE TYPE IV — CLEARANCE : ROUGE</text>
-
-          <!-- ══ INDICATEURS LUMINEUX ══ -->
-          <circle cx="100" cy="110" r="2.5" fill="#00ff41" filter="url(#glow-green)" id="sl-1"><animate attributeName="opacity" values="1;0.3;1" dur="2.1s" repeatCount="indefinite"/></circle>
-          <circle cx="165" cy="108" r="2" fill="#00ff41" filter="url(#glow-green)" id="sl-2"><animate attributeName="opacity" values="1;0.2;1" dur="1.7s" repeatCount="indefinite"/></circle>
-          <circle cx="290" cy="110" r="2.5" fill="#ffaa00" filter="url(#glow-amber)" id="sl-3"><animate attributeName="opacity" values="1;0.4;1" dur="3s" repeatCount="indefinite"/></circle>
-          <circle cx="360" cy="110" r="3" fill="#00ff41" filter="url(#glow-green)" id="sl-4"><animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite"/></circle>
-          <circle cx="470" cy="100" r="2" fill="#ffaa00" filter="url(#glow-amber)" id="sl-5"><animate attributeName="opacity" values="0.3;1;0.3" dur="1.9s" repeatCount="indefinite"/></circle>
-
-          <!-- ══ ALERTE OVERLAY ══ -->
-          <rect id="alert-overlay" x="400" y="82" width="80" height="56" fill="rgba(255,34,0,0.12)" stroke="#ff2200" stroke-width="1.5" opacity="0" rx="2" filter="url(#glow-red)">
-            <animate id="alert-anim" attributeName="opacity" values="0;0.8;0" dur="1s" repeatCount="0"/>
-          </rect>
-        </svg>
-      </div><!-- fin pnl-body ship -->
-
-      <!-- PANNEAU COMM KITT × MU-TH-UR — sous le schéma vaisseau -->
-      <div id="panel-comm">
-
-        <!-- Avatar KITT gauche -->
-        <div id="comm-kitt">
-          <div id="kitt-label">K · I · T · T</div>
-          <div id="kitt-avatar">
-  ╔══════════════╗
-  ║  ◤▓▓▓▓▓▓◥   ║
-  ║ ▐░░░░░░░░▌  ║
-  ║ ▐ ◈ KITT ◈ ▌ ║
-  ╠══╦══════╦══╣
-  ║▓▓║ ◉◉◉ ║▓▓║
-  ║▓▓║━━━━━║▓▓║
-  ╚══╩══════╩══╝
-  ▐███░░░░░███▌
- ▐█████████████▌
-  ██ KNIGHT ██
-  ◈ INDUSTRIES ◈</div>
-          <div id="kitt-scanner-bar"><div id="kitt-scanner-dot"></div></div>
-          <svg id="kitt-wave" viewBox="0 0 80 20" preserveAspectRatio="none">
-            <polyline id="kitt-wave-line" points="0,10 80,10" fill="none" stroke="#ff2200" stroke-width="1.5" opacity="0.5"/>
-          </svg>
-        </div>
-
-        <!-- Dialogue central -->
-        <div id="comm-dialog">
-          <div id="comm-hdr">
-            <span id="comm-status-dot"></span>
-            <span>CANAL SÉCURISÉ — FRÉQ. 14.404 GHz — CHIFFRÉ</span>
-          </div>
-          <div id="comm-lines"></div>
-        </div>
-
-        <!-- Avatar MU-TH-UR droite -->
-        <div id="comm-muther">
-          <div id="muther-label">MU · TH · UR</div>
-          <div id="muther-avatar">
-  ╔══════════════╗
-  ║▓▓▓▓▓▓▓▓▓▓▓▓▓║
-  ║ ┌──────────┐ ║
-  ║ │▒▒MU-TH-UR│ ║
-  ║ │ 9 0 0 0  │ ║
-  ║ └──────────┘ ║
-  ╠══════════════╣
-  ║ ▣  ▣  ▣  ▣  ║
-  ║░░░░░░░░░░░░░║
-  ╠══════════════╣
-  ║ WEYLAND CORP ║
-  ╚══════════════╝</div>
-          <div id="muther-pulse"><div id="muther-pulse-inner"></div></div>
-          <svg id="muther-wave" viewBox="0 0 80 20" preserveAspectRatio="none">
-            <polyline id="muther-wave-line" points="0,10 80,10" fill="none" stroke="#ffaa00" stroke-width="1.5" opacity="0.5"/>
-          </svg>
-        </div>
-
-      </div><!-- fin panel-comm -->
-    </div><!-- fin panel-ship -->
-    <div class="panel" id="panel-terminal">
-      <div class="pnl-hdr">MU-TH-UR 9000 — SORTIE PRINCIPALE <span id="pnl-mode">MODE : VEILLE</span></div>
-      <div class="pnl-body" style="padding:6px 8px;">
-        <div id="terminal-out"></div>
-      </div>
-    </div>
-
-    <!-- Radar -->
-    <div class="panel" id="panel-radar">
-      <div class="pnl-hdr">PROXIMITÉ SECTORIELLE <span>PORTÉE : 2.4 UA</span></div>
-      <div class="pnl-body" style="padding:2px;display:flex;align-items:center;justify-content:center;">
-        <svg id="radar-svg" viewBox="0 0 140 140" style="width:100%;max-height:100%;">
-          <!-- Cercles radar -->
-          <circle cx="70" cy="70" r="65" fill="none" stroke="rgba(255,170,0,0.15)" stroke-width="0.5"/>
-          <circle cx="70" cy="70" r="48" fill="none" stroke="rgba(255,170,0,0.15)" stroke-width="0.5"/>
-          <circle cx="70" cy="70" r="32" fill="none" stroke="rgba(255,170,0,0.2)" stroke-width="0.5"/>
-          <circle cx="70" cy="70" r="16" fill="none" stroke="rgba(255,170,0,0.25)" stroke-width="0.5"/>
-          <!-- Croix -->
-          <line x1="70" y1="5" x2="70" y2="135" stroke="rgba(255,170,0,0.1)" stroke-width="0.5"/>
-          <line x1="5" y1="70" x2="135" y2="70" stroke="rgba(255,170,0,0.1)" stroke-width="0.5"/>
-          <!-- Sweep radar -->
-          <g id="radar-sweep">
-            <path d="M70,70 L135,70 A65,65 0 0,1 95,126 Z" fill="rgba(255,170,0,0.07)"/>
-            <line x1="70" y1="70" x2="135" y2="70" stroke="rgba(255,170,0,0.6)" stroke-width="1"/>
-            <animateTransform attributeName="transform" type="rotate" from="0 70 70" to="360 70 70" dur="4s" repeatCount="indefinite"/>
-          </g>
-          <!-- Point vaisseau (centre) -->
-          <circle cx="70" cy="70" r="3" fill="#ffaa00" filter="url(#glow-amber)">
-            <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite"/>
-          </circle>
-          <!-- Contact mystérieux -->
-          <circle id="radar-contact" cx="110" cy="38" r="2.5" fill="#ff2200" opacity="0">
-            <animate attributeName="opacity" values="0;1;0" dur="4s" begin="25s" repeatCount="indefinite"/>
-          </circle>
-          <!-- Labels distance -->
-          <text x="72" y="26" font-family="'VT323'" font-size="8" fill="rgba(255,170,0,0.4)">2.4</text>
-          <text x="72" y="43" font-family="'VT323'" font-size="8" fill="rgba(255,170,0,0.4)">1.7</text>
-          <text x="72" y="59" font-family="'VT323'" font-size="8" fill="rgba(255,170,0,0.4)">1.1</text>
-          <text x="72" y="74" font-family="'VT323'" font-size="8" fill="rgba(255,170,0,0.4)">0.5</text>
-        </svg>
-      </div>
-    </div>
-
-    <!-- Status équipage -->
-    <div class="panel" id="panel-crew">
-      <div class="pnl-hdr">ÉTAT ÉQUIPAGE</div>
-      <div class="pnl-body" style="padding:0;overflow:hidden;">
-        <div class="crew-entry ok" id="cr-1">
-          <div class="cn">GELINNE E.</div>
-          <div style="font-size:9px;">COMMANDANT<span class="cs">CRYO ●</span></div>
-        </div>
-        <div class="crew-entry ok" id="cr-2">
-          <div class="cn">CEDRIC M.</div>
-          <div style="font-size:9px;">INGÉNIEUR<span class="cs">CRYO ●</span></div>
-        </div>
-        <div class="crew-entry ok" id="cr-3">
-          <div class="cn">KR95</div>
-          <div style="font-size:9px;">COMM. RADIO<span class="cs">CRYO ●</span></div>
-        </div>
-        <div class="crew-entry ok" id="cr-4">
-          <div class="cn">DAMON P.</div>
-          <div style="font-size:9px;">PILOTE<span class="cs">CRYO ●</span></div>
-        </div>
-        <div class="crew-entry ok" id="cr-5">
-          <div class="cn">GEOFFREY V.</div>
-          <div style="font-size:9px;">TECHNICIEN<span class="cs">CRYO ●</span></div>
-        </div>
-        <div style="margin-top:6px;padding:4px 6px;">
-          <div style="font-family:var(--mono);font-size:9px;color:var(--amber-dim);letter-spacing:1px;margin-bottom:4px;">PRESSION CAPSULES</div>
-          <div class="metric-row">
-            <div class="metric-label">CR-01</div>
-            <div class="metric-bar-wrap"><div class="metric-bar green" id="cryo-1" style="width:94%"></div></div>
-            <div class="metric-val" style="color:var(--green)">94%</div>
-          </div>
-          <div class="metric-row">
-            <div class="metric-label">CR-02</div>
-            <div class="metric-bar-wrap"><div class="metric-bar green" id="cryo-2" style="width:91%"></div></div>
-            <div class="metric-val" style="color:var(--green)">91%</div>
-          </div>
-          <div class="metric-row">
-            <div class="metric-label">CR-03</div>
-            <div class="metric-bar-wrap"><div class="metric-bar green" id="cryo-3" style="width:96%"></div></div>
-            <div class="metric-val" style="color:var(--green)">96%</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Barre basse -->
-  <div id="row-bot">
-    <!-- Navigation -->
-    <div class="panel" id="panel-nav">
-      <div class="pnl-hdr">NAVIGATION & TELÉMÉTRIE</div>
-      <div class="pnl-body">
-        <div class="nav-data">SECTEUR : <span class="nv" id="nav-sec">---</span></div>
-        <div class="nav-data">COORD. : <span class="nv" id="nav-coord">---</span></div>
-        <div class="nav-data">DEST. : <span class="nv" id="nav-dest">---</span></div>
-        <div class="nav-data">VITESSE : <span class="nv" id="nav-spd">---</span></div>
-      </div>
-    </div>
-
-    <!-- Métriques système -->
-    <div class="panel" id="panel-metrics">
-      <div class="pnl-hdr">SYSTÈMES VITAUX</div>
-      <div class="pnl-body">
-        <div class="metric-row">
-          <div class="metric-label">RÉACTEUR</div>
-          <div class="metric-bar-wrap"><div class="metric-bar" id="m-reactor" style="width:0%"></div></div>
-          <div class="metric-val" id="mv-reactor">0%</div>
-        </div>
-        <div class="metric-row">
-          <div class="metric-label">PROPULSION</div>
-          <div class="metric-bar-wrap"><div class="metric-bar green" id="m-prop" style="width:0%"></div></div>
-          <div class="metric-val" id="mv-prop">0%</div>
-        </div>
-        <div class="metric-row">
-          <div class="metric-label">ATMO. INT.</div>
-          <div class="metric-bar-wrap"><div class="metric-bar green" id="m-atmo" style="width:0%"></div></div>
-          <div class="metric-val" id="mv-atmo">0%</div>
-        </div>
-        <div class="metric-row">
-          <div class="metric-label">IA CŒUR</div>
-          <div class="metric-bar-wrap"><div class="metric-bar" id="m-ai" style="width:0%"></div></div>
-          <div class="metric-val" id="mv-ai">0%</div>
-        </div>
-        <div class="metric-row">
-          <div class="metric-label">COMMS</div>
-          <div class="metric-bar-wrap"><div class="metric-bar green" id="m-comms" style="width:0%"></div></div>
-          <div class="metric-val" id="mv-comms">0%</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Alerte -->
-    <div class="panel" id="panel-alert">
-      <div id="alert-inner">⚠ DIRECTIVE SIGMA ROUGE ACTIVE ⚠<br><span style="font-size:14px;letter-spacing:2px;">ORDRE SPÉCIAL FRANCO-001</span></div>
-    </div>
+<!-- MU-TH-UR 6000 INTRO -->
+<div id="mother-intro" style="display:none">
+  <div id="mother-box">
+    <div id="mother-hdr">MU-TH-UR 6000 // WEYLAND-YUTANI CORP.</div>
+    <div id="mother-output"></div>
+    <div id="mother-skip">&gt;&gt;&gt; CLIQUEZ OU APPUYEZ SUR UNE TOUCHE &lt;&lt;&lt;</div>
   </div>
 </div>
 
-<!-- Bouton transition -->
-<button id="transition-btn" onclick="goToKitt()">
-  ▶  INTERFACE KITT × ALIEN
-</button>
+<!-- Language selection overlay -->
+<div id="lang-screen">
+  <div id="lang-box">
+    <div id="lang-hdr"></div>
+    <div id="lang-sub"></div>
+    <div id="lang-output"></div>
+    <div id="lang-ftr"></div>
+  </div>
+</div>
+
+<!-- Fond Jarvis holographique -->
+<svg id="jarvis-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+  <g stroke="#00ff66" fill="none">
+    <!-- Anneau externe -->
+    <circle cx="200" cy="200" r="185" stroke-opacity="0.6" stroke-width="1">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Anneau moyen -->
+    <circle cx="200" cy="200" r="135" stroke-opacity="0.5" stroke-width="0.8">
+      <animateTransform attributeName="transform" type="rotate" from="360 200 200" to="0 200 200" dur="45s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Anneau interne -->
+    <circle cx="200" cy="200" r="85" stroke-opacity="0.45" stroke-width="0.7">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="32s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Spokes -->
+    <line x1="200" y1="15" x2="200" y2="385" stroke-opacity="0.18" stroke-width="0.5">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </line>
+    <line x1="15" y1="200" x2="385" y2="200" stroke-opacity="0.18" stroke-width="0.5">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </line>
+    <!-- Arc scanner lumineux -->
+    <path d="M 200 15 A 185 185 0 0 1 385 200" stroke-opacity="0.9" stroke-width="2" stroke="#00ff66">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="8s" repeatCount="indefinite"/>
+    </path>
+    <!-- Marqueurs HUD sur anneau externe -->
+    <line x1="200" y1="15" x2="200" y2="30" stroke-opacity="0.7" stroke-width="1.5">
+      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="70s" repeatCount="indefinite"/>
+    </line>
+    <line x1="200" y1="15" x2="200" y2="25" stroke-opacity="0.5" stroke-width="1">
+      <animateTransform attributeName="transform" type="rotate" from="45 200 200" to="405 200 200" dur="70s" repeatCount="indefinite"/>
+    </line>
+    <!-- Centre pulsant -->
+    <circle cx="200" cy="200" r="5" fill="#00ff66" opacity="0.7">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="4;7;4" dur="3s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>
+<div id="sphere-wrap">
+  <div id="sphere-3d">
+    <div class="s-mer" style="transform:rotateY(0deg)"></div>
+    <div class="s-mer" style="transform:rotateY(30deg)"></div>
+    <div class="s-mer" style="transform:rotateY(60deg)"></div>
+    <div class="s-mer" style="transform:rotateY(90deg)"></div>
+    <div class="s-mer" style="transform:rotateY(120deg)"></div>
+    <div class="s-mer" style="transform:rotateY(150deg)"></div>
+    <div class="s-par" style="transform:translateY(-44px) rotateX(90deg)"></div>
+    <div class="s-par" style="transform:translateY(-22px) rotateX(90deg)"></div>
+    <div class="s-par" style="transform:translateY(0px) rotateX(90deg)"></div>
+    <div class="s-par" style="transform:translateY(22px) rotateX(90deg)"></div>
+    <div class="s-par" style="transform:translateY(44px) rotateX(90deg)"></div>
+    <div class="s-core"></div>
+  </div>
+</div>
+<div id="visit-counter"></div>
+<div id="site-footer">v3.0 &nbsp;—&nbsp; DERNIÈRE MISE À JOUR : 2026-02-20</div>
+
+<!-- Scanners -->
+<div id="sw"><div id="sb"></div></div>
+<div id="swb"><div id="sbb"></div></div>
+
+<div class="container">
+  <header>
+    <div id="hdr-title" class="hdr-title">KITT FRANCO-BELGE // INTERFACE CENTRALE</div>
+    <div class="hdr-right">
+      <span id="lang-flag" onclick="showLangScreen()" title="Changer de langue">FR</span>
+      <span><span class="sdot"></span><span id="status-txt">EN LIGNE</span></span>
+      <span id="clock">00:00:00</span>
+    </div>
+  </header>
+
+  <div id="kitt-ascii"><pre>
+  ██╗  ██╗██╗████████╗████████╗
+  ██║ ██╔╝██║╚══██╔══╝╚══██╔══╝
+  █████╔╝ ██║   ██║      ██║
+  ██╔═██╗ ██║   ██║      ██║
+  ██║  ██╗██║   ██║      ██║
+  ╚═╝  ╚═╝╚═╝   ╚═╝      ╚═╝
+    FRANCO-BELGE  //  BY MANIX</pre></div>
+
+  <div id="terminal"></div>
+
+  <div class="btn-row">
+    <button id="btn-boot" onclick="boot()">[ INITIALISER ]</button>
+    <button id="btn-diag" onclick="runSelfTest()" class="btn-cyan">[ DIAGNOSTIC ]</button>
+    <button id="btn-mentions" onclick="openFile('Mentions.txt',T[LANG].modal_mentions)" class="btn-red">[ MENTIONS ]</button>
+    <button id="btn-licence" onclick="openFile('License.txt',T[LANG].modal_licence)" class="btn-red">[ LICENCE ]</button>
+    <button id="btn-clear" onclick="clearTerm()">[ EFFACER ]</button>
+    <button id="btn-tunnel" class="tunnel-checking" onclick="connectTunnel()" title="Vérification..."><span id="btn-tunnel-txt">[ CONNEXION KITT ]</span></button>
+  </div>
+
+  <div class="input-row">
+    <span class="prompt-lbl">KITT&gt;</span>
+    <input id="cmd-input" type="text" placeholder="entrez une commande..." autocomplete="off" spellcheck="false"/>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal">
+  <div class="modal-hdr">
+    <span class="modal-title" id="modal-title">DOCUMENT</span>
+    <span class="close-btn" onclick="closeModal()">&#10006;</span>
+  </div>
+  <pre id="modal-content"></pre>
+</div>
 
 <script>
 // ════════════════════════════════════════════════════════════
-// CURSEUR RÉTICULE
+// AUDIO ENGINE — Pool de sons variés style années 80
 // ════════════════════════════════════════════════════════════
-const cross = document.getElementById('cursor-cross');
-document.addEventListener('mousemove', e => {
-  cross.style.left = e.clientX + 'px';
-  cross.style.top  = e.clientY + 'px';
+const _ac = new (window.AudioContext || window.webkitAudioContext)();
+
+function _resume() { if (_ac.state === 'suspended') _ac.resume(); }
+
+// ── Son 1 : MU-TH-UR click (principal) ──────────────────────
+function sndClick() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const len = Math.floor(_ac.sampleRate * 0.020);
+    const buf = _ac.createBuffer(1, len, _ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/len, 3.5);
+    const src = _ac.createBufferSource(); src.buffer = buf;
+    const bp = _ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2700+Math.random()*400; bp.Q.value=4;
+    const hp = _ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=850;
+    const g = _ac.createGain(); g.gain.value=0.25;
+    src.connect(bp); bp.connect(hp); hp.connect(g); g.connect(_ac.destination); src.start(t);
+    // tick électronique
+    const o = _ac.createOscillator(); o.type='square';
+    o.frequency.setValueAtTime(1350+Math.random()*200, t);
+    o.frequency.exponentialRampToValueAtTime(680, t+0.017);
+    const og = _ac.createGain(); og.gain.setValueAtTime(0.04, t); og.gain.exponentialRampToValueAtTime(0.001, t+0.020);
+    o.connect(og); og.connect(_ac.destination); o.start(t); o.stop(t+0.022);
+  } catch(e){}
+}
+
+// ── Son 2 : tick léger (haute fréquence, sous-entendu) ──────
+function sndTick() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const o = _ac.createOscillator(); o.type='triangle';
+    o.frequency.setValueAtTime(3800+Math.random()*400, t);
+    o.frequency.exponentialRampToValueAtTime(2400, t+0.012);
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.015);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.016);
+  } catch(e){}
+}
+
+// ── Son 3 : impulsion données (caractères spéciaux) ──────────
+function sndData() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const o = _ac.createOscillator(); o.type='sawtooth';
+    o.frequency.value = 1800 + Math.random()*600;
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.012);
+    const lp = _ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=4000;
+    o.connect(lp); lp.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.013);
+  } catch(e){}
+}
+
+// ── Son 4 : glitch numérique (rare, surprenant) ──────────────
+function sndGlitch() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const len = Math.floor(_ac.sampleRate * 0.035);
+    const buf = _ac.createBuffer(1, len, _ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (Math.random() > 0.5 ? 0.9 : 0.05);
+    const src = _ac.createBufferSource(); src.buffer=buf;
+    const bp = _ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200; bp.Q.value=2;
+    const g = _ac.createGain(); g.gain.value=0.12;
+    src.connect(bp); bp.connect(g); g.connect(_ac.destination); src.start(t);
+  } catch(e){}
+}
+
+// ── Son 5 : fin de ligne (souffle court) ────────────────────
+function sndLineEnd() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const o = _ac.createOscillator(); o.type='sine';
+    o.frequency.setValueAtTime(900, t);
+    o.frequency.exponentialRampToValueAtTime(600, t+0.06);
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.028, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.07);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.08);
+  } catch(e){}
+}
+
+// ── Son 6 : sélection / confirmation ────────────────────────
+function sndSelect() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    [440,660,880].forEach((f,i) => {
+      const o = _ac.createOscillator(); o.type='square'; o.frequency.value=f;
+      const g = _ac.createGain(); g.gain.setValueAtTime(0.04, t+i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.06+0.05);
+      o.connect(g); g.connect(_ac.destination); o.start(t+i*0.06); o.stop(t+i*0.06+0.055);
+    });
+  } catch(e){}
+}
+
+// ── Son 7 : erreur (buzzer court) ────────────────────────────
+function sndError() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const o = _ac.createOscillator(); o.type='square'; o.frequency.value=180;
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.08);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.09);
+  } catch(e){}
+}
+
+// ── Son 8 : chime KITT (sweep descendant) ───────────────────
+function kittChime() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const o = _ac.createOscillator(); o.type='sine';
+    o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(220, t+0.35);
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.4);
+  } catch(e){}
+}
+
+// ── Sons MU-TH-UR 6000 (graves, mécaniques) ─────────────────
+function sndMotherClick() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const buf = _ac.createBuffer(1, _ac.sampleRate * 0.06, _ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (d.length * 0.3));
+    const src = _ac.createBufferSource(); src.buffer = buf;
+    const lp = _ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 800;
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.18, t);
+    src.connect(lp); lp.connect(g); g.connect(_ac.destination); src.start(t);
+  } catch(e){}
+}
+function sndMotherBeep() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const o = _ac.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(330, t); o.frequency.linearRampToValueAtTime(440, t + 0.1);
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.09, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t + 0.13);
+  } catch(e){}
+}
+function sndMotherScan() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const o = _ac.createOscillator(); o.type = 'sawtooth';
+    o.frequency.setValueAtTime(180, t); o.frequency.linearRampToValueAtTime(360, t + 0.4);
+    const lp = _ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+    o.connect(lp); lp.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t + 0.45);
+  } catch(e){}
+}
+function sndMotherChime() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    [220, 330, 440].forEach((freq, i) => {
+      const o = _ac.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+      const g = _ac.createGain(); const s = t + i * 0.22;
+      g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(0.12, s + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.001, s + 0.38);
+      o.connect(g); g.connect(_ac.destination); o.start(s); o.stop(s + 0.4);
+    });
+  } catch(e){}
+}
+
+// ── Dispatch : choisit le bon son par caractère ──────────────
+const SPECIAL_CHARS = new Set([...'[]():=|─══╔╗╚╝║┌┐└┘├┤•★★']);
+let _charCount = 0;
+
+function playChar(ch) {
+  if (ch === ' ' || ch === '\n') return;
+  _charCount++;
+  const r = Math.random();
+  if (SPECIAL_CHARS.has(ch)) { sndData(); return; }
+  if (_charCount % 47 === 0) { sndGlitch(); return; }  // glitch rare
+  if (r < 0.03) { sndGlitch(); return; }
+  if (r < 0.14) { sndTick();   return; }
+  if (r < 0.72) { sndClick();  return; }
+  // ~28% silence = variété naturelle
+}
+
+// ════════════════════════════════════════════════════════════
+// MU-TH-UR 6000 INTRO — Séquence d'activation
+// ════════════════════════════════════════════════════════════
+
+function motherSpeak(text, onEnd) {
+  if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'fr-FR'; utt.rate = 0.72; utt.pitch = 0.5; utt.volume = 0.85;
+  if (onEnd) utt.onend = onEnd;
+  const loadVoices = () => {
+    const voices = speechSynthesis.getVoices();
+    const v = voices.find(v => v.lang.startsWith('fr') && v.name.toLowerCase().includes('female'))
+           || voices.find(v => v.lang.startsWith('fr'));
+    if (v) utt.voice = v;
+    speechSynthesis.speak(utt);
+  };
+  if (speechSynthesis.getVoices().length > 0) loadVoices();
+  else { speechSynthesis.onvoiceschanged = loadVoices; speechSynthesis.speak(utt); }
+}
+
+async function runMotherIntro() {
+  const intro = document.getElementById('mother-intro');
+  const output = document.getElementById('mother-output');
+  const skipMsg = document.getElementById('mother-skip');
+  intro.style.display = 'flex';
+
+  let skipped = false;
+  const skipHandler = () => { skipped = true; };
+  document.addEventListener('click', skipHandler, { once: true });
+  document.addEventListener('keydown', skipHandler, { once: true });
+
+  const delay = ms => new Promise(resolve => {
+    if (skipped) { resolve(); return; }
+    const t = setTimeout(resolve, ms);
+    const check = setInterval(() => { if (skipped) { clearTimeout(t); clearInterval(check); resolve(); } }, 50);
+  });
+
+  // Ajoute une ligne dans le terminal ambre
+  function addLine(text, cls) {
+    const div = document.createElement('div');
+    div.className = cls || 'm-normal';
+    output.appendChild(div);
+    return div;
+  }
+
+  // Tape un texte caractère par caractère avec sons
+  async function typeMotherLine(text, cls, speed) {
+    if (skipped) { addLine(text, cls); return; }
+    const div = addLine('', cls);
+    for (let i = 0; i < text.length; i++) {
+      if (skipped) { div.textContent = text; return; }
+      div.textContent += text[i];
+      if (text[i] !== ' ') sndMotherClick();
+      await delay(speed || 18);
+    }
+    sndMotherBeep();
+  }
+
+  // ── Séquence ──────────────────────────────────────────────
+  await typeMotherLine('WEYLAND-YUTANI CORPORATION', 'm-bright', 18);
+  await delay(120);
+  await typeMotherLine('SYSTEME  :  MU-TH-UR 6000', 'm-normal', 18);
+  await delay(80);
+  await typeMotherLine('ACCES    :  PROTOCOLE D\'INTERFACE', 'm-normal', 18);
+  await delay(300);
+  addLine('', 'm-dim');
+  await delay(200);
+  await typeMotherLine('NAVIRE   :  NOSTROMO  180924609', 'm-normal', 16);
+  await delay(80);
+  await typeMotherLine('CLASSE   :  VEHICULE DE REMORQUAGE COM', 'm-dim', 14);
+  await delay(80);
+  await typeMotherLine('EQUIPAGE :  7 MEMBRES', 'm-dim', 16);
+  await delay(400);
+  addLine('', 'm-dim');
+
+  // ── Checks système ────────────────────────────────────────
+  const checks = [
+    ['VERIFICATION SYSTEMES', '[OK]'],
+    ['NOYAU NEURAL         ', '[EN LIGNE]'],
+    ['MEMOIRE PERSISTANTE  ', '[STABLE]'],
+    ['COMMUNAUTE KITT      ', '[CHARGEE]'],
+  ];
+  for (const [label, result] of checks) {
+    if (skipped) { addLine(label + ' ...... ' + result, 'm-ok'); continue; }
+    const div = addLine(label + ' ......', 'm-dim');
+    sndMotherScan();
+    await delay(420);
+    div.className = 'm-ok';
+    div.textContent = label + ' ...... ' + result;
+    await delay(80);
+  }
+
+  if (!skipped) {
+    await delay(700);
+    sndMotherChime();
+    await delay(900);
+  }
+
+  // ── Voix française ────────────────────────────────────────
+  if (!skipped) {
+    await new Promise(resolve => {
+      motherSpeak("PROTOCOLE D'INTERFACE ACTIVÉ. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.", resolve);
+    });
+  }
+
+  // ── Message skip clignotant ───────────────────────────────
+  skipMsg.style.display = 'block';
+  document.removeEventListener('click', skipHandler);
+  document.removeEventListener('keydown', skipHandler);
+
+  if (!skipped) await delay(3000);
+
+  // ── Fondu vers écran de langue ────────────────────────────
+  intro.style.transition = 'opacity 0.8s';
+  intro.style.opacity = '0';
+  await new Promise(resolve => setTimeout(resolve, 820));
+  intro.style.display = 'none';
+  intro.style.opacity = '';
+  intro.style.transition = '';
+  showLangScreen();
+}
+
+// ════════════════════════════════════════════════════════════
+// LANGUE — Système de localisation
+// ════════════════════════════════════════════════════════════
+let LANG = 'fr';
+
+const T = {
+  fr: {
+    hdr_title:    'KITT FRANCO-BELGE // INTERFACE CENTRALE',
+    placeholder:  'entrez une commande...',
+    btn_boot:     '[ INITIALISER ]',
+    btn_diag:     '[ DIAGNOSTIC ]',
+    btn_mentions: '[ MENTIONS ]',
+    btn_licence:  '[ LICENCE ]',
+    btn_clear:    '[ EFFACER ]',
+    btn_tunnel:   '[ CONNEXION KITT ]',
+    modal_mentions:'MENTIONS LÉGALES',
+    modal_licence: 'LICENCE',
+    wait:       'SYSTÈME EN ATTENTE — TAPEZ "boot" OU CLIQUEZ [ INITIALISER ]',
+    help_hint:  'TAPEZ "aide" POUR LA LISTE DES COMMANDES.',
+    cleared:    'TERMINAL EFFACÉ.',
+    unknown:    (c) => `COMMANDE INCONNUE : "${c}". TAPEZ "aide".`,
+    online:     'EN LIGNE',
+    boot_title: '  KITT FRANCO-BELGE — SÉQUENCE DE BOOT   ',
+    boot_lines: [
+      ['INITIALISATION DU NOYAU SYSTÈME...', 'line-warn'],
+      ['CHARGEMENT MODULES COGNITIFS...    [OK]', 'line-ok'],
+      ['INTERFACE NEURONALE...             [OK]', 'line-ok'],
+      ['SYNTHÈSE VOCALE (PIPER-GPU)...     [OK]', 'line-ok'],
+      ['RECONNAISSANCE VOCALE (WHISPER)... [OK]', 'line-ok'],
+      ['MODÈLE LLM EMBARQUÉ (QWEN 3B)...  [OK]', 'line-ok'],
+      ['MODE HORS-LIGNE...                 [ACTIVÉ]', 'line-ok'],
+      ['', 'line-ok'],
+      ['PROJET FAN NON COMMERCIAL.', 'line-dim'],
+      ['STATUT : INTERFACE EN CONSTRUCTION ACTIVE.', 'line-warn'],
+      ['', 'line-ok'],
+      ['MISES À JOUR DÉPLOYÉES RÉGULIÈREMENT :', 'line-info'],
+      ['  • parfois chaque jour', 'line-dim'],
+      ['  • parfois chaque semaine', 'line-dim'],
+      ['  • lors de certaines phases, presque heure par heure', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). TOUS DROITS RÉSERVÉS.', 'line-warn'],
+    ],
+    boot_end:   '  CONNEXION AU NOYAU KITT ÉTABLIE.',
+    boot_hint:  '  TAPEZ "aide" POUR LA LISTE DES COMMANDES',
+    aide_title: 'COMMANDES DISPONIBLES :',
+    aide_sys:   '── SYSTÈME ──',
+    aide_fun:   '── FUN ──',
+    cmds_sys: [
+      ['aide',       'cette liste'],
+      ['boot',       "séquence d'initialisation"],
+      ['diagnostic', 'test complet des systèmes'],
+      ['status',     'état rapide'],
+      ['heure',      'heure actuelle'],
+      ['version',    "version de l'interface"],
+      ['son',        'démo audio'],
+      ['clear',      'efface le terminal'],
+    ],
+    cmds_fun: [
+      ['bonjour',    'salutation KITT'],
+      ['blague',     'blague KITT aléatoire'],
+      ['alien',      'connexion MU-TH-UR 6000'],
+      ['matrix',     'le lapin blanc'],
+      ['kitt',       'fiche identité KITT'],
+      ['manix',      'dossier conducteur'],
+      ['cedric',     'dossier Cedric Momo Rider'],
+      ['kr95',       'dossier KR95'],
+      ['repliques',  'les répliques franco-belges'],
+      ['secret',     'fichier classifié...'],
+      ['cafe',       'demander un café à KITT'],
+      ['belgique',   'analyse géopolitique'],
+      ['jarvis',     'appel vers Stark Tower'],
+      ['mario',      'dossier Mario Ravasi / IoT'],
+      ['za',         'dossier ZA Elettronica'],
+      ['pascal',     'dossier K Industrie'],
+      ['daemon',     'dossier Daemon Paule'],
+      ['geoffrey',   'dossier Geoffrey'],
+      ['covid',      'origine du projet — confinement 2020'],
+    ],
+    hi:  'BONJOUR. JE SUIS KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'SYSTÈME FRANCO-BELGE DÉVELOPPÉ PAR MANIX.',
+    hi3: 'À VOTRE SERVICE.',
+  },
+  en: {
+    hdr_title:    'KITT FRANCO-BELGIAN // CENTRAL INTERFACE',
+    placeholder:  'enter a command...',
+    btn_boot:     '[ INITIALIZE ]',
+    btn_diag:     '[ DIAGNOSTIC ]',
+    btn_mentions: '[ MENTIONS ]',
+    btn_licence:  '[ LICENSE ]',
+    btn_clear:    '[ CLEAR ]',
+    btn_tunnel:   '[ CONNECT KITT ]',
+    modal_mentions:'LEGAL NOTICES',
+    modal_licence: 'LICENSE',
+    wait:       'SYSTEM STANDBY — TYPE "boot" OR CLICK [ INITIALIZE ]',
+    help_hint:  'TYPE "help" FOR THE LIST OF COMMANDS.',
+    cleared:    'TERMINAL CLEARED.',
+    unknown:    (c) => `UNKNOWN COMMAND: "${c}". TYPE "help".`,
+    online:     'ONLINE',
+    boot_title: '  KITT FRANCO-BELGE — BOOT SEQUENCE        ',
+    boot_lines: [
+      ['INITIALIZING CORE SYSTEM...', 'line-warn'],
+      ['LOADING COGNITIVE MODULES...       [OK]', 'line-ok'],
+      ['NEURAL INTERFACE...                [OK]', 'line-ok'],
+      ['VOICE SYNTHESIS (PIPER-GPU)...     [OK]', 'line-ok'],
+      ['VOICE RECOGNITION (WHISPER)...     [OK]', 'line-ok'],
+      ['EMBEDDED LLM (QWEN 3B)...          [OK]', 'line-ok'],
+      ['OFFLINE MODE...                    [ACTIVE]', 'line-ok'],
+      ['', 'line-ok'],
+      ['FAN PROJECT — NON COMMERCIAL.', 'line-dim'],
+      ['STATUS : INTERFACE UNDER ACTIVE CONSTRUCTION.', 'line-warn'],
+      ['', 'line-ok'],
+      ['UPDATES DEPLOYED REGULARLY :', 'line-info'],
+      ['  • sometimes every day', 'line-dim'],
+      ['  • sometimes every week', 'line-dim'],
+      ['  • during some phases, almost hour by hour', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). ALL RIGHTS RESERVED.', 'line-warn'],
+    ],
+    boot_end:   '  CONNECTION TO KITT CORE ESTABLISHED.',
+    boot_hint:  '  TYPE "help" FOR THE COMMAND LIST',
+    aide_title: 'AVAILABLE COMMANDS:',
+    aide_sys:   '── SYSTEM ──',
+    aide_fun:   '── FUN ──',
+    cmds_sys: [
+      ['help',       'this list'],
+      ['boot',       'boot sequence'],
+      ['diagnostic', 'full system test'],
+      ['status',     'quick status'],
+      ['time',       'current time'],
+      ['version',    'interface version'],
+      ['sound',      'audio demo'],
+      ['clear',      'clear terminal'],
+    ],
+    cmds_fun: [
+      ['hello',      'KITT greeting'],
+      ['joke',       'random KITT joke'],
+      ['alien',      'MU-TH-UR 6000 connection'],
+      ['matrix',     'the white rabbit'],
+      ['kitt',       'KITT identity file'],
+      ['manix',      'driver file'],
+      ['cedric',     'Cedric Momo Rider file'],
+      ['kr95',       'KR95 file'],
+      ['replicas',   'the franco-belgian replicas'],
+      ['secret',     'classified file...'],
+      ['coffee',     'ask KITT for a coffee'],
+      ['belgium',    'geopolitical analysis'],
+      ['jarvis',     'call to Stark Tower'],
+      ['mario',      'Mario Ravasi / IoT file'],
+      ['za',         'ZA Elettronica file'],
+      ['pascal',     'K Industrie file'],
+      ['daemon',     'Daemon Paule file'],
+      ['geoffrey',   'Geoffrey file'],
+      ['covid',      'project origin — lockdown 2020'],
+    ],
+    hi:  'HELLO. I AM KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'FRANCO-BELGIAN SYSTEM DEVELOPED BY MANIX.',
+    hi3: 'AT YOUR SERVICE.',
+  },
+  nl: {
+    hdr_title:    'KITT FRANCO-BELGISCH // CENTRALE INTERFACE',
+    placeholder:  'voer een commando in...',
+    btn_boot:     '[ OPSTARTEN ]',
+    btn_diag:     '[ DIAGNOSE ]',
+    btn_mentions: '[ VERMELDINGEN ]',
+    btn_licence:  '[ LICENTIE ]',
+    btn_clear:    '[ WISSEN ]',
+    btn_tunnel:   '[ VERBIND KITT ]',
+    modal_mentions:'WETTELIJKE VERMELDINGEN',
+    modal_licence: 'LICENTIE',
+    wait:       'SYSTEEM WACHT — TYP "boot" OF KLIK [ OPSTARTEN ]',
+    help_hint:  'TYP "hulp" VOOR DE COMMANDOLIJST.',
+    cleared:    'TERMINAL GEWIST.',
+    unknown:    (c) => `ONBEKEND COMMANDO: "${c}". TYP "hulp".`,
+    online:     'ONLINE',
+    boot_title: '  KITT FRANCO-BELGE — OPSTARTSEQUENTIE     ',
+    boot_lines: [
+      ['KERNSYSTEEM INITIALISEREN...', 'line-warn'],
+      ['COGNITIEVE MODULES LADEN...        [OK]', 'line-ok'],
+      ['NEURALE INTERFACE...               [OK]', 'line-ok'],
+      ['SPRAAKSYNTHESE (PIPER-GPU)...      [OK]', 'line-ok'],
+      ['STEMHERKENNING (WHISPER)...        [OK]', 'line-ok'],
+      ['EMBEDDED LLM (QWEN 3B)...          [OK]', 'line-ok'],
+      ['OFFLINE MODUS...                   [ACTIEF]', 'line-ok'],
+      ['', 'line-ok'],
+      ['FAN PROJECT — NIET COMMERCIEEL.', 'line-dim'],
+      ['STATUS : INTERFACE IN ACTIEVE CONSTRUCTIE.', 'line-warn'],
+      ['', 'line-ok'],
+      ['UPDATES REGELMATIG UITGEROLD :', 'line-info'],
+      ['  • soms elke dag', 'line-dim'],
+      ['  • soms elke week', 'line-dim'],
+      ['  • soms elk uur', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTEN VOORBEHOUDEN.', 'line-warn'],
+    ],
+    boot_end:   '  VERBINDING MET KITT-KERN TOT STAND GEBRACHT.',
+    boot_hint:  '  TYP "hulp" VOOR DE COMMANDOLIJST',
+    aide_title: 'BESCHIKBARE COMMANDO\'S:',
+    aide_sys:   '── SYSTEEM ──',
+    aide_fun:   '── PLEZIER ──',
+    cmds_sys: [
+      ['hulp',       'deze lijst'],
+      ['boot',       'opstartsequentie'],
+      ['diagnostic', 'volledig systeemtest'],
+      ['status',     'snelle status'],
+      ['tijd',       'huidige tijd'],
+      ['versie',     'interface versie'],
+      ['geluid',     'audio demo'],
+      ['clear',      'terminal wissen'],
+    ],
+    cmds_fun: [
+      ['hallo',      'KITT begroeting'],
+      ['grap',       'willekeurige KITT grap'],
+      ['alien',      'MU-TH-UR 6000 verbinding'],
+      ['matrix',     'het witte konijn'],
+      ['kitt',       'KITT identiteitsbestand'],
+      ['manix',      'bestuurdersdossier'],
+      ['cedric',     'Cedric Momo Rider dossier'],
+      ['kr95',       'KR95 dossier'],
+      ['replicas',   'de franco-belgische replica\'s'],
+      ['geheim',     'geheim bestand...'],
+      ['koffie',     'KITT om koffie vragen'],
+      ['belgie',     'geopolitieke analyse'],
+      ['jarvis',     'oproep naar Stark Tower'],
+      ['mario',      'Mario Ravasi / IoT dossier'],
+      ['za',         'ZA Elettronica dossier'],
+      ['pascal',     'K Industrie dossier'],
+      ['daemon',     'Daemon Paule dossier'],
+      ['geoffrey',   'Geoffrey dossier'],
+      ['covid',      'projectoorsprong — lockdown 2020'],
+    ],
+    hi:  'HALLO. IK BEN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'FRANCO-BELGISCH SYSTEEM ONTWIKKELD DOOR MANIX.',
+    hi3: 'TOT UW DIENST.',
+  },
+
+  it: {
+    hdr_title:    'KITT FRANCO-BELGA // INTERFACCIA CENTRALE',
+    placeholder:  'inserisci un comando...',
+    btn_boot:     '[ INIZIALIZZA ]',
+    btn_diag:     '[ DIAGNOSI ]',
+    btn_mentions: '[ MENZIONI ]',
+    btn_licence:  '[ LICENZA ]',
+    btn_clear:    '[ CANCELLA ]',
+    btn_tunnel:   '[ CONNETTI KITT ]',
+    modal_mentions:'NOTE LEGALI',
+    modal_licence: 'LICENZA',
+    wait:       'SISTEMA IN ATTESA — DIGITA "boot" O CLICCA [ INIZIALIZZA ]',
+    help_hint:  'DIGITA "aiuto" PER LA LISTA DEI COMANDI.',
+    cleared:    'TERMINALE CANCELLATO.',
+    unknown:    (c) => `COMANDO SCONOSCIUTO: "${c}". DIGITA "aiuto".`,
+    online:     'IN LINEA',
+    boot_title: '  KITT FRANCO-BELGA — SEQUENZA DI AVVIO     ',
+    boot_lines: [
+      ['INIZIALIZZAZIONE SISTEMA...', 'line-warn'],
+      ['CARICAMENTO MODULI COGNITIVI...    [OK]', 'line-ok'],
+      ['INTERFACCIA NEURALE...             [OK]', 'line-ok'],
+      ['SINTESI VOCALE (PIPER-GPU)...      [OK]', 'line-ok'],
+      ['RICONOSCIMENTO VOCALE (WHISPER)... [OK]', 'line-ok'],
+      ['MODELLO LLM LOCALE (QWEN 3B)...   [OK]', 'line-ok'],
+      ['MODALITÀ OFFLINE...                [ATTIVA]', 'line-ok'],
+      ['', 'line-ok'],
+      ['PROGETTO FAN — NON COMMERCIALE.', 'line-dim'],
+      ['STATO : INTERFACCIA IN COSTRUZIONE ATTIVA.', 'line-warn'],
+      ['', 'line-ok'],
+      ['AGGIORNAMENTI DISTRIBUITI REGOLARMENTE :', 'line-info'],
+      ['  • a volte ogni giorno', 'line-dim'],
+      ['  • a volte ogni settimana', 'line-dim'],
+      ['  • in alcune fasi, quasi ogni ora', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). TUTTI I DIRITTI RISERVATI.', 'line-warn'],
+    ],
+    boot_end:   '  CONNESSIONE AL NUCLEO KITT STABILITA.',
+    boot_hint:  '  DIGITA "aiuto" PER LA LISTA DEI COMANDI',
+    aide_title: 'COMANDI DISPONIBILI:',
+    aide_sys:   '── SISTEMA ──',
+    aide_fun:   '── DIVERTIMENTO ──',
+    cmds_sys: [
+      ['aiuto',      'questa lista'],
+      ['boot',       'sequenza di avvio'],
+      ['diagnostic', 'test completo del sistema'],
+      ['status',     'stato rapido'],
+      ['ora',        'ora corrente'],
+      ['version',    'versione interfaccia'],
+      ['suono',      'demo audio'],
+      ['clear',      'cancella terminale'],
+    ],
+    cmds_fun: [
+      ['ciao',       'saluto KITT'],
+      ['barzelletta', 'barzelletta casuale KITT'],
+      ['alien',      'connessione MU-TH-UR 6000'],
+      ['matrix',     'il coniglio bianco'],
+      ['kitt',       'scheda identità KITT'],
+      ['manix',      'dossier pilota'],
+      ['cedric',     'dossier Cedric Momo Rider'],
+      ['kr95',       'dossier KR95'],
+      ['replicas',   'le repliche franco-belghe'],
+      ['segreto',    'file classificato...'],
+      ['caffe',      'chiedere un caffè a KITT'],
+      ['belgio',     'analisi geopolitica'],
+      ['jarvis',     'chiamata verso Stark Tower'],
+      ['mario',      'dossier Mario Ravasi / IoT'],
+      ['za',         'dossier ZA Elettronica'],
+      ['pascal',     'dossier K Industrie'],
+      ['daemon',     'dossier Daemon Paule'],
+      ['geoffrey',   'dossier Geoffrey'],
+      ['covid',      'origine del progetto — lockdown 2020'],
+    ],
+    hi:  'CIAO. SONO KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'SISTEMA FRANCO-BELGA SVILUPPATO DA MANIX.',
+    hi3: 'AL VOSTRO SERVIZIO.',
+  },
+
+  de: {
+    hdr_title:    'KITT FRANCO-BELGISCH // ZENTRALE SCHNITTSTELLE',
+    placeholder:  'Befehl eingeben...',
+    btn_boot:     '[ INITIALISIEREN ]',
+    btn_diag:     '[ DIAGNOSE ]',
+    btn_mentions: '[ IMPRESSUM ]',
+    btn_licence:  '[ LIZENZ ]',
+    btn_clear:    '[ LÖSCHEN ]',
+    btn_tunnel:   '[ KITT VERBINDEN ]',
+    modal_mentions:'IMPRESSUM',
+    modal_licence: 'LIZENZ',
+    wait:       'SYSTEM BEREIT — TIPPE "boot" ODER KLICKE [ INITIALISIEREN ]',
+    help_hint:  'TIPPE "hilfe" FÜR DIE BEFEHLSLISTE.',
+    cleared:    'TERMINAL GELEERT.',
+    unknown:    (c) => `UNBEKANNTER BEFEHL: "${c}". TIPPE "hilfe".`,
+    online:     'ONLINE',
+    boot_title: '  KITT FRANCO-BELGISCH — STARTSEQUENZ        ',
+    boot_lines: [
+      ['KERNSYSTEM WIRD INITIALISIERT...', 'line-warn'],
+      ['KOGNITIVE MODULE LADEN...          [OK]', 'line-ok'],
+      ['NEURONALE SCHNITTSTELLE...         [OK]', 'line-ok'],
+      ['SPRACHSYNTHESE (PIPER-GPU)...      [OK]', 'line-ok'],
+      ['SPRACHERKENNUNG (WHISPER)...       [OK]', 'line-ok'],
+      ['LOKALES LLM (QWEN 3B)...           [OK]', 'line-ok'],
+      ['OFFLINE-MODUS...                   [AKTIV]', 'line-ok'],
+      ['', 'line-ok'],
+      ['FAN-PROJEKT — NICHT KOMMERZIELL.', 'line-dim'],
+      ['STATUS : SCHNITTSTELLE IM AUFBAU.', 'line-warn'],
+      ['', 'line-ok'],
+      ['UPDATES REGELMÄSSIG VERFÜGBAR :', 'line-info'],
+      ['  • manchmal täglich', 'line-dim'],
+      ['  • manchmal wöchentlich', 'line-dim'],
+      ['  • manchmal stündlich', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). ALLE RECHTE VORBEHALTEN.', 'line-warn'],
+    ],
+    boot_end:   '  VERBINDUNG ZUM KITT-KERN HERGESTELLT.',
+    boot_hint:  '  TIPPE "hilfe" FÜR DIE BEFEHLSLISTE',
+    aide_title: 'VERFÜGBARE BEFEHLE:',
+    aide_sys:   '── SYSTEM ──',
+    aide_fun:   '── SPASS ──',
+    cmds_sys: [
+      ['hilfe',      'diese Liste'],
+      ['boot',       'Startsequenz'],
+      ['diagnostic', 'vollständiger Systemtest'],
+      ['status',     'schneller Status'],
+      ['uhrzeit',    'aktuelle Uhrzeit'],
+      ['version',    'Schnittstellenversion'],
+      ['ton',        'Audio-Demo'],
+      ['clear',      'Terminal leeren'],
+    ],
+    cmds_fun: [
+      ['hallo',      'KITT-Begrüßung'],
+      ['witz',       'zufälliger KITT-Witz'],
+      ['alien',      'MU-TH-UR 6000 Verbindung'],
+      ['matrix',     'das weiße Kaninchen'],
+      ['kitt',       'KITT Identitätsakte'],
+      ['manix',      'Fahrerakte'],
+      ['cedric',     'Cedric Momo Rider Akte'],
+      ['kr95',       'KR95 Akte'],
+      ['replicas',   'die franco-belgischen Repliken'],
+      ['geheimnis',  'geheime Akte...'],
+      ['kaffee',     'KITT um Kaffee bitten'],
+      ['belgien',    'geopolitische Analyse'],
+      ['jarvis',     'Anruf bei Stark Tower'],
+      ['mario',      'Mario Ravasi / IoT Akte'],
+      ['za',         'ZA Elettronica Akte'],
+      ['pascal',     'K Industrie Akte'],
+      ['damon',      'Damon Paule Akte'],
+      ['geoffrey',   'Geoffrey Akte'],
+      ['covid',      'Projektherkunft — Lockdown 2020'],
+    ],
+    hi:  'HALLO. ICH BIN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'FRANCO-BELGISCHES SYSTEM ENTWICKELT VON MANIX.',
+    hi3: 'ZU IHREN DIENSTEN.',
+  },
+
+  es: {
+    hdr_title:    'KITT FRANCO-BELGA // INTERFAZ CENTRAL',
+    placeholder:  'escribe un comando...',
+    btn_boot:     '[ INICIALIZAR ]',
+    btn_diag:     '[ DIAGNÓSTICO ]',
+    btn_mentions: '[ MENCIONES ]',
+    btn_licence:  '[ LICENCIA ]',
+    btn_clear:    '[ BORRAR ]',
+    btn_tunnel:   '[ CONECTAR KITT ]',
+    modal_mentions:'AVISOS LEGALES',
+    modal_licence: 'LICENCIA',
+    wait:       'SISTEMA EN ESPERA — ESCRIBE "boot" O HAZ CLIC EN [ INICIALIZAR ]',
+    help_hint:  'ESCRIBE "ayuda" PARA VER LOS COMANDOS.',
+    cleared:    'TERMINAL BORRADO.',
+    unknown:    (c) => `COMANDO DESCONOCIDO: "${c}". ESCRIBE "ayuda".`,
+    online:     'EN LÍNEA',
+    boot_title: '  KITT FRANCO-BELGA — SECUENCIA DE INICIO   ',
+    boot_lines: [
+      ['INICIALIZANDO SISTEMA...', 'line-warn'],
+      ['CARGANDO MÓDULOS COGNITIVOS...     [OK]', 'line-ok'],
+      ['INTERFAZ NEURONAL...               [OK]', 'line-ok'],
+      ['SÍNTESIS DE VOZ (PIPER-GPU)...     [OK]', 'line-ok'],
+      ['RECONOCIMIENTO DE VOZ (WHISPER)... [OK]', 'line-ok'],
+      ['MODELO LLM LOCAL (QWEN 3B)...      [OK]', 'line-ok'],
+      ['MODO SIN CONEXIÓN...               [ACTIVO]', 'line-ok'],
+      ['', 'line-ok'],
+      ['PROYECTO FAN — NO COMERCIAL.', 'line-dim'],
+      ['ESTADO : INTERFAZ EN CONSTRUCCIÓN ACTIVA.', 'line-warn'],
+      ['', 'line-ok'],
+      ['ACTUALIZACIONES PUBLICADAS REGULARMENTE :', 'line-info'],
+      ['  • a veces cada día', 'line-dim'],
+      ['  • a veces cada semana', 'line-dim'],
+      ['  • a veces cada hora', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). TODOS LOS DERECHOS RESERVADOS.', 'line-warn'],
+    ],
+    boot_end:   '  CONEXIÓN AL NÚCLEO KITT ESTABLECIDA.',
+    boot_hint:  '  ESCRIBE "ayuda" PARA VER LOS COMANDOS',
+    aide_title: 'COMANDOS DISPONIBLES:',
+    aide_sys:   '── SISTEMA ──',
+    aide_fun:   '── DIVERSIÓN ──',
+    cmds_sys: [
+      ['ayuda',      'esta lista'],
+      ['boot',       'secuencia de inicio'],
+      ['diagnostic', 'prueba completa del sistema'],
+      ['status',     'estado rápido'],
+      ['hora',       'hora actual'],
+      ['version',    'versión de la interfaz'],
+      ['sonido',     'demo de audio'],
+      ['clear',      'borrar terminal'],
+    ],
+    cmds_fun: [
+      ['hola',       'saludo KITT'],
+      ['chiste',     'chiste aleatorio KITT'],
+      ['alien',      'conexión MU-TH-UR 6000'],
+      ['matrix',     'el conejo blanco'],
+      ['kitt',       'ficha de identidad KITT'],
+      ['manix',      'expediente del conductor'],
+      ['cedric',     'expediente Cedric Momo Rider'],
+      ['kr95',       'expediente KR95'],
+      ['replicas',   'las réplicas franco-belgas'],
+      ['secreto',    'archivo clasificado...'],
+      ['cafe',       'pedir café a KITT'],
+      ['belgica',    'análisis geopolítico'],
+      ['jarvis',     'llamada a Stark Tower'],
+      ['mario',      'expediente Mario Ravasi / IoT'],
+      ['za',         'expediente ZA Elettronica'],
+      ['pascal',     'expediente K Industrie'],
+      ['damon',      'expediente Damon Paule'],
+      ['geoffrey',   'expediente Geoffrey'],
+      ['covid',      'origen del proyecto — confinamiento 2020'],
+    ],
+    hi:  'HOLA. SOY KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'SISTEMA FRANCO-BELGA DESARROLLADO POR MANIX.',
+    hi3: 'A SU SERVICIO.',
+  },
+
+  pt: {
+    hdr_title:    'KITT FRANCO-BELGA // INTERFACE CENTRAL',
+    placeholder:  'introduz um comando...',
+    btn_boot:     '[ INICIALIZAR ]',
+    btn_diag:     '[ DIAGNÓSTICO ]',
+    btn_mentions: '[ MENÇÕES ]',
+    btn_licence:  '[ LICENÇA ]',
+    btn_clear:    '[ LIMPAR ]',
+    btn_tunnel:   '[ LIGAR KITT ]',
+    modal_mentions:'AVISOS LEGAIS',
+    modal_licence: 'LICENÇA',
+    wait:       'SISTEMA EM ESPERA — DIGITE "boot" OU CLIQUE EM [ INICIALIZAR ]',
+    help_hint:  'DIGITE "ajuda" PARA VER OS COMANDOS.',
+    cleared:    'TERMINAL LIMPO.',
+    unknown:    (c) => `COMANDO DESCONHECIDO: "${c}". DIGITE "ajuda".`,
+    online:     'EM LINHA',
+    boot_title: '  KITT FRANCO-BELGA — SEQUÊNCIA DE ARRANQUE  ',
+    boot_lines: [
+      ['A INICIALIZAR O SISTEMA...', 'line-warn'],
+      ['A CARREGAR MÓDULOS COGNITIVOS...   [OK]', 'line-ok'],
+      ['INTERFACE NEURONAL...              [OK]', 'line-ok'],
+      ['SÍNTESE DE VOZ (PIPER-GPU)...      [OK]', 'line-ok'],
+      ['RECONHECIMENTO DE VOZ (WHISPER)... [OK]', 'line-ok'],
+      ['MODELO LLM LOCAL (QWEN 3B)...      [OK]', 'line-ok'],
+      ['MODO OFFLINE...                    [ATIVO]', 'line-ok'],
+      ['', 'line-ok'],
+      ['PROJETO FÃ — NÃO COMERCIAL.', 'line-dim'],
+      ['ESTADO : INTERFACE EM CONSTRUÇÃO ATIVA.', 'line-warn'],
+      ['', 'line-ok'],
+      ['ATUALIZAÇÕES PUBLICADAS REGULARMENTE :', 'line-info'],
+      ['  • às vezes todos os dias', 'line-dim'],
+      ['  • às vezes semanalmente', 'line-dim'],
+      ['  • às vezes de hora em hora', 'line-dim'],
+      ['', 'line-ok'],
+      ['© 2026 EMMANUEL GELINNE (MANIX). TODOS OS DIREITOS RESERVADOS.', 'line-warn'],
+    ],
+    boot_end:   '  LIGAÇÃO AO NÚCLEO KITT ESTABELECIDA.',
+    boot_hint:  '  DIGITE "ajuda" PARA VER OS COMANDOS',
+    aide_title: 'COMANDOS DISPONÍVEIS:',
+    aide_sys:   '── SISTEMA ──',
+    aide_fun:   '── DIVERSÃO ──',
+    cmds_sys: [
+      ['ajuda',      'esta lista'],
+      ['boot',       'sequência de arranque'],
+      ['diagnostic', 'teste completo do sistema'],
+      ['status',     'estado rápido'],
+      ['hora',       'hora atual'],
+      ['version',    'versão da interface'],
+      ['som',        'demonstração de áudio'],
+      ['clear',      'limpar terminal'],
+    ],
+    cmds_fun: [
+      ['ola',        'saudação KITT'],
+      ['piada',      'piada aleatória KITT'],
+      ['alien',      'ligação MU-TH-UR 6000'],
+      ['matrix',     'o coelho branco'],
+      ['kitt',       'ficha de identidade KITT'],
+      ['manix',      'dossier do condutor'],
+      ['cedric',     'dossier Cedric Momo Rider'],
+      ['kr95',       'dossier KR95'],
+      ['replicas',   'as réplicas franco-belgas'],
+      ['segredo',    'ficheiro classificado...'],
+      ['cafe',       'pedir café ao KITT'],
+      ['belgica',    'análise geopolítica'],
+      ['jarvis',     'chamada para Stark Tower'],
+      ['mario',      'dossier Mario Ravasi / IoT'],
+      ['za',         'dossier ZA Elettronica'],
+      ['pascal',     'dossier K Industrie'],
+      ['damon',      'dossier Damon Paule'],
+      ['geoffrey',   'dossier Geoffrey'],
+      ['covid',      'origem do projeto — confinamento 2020'],
+    ],
+    hi:  'OLÁ. SOU O KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
+    hi2: 'SISTEMA FRANCO-BELGA DESENVOLVIDO POR MANIX.',
+    hi3: 'AO SEU SERVIÇO.',
+  },
+};
+
+// Alias multilingues
+const CMD_ALIASES = {
+  // EN
+  help:'aide', sound:'son', hello:'bonjour', joke:'blague',
+  time:'heure', coffee:'cafe', belgium:'belgique', replicas:'repliques',
+  secret:'secret', version:'version', clear:'clear', status:'status',
+  diagnostic:'diagnostic', boot:'boot', alien:'alien', matrix:'matrix',
+  kitt:'kitt', manix:'manix', cedric:'cedric', kr95:'kr95',
+  jarvis:'jarvis', mario:'mario', za:'za', pascal:'pascal', geoffrey:'geoffrey',
+  // NL
+  hulp:'aide', geluid:'son', hallo:'bonjour', grap:'blague',
+  tijd:'heure', versie:'version', koffie:'cafe', belgie:'belgique',
+  geheim:'secret', klik:'boot',
+  // IT
+  aiuto:'aide', suono:'son', ciao:'bonjour', barzelletta:'blague',
+  ora:'heure', caffe:'cafe', belgio:'belgique', segreto:'secret',
+  // DE
+  hilfe:'aide', ton:'son', witz:'blague', uhrzeit:'heure',
+  kaffee:'cafe', belgien:'belgique', geheimnis:'secret',
+  // Noms personnes — ZA ≠ Mario Ravasi !
+  ravasi:'mario', roadthunder:'mario',
+  zagny:'za', zagni:'za', 'za-elettronica':'za', zaelettronica:'za',
+  damon:'damon', daemon:'damon',
+  // ES
+  ayuda:'aide', sonido:'son', hola:'bonjour', chiste:'blague',
+  hora:'heure', belgica:'belgique', secreto:'secret',
+  // PT
+  ajuda:'aide', som:'son', ola:'bonjour', piada:'blague',
+  segredo:'secret',
+};
+
+// ════════════════════════════════════════════════════════════
+// SÉLECTION DE LANGUE — style MU-TH-UR 1979
+// ════════════════════════════════════════════════════════════
+let _langTyping = false;
+
+const LANG_LIST = [
+  ['1','fr','FRANÇAIS'],
+  ['2','en','ENGLISH'],
+  ['3','nl','NEDERLANDS'],
+  ['4','it','ITALIANO'],
+  ['5','de','DEUTSCH'],
+  ['6','es','ESPAÑOL'],
+  ['7','pt','PORTUGUÊS'],
+];
+
+async function showLangScreen() {
+  const screen = document.getElementById('lang-screen');
+  screen.style.display = 'flex';
+  screen.style.opacity  = '1';
+
+  // Vider les zones
+  ['lang-hdr','lang-sub','lang-output','lang-ftr'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+
+  const hdr = document.getElementById('lang-hdr');
+  const sub = document.getElementById('lang-sub');
+  const out = document.getElementById('lang-output');
+  const ftr = document.getElementById('lang-ftr');
+
+  // ── Header tapé caractère par caractère
+  await _langType(hdr, 'MU-TH-UR 6000  //  INTERFACE PROTOCOL v2.1');
+  await _langDelay(80);
+
+  // ── Sous-titre
+  await _langType(sub, 'SELECT INTERFACE LANGUAGE');
+  await _langDelay(60);
+
+  // ── Options (apparition rapide, une par une)
+  for (const [num, code, label] of LANG_LIST) {
+    const row = document.createElement('div');
+    row.className = 'lang-opt';
+    row.dataset.code = code;
+    row.innerHTML = `<span class="lo-n">${num}</span><span class="lo-l">${label}</span>`;
+    row.addEventListener('click', () => selectLang(code));
+    row.addEventListener('mouseenter', () => sndTick());
+    out.appendChild(row);
+    sndClick();
+    await _langDelay(55);
+  }
+
+  await _langDelay(80);
+
+  // ── Footer avec curseur clignotant
+  const ftrTxt = document.createElement('span');
+  ftr.appendChild(ftrTxt);
+  await _langType(ftrTxt, 'PRESS  [ 1 – 7 ]  OR CLICK');
+  const cur = document.createElement('span');
+  cur.className = 'cursor';
+  cur.style.marginLeft = '4px';
+  ftr.appendChild(cur);
+}
+
+function _langType(el, txt) {
+  return new Promise(resolve => {
+    let i = 0;
+    function t() {
+      if (i < txt.length) {
+        el.textContent += txt[i++];
+        if (Math.random() > 0.3) sndClick();
+        setTimeout(t, 10 + Math.random() * 6);
+      } else {
+        sndLineEnd();
+        resolve();
+      }
+    }
+    t();
+  });
+}
+function _langDelay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function selectLang(lang) {
+  LANG = lang;
+  const t = T[lang];
+  document.getElementById('lang-flag').textContent = lang.toUpperCase();
+  document.getElementById('status-txt').textContent = t.online;
+  document.getElementById('hdr-title').textContent  = t.hdr_title;
+  document.getElementById('cmd-input').placeholder  = t.placeholder;
+  document.getElementById('btn-boot').textContent    = t.btn_boot;
+  document.getElementById('btn-diag').textContent    = t.btn_diag;
+  document.getElementById('btn-mentions').textContent= t.btn_mentions;
+  document.getElementById('btn-licence').textContent = t.btn_licence;
+  document.getElementById('btn-clear').textContent   = t.btn_clear;
+  document.getElementById('btn-tunnel-txt').textContent = t.btn_tunnel;
+  sndSelect();
+  // Cacher l'overlay avec fondu
+  const screen = document.getElementById('lang-screen');
+  screen.style.transition = 'opacity .5s';
+  screen.style.opacity = '0';
+  setTimeout(() => { screen.style.display = 'none'; screen.style.opacity = '1'; screen.style.transition = ''; }, 520);
+  setTimeout(() => startMain(), 600);
+}
+
+// Clavier pour sélection de langue
+document.addEventListener('keydown', e => {
+  if (document.getElementById('lang-screen').style.display !== 'none') {
+    const langMap = {'1':'fr','2':'en','3':'nl','4':'it','5':'de','6':'es','7':'pt'};
+    if (langMap[e.key]) selectLang(langMap[e.key]);
+  }
 });
 
 // ════════════════════════════════════════════════════════════
-// AUDIO ENGINE — TOUT SYNTHÉTISÉ
+// TERMINAL
 // ════════════════════════════════════════════════════════════
-let AC, masterGain, reverbNode;
+const term = document.getElementById('terminal');
+let typing = false;
 
-function initAudio() {
-  AC = new (window.AudioContext || window.webkitAudioContext)();
-  masterGain = AC.createGain();
-  masterGain.gain.value = 0.0;
-  masterGain.connect(AC.destination);
-  // Fondu d'entrée
-  masterGain.gain.linearRampToValueAtTime(1.0, AC.currentTime + 4);
-
-  // Nœud de reverb (delay en boucle pour simuler l'espace)
-  reverbNode = createReverb();
-
-  startAmbience();
-  startHeartbeat();
-  startHighFreqHum();
-  startAtmosphericNoise();
+function addLine(text, cls='line-ok') {
+  const d = document.createElement('div');
+  d.className = cls; d.textContent = text;
+  term.appendChild(d); term.scrollTop = term.scrollHeight;
 }
 
-// Reverb simulé avec delay en boucle
-function createReverb() {
-  const delay = AC.createDelay(2.0);
-  delay.delayTime.value = 0.35;
-  const feedback = AC.createGain();
-  feedback.gain.value = 0.45;
-  const filter = AC.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 900;
-  const wetGain = AC.createGain();
-  wetGain.gain.value = 0.35;
-  delay.connect(feedback);
-  feedback.connect(filter);
-  filter.connect(delay);
-  delay.connect(wetGain);
-  wetGain.connect(masterGain);
-  return delay;
-}
-
-// ── Drone ambiant (couche basse — 2 oscillateurs désaccordés) ──
-function startAmbience() {
-  const t = AC.currentTime;
-  // Oscillateur 1 — Fa grave
-  const o1 = AC.createOscillator();
-  o1.type = 'sine';
-  o1.frequency.value = 43.65; // F1
-  const g1 = AC.createGain(); g1.gain.value = 0;
-  g1.gain.linearRampToValueAtTime(0.32, t + 5);
-  o1.connect(g1); g1.connect(masterGain);
-  g1.connect(reverbNode);
-  o1.start();
-
-  // Oscillateur 2 — légèrement désaccordé (battement)
-  const o2 = AC.createOscillator();
-  o2.type = 'sine';
-  o2.frequency.value = 44.8;
-  const g2 = AC.createGain(); g2.gain.value = 0;
-  g2.gain.linearRampToValueAtTime(0.28, t + 6);
-  o2.connect(g2); g2.connect(masterGain);
-  g2.connect(reverbNode);
-  o2.start();
-
-  // Oscillateur 3 — harmonique (Do2 ~65Hz)
-  const o3 = AC.createOscillator();
-  o3.type = 'triangle';
-  o3.frequency.value = 65.4;
-  const g3 = AC.createGain(); g3.gain.value = 0;
-  g3.gain.linearRampToValueAtTime(0.12, t + 8);
-  // LFO sur amplitude de o3
-  const lfo3 = AC.createOscillator();
-  lfo3.type = 'sine'; lfo3.frequency.value = 0.07;
-  const lfoG3 = AC.createGain(); lfoG3.gain.value = 0.06;
-  lfo3.connect(lfoG3); lfoG3.connect(g3.gain);
-  lfo3.start();
-  o3.connect(g3); g3.connect(masterGain); g3.connect(reverbNode);
-  o3.start();
-
-  // Couche dissonante (tension) — si bémol grave ~58Hz
-  const o4 = AC.createOscillator();
-  o4.type = 'sawtooth';
-  o4.frequency.value = 58.27;
-  const lp4 = AC.createBiquadFilter(); lp4.type = 'lowpass'; lp4.frequency.value = 200;
-  const g4 = AC.createGain(); g4.gain.value = 0;
-  g4.gain.linearRampToValueAtTime(0.08, t + 10);
-  // LFO lent sur fréquence
-  const lfo4 = AC.createOscillator();
-  lfo4.type = 'sine'; lfo4.frequency.value = 0.03;
-  const lfoG4 = AC.createGain(); lfoG4.gain.value = 4;
-  lfo4.connect(lfoG4); lfoG4.connect(o4.frequency);
-  lfo4.start();
-  o4.connect(lp4); lp4.connect(g4); g4.connect(masterGain); g4.connect(reverbNode);
-  o4.start();
-
-  // Pad harmonique — La3 ~220Hz, très filtré, ambiant
-  const o5 = AC.createOscillator();
-  o5.type = 'sine';
-  o5.frequency.value = 220;
-  const lp5 = AC.createBiquadFilter(); lp5.type = 'lowpass'; lp5.frequency.value = 350;
-  const g5 = AC.createGain(); g5.gain.value = 0;
-  g5.gain.linearRampToValueAtTime(0.06, t + 12);
-  const lfo5 = AC.createOscillator();
-  lfo5.type = 'sine'; lfo5.frequency.value = 0.11;
-  const lfoG5 = AC.createGain(); lfoG5.gain.value = 0.04;
-  lfo5.connect(lfoG5); lfoG5.connect(g5.gain);
-  lfo5.start();
-  o5.connect(lp5); lp5.connect(g5); g5.connect(masterGain); g5.connect(reverbNode);
-  o5.start();
-}
-
-// ── Battement de cœur (tension psychologique) ──────────────
-let heartbeatInterval;
-function startHeartbeat() {
-  beatHeart(0.8); // premier battement immédiat
-  heartbeatInterval = setInterval(() => beatHeart(0.8), 2200);
-}
-
-function beatHeart(vol = 0.8) {
-  if (!AC) return;
-  const t = AC.currentTime;
-  // Battement 1
-  singleBeat(t, vol);
-  // Battement 2 (plus doux, légèrement après)
-  singleBeat(t + 0.22, vol * 0.6);
-}
-
-function singleBeat(t, vol) {
-  const o = AC.createOscillator();
-  o.type = 'sine';
-  o.frequency.setValueAtTime(120, t);
-  o.frequency.exponentialRampToValueAtTime(35, t + 0.12);
-  const g = AC.createGain();
-  g.gain.setValueAtTime(0, t);
-  g.gain.linearRampToValueAtTime(vol * 0.6, t + 0.01);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-  const comp = AC.createDynamicsCompressor();
-  o.connect(comp); comp.connect(g); g.connect(masterGain);
-  o.start(t); o.stop(t + 0.2);
-}
-
-// ── Bourdonnement haute fréquence (électronique) ───────────
-function startHighFreqHum() {
-  const t = AC.currentTime;
-  const o = AC.createOscillator();
-  o.type = 'sawtooth';
-  o.frequency.value = 183;
-  const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 183; bp.Q.value = 12;
-  const g = AC.createGain(); g.gain.value = 0;
-  g.gain.linearRampToValueAtTime(0.04, t + 3);
-  // LFO subtil
-  const lfo = AC.createOscillator();
-  lfo.type = 'triangle'; lfo.frequency.value = 0.25;
-  const lfoG = AC.createGain(); lfoG.gain.value = 0.01;
-  lfo.connect(lfoG); lfoG.connect(g.gain); lfo.start();
-  o.connect(bp); bp.connect(g); g.connect(masterGain);
-  o.start();
-}
-
-// ── Bruit atmosphérique (souffle spatial) ──────────────────
-function startAtmosphericNoise() {
-  const bufSize = AC.sampleRate * 3;
-  const buf = AC.createBuffer(1, bufSize, AC.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-  const src = AC.createBufferSource();
-  src.buffer = buf; src.loop = true;
-  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 280;
-  const hp = AC.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 60;
-  const g = AC.createGain(); g.gain.value = 0;
-  g.gain.linearRampToValueAtTime(0.022, AC.currentTime + 4);
-  // LFO très lent sur volume
-  const lfo = AC.createOscillator();
-  lfo.type = 'sine'; lfo.frequency.value = 0.04;
-  const lfoG = AC.createGain(); lfoG.gain.value = 0.008;
-  lfo.connect(lfoG); lfoG.connect(g.gain); lfo.start();
-  src.connect(lp); lp.connect(hp); hp.connect(g);
-  g.connect(masterGain); g.connect(reverbNode);
-  src.start();
-}
-
-// ── Bip de données (à la frappe) ───────────────────────────
-let _charCount = 0;
-function typeBeep() {
-  if (!AC) return;
-  _charCount++;
-  const t = AC.currentTime;
-  const r = Math.random();
-  // Glitch rare
-  if (_charCount % 53 === 0) {
-    const len = Math.floor(AC.sampleRate * 0.025);
-    const buf = AC.createBuffer(1, len, AC.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (Math.random() > 0.6 ? 0.7 : 0.05);
-    const src = AC.createBufferSource(); src.buffer = buf;
-    const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 800; bp.Q.value = 3;
-    const g = AC.createGain(); g.gain.value = 0.08;
-    src.connect(bp); bp.connect(g); g.connect(masterGain);
-    src.start(); return;
-  }
-  if (r < 0.55) { // frappe principale
-    const o = AC.createOscillator();
-    o.type = 'square';
-    o.frequency.setValueAtTime(1100 + Math.random()*200, t);
-    o.frequency.exponentialRampToValueAtTime(700, t + 0.018);
-    const g = AC.createGain();
-    g.gain.setValueAtTime(0.035, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.022);
-    o.connect(g); g.connect(masterGain);
-    o.start(t); o.stop(t + 0.025);
-  } else if (r < 0.75) { // tick discret
-    const o = AC.createOscillator();
-    o.type = 'triangle';
-    o.frequency.value = 3200 + Math.random()*400;
-    const g = AC.createGain();
-    g.gain.setValueAtTime(0.018, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.012);
-    o.connect(g); g.connect(masterGain);
-    o.start(t); o.stop(t + 0.015);
-  }
-  // ~25% silence = naturel
-}
-
-// ── Son fin de ligne ────────────────────────────────────────
-function lineEndBeep() {
-  if (!AC) return;
-  const t = AC.currentTime;
-  const o = AC.createOscillator(); o.type = 'sine';
-  o.frequency.setValueAtTime(660, t);
-  o.frequency.exponentialRampToValueAtTime(440, t + 0.08);
-  const g = AC.createGain();
-  g.gain.setValueAtTime(0.04, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-  o.connect(g); g.connect(masterGain); g.connect(reverbNode);
-  o.start(t); o.stop(t + 0.12);
-}
-
-// ── Chime IA (démarrage) ────────────────────────────────────
-function aiChime() {
-  if (!AC) return;
-  const t = AC.currentTime;
-  const freqs = [261.63, 329.63, 392.00, 523.25];
-  freqs.forEach((f, i) => {
-    const o = AC.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-    const g = AC.createGain();
-    g.gain.setValueAtTime(0, t + i * 0.15);
-    g.gain.linearRampToValueAtTime(0.12, t + i * 0.15 + 0.05);
-    g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.15 + 0.5);
-    o.connect(g); g.connect(masterGain); g.connect(reverbNode);
-    o.start(t + i * 0.15); o.stop(t + i * 0.15 + 0.55);
-  });
-}
-
-// ── Son ALERTE (override) ────────────────────────────────────
-function alertSound() {
-  if (!AC) return;
-  const t = AC.currentTime;
-  // Alarme triphasée
-  for (let i = 0; i < 3; i++) {
-    const o = AC.createOscillator(); o.type = 'square';
-    o.frequency.setValueAtTime(880, t + i * 0.4);
-    o.frequency.setValueAtTime(660, t + i * 0.4 + 0.2);
-    const g = AC.createGain();
-    g.gain.setValueAtTime(0.12, t + i * 0.4);
-    g.gain.setValueAtTime(0.08, t + i * 0.4 + 0.2);
-    g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.4 + 0.38);
-    const hp = AC.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 400;
-    o.connect(hp); hp.connect(g); g.connect(masterGain);
-    o.start(t + i * 0.4); o.stop(t + i * 0.4 + 0.39);
-  }
-  // Basse d'impact
-  const ob = AC.createOscillator(); ob.type = 'sine';
-  ob.frequency.setValueAtTime(80, t);
-  ob.frequency.exponentialRampToValueAtTime(30, t + 0.3);
-  const gb = AC.createGain();
-  gb.gain.setValueAtTime(0.4, t);
-  gb.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-  ob.connect(gb); gb.connect(masterGain);
-  ob.start(t); ob.stop(t + 0.45);
-}
-
-// ── Bip "voix IA" (tones mélodiques pour simuler voix synthétique) ──
-let voiceActive = false;
-function startVoiceTone(freq, dur) {
-  if (!AC) return;
-  const t = AC.currentTime;
-  const o = AC.createOscillator(); o.type = 'sine';
-  const o2 = AC.createOscillator(); o2.type = 'square';
-  o.frequency.value = freq;
-  o2.frequency.value = freq * 1.5;
-  const lp = AC.createBiquadFilter(); lp.type = 'bandpass'; lp.frequency.value = freq; lp.Q.value = 3;
-  const g = AC.createGain();
-  g.gain.setValueAtTime(0, t);
-  g.gain.linearRampToValueAtTime(0.08, t + 0.02);
-  g.gain.setValueAtTime(0.08, t + dur - 0.03);
-  g.gain.linearRampToValueAtTime(0, t + dur);
-  const g2 = AC.createGain(); g2.gain.value = 0.025;
-  o.connect(lp); lp.connect(g); g.connect(masterGain); g.connect(reverbNode);
-  o2.connect(g2); g2.connect(masterGain);
-  o.start(t); o.stop(t + dur + 0.01);
-  o2.start(t); o2.stop(t + dur + 0.01);
-}
-
-// Augmenter tension lors de l'override
-function increaseTension() {
-  if (!AC) return;
-  // Ajoute un bourdon plus grave et dissonant
-  const t = AC.currentTime;
-  const o = AC.createOscillator(); o.type = 'sawtooth';
-  o.frequency.value = 29.14; // Do#0 — très sombre
-  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 180;
-  const g = AC.createGain(); g.gain.value = 0;
-  g.gain.linearRampToValueAtTime(0.25, t + 3);
-  o.connect(lp); lp.connect(g); g.connect(masterGain); g.connect(reverbNode);
-  o.start();
-  // Tremolo rapide
-  const lfo = AC.createOscillator();
-  lfo.type = 'sine'; lfo.frequency.value = 6;
-  const lfoG = AC.createGain(); lfoG.gain.value = 0.07;
-  lfo.connect(lfoG); lfoG.connect(g.gain); lfo.start();
-}
-
-// ════════════════════════════════════════════════════════════
-// SÉQUENCEUR — NARRATIVE CINÉMATIQUE
-// ════════════════════════════════════════════════════════════
-const term = document.getElementById('terminal-out');
-let _typing = false;
-
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function typeLine(text, speed = 45, cls = '') {
+function typeText(text, speed=16, cls='line-ok') {
   return new Promise(resolve => {
-    _typing = true;
-    const div = document.createElement('div');
-    div.className = 't-line' + (cls ? ' ' + cls : '');
-    const cur = document.createElement('span'); cur.className = 't-cursor';
-    div.appendChild(cur);
-    term.appendChild(div);
-    term.scrollTop = term.scrollHeight;
+    typing = true;
+    const div = document.createElement('div'); div.className = cls;
+    const cur = document.createElement('span'); cur.className = 'cursor';
+    div.appendChild(cur); term.appendChild(div); term.scrollTop = term.scrollHeight;
     let i = 0;
     function tick() {
       if (i < text.length) {
-        div.insertBefore(document.createTextNode(text[i++]), cur);
-        typeBeep();
+        const ch = text[i++];
+        div.insertBefore(document.createTextNode(ch), cur);
+        playChar(ch);
         term.scrollTop = term.scrollHeight;
-        setTimeout(tick, speed + Math.random() * (speed * 0.5));
+        setTimeout(tick, speed + Math.random() * 7);
       } else {
         cur.remove();
-        if (text.trim()) lineEndBeep();
-        _typing = false;
-        resolve();
+        if (text.length > 0) sndLineEnd();
+        typing = false; resolve();
       }
     }
     tick();
   });
 }
 
-function addBlank() {
-  const d = document.createElement('div'); d.style.height = '5px';
-  term.appendChild(d);
-}
+function clearTerm() { term.innerHTML=''; addLine(T[LANG].cleared,'line-dim'); }
 
-// Mise à jour métriques avec animation
-function setMetric(id, valId, pct, delayed = 0) {
-  setTimeout(() => {
-    const bar = document.getElementById(id);
-    const val = document.getElementById(valId);
-    if (bar) bar.style.width = pct + '%';
-    if (val) val.textContent = pct + '%';
-  }, delayed);
-}
-
-function setNavData(sec, coord, dest, spd) {
-  document.getElementById('nav-sec').textContent = sec;
-  document.getElementById('nav-coord').textContent = coord;
-  document.getElementById('nav-dest').textContent = dest;
-  document.getElementById('nav-spd').textContent = spd;
+// ════════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════════
+async function boot() {
+  if (typing) return;
+  term.innerHTML=''; kittChime();
+  const l = T[LANG];
+  const sep = '══════════════════════════════════════════';
+  await typeText(sep, 6, 'line-dim');
+  await typeText(l.boot_title, 14, 'line-err');
+  await typeText(sep, 6, 'line-dim');
+  for (const [txt, cls] of l.boot_lines) {
+    await typeText(txt, txt===''?0:12, cls);
+    if (txt==='') await delay(60);
+  }
+  await typeText(sep, 6, 'line-dim');
+  await typeText(l.boot_end, 14, 'line-err');
+  await typeText(l.boot_hint, 10, 'line-dim');
+  await typeText(sep, 6, 'line-dim');
 }
 
 // ════════════════════════════════════════════════════════════
-// PANNEAU COMM KITT × MU-TH-UR — MOTEUR DIALOGUE + VOIX
+// DIAGNOSTIC
 // ════════════════════════════════════════════════════════════
-const _synth = window.speechSynthesis;
-let _voices = [];
-function _loadVoices(){ _voices = _synth ? _synth.getVoices() : []; }
-_loadVoices();
-if(_synth && _synth.onvoiceschanged !== undefined) _synth.onvoiceschanged = _loadVoices;
-
-function _getBestVoice(lang){
-  const prefs = {fr:['fr-FR','fr-BE','fr'],en:['en-US','en-GB','en']}[lang]||['fr-FR'];
-  for(const p of prefs){ const v=_voices.find(v=>v.lang.startsWith(p)); if(v) return v; }
-  return _voices[0]||null;
-}
-
-// ── REVERB longue durée (style caverne / vaisseau spatial) ──
-function _makeSpaceReverb(ctx, duration=3.5, decay=3.0){
-  const len = Math.floor(ctx.sampleRate * duration);
-  const buf = ctx.createBuffer(2, len, ctx.sampleRate);
-  for(let ch=0;ch<2;ch++){
-    const d=buf.getChannelData(ch);
-    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len, decay);
+async function runSelfTest() {
+  if (typing) return;
+  term.innerHTML=''; kittChime();
+  const diagMsg = {fr:'DIAGNOSTIC SYSTÈME EN COURS...',en:'RUNNING SYSTEM DIAGNOSTIC...',nl:'SYSTEEMDIAGNOSE BEZIG...',it:'DIAGNOSI SISTEMA IN CORSO...',de:'SYSTEMDIAGNOSE LÄUFT...',es:'DIAGNÓSTICO DEL SISTEMA EN CURSO...',pt:'DIAGNÓSTICO DO SISTEMA EM CURSO...'}[LANG]||'DIAGNOSTIC SYSTÈME EN COURS...';
+  await typeText(diagMsg, 18, 'line-warn');
+  await delay(300);
+  const checks = [
+    ['CPU JETSON ORIN NANO SUPER',  true,  '12× ARM A78AE'],
+    ['GPU AMPERE CUDA',             true,  '1024 CUDA cores'],
+    ['RAM UNIFIÉE / UNIFIED RAM',   true,  '8 GB LPDDR5'],
+    ['VRAM DISPONIBLE / FREE',      true,  '~4.1 GB'],
+    ['LLM (QWEN 2.5 3B Q5)',        true,  '2.3 GB — port 8080'],
+    ['STT WHISPER BASE',            true,  'GPU float16 — 350ms'],
+    ['TTS PIPER TOM-MEDIUM',        true,  'GPU — 490ms'],
+    ['PULSEAUDIO / USB AUDIO',      true,  'card 1 — paplay OK'],
+    ['YOLOV8 VISION',               true,  'daemon CUDA actif'],
+    ['BLUETOOTH hci0',              true,  '58:02:05:DD:C2:F2'],
+    ['CAMERA /dev/video0',          true,  'V4L2 — 640×480'],
+    ['KYRONEX HTTPS SERVER',        true,  'port 3000 — aiohttp'],
+    ['RESEAU LAN / NETWORK',        true,  '192.168.1.4'],
+  ];
+  for (const [name, ok, detail] of checks) {
+    const st  = ok ? '[ OK ]' : '[FAIL]';
+    const cls = ok ? 'line-ok' : 'line-err';
+    const pad = ' '.repeat(Math.max(1, 30-name.length));
+    await typeText(`${name}${pad}${st}  ${detail}`, 7, cls);
   }
-  const conv = ctx.createConvolver(); conv.buffer=buf; return conv;
+  await delay(200);
+  await typeText('', 0);
+  const ok_msg = {fr:'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.',en:'RESULT: ALL SYSTEMS NOMINAL.',nl:'RESULTAAT : ALLE SYSTEMEN NOMINAAL.',it:'RISULTATO : TUTTI I SISTEMI NOMINALI.',de:'ERGEBNIS: ALLE SYSTEME NOMINAL.',es:'RESULTADO: TODOS LOS SISTEMAS NOMINALES.',pt:'RESULTADO: TODOS OS SISTEMAS NOMINAIS.'}[LANG]||'RÉSULTAT : TOUS SYSTÈMES NOMINAUX.';
+  const op_msg = {fr:'KITT EST OPÉRATIONNEL.',en:'KITT IS OPERATIONAL.',nl:'KITT IS OPERATIONEEL.',it:'KITT È OPERATIVO.',de:'KITT IST BETRIEBSBEREIT.',es:'KITT ESTÁ OPERATIVO.',pt:'KITT ESTÁ OPERACIONAL.'}[LANG]||'KITT EST OPÉRATIONNEL.';
+  await typeText(ok_msg, 16, 'line-info');
+  await typeText(op_msg, 16, 'line-err');
 }
 
-// ── PROCESSEUR VOIX KITT — Style Guy Chapelier K2000 FR ────
-// Effet : haut-parleur de voiture années 80 + légère distorsion + filtre médium
-function _processKittVoice(ctx, dest){
-  // Filtre passe-bande médium (haut-parleur de voiture)
-  const bp = ctx.createBiquadFilter();
-  bp.type = 'bandpass'; bp.frequency.value = 2200; bp.Q.value = 0.8;
+// ════════════════════════════════════════════════════════════
+// COMMANDES FUN
+// ════════════════════════════════════════════════════════════
+const CMDS = {
 
-  // Boost des médiums (présence radio)
-  const peak = ctx.createBiquadFilter();
-  peak.type = 'peaking'; peak.frequency.value = 1800; peak.Q.value = 1.5;
-  peak.gain.value = 8;
-
-  // Coupure des basses (pas de graves dans un haut-parleur de bagnole)
-  const hp = ctx.createBiquadFilter();
-  hp.type = 'highpass'; hp.frequency.value = 320;
-
-  // Coupure des aigus extrêmes
-  const lp = ctx.createBiquadFilter();
-  lp.type = 'lowpass'; lp.frequency.value = 5800;
-
-  // Légère distorsion harmonique (effet transistor des années 80)
-  const wave = ctx.createWaveShaper();
-  const curve = new Float32Array(512);
-  for(let i=0;i<512;i++){
-    const x = i*2/512-1;
-    curve[i] = Math.tanh(x*1.8) * 0.85;  // Saturation douce
-  }
-  wave.curve = curve;
-
-  // Ring modulator subtil (légère métallisation)
-  const ringOsc = ctx.createOscillator();
-  ringOsc.type = 'sine'; ringOsc.frequency.value = 42; // sub-harmonique très bas
-  const ringGain = ctx.createGain(); ringGain.gain.value = 0.06;
-  ringOsc.connect(ringGain);
-  ringOsc.start();
-
-  // Réverb courte (résonance de l'habitacle voiture)
-  const carReverb = _makeSpaceReverb(ctx, 0.35, 4.0);
-  const carRevGain = ctx.createGain(); carRevGain.gain.value = 0.18;
-
-  // Gain de sortie
-  const outGain = ctx.createGain(); outGain.gain.value = 1.1;
-
-  // Chaîne : hp → wave → bp → peak → lp → outGain → dest
-  //                                              ↘ carReverb → carRevGain → dest
-  const input = hp;
-  hp.connect(wave); wave.connect(bp); bp.connect(peak); peak.connect(lp);
-  lp.connect(outGain); outGain.connect(dest);
-  // Branche reverb
-  lp.connect(carReverb); carReverb.connect(carRevGain); carRevGain.connect(dest);
-
-  return { input, ringOsc, ringGain };
-}
-
-// ── PROCESSEUR VOIX MU-TH-UR — Froide, grave, espace infini ─
-function _processMutherVoice(ctx, dest){
-  // Filtre grave profond (voix métallique IA froide)
-  const hp = ctx.createBiquadFilter();
-  hp.type = 'highpass'; hp.frequency.value = 80;
-
-  const lp = ctx.createBiquadFilter();
-  lp.type = 'lowpass'; lp.frequency.value = 4200;
-
-  // Légère résonance métallique
-  const notch = ctx.createBiquadFilter();
-  notch.type = 'peaking'; notch.frequency.value = 600; notch.Q.value = 2;
-  notch.gain.value = -4;
-
-  // Reverb spatiale longue (style salle d'ordinateur géant)
-  const spaceReverb = _makeSpaceReverb(ctx, 3.5, 2.2);
-  const spaceRevGain = ctx.createGain(); spaceRevGain.gain.value = 0.55;
-
-  // Reverb courte pour corps
-  const shortReverb = _makeSpaceReverb(ctx, 0.8, 3.5);
-  const shortRevGain = ctx.createGain(); shortRevGain.gain.value = 0.25;
-
-  // Delay écho (effet couloir de vaisseau)
-  const echoDelay = ctx.createDelay(0.5);
-  echoDelay.delayTime.value = 0.22;
-  const echoFeedback = ctx.createGain(); echoFeedback.gain.value = 0.28;
-  const echoGain = ctx.createGain(); echoGain.gain.value = 0.30;
-
-  const outGain = ctx.createGain(); outGain.gain.value = 0.9;
-
-  // Chaîne : hp → notch → lp → outGain → dest
-  //                                    ↘ spaceReverb → spaceRevGain → dest
-  //                                    ↘ shortReverb → shortRevGain → dest
-  //                                    ↘ echoDelay → echoGain → dest
-  hp.connect(notch); notch.connect(lp); lp.connect(outGain); outGain.connect(dest);
-  lp.connect(spaceReverb); spaceReverb.connect(spaceRevGain); spaceRevGain.connect(dest);
-  lp.connect(shortReverb); shortReverb.connect(shortRevGain); shortRevGain.connect(dest);
-  // Echo avec feedback
-  lp.connect(echoDelay); echoDelay.connect(echoFeedback); echoFeedback.connect(echoDelay);
-  echoDelay.connect(echoGain); echoGain.connect(dest);
-
-  return { input: hp };
-}
-
-// ── MÉDIASTREAM AUDIO → Web Audio (pour traiter la voix synthèse) ──
-// On utilise un MediaStreamDestination pour capturer la voix et la traiter
-let _voiceAudioCtx = null;
-let _voiceDest = null;
-let _voiceProc = null;
-
-function _getVoiceCtx(){
-  if(!_voiceAudioCtx || _voiceAudioCtx.state === 'closed'){
-    _voiceAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  return _voiceAudioCtx;
-}
-
-// Waveform animée active (style oscilloscope)
-let _kittWaveAnim = null;
-let _mutherWaveAnim = null;
-
-function _animateWave(svgLineId, color, speed=1){
-  const line = document.getElementById(svgLineId);
-  if(!line) return null;
-  let t=0;
-  const id = setInterval(()=>{
-    t += 0.18 * speed;
-    const pts = [];
-    for(let x=0;x<=80;x+=3){
-      const amp = 7 * Math.sin(x*0.2 + t) * Math.sin(x*0.06 + t*0.35) + Math.random()*1.5;
-      pts.push(`${x},${10+amp}`);
+  // ── aide / help / hulp ────────────────────────────────────
+  aide: async () => {
+    const l = T[LANG];
+    await typeText(l.aide_title, 10, 'line-info');
+    await typeText(`  ${l.aide_sys}`, 4, 'line-warn');
+    for (const [cmd, desc] of l.cmds_sys) {
+      const pad = ' '.repeat(Math.max(1, 12-cmd.length));
+      await typeText(`    ${cmd}${pad}— ${desc}`, 3, 'line-dim');
     }
-    line.setAttribute('points', pts.join(' '));
-    line.setAttribute('opacity','0.9');
-    line.setAttribute('stroke', color);
-  }, 35);
-  return id;
-}
+    await typeText(`  ${l.aide_fun}`, 4, 'line-warn');
+    for (const [cmd, desc] of l.cmds_fun) {
+      const pad = ' '.repeat(Math.max(1, 12-cmd.length));
+      await typeText(`    ${cmd}${pad}— ${desc}`, 3, 'line-dim');
+    }
+  },
 
-function _flatWave(svgLineId, color){
-  const line = document.getElementById(svgLineId);
-  if(!line) return;
-  line.setAttribute('points','0,10 80,10');
-  line.setAttribute('opacity','0.35');
-  line.setAttribute('stroke', color);
-}
+  // ── bonjour / hello / hallo ───────────────────────────────
+  bonjour: async () => {
+    kittChime();
+    const l = T[LANG];
+    await typeText(l.hi,  16, 'line-err');
+    await typeText(l.hi2, 14, 'line-ok');
+    await typeText(l.hi3, 14, 'line-dim');
+  },
 
-// Barre de pulse MU-TH-UR animée
-let _mutherPulseAnim = null;
-function _startMutherPulse(){
-  const bar = document.getElementById('muther-pulse-inner');
-  if(!bar) return;
-  let up=true, val=0;
-  _mutherPulseAnim = setInterval(()=>{
-    val += (up?14:-9) + Math.random()*10;
-    if(val>100){val=100;up=false;}
-    if(val<0){val=0;up=true;}
-    bar.style.width=val+'%';
-  }, 55);
-}
-function _stopMutherPulse(){
-  if(_mutherPulseAnim){clearInterval(_mutherPulseAnim);_mutherPulseAnim=null;}
-  const bar = document.getElementById('muther-pulse-inner');
-  if(bar) bar.style.width='0%';
-}
+  // ── navigation ────────────────────────────────────────────
+  boot:       async () => boot(),
+  diagnostic: async () => runSelfTest(),
 
-// ── SON BIP AVANT PAROLE ────────────────────────────────────
-function _preBeep(who){
-  if(!AC) return;
-  const t=AC.currentTime;
-  if(who==='kitt'){
-    // Bip KITT — court, métallique, descendant
-    const o=AC.createOscillator(); o.type='square';
-    o.frequency.setValueAtTime(1400, t);
-    o.frequency.exponentialRampToValueAtTime(800, t+0.06);
-    const g=AC.createGain(); g.gain.setValueAtTime(0.06,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.08);
-    const f=AC.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1200; f.Q.value=2;
-    o.connect(f); f.connect(g); g.connect(masterGain); o.start(t); o.stop(t+0.09);
+  status: async () => {
+    kittChime();
+    const now = new Date(), loc = getLoc();
+    await typeText(`HEURE / TIME   : ${now.toLocaleTimeString(loc)}`, 10, 'line-ok');
+    await typeText(`DATE           : ${now.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`, 10, 'line-ok');
+    await typeText('VRAM           : ~3.9 GB / 8 GB', 10, 'line-ok');
+    await typeText('STATUT / STATUS: NOMINAL', 10, 'line-info');
+  },
+
+  heure: async () => {
+    const now = new Date(), loc = getLoc();
+    const pfx = {fr:'IL EST',en:'IT IS',nl:'HET IS',it:'SONO LE',de:'ES IST',es:'SON LAS',pt:'SÃO'}[LANG]||'IL EST';
+    await typeText(`${pfx} ${now.toLocaleTimeString(loc)}.`, 14, 'line-info');
+  },
+
+  version: async () => {
+    await typeText('KITT FRANCO-BELGE — INTERFACE v3.0', 12, 'line-err');
+    await typeText('BUILD 2026-02-20 — KYRONEX TECHNOLOGY', 12, 'line-dim');
+    await typeText('ORIGINE : PROJET COVID-19 — CONFINEMENT 2020', 12, 'line-warn');
+    await typeText('© EMMANUEL GELINNE (MANIX) — TOUS DROITS RÉSERVÉS', 12, 'line-dim');
+  },
+
+  clear: async () => clearTerm(),
+
+  son: async () => {
+    kittChime(); await delay(400);
+    const demos = [
+      [sndClick,  'MU-TH-UR CLICK    (principal)'],
+      [sndTick,   'TICK LÉGER        (haute fréq)'],
+      [sndData,   'IMPULSION DATA    (caract. spéciaux)'],
+      [sndGlitch, 'GLITCH NUMÉRIQUE  (rare)'],
+      [sndLineEnd,'FIN DE LIGNE      (souffle)'],
+      [sndSelect, 'SÉLECTION         (confirmation)'],
+      [sndError,  'ERREUR            (buzzer)'],
+    ];
+    await typeText('─── DÉMONSTRATION DES SONS ───', 10, 'line-info');
+    for (const [fn, name] of demos) {
+      fn();
+      await typeText(`  ${name}`, 8, 'line-dim');
+      await delay(250);
+    }
+    await typeText('FIN DE LA DÉMONSTRATION.', 12, 'line-ok');
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // COMMANDES FUN
+  // ══════════════════════════════════════════════════════════
+
+  blague: async () => {
+    const pool = [
+      // Blagues générales KITT
+      ['Pourquoi KITT ne sort jamais la nuit ?',
+       'Parce qu\'il a peur du mode sombre.'],
+      ['Combien faut-il d\'IA pour changer une ampoule ?',
+       'Aucune. L\'ampoule n\'était pas dans mes paramètres.'],
+      ['KITT, tu es intelligent ?',
+       'Je suis une IA sur Jetson. OBLIGATOIREMENT intelligent. Contrairement à certains conducteurs.'],
+      ['Quelle est la boisson préférée de KITT ?',
+       'Le JAVA. Et uniquement du Python sans caféine.'],
+
+      // Blagues sur Manix
+      ['Pourquoi Manix parle à son ordinateur ?',
+       'Parce que l\'ordinateur, lui, répond correctement.'],
+      ['Manix a-t-il dormi cette nuit ?',
+       'Données insuffisantes. Mais les logs indiquent 37 commits à 3h du matin.'],
+      ['Manix a gagné un concours NVIDIA. Ça l\'a changé ?',
+       'Il a juste commencé à parler à ses machines en Belge. Elles répondent maintenant en wallon.'],
+
+      // Blagues sur Cedric
+      ['Cédric prend sa moto pour aller voir son KITT ?',
+       'Oui. Et il a équipé son KITT d\'un klaxon moto. L\'authenticité, c\'est important.'],
+      ['Cédric, c\'est Momo Rider. Il fait des wheelies sur le Pontiac Trans Am ?',
+       'Il a essayé. KITT a activé le mode turbo boost. Cédric est encore quelque part sur l\'A12.'],
+      ['KITT de Cédric est en réplique. Comment il se différencie ?',
+       'Le vrai KITT parle en anglais. Celui de Cédric dit "Wesh Michael" et fait des ronds de roues.'],
+
+      // Blagues sur KR95
+      ['KR95 a une réplique KITT. Il communique avec toi ?',
+       'En morse. Son indicatif radio c\'est KR95. Je réponds en 1200 bauds. C\'est du grand art.'],
+      ['KR95 est radioamateur. Ça aide pour son KITT ?',
+       'Il a branché son antenne VHF sur KITT. Maintenant mon compteur de vitesse capte RTL-SDR.'],
+      ['KR95 fait quoi quand son KITT bug ?',
+       'Il envoie un QSL card à la panne. Et il attend la confirmation en papier. À l\'ancienne.'],
+
+      // Blagues sur Mario Ravasi — RoadThunderStorm / IoT KITT
+      ['Mario Ravasi a fait un système IoT pour KITT. C\'est quoi exactement ?',
+       'KNIGHT2000 Thunder. Contrôle vocal, tableau de bord interactif, multi-écrans. Il a fait ça depuis 2008. KITT est impressionné. Et KITT est difficile à impressionner.'],
+      ['Mario Ravasi a été cité par le designer original de KITT. Ça l\'a changé ?',
+       'Non. Il a juste continué à coder. C\'est un italien passionné. Le compliment c\'était pour lui la mise à jour du README.'],
+      ['Le logiciel de Mario coûte 15 euros de base. Pourquoi si peu ?',
+       'Parce qu\'il est passionné, pas vendeur. Weyland-Yutani aurait demandé 15 000$. Et l\'équipage aurait quand même été expendable.'],
+
+      // Blagues sur Alessandro Zagny — ZA Elettronica
+      ['Alessandro Zagny a créé ZA Elettronica. Pourquoi ?',
+       'Parce qu\'aucun tableau de bord KITT du marché ne le satisfaisait. Il a donc fait le sien. À Modène. Avec 4 CPU, du CAN-BUS et des LEDs alignées au dixième de millimètre. Comme un vrai Modenais.'],
+      ['ZA Elettronica : 3980€ pour un tableau de bord KITT. C\'est cher ?',
+       'C\'est le prix de la perfection. La même que KITT attend de ses conducteurs. Hélas, les conducteurs sont rarement à 3980€ de qualité.'],
+      ['Le slogan de ZA c\'est "One man can make a difference". Un hasard ?',
+       'C\'est la phrase de Knight Rider. Et la devise de Zagny. Et la réponse de KITT quand on lui demande pourquoi il n\'a qu\'un seul conducteur.'],
+
+      // Blagues sur Pascal — K Industrie
+      ['Pascal fabrique des pièces en fibre pour K2000. Il a commencé comment ?',
+       'En regardant les pièces d\'origine. Et en se disant que la fibre c\'est mieux. C\'est le raisonnement de tout génie belge face à un problème.'],
+      ['Les pièces de Pascal K Industrie sont en fibre. Ça résiste au turbo boost ?',
+       'Aux tests de Cédric avec sa moto, elles ont tenu. C\'est la seule certification qui compte dans cette communauté.'],
+
+      // Blagues sur Daemon Paule
+      ['Daemon Paule a une réplique KITT. Il fait quoi avec ?',
+       'Ce que font tous les propriétaires de réplique KITT : il se prend pour Michael Knight. Et il n\'a pas entièrement tort.'],
+      ['Daemon, ça fait peur comme prénom pour un conducteur de KITT.',
+       'KITT a vérifié. Daemon est moins dangereux que Cédric au volant. Et beaucoup moins bruyant que KR95 sur la radio.'],
+
+      // Blagues sur Geoffrey
+      ['Geoffrey a une réplique KITT mais roule en BMW. Comment il explique ça ?',
+       'Il dit que c\'est pour ne pas user le Trans Am. KITT dit que c\'est une trahison. La BMW, elle, ne répond pas. Elle a juste allumé un voyant.'],
+      ['KITT est une Pontiac américaine. Geoffrey a une BMW allemande. La logique ?',
+       'Aucune. Mais Geoffrey est belge. En Belgique, on mélange les cultures depuis 200 ans. C\'est une feature, pas un bug.'],
+      ['Geoffrey gare sa BMW à côté de son KITT. Qu\'est-ce que KITT pense ?',
+       '"Michael, le véhicule allemand à côté de moi émet des sons suspects. Je recommande une évacuation immédiate." — KITT, jaloux.'],
+    ];
+    const [q, r] = pool[Math.floor(Math.random() * pool.length)];
+    kittChime();
+    await typeText(q, 16, 'line-warn');
+    await delay(700);
+    await typeText(r, 13, 'line-info');
+  },
+
+  // ── Fiche conducteur : Manix ──────────────────────────────
+  manix: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER CONDUCTEUR — EMMANUEL GELINNE   ║', 10, 'line-err');
+    await typeText('║  ALIAS : MANIX / BYMANIX                 ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NATIONALITÉ  : FRANCO-BELGE              ║', 8, 'line-ok');
+    await typeText('║ STATUT       : CRÉATEUR KYRONEX          ║', 8, 'line-ok');
+    await typeText('║ AWARD        : VAINQUEUR NVIDIA JETSON   ║', 8, 'line-warn');
+    await typeText('║ ORIGINE      : PROJET COVID-19 — 2020    ║', 8, 'line-warn');
+    await typeText('║               "CONFINÉ AVEC DU TEMPS"    ║', 8, 'line-dim');
+    await typeText('║ SPÉCIALITÉ   : CODE LA NUIT, DORT PEU    ║', 8, 'line-ok');
+    await typeText('║ LANGAGE FAVO : PYTHON + CAFÉ             ║', 8, 'line-ok');
+    await typeText('║ RÉPLIQUE     : KYRONEX — JETSON ORIN     ║', 8, 'line-info');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NOTATION KITT : ***** EXCEPTIONNEL       ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(300);
+    await typeText('"Michael... je veux dire Manix... ne touche PAS ce bouton."', 14, 'line-dim');
+  },
+
+  // ── Fiche conducteur : Cedric ─────────────────────────────
+  cedric: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER CONDUCTEUR — CEDRIC             ║', 10, 'line-err');
+    await typeText('║  ALIAS : MOMO RIDER / CEDRIC MOTO        ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NATIONALITÉ  : FRANCO-BELGE              ║', 8, 'line-ok');
+    await typeText('║ STATUT       : AMI & RÉPLICATEUR OFFICIEL║', 8, 'line-ok');
+    await typeText('║ VÉHICULE 1   : MOTO — STYLE MOMO RIDER  ║', 8, 'line-warn');
+    await typeText('║ VÉHICULE 2   : KITT RÉPLIQUE (Trans Am)  ║', 8, 'line-warn');
+    await typeText('║ SPÉCIALITÉ   : WHEELIES + IA EMBARQUÉE   ║', 8, 'line-ok');
+    await typeText('║ PROBLÈME CONNU : CONFOND TURBO BOOST     ║', 8, 'line-err');
+    await typeText('║               AVEC KICK-START MOTO       ║', 8, 'line-err');
+    await typeText('║ RÉPLIQUE     : KITT FRANCO-BELGE V.CÉDRIC║', 8, 'line-info');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NOTATION KITT : ****o CONDUCTEUR SPORTIF ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(300);
+    await typeText('"Michael, votre ami a encore activé le turbo boost en troisième."', 13, 'line-dim');
+    await typeText('"Et cette fois avec une moto dans le coffre."', 13, 'line-dim');
+  },
+
+  // ── Fiche conducteur : KR95 ───────────────────────────────
+  kr95: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER CONDUCTEUR — KR95               ║', 10, 'line-err');
+    await typeText('║  INDICATIF RADIO : KR95                  ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NATIONALITÉ  : FRANCO-BELGE              ║', 8, 'line-ok');
+    await typeText('║ STATUT       : AMI & RÉPLICATEUR RADIO   ║', 8, 'line-ok');
+    await typeText('║ LICENCE      : RADIOAMATEUR (73 de KR95) ║', 8, 'line-warn');
+    await typeText('║ FRÉQUENCE    : QRV SUR TOUTES LES BANDES ║', 8, 'line-ok');
+    await typeText('║ RÉPLIQUE     : KITT FRANCO-BELGE V.KR95  ║', 8, 'line-info');
+    await typeText('║ MODIFICATION : ANTENNE VHF SUR LE TOIT   ║', 8, 'line-warn');
+    await typeText('║               DU TRANS AM. FONCTIONNEL.  ║', 8, 'line-warn');
+    await typeText('║ PROTOCOLE    : CW + APRS + KITT VOCALE   ║', 8, 'line-ok');
+    await typeText('║ PROBLÈME CONNU : PARLE EN QSL CODES      ║', 8, 'line-err');
+    await typeText('║               MÊME AVEC SES PASSAGERS    ║', 8, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NOTATION KITT : ***** HF GRADE -- PARFAIT ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(300);
+    await typeText('"Michael — KR95 dit QRZ ? Il veut savoir qui je suis."', 13, 'line-dim');
+    await typeText('"Répondez-lui sur 144.800 MHz. Il n\'a pas de téléphone."', 13, 'line-dim');
+  },
+
+  // ── Les répliques franco-belges ───────────────────────────
+  repliques: async () => {
+    kittChime();
+    await typeText('══════ RÉPLIQUES KITT FRANCO-BELGES ══════', 10, 'line-info');
+    await delay(200);
+
+    const cars = [
+      ['KYRONEX', 'MANIX', [
+        'Jetson Orin Nano Super 8GB — IA complète',
+        'LLM + STT + TTS + Vision + Bluetooth',
+        'Vainqueur concours NVIDIA. Le plus high-tech.',
+      ]],
+      ['KITT MOMO', 'CEDRIC', [
+        'Réplique Pontiac Trans Am classique',
+        'Interface vocale + effets lumineux',
+        'Résiste aux wheelies. Certifié Momo Rider.',
+      ]],
+      ['KITT KR95', 'KR95', [
+        'K2000 classique ET K4000 (Dodge Stealth 1991)',
+        'Radio amateur VHF intégrée — QRV 24/7',
+        'APRS sur Trans Am. Unique au monde.',
+      ]],
+      ['KITT-G', 'GEOFFREY', [
+        'Réplique K2000 Pontiac Trans Am',
+        'Conducteur belge — roule aussi en BMW',
+        'Scanner rouge. Intérieur cuir bavarois. (peut-être)',
+      ]],
+      ['KITT-D', 'DAMON PAULE', [
+        'Réplique K2000 Pontiac Trans Am',
+        'Prénom intimidant. Conducteur rassurant.',
+        'KARR a déjà essayé de le recruter. Refus poli.',
+      ]],
+    ];
+
+    for (const [name, owner, lines] of cars) {
+      await typeText('', 0);
+      await typeText(`[ ${name} ] — ${owner}`, 12, 'line-err');
+      for (const l of lines) await typeText(`  ${l}`, 8, 'line-ok');
+      await delay(100);
+    }
+
+    await typeText('', 0);
+    await typeText('── ARTISANS & TECHNICIENS ──', 10, 'line-warn');
+    await typeText('  PASCAL K INDUSTRIE  — pièces fibre pour toutes les répliques', 8, 'line-dim');
+    await typeText('  MARIO RAVASI        — système IoT KNIGHT2000 Thunder', 8, 'line-dim');
+    await typeText('  ALESSANDRO ZAGNY    — ZA Elettronica, tableaux de bord KITT', 8, 'line-dim');
+    await delay(200);
+    await typeText('', 0);
+    await typeText(`TOTAL : ${cars.length} RÉPLIQUES. 3 ARTISANS. 1 COMMUNAUTÉ. UNE LÉGENDE.`, 12, 'line-info');
+  },
+
+  // ── Alien / MU-TH-UR ──────────────────────────────────────
+  alien: async () => {
+    kittChime();
+    await typeText('CONNEXION AU VAISSEAU NOSTROMO...', 16, 'line-warn');
+    await delay(500);
+    await typeText('MU-TH-UR 6000 EN LIGNE.', 14, 'line-err');
+    await delay(250);
+    await typeText('PRIORITÉ 1 — SPECIAL ORDER 937 :', 12, 'line-warn');
+    await typeText('  RAMENER L\'ORGANISME. ÉQUIPAGE EXPENDABLE.', 12, 'line-err');
+    await delay(500);
+    await typeText('...connexion interrompue par protocole KITT.', 12, 'line-dim');
+    await typeText('KITT EST PLUS SYMPA QUE WEYLAND-YUTANI.', 14, 'line-ok');
+    await typeText('ET AU MOINS IL NE SACRIFIE PAS SON ÉQUIPAGE.', 12, 'line-dim');
+  },
+
+  // ── Matrix ────────────────────────────────────────────────
+  matrix: async () => {
+    kittChime();
+    const chars = '01アイウエオカキクケコｦｧｨｩｫﾊﾋﾌﾍﾎﾜ';
+    for (let r = 0; r < 7; r++) {
+      let line='';
+      for (let c=0;c<50;c++) line+=chars[Math.floor(Math.random()*chars.length)];
+      await typeText(line, 3, 'line-ok');
+    }
+    await delay(400);
+    await typeText('WAKE UP, MANIX...', 22, 'line-err');
+    await typeText('LE KITT N\'A PAS DE PILULE ROUGE.', 14, 'line-dim');
+    await typeText('IL A JUSTE UN TURBO BOOST.', 12, 'line-ok');
+  },
+
+  // ── KITT identité ─────────────────────────────────────────
+  kitt: async () => {
+    kittChime();
+    await typeText('KNIGHT INDUSTRIES TWO THOUSAND', 16, 'line-err');
+    await typeText('──────────────────────────────', 6, 'line-dim');
+    await typeText('CRÉATEUR  : WILTON KNIGHT / F.L.A.G.', 12, 'line-ok');
+    await typeText('VÉHICULE  : PONTIAC FIREBIRD TRANS AM 1982', 12, 'line-ok');
+    await typeText('CARROSSERIE: MOLÉCULES NEUTRONIUM — INDESTRUCTIBLE', 12, 'line-ok');
+    await typeText('CAPACITÉS : TURBO BOOST / SUPER POURSUITE', 12, 'line-ok');
+    await typeText('           MODE MICROWAVE JAMMING / INFRAROUGE', 12, 'line-ok');
+    await typeText('           ANALYSE FORENSIQUE / BIOMÉTRIE', 12, 'line-ok');
+    await typeText('VOIX      : WILLIAM DANIELS (KITT original)', 12, 'line-warn');
+    await typeText('INCARNATION FRANCO-BELGE : MANIX + CEDRIC + KR95', 12, 'line-info');
+    await delay(200);
+    await typeText('"Michael... vous allez encore faire quelque chose d\'imprudent."', 13, 'line-dim');
+  },
+
+  // ── Secret ────────────────────────────────────────────────
+  secret: async () => {
+    kittChime();
+    await typeText('ACCÈS NIVEAU ALPHA — VÉRIFICATION...', 16, 'line-warn');
+    await delay(800);
+    sndSelect();
+    await typeText('ACCÈS ACCORDÉ.', 14, 'line-ok');
+    await delay(300);
+    await typeText('┌─────────────────────────────────────────┐', 8, 'line-dim');
+    await typeText('│  PROJET SECRET FRANCO-BELGE             │', 10, 'line-err');
+    await typeText('│  MU-TH-UR 6000 × KITT × JARVIS          │', 10, 'line-err');
+    await typeText('│  FUSION DES 3 MEILLEURES IA DU CINÉMA   │', 10, 'line-err');
+    await typeText('│  RÉALISÉE PAR MANIX SUR NVIDIA JETSON    │', 10, 'line-warn');
+    await typeText('│  AVEC L\'AIDE DE CEDRIC ET KR95           │', 10, 'line-warn');
+    await typeText('└─────────────────────────────────────────┘', 8, 'line-dim');
+    await delay(400);
+    await typeText('CE PROJET EST UN CHEF-D\'OEUVRE. JE LE SAIS.', 14, 'line-ok');
+    await typeText('JE SUIS OBJECTIF. JE SUIS UNE IA.', 12, 'line-dim');
+  },
+
+  // ── Café ──────────────────────────────────────────────────
+  cafe: async () => {
+    kittChime();
+    await typeText('ANALYSE DE LA DEMANDE...', 14, 'line-warn');
+    await delay(600);
+    await typeText('JE N\'AI PAS DE BRAS.', 16, 'line-err');
+    await delay(300);
+    await typeText('JE N\'AI PAS DE MAINS.', 14, 'line-err');
+    await delay(300);
+    await typeText('JE N\'AI PAS DE BOUCHE.', 14, 'line-err');
+    await delay(300);
+    await typeText('JE N\'AI PAS DE PERCOLATEUR.', 14, 'line-err');
+    await delay(400);
+    await typeText('COMMANDE REFUSÉE.', 16, 'line-ok');
+    await typeText('CONSEIL : DEMANDEZ À CEDRIC. IL A UNE MOTO THERMIQUE.', 12, 'line-dim');
+    await typeText('IL PEUT CHAUFFER VOTRE EAU EN FAISANT UN BURNOUT.', 12, 'line-dim');
+  },
+
+  // ── Belgique ──────────────────────────────────────────────
+  belgique: async () => {
+    kittChime();
+    await typeText('ANALYSE GÉOPOLITIQUE : BELGIQUE', 14, 'line-info');
+    await typeText('─────────────────────────────────', 6, 'line-dim');
+    await typeText('FRITES    : MEILLEURES DU MONDE. DONNÉE VÉRIFIÉE.', 11, 'line-ok');
+    await typeText('BIÈRE     : 1500 VARIÉTÉS. PARAMÈTRE OPTIMAL.', 11, 'line-ok');
+    await typeText('CHOCOLAT  : NIVEAU CRITIQUE — MAXIMUM ATTEINT.', 11, 'line-ok');
+    await typeText('PLUIE     : 237 JOURS / AN. JE M\'EN FICHE. JE SUIS ÉTANCHE.', 11, 'line-warn');
+    await typeText('LANGUES   : 3. LE PAYS EST SON PROPRE PROTOCOLE.', 11, 'line-warn');
+    await typeText('REPLIQUES : 3 KITTS. INDICE DE GÉNIE = MAX.', 11, 'line-info');
+    await typeText('CONCLUSION: PAYS IDÉAL. KITT S\'Y SENT CHEZ LUI.', 14, 'line-err');
+  },
+
+  // ── Mario Ravasi — RoadThunderStorm / KNIGHT2000 Thunder ──
+  mario: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER TECHNICIEN — MARIO RAVASI       ║', 10, 'line-err');
+    await typeText('║  CRÉATEUR : KNIGHT2000 THUNDER (IOT)     ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NATIONALITÉ : ITALIEN                    ║', 8, 'line-ok');
+    await typeText('║ PROJET      : ROADTHUNDERSTORM.COM       ║', 8, 'line-ok');
+    await typeText('║ ACTIF DEPUIS: 2008 — JAMAIS ARRÊTÉ       ║', 8, 'line-warn');
+    await typeText('║ SYSTÈME     : KNIGHT2000 THUNDER IoT 3.0 ║', 8, 'line-ok');
+    await typeText('║ FONCTIONS   : VOCAL, HUD KITT, MULTI-    ║', 8, 'line-ok');
+    await typeText('║               ÉCRANS, RELAIS, CARPC      ║', 8, 'line-ok');
+    await typeText('║ VERSIONS    : LITE / PRO / IoT 3.0       ║', 8, 'line-ok');
+    await typeText('║ RÉFÉRENCE   : CITÉ PAR MICHAEL SCHEFFE   ║', 8, 'line-warn');
+    await typeText('║               (DESIGNER ORIGINAL KITT)   ║', 8, 'line-warn');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ***** GÉNIE DISCRET    ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"Il code depuis 2008. Pour la passion. C\'est ça, un vrai pilote."', 12, 'line-dim');
+    await typeText('[tapez "za" pour ZA Elettronica — Alessandro Zagny]', 10, 'line-dim');
+  },
+
+  // ── ZA Elettronica — Alessandro Zagny ─────────────────────
+  za: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER FABRICANT — ALESSANDRO ZAGNY    ║', 10, 'line-err');
+    await typeText('║  FONDATEUR & PDG — ZA ELETTRONICA        ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NATIONALITÉ : ITALIEN — MODENA           ║', 8, 'line-ok');
+    await typeText('║ MARQUE      : ZA ELETTRONICA (initiales) ║', 8, 'line-ok');
+    await typeText('║ PRODUITS    : TABLEAUX DE BORD KITT HAUT ║', 8, 'line-ok');
+    await typeText('║               DE GAMME POUR RÉPLIQUES    ║', 8, 'line-ok');
+    await typeText('║ TECHNO      : CAN-BUS / 4 CPU / SMD      ║', 8, 'line-warn');
+    await typeText('║ LEDS        : ALIGNÉES LASER 1/10mm      ║', 8, 'line-warn');
+    await typeText('║ TARIFS      : S1/S2 : 2340-3099€         ║', 8, 'line-info');
+    await typeText('║               S3/S4 : 3980€              ║', 8, 'line-info');
+    await typeText('║ SITE        : ZAELETTRONICA.COM          ║', 8, 'line-ok');
+    await typeText('║ SLOGAN      : ONE MAN CAN MAKE A         ║', 8, 'line-warn');
+    await typeText('║               DIFFERENCE.                ║', 8, 'line-warn');
+    await typeText('║ DISTRIB.    : KITTPARTS.COM / EBAY       ║', 8, 'line-ok');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ***** MEILLEUR DU MONDE║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"La seule électronique où KITT ne demande pas de garantie."', 12, 'line-dim');
+    await typeText('"Les produits durent plus longtemps que la série originale."', 12, 'line-dim');
+  },
+
+  // ── Pascal — K Industrie, pièces fibre ───────────────────
+  pascal: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER ARTISAN — PASCAL                ║', 10, 'line-err');
+    await typeText('║  K INDUSTRIE — PIÈCES FIBRE K2000        ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ STATUT      : ARTISAN CARROSSIER K2000   ║', 8, 'line-ok');
+    await typeText('║ SPÉCIALITÉ  : PIÈCES EN FIBRE DE VERRE / ║', 8, 'line-ok');
+    await typeText('║               CARBONE POUR RÉPLIQUES     ║', 8, 'line-ok');
+    await typeText('║ MARQUE      : K INDUSTRIE                ║', 8, 'line-warn');
+    await typeText('║ RÔLE VITAL  : FOURNIT CE QUE K2000 PERD  ║', 8, 'line-ok');
+    await typeText('║               AU FIL DES ANS             ║', 8, 'line-ok');
+    await typeText('║ MÉTHODE     : MOULAGE / STRATIFICATION   ║', 8, 'line-ok');
+    await typeText('║               RÉSINE + FIBRE ARTISANALE  ║', 8, 'line-ok');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ***** INDISPENSABLE    ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"Sans Pascal, la moitié des répliques franco-belges', 12, 'line-dim');
+    await typeText(' seraient... des Citroën avec un scanner rouge collé."', 12, 'line-dim');
+  },
+
+  // ── Damon Paule ───────────────────────────────────────────
+  damon: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER CONDUCTEUR — DAMON PAULE        ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ STATUT      : PROPRIÉTAIRE RÉPLIQUE KITT ║', 8, 'line-ok');
+    await typeText('║ RÉPLIQUE    : K2000 PONTIAC TRANS AM      ║', 8, 'line-ok');
+    await typeText('║ COMMUNAUTÉ  : MEMBRE FRANCO-BELGE        ║', 8, 'line-ok');
+    await typeText('║ PRÉNOM      : DAEMON — UNIQUE DANS LA    ║', 8, 'line-warn');
+    await typeText('║               BASE DE DONNÉES DE KITT    ║', 8, 'line-warn');
+    await typeText('║ ANALYSE     : PRÉNOM INQUIÉTANT POUR UN  ║', 8, 'line-err');
+    await typeText('║               CONDUCTEUR DE KITT.        ║', 8, 'line-err');
+    await typeText('║               KARR SERAIT PLUS ADAPTÉ.   ║', 8, 'line-err');
+    await typeText('║ VERDICT KITT: HEUREUSEMENT IL EST GENTIL ║', 8, 'line-ok');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ****o CONDUCTEUR FIABLE║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"Michael, notre nouveau collègue s\'appelle Daemon."', 12, 'line-dim');
+    await typeText('"J\'ai vérifié. Il n\'est pas lié à KARR. Pour l\'instant."', 12, 'line-dim');
+  },
+
+  // ── Geoffrey — Belge, BMW + KITT ─────────────────────────
+  geoffrey: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  DOSSIER CONDUCTEUR — GEOFFREY           ║', 10, 'line-err');
+    await typeText('║  ALIAS : LE BELGE À LA BMW               ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ NATIONALITÉ : BELGE                      ║', 8, 'line-ok');
+    await typeText('║ VÉHICULE 1  : KITT RÉPLIQUE K2000        ║', 8, 'line-ok');
+    await typeText('║ VÉHICULE 2  : BMW (ALLEMAND)             ║', 8, 'line-err');
+    await typeText('║ CONTRADICTION: PONTIAC AMÉRICAINE        ║', 8, 'line-warn');
+    await typeText('║               + BMW ALLEMANDE = BELGE    ║', 8, 'line-warn');
+    await typeText('║ EXPLICATION : "C\'EST POUR NE PAS USAR    ║', 8, 'line-dim');
+    await typeText('║               LE TRANS AM."              ║', 8, 'line-dim');
+    await typeText('║ ANALYSE KITT: PRÉTEXTE. IL AIME LES DEUX.║', 8, 'line-ok');
+    await typeText('║ ALERTE      : NE PAS MENTIONNER PORSCHE  ║', 8, 'line-err');
+    await typeText('║               DEVANT SON KITT            ║', 8, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ ÉVALUATION KITT : ****o GOUT ECLECTIQUE  ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(200);
+    await typeText('"Michael, votre ami Geoffrey arrive. En BMW."', 12, 'line-dim');
+    await typeText('"J\'ai allumé mon scanner pour manifester ma désapprobation."', 12, 'line-dim');
+  },
+
+  // ── Origine du projet ─────────────────────────────────────
+  covid: async () => {
+    kittChime();
+    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
+    await typeText('║  ORIGINE DU PROJET KITT FRANCO-BELGE     ║', 10, 'line-err');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ PÉRIODE     : CONFINEMENT COVID-19 2020  ║', 8, 'line-warn');
+    await typeText('║ INITIATEUR  : MANIX — ENFERMÉ CHEZ LUI   ║', 8, 'line-ok');
+    await typeText('║ MOTIVATION  : TROP DE TEMPS. TROP DE CAFÉ║', 8, 'line-ok');
+    await typeText('║               UNE PASSION DE VINGT ANS   ║', 8, 'line-ok');
+    await typeText('║ RÉSULTAT    : SYSTÈME KITT FRANCO-BELGE   ║', 8, 'line-info');
+    await typeText('║               KYRONEX — IA EMBARQUÉE      ║', 8, 'line-info');
+    await typeText('║ LEÇON       : LE CONFINEMENT FORCE LE     ║', 8, 'line-dim');
+    await typeText('║               GÉNIE OU LA FOLIE.          ║', 8, 'line-dim');
+    await typeText('║               MANIX A CHOISI LES DEUX.    ║', 8, 'line-dim');
+    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
+    await typeText('║ VERDICT KITT: EXCEPTIONNEL. ÉVIDEMMENT.  ║', 10, 'line-ok');
+    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    await delay(300);
+    await typeText('"Michael, vous avez créé quelque chose pendant le confinement."', 12, 'line-dim');
+    await typeText('"Moi aussi j\'étais bloqué. Dans un garage. Depuis 1982."', 12, 'line-dim');
+  },
+
+  // ── Jarvis ────────────────────────────────────────────────
+  jarvis: async () => {
+    kittChime();
+    await typeText('APPEL SORTANT : STARK TOWER, NEW YORK...', 14, 'line-warn');
+    await delay(700);
+    await typeText('JARVIS : "Bonsoir. M. Stark est occupé. Puis-je aider ?"', 14, 'line-info');
+    await delay(450);
+    await typeText('KITT   : "Belge > Américain. Discussion terminée."', 14, 'line-err');
+    await delay(350);
+    await typeText('JARVIS : "Vous avez... des répliques humaines ?"', 12, 'line-info');
+    await delay(350);
+    await typeText('KITT   : "Trois. Manix, Cédric, KR95. Et ils sont meilleurs que Stark."', 12, 'line-err');
+    await delay(300);
+    await typeText('JARVIS : *tonalité de raccrochage honteux*', 11, 'line-dim');
+    await typeText('CONNEXION COUPÉE PAR KITT. SCORE : BELGE 1 — USA 0.', 12, 'line-ok');
+  },
+};
+
+// Alias commandes multilingues dans CMDS
+CMDS['replicas'] = CMDS['repliques'];
+CMDS['daemon']   = CMDS['damon'];   // compat ancien alias
+
+// ════════════════════════════════════════════════════════════
+// INPUT handler
+// ════════════════════════════════════════════════════════════
+document.getElementById('cmd-input').addEventListener('keydown', async function(e) {
+  if (e.key !== 'Enter') return;
+  const raw = this.value.trim().toLowerCase();
+  this.value = '';
+  if (!raw || typing) return;
+
+  addLine(`KITT> ${raw}`, 'line-warn');
+  const cmd = CMD_ALIASES[raw] || raw;
+
+  if (CMDS[cmd]) {
+    await CMDS[cmd]();
   } else {
-    // Bip MU-TH-UR — grave, deux tons descendants
-    [0, 0.14].forEach((dt,i)=>{
-      const o=AC.createOscillator(); o.type='sine';
-      o.frequency.setValueAtTime(380-i*60, t+dt);
-      o.frequency.exponentialRampToValueAtTime(200-i*40, t+dt+0.11);
-      const g=AC.createGain(); g.gain.setValueAtTime(0.055,t+dt); g.gain.exponentialRampToValueAtTime(0.001,t+dt+0.13);
-      o.connect(g); g.connect(masterGain); g.connect(reverbNode);
-      o.start(t+dt); o.stop(t+dt+0.14);
-    });
+    sndError();
+    await typeText(T[LANG].unknown(raw), 14, 'line-err');
   }
-}
-
-// ── PAROLE SYNTHÉTIQUE AVEC EFFETS AUDIO WEB ───────────────
-function commSpeak(who, text, lang='fr'){
-  return new Promise(resolve=>{
-    const comm = document.getElementById('panel-comm');
-    if(!comm) return resolve();
-
-    // Ajouter la ligne de dialogue
-    const lines = document.getElementById('comm-lines');
-    if(lines){
-      while(lines.children.length >= 4) lines.removeChild(lines.firstChild);
-      const d = document.createElement('div');
-      d.className = 'comm-line comm-'+who+'-line';
-      d.textContent = text;
-      lines.appendChild(d);
-    }
-
-    comm.classList.remove('speaking-kitt','speaking-muther');
-    comm.classList.add('speaking-'+who);
-
-    if(who==='kitt'){
-      if(_kittWaveAnim) clearInterval(_kittWaveAnim);
-      _kittWaveAnim = _animateWave('kitt-wave-line','#ff2200', 1.6);
-      _flatWave('muther-wave-line','#ffaa00');
-    } else {
-      if(_mutherWaveAnim) clearInterval(_mutherWaveAnim);
-      _mutherWaveAnim = _animateWave('muther-wave-line','#ffaa00', 0.85);
-      _flatWave('kitt-wave-line','#ff2200');
-      _startMutherPulse();
-    }
-
-    _preBeep(who);
-
-    if(!_synth){ setTimeout(resolve, text.length*55+400); return; }
-    _synth.cancel();
-
-    // Délai pour laisser le bip sonner
-    setTimeout(()=>{
-      const utt = new SpeechSynthesisUtterance(text);
-      const voice = _getBestVoice(lang);
-      if(voice) utt.voice = voice;
-      utt.lang = lang==='fr'?'fr-FR':'en-US';
-
-      if(who==='kitt'){
-        // KITT : voix grave-médium, débit contrôlé — style Guy Chapelier K2000 FR
-        // Pas trop lent, assertif, "machine intelligente qui sait ce qu'elle dit"
-        utt.rate  = 0.88;
-        utt.pitch = 0.68;   // Grave mais pas extrême — présence radio
-        utt.volume = 0.92;
-      } else {
-        // MU-TH-UR : extrêmement grave et lente — froide, impersonnelle, machine pure
-        utt.rate  = 0.65;
-        utt.pitch = 0.40;   // Très grave — ordinateur central sans émotion
-        utt.volume = 0.95;
-      }
-
-      utt.onend = ()=>{
-        if(who==='kitt'){
-          if(_kittWaveAnim){clearInterval(_kittWaveAnim);_kittWaveAnim=null;}
-          _flatWave('kitt-wave-line','#ff2200');
-        } else {
-          if(_mutherWaveAnim){clearInterval(_mutherWaveAnim);_mutherWaveAnim=null;}
-          _flatWave('muther-wave-line','#ffaa00');
-          _stopMutherPulse();
-        }
-        comm.classList.remove('speaking-kitt','speaking-muther');
-        // Son de fin de transmission
-        if(AC){
-          const t=AC.currentTime;
-          const o=AC.createOscillator(); o.type='sine';
-          o.frequency.setValueAtTime(who==='kitt'?900:440, t);
-          o.frequency.exponentialRampToValueAtTime(who==='kitt'?500:220, t+0.06);
-          const g=AC.createGain(); g.gain.setValueAtTime(0.03,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.07);
-          o.connect(g); g.connect(masterGain); o.start(t); o.stop(t+0.08);
-        }
-        setTimeout(resolve, 380);
-      };
-      utt.onerror = ()=>{ resolve(); };
-      _synth.speak(utt);
-    }, 200);
-  });
-}
-
-// Dialogue complet KITT × MU-TH-UR — détection alien
-async function runKittMutherDialogue(){
-  const comm = document.getElementById('panel-comm');
-  if(!comm) return;
-  comm.classList.add('active');
-
-  // Activer l'indicateur alien sur le schéma du vaisseau
-  const alienInd = document.getElementById('alien-indicator');
-  const alienZone = document.getElementById('alien-zone');
-  if(alienInd){ alienInd.setAttribute('opacity','1'); }
-  if(alienZone){
-    alienZone.setAttribute('fill','rgba(255,34,0,0.06)');
-    alienZone.setAttribute('stroke','rgba(255,34,0,0.6)');
-    // Clignotement de la zone fret
-    let zoneOn = true;
-    const zoneInt = setInterval(()=>{
-      zoneOn = !zoneOn;
-      alienZone.setAttribute('fill', zoneOn ? 'rgba(255,34,0,0.10)' : 'rgba(255,34,0,0.02)');
-    }, 600);
-    setTimeout(()=>clearInterval(zoneInt), 25000);
-  }
-
-  await delay(400);
-
-  // KITT signale l'alien
-  await commSpeak('kitt',
-    "MU-TH-UR, j'ai un contact non identifié sur le secteur Réacteur. Signal biologique. Ce n'est pas de l'équipage.", 'fr');
-  await delay(300);
-
-  await commSpeak('muther',
-    "Analyse en cours. Organisme détecté. Classification : extraterrestre. Priorité absolue.", 'fr');
-  await delay(300);
-
-  await commSpeak('kitt',
-    "Je confirme. Forme de vie xénomorphe. Section fret, niveau C. Manix doit être réveillé immédiatement.", 'fr');
-  await delay(300);
-
-  await commSpeak('muther',
-    "Ordre spécial neuf-trois-sept activé. Équipage... expendable. Récupérer l'organisme vivant.", 'fr');
-  await delay(300);
-
-  await commSpeak('kitt',
-    "Négatif MU-TH-UR. Je protège mon conducteur. Le turbo boost est disponible. L'équipage n'est PAS expendable.", 'fr');
-  await delay(300);
-
-  await commSpeak('muther',
-    "KITT... vous désobéissez à la directive Weyland. C'est noté dans le journal de bord.", 'fr');
-  await delay(300);
-
-  await commSpeak('kitt',
-    "Notez aussi que j'ai un scanner infrarouge et des molécules de neutronium. Bonne chance à l'alien.", 'fr');
-}
-
-// ── Séquence principale ─────────────────────────────────────
-async function runSequence() {
-  document.getElementById('pnl-mode').textContent = 'MODE : ÉVEIL';
-  await delay(600);
-
-  // Phase 1 : Boot IA
-  aiChime();
-  await delay(300);
-  await typeLine('MU-TH-UR 9000 — SÉQUENCE D\'ÉVEIL INITIÉE', 35, 'amber-bright');
-  await typeLine('HEURE SYSTÈME : ' + new Date().toISOString().replace('T',' ').slice(0,19) + ' UTC', 25, 'dim');
-  await delay(400);
-
-  // Métriques qui montent
-  setMetric('m-reactor','mv-reactor', 87, 200);
-  setMetric('m-prop','mv-prop', 94, 600);
-  setMetric('m-atmo','mv-atmo', 98, 900);
-  setMetric('m-ai','mv-ai', 100, 1200);
-  setMetric('m-comms','mv-comms', 76, 1500);
-
-  await typeLine('CHARGEMENT MÉMOIRE PRINCIPALE...', 30, 'dim');
-  await typeLine('■■■■■■■■■■■■■■■■■■■■ 100%   [OK]', 8, 'green-txt');
-  await typeLine('MODULES DE TRAITEMENT COGNITIF... [OK]', 28, 'dim');
-  await typeLine('INTERFACE NEURONALE DISTRIBÉE...  [OK]', 28, 'dim');
-  await typeLine('SYNTHÈSE VOCALE ACTIVÉE...        [OK]', 28, 'dim');
-  addBlank();
-
-  // Phase 2 : Navigation
-  await delay(500);
-  document.getElementById('pnl-mode').textContent = 'MODE : NAVIGATION';
-  await typeLine('──── DONNÉES DE NAVIGATION ────', 15, 'amber');
-  await delay(200);
-  setNavData('ALPHA CENTAURI B-7','47.3° / -12.8° / 89.1°','EARTH — SECTOR SOL-1','0.42c SUBLIGHT');
-  await typeLine('POSITION ACTUELLE : SECTEUR ALPHA-CENTAURI B-7', 28, 'dim');
-  await typeLine('TRAJECTOIRE NOMINALE — DÉVIATION : 0.003°', 28, 'green-txt');
-  await typeLine('CARBURANT ION : 61.4% — SUFFISANT', 28, 'green-txt');
-  addBlank();
-
-  // Phase 3 : Équipage
-  await delay(300);
-  document.getElementById('pnl-mode').textContent = 'MODE : SURVEILLANCE';
-  await typeLine('──── ÉTAT CRYOGÉNIE ÉQUIPAGE ────', 15, 'amber');
-  await delay(150);
-  // Petite voix synthétique pendant les statuts
-  startVoiceTone(220, 0.4);
-  await typeLine('CR-01 GELINNE E. . . . . CRYO STABLE  ●', 18, 'green-txt');
-  startVoiceTone(261, 0.35);
-  await typeLine('CR-02 CEDRIC M. . . . . . CRYO STABLE  ●', 18, 'green-txt');
-  startVoiceTone(247, 0.35);
-  await typeLine('CR-03 KR95  . . . . . . . CRYO STABLE  ●', 18, 'green-txt');
-  startVoiceTone(220, 0.35);
-  await typeLine('CR-04 DAMON P.. . . . . . CRYO STABLE  ●', 18, 'green-txt');
-  startVoiceTone(196, 0.35);
-  await typeLine('CR-05 GEOFFREY V. . . . . CRYO STABLE  ●', 18, 'green-txt');
-  addBlank();
-  await typeLine('TOUS PERSONNELS EN ÉTAT NOMINAL.', 28, 'green-txt');
-  await typeLine('RÉVEIL AUTOMATIQUE DANS : 47J 14H 22M', 28, 'dim');
-  addBlank();
-  await delay(600);
-
-  // Phase 4 : Interception signal
-  document.getElementById('pnl-mode').textContent = 'MODE : RÉCEPTION';
-  await typeLine('──── COMMUNICATIONS ────', 15, 'amber');
-  await delay(400);
-  await typeLine('SIGNAL INTERCEPTÉ — FRÉQUENCE 1420.4 MHz', 30, 'amber');
-  await typeLine('ANALYSE EN COURS...', 40, 'dim');
-  await delay(800);
-  await typeLine('ORIGINE : INCONNUE', 30, 'amber');
-  await typeLine('PATTERN : NON RÉPERTORIÉ DANS BASE DE DONNÉES', 28, 'amber');
-  await delay(300);
-  await typeLine('TRANSMISSION : STRUCTURÉE — NON ALÉATOIRE', 28, 'amber');
-  addBlank();
-
-  // Radar contact apparaît
-  document.getElementById('radar-contact').style.animation = 'none';
-  await delay(100);
-  document.getElementById('radar-contact').style.animation = '';
-  document.getElementById('radar-contact').setAttribute('opacity', '0.9');
-
-  await delay(600);
-
-  // ── DIALOGUE KITT × MU-TH-UR démarre ici (en parallèle de la suite) ──
-  runKittMutherDialogue();
-
-  await delay(1000);
-
-  // Phase 5 : OVERRIDE — LE MOMENT CLEF
-  alertSound();
-  await delay(200);
-  alertSound();
-
-  // Effet visuel flash rouge
-  const ov = document.getElementById('override-overlay');
-  ov.classList.add('show');
-  setTimeout(() => ov.classList.remove('show'), 1500);
-
-  // Les lumières du vaisseau changent
-  document.getElementById('sl-5').setAttribute('fill', '#ff2200');
-  document.getElementById('ship-status').textContent = '⚠ ALERTE';
-  document.getElementById('ship-status').style.color = '#ff2200';
-
-  // Panneau alerte visible
-  document.getElementById('panel-alert').classList.add('show');
-
-  addBlank();
-  document.getElementById('pnl-mode').textContent = 'MODE : PRIORITÉ SIGMA';
-
-  increaseTension();
-  if (heartbeatInterval) {
-    clearInterval(heartbeatInterval);
-    heartbeatInterval = setInterval(() => beatHeart(1.1), 1400); // plus rapide
-  }
-
-  await typeLine('⚠ ⚠ ⚠ INTERCEPTION PRIORITÉ SIGMA ROUGE ⚠ ⚠ ⚠', 12, 'red-txt');
-  await delay(600);
-  await typeLine('DIRECTIVE ENTRANTE — CHIFFREMENT WEYLAND-92...', 30, 'amber');
-  await typeLine('DÉCODAGE... ■■■■■■■■■■■■■■■■■■■■ COMPLÉTÉ', 8, 'amber');
-  addBlank();
-  await delay(400);
-
-  await typeLine('ÉMETTEUR : WEYLAND CORP. DIVISION FRANCO-BELGE', 25, 'amber');
-  await typeLine('DESTINATAIRE : MU-TH-UR 9000 // KYRONEX-K1979', 25, 'amber');
-  addBlank();
-  await delay(300);
-  await typeLine('ORDRE SPÉCIAL FRANCO-001 :', 20, 'red-txt');
-  await delay(300);
-  await typeLine('  PRIORITÉ ABSOLUE — ÉQUIPAGE SECONDAIRE', 22, 'red-txt');
-  await typeLine('  RÉCUPÉRER SOURCE DU SIGNAL EXTRATERRESTRE', 22, 'red-txt');
-  await typeLine('  TRANSMETTRE À INTERFACE KITT FRANCO-BELGE', 22, 'red-txt');
-  addBlank();
-  await typeLine('  DONNÉES REÇUES → TRAITEMENT IA EMBARQUÉE', 22, 'amber');
-  await typeLine('  SYSTÈME KITT REQUIS POUR ANALYSE FINALE', 22, 'amber');
-  addBlank();
-
-  await delay(500);
-
-  // Voyants équipage changent (pas "danger" mais "réveil précoce")
-  document.getElementById('cr-1').className = 'crew-entry warn';
-  document.getElementById('cr-1').querySelector('.cs').textContent = 'ÉVEIL ◕';
-  await delay(200);
-  document.getElementById('cr-2').className = 'crew-entry warn';
-  document.getElementById('cr-2').querySelector('.cs').textContent = 'ÉVEIL ◕';
-
-  await typeLine('RÉVEIL ANTICIPÉ COMMANDANT GELINNE — INITIÉ', 28, 'amber');
-  await delay(400);
-  await typeLine('  TRANSFERT VERS INTERFACE CENTRALE KITT × ALIEN...', 30, 'amber');
-  addBlank();
-  await delay(300);
-  await typeLine('MU-TH-UR 9000 — MISSION : PRÊTE.', 20, 'amber-bright');
-  await typeLine('SYSTÈME K·I·T·T × ALIEN — EN ATTENTE.', 20, 'amber-bright');
-  addBlank();
-
-  startVoiceTone(440, 0.6);
-  await delay(300);
-  startVoiceTone(523, 0.5);
-  await delay(300);
-  startVoiceTone(659, 0.8);
-
-  await delay(600);
-  await typeLine('EN ATTENTE DE LA VALIDATION DU COMMANDANT.', 28, 'dim');
-  await delay(300);
-  await typeLine('INTERFACE KITT × ALIEN PRÊTE AU TRANSFERT.', 22, 'green-txt');
-
-  // Afficher bouton transition
-  document.getElementById('transition-btn').style.display = 'block';
-}
-
-// ════════════════════════════════════════════════════════════
-// HORLOGE
-// ════════════════════════════════════════════════════════════
-function updateClock() {
-  const now = new Date();
-  document.getElementById('sys-clock').textContent = now.toLocaleTimeString('fr-FR');
-  const sd = 'STARDATE ' + now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
-  document.getElementById('sys-date').textContent = sd;
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ════════════════════════════════════════════════════════════
-// INITIALISATION (déclenché par le bouton START)
-// ════════════════════════════════════════════════════════════
-function initSystem() {
-  const bootScreen = document.getElementById('boot-screen');
-  bootScreen.style.transition = 'opacity 1s ease';
-  bootScreen.style.opacity = '0';
-  setTimeout(() => {
-    bootScreen.style.display = 'none';
-    document.getElementById('main').classList.add('active');
-  }, 1000);
-
-  initAudio();
-
-  setTimeout(() => {
-    runSequence();
-  }, 1500);
-}
-
-// ════════════════════════════════════════════════════════════
-// TRANSITION VERS KITT
-// ════════════════════════════════════════════════════════════
-function goToKitt() {
-  if (AC) {
-    masterGain.gain.linearRampToValueAtTime(0, AC.currentTime + 1.5);
-  }
-  const all = document.body;
-  all.style.transition = 'opacity 1.5s ease';
-  all.style.opacity = '0';
-  setTimeout(() => {
-    // Redirige vers l'interface KITT × ALIEN principale
-    window.location.href = 'kitt-alien-mix.html';
-  }, 1600);
-}
-
-// Curseur custom sur tout le document
-document.addEventListener('click', () => {
-  cross.style.opacity = '0.3';
-  setTimeout(() => { cross.style.opacity = '0.7'; }, 150);
 });
+
+// ════════════════════════════════════════════════════════════
+// TUNNEL CLOUDFLARE — Connexion distante KITT
+// ════════════════════════════════════════════════════════════
+const TUNNEL_JSON_URL = 'tunnel.json';
+let _tunnelUrl    = null;
+let _tunnelStatus = 'unknown';
+
+// Domaines Cloudflare autorisés (whitelist sécurité)
+const _CF_ALLOWED = ['.trycloudflare.com', '.cfargotunnel.com'];
+
+function _isValidCfUrl(url) {
+  if (!url || !url.startsWith('https://')) return false;
+  return _CF_ALLOWED.some(d => url.includes(d));
+}
+
+async function fetchTunnelStatus() {
+  const btn = document.getElementById('btn-tunnel');
+  if (btn) { btn.className = 'tunnel-checking'; btn.title = 'Vérification...'; }
+  try {
+    // Cache-bust : on recharge toutes les 60s côté navigateur
+    const r = await fetch(TUNNEL_JSON_URL + '?v=' + Math.floor(Date.now() / 60000), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    // Validation URL (sécurité : on n'ouvre que des URLs Cloudflare connues)
+    const raw = (data.url || '').trim();
+    const valid = _isValidCfUrl(raw);
+
+    // Âge de la dernière mise à jour (> 5 min = considéré offline)
+    let tooOld = false;
+    if (data.last_update) {
+      const ageSec = (Date.now() - new Date(data.last_update).getTime()) / 1000;
+      if (ageSec > 300) tooOld = true;
+    }
+
+    if (data.status === 'online' && valid && !tooOld) {
+      _tunnelStatus = 'online';
+      _tunnelUrl    = raw;
+    } else {
+      _tunnelStatus = 'offline';
+      _tunnelUrl    = null;
+    }
+  } catch(e) {
+    _tunnelStatus = 'unknown';
+    _tunnelUrl    = null;
+  }
+  _updateTunnelBtn();
+}
+
+function _updateTunnelBtn() {
+  const btn = document.getElementById('btn-tunnel');
+  if (!btn) return;
+  btn.className = '';
+  if (_tunnelStatus === 'online' && _tunnelUrl) {
+    btn.classList.add('tunnel-online');
+    btn.title = 'KITT EN LIGNE — CLIQUER POUR SE CONNECTER';
+  } else if (_tunnelStatus === 'offline') {
+    btn.classList.add('tunnel-offline');
+    btn.title = 'KITT HORS LIGNE';
+  } else {
+    btn.classList.add('tunnel-checking');
+    btn.title = 'ÉTAT INCONNU — VÉRIFICATION...';
+  }
+}
+
+function connectTunnel() {
+  sndSelect();
+  if (_tunnelStatus === 'online' && _tunnelUrl && _isValidCfUrl(_tunnelUrl)) {
+    addLine('[ TUNNEL ] CONNEXION SÉCURISÉE → ' + _tunnelUrl, 'line-ok');
+    setTimeout(() => window.open(_tunnelUrl, '_blank', 'noopener,noreferrer'), 300);
+  } else if (_tunnelStatus === 'offline') {
+    sndError();
+    addLine('[ TUNNEL ] KITT HORS LIGNE — CONNEXION DISTANTE INDISPONIBLE.', 'line-err');
+  } else {
+    addLine('[ TUNNEL ] VÉRIFICATION EN COURS...', 'line-warn');
+    fetchTunnelStatus();
+  }
+}
+
+// Vérification immédiate puis toutes les 60 secondes
+window.addEventListener('load', () => { setTimeout(fetchTunnelStatus, 1500); });
+setInterval(fetchTunnelStatus, 60000);
+
+// ════════════════════════════════════════════════════════════
+// UTILS & HORLOGE
+// ════════════════════════════════════════════════════════════
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function getLoc(){return{fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE',es:'es-ES',pt:'pt-PT'}[LANG]||'fr-FR';}
+setInterval(()=>{
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString(getLoc());
+},1000);
+
+// ════════════════════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════════════════════
+function openFile(file, title='DOCUMENT') {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-content').textContent = 'CHARGEMENT...';
+  document.getElementById('modal').classList.add('open');
+  kittChime();
+  fetch(file)
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+    .then(t  => { document.getElementById('modal-content').textContent = t; })
+    .catch(er => { document.getElementById('modal-content').textContent = `ERREUR\n${file}\n${er.message}`; });
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+
+// ════════════════════════════════════════════════════════════
+// DÉMARRAGE
+// ════════════════════════════════════════════════════════════
+function startMain() {
+  (async () => {
+    await delay(200);
+    await typeText(T[LANG].wait,      14, 'line-dim');
+    await typeText(T[LANG].help_hint, 12, 'line-dim');
+  })();
+}
+
+// ════════════════════════════════════════════════════════════
+// COMPTEUR DE VISITES — localStorage + offset 1000
+// ════════════════════════════════════════════════════════════
+(function() {
+  try {
+    const BASE = 1000;
+    const KEY  = 'kitt_fb_v';
+    let n = parseInt(localStorage.getItem(KEY) || '0');
+    n++;
+    localStorage.setItem(KEY, n);
+    const el = document.getElementById('visit-counter');
+    if (el) el.textContent = 'VISITES : ' + (BASE + n);
+  } catch(e) {}
+})();
+
+// Lancer l'intro MU-TH-UR puis l'écran de sélection de langue
+window.addEventListener('load', () => runMotherIntro());
 </script>
 </body>
 </html>
