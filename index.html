@@ -2441,11 +2441,25 @@ function showKittCall(){
   document.getElementById('call-accept').onclick=()=>{
     stopRing(); call.style.transition='opacity .4s'; call.style.opacity='0';
     setTimeout(()=>{ call.style.display='none'; },420);
-    try{
-      const txt='Bonjour Manix. Système KYRONEX en ligne. Je suis KITT. Prêt à rouler.';
-      speakMuther(txt,'fr');
-    }catch(e){}
+    // ★ Message de Manix selon la langue sélectionnée
+    const CALL_MSG = {
+      fr: "Salut ! Je t'attends. Clique sur Connexion IA et teste-moi. Et n'oublie pas de dire au groupe KITT Franco-Belge ce qui te plaît et ce qui te plaît pas, et donne des idées. Merci, à toi !",
+      en: "Hey! I'm waiting for you. Click on AI Connection and test me. And don't forget to tell the KITT Franco-Belgian group what you like and what you don't like, and share your ideas. Thanks, over to you!",
+      nl: "Hallo! Ik wacht op je. Klik op IA Verbinding en test mij. En vergeet niet om de KITT Franco-Belgische groep te vertellen wat je leuk vindt en wat niet, en geef ideeën. Bedankt, aan jou!",
+      it: "Ciao! Ti sto aspettando. Clicca su Connessione IA e mettimi alla prova. E non dimenticare di dire al gruppo KITT Franco-Belga cosa ti piace e cosa non ti piace, e dai idee. Grazie, a te!",
+      de: "Hallo! Ich warte auf dich. Klick auf KI-Verbindung und teste mich. Und vergiss nicht, der KITT Franco-Belgischen Gruppe zu sagen, was dir gefällt und was nicht, und gib Ideen. Danke, an dich!",
+      es: "¡Hola! Te estoy esperando. Haz clic en Conexión IA y pruébame. Y no olvides decirle al grupo KITT Franco-Belga lo que te gusta y lo que no, y da ideas. ¡Gracias, a ti!",
+      pt: "Olá! Estou à tua espera. Clica em Ligação IA e testa-me. E não te esqueças de dizer ao grupo KITT Franco-Belga o que gostas e o que não gostas, e dá ideias. Obrigado, a ti!",
+    };
+    const msg = CALL_MSG[LANG] || CALL_MSG['fr'];
+    try{ speakMuther(msg, LANG); }catch(e){}
     setTimeout(()=>{ try{kittChime();}catch(e){} },300);
+    // Afficher aussi le message dans le terminal
+    setTimeout(async ()=>{
+      kittChime();
+      await typeText('── MESSAGE DE KITT ──', 10, 'line-info');
+      await typeText(msg, 13, 'line-ok');
+    }, 800);
   };
   document.getElementById('call-ignore').onclick=()=>{
     stopRing(); call.style.transition='opacity .3s'; call.style.opacity='0';
