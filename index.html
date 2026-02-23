@@ -314,11 +314,35 @@ button:active{transform:scale(.95);}
 .modal pre{white-space:pre-wrap;color:var(--green);font-family:monospace;font-size:13px;line-height:1.7;}
 
 /* ── MOBILE ─────────────────────────────────────────────── */
+/* Empêcher le zoom iOS sur focus input (min 16px) */
+#access-input{font-size:16px;}
+@media(max-width:600px){#cmd-input{font-size:16px !important;}}
+/* Touch: désactiver hover transform sur tactile */
+@media(hover:none){
+  .lang-opt:hover{transform:none;box-shadow:none;}
+  .lang-opt:active{background:rgba(255,26,26,.1);border-left-color:var(--red);}
+}
 @media(max-width:600px){
   .hdr-title{font-size:13px;letter-spacing:2px;}
   button{padding:6px 10px;font-size:11px;}
   #terminal{font-size:12px;}
-  #lang-box{padding:20px;}
+  #lang-box{padding:16px 12px;max-width:98vw;border-radius:8px;}
+  #lang-hdr{padding:12px 14px 10px;}
+  .lang-logo-kitt,.lang-logo-alien{font-size:14px !important;letter-spacing:3px !important;}
+  .lang-opt{padding:8px 12px;gap:10px;margin:1px 4px;}
+  .lo-flag{font-size:18px !important;}
+  .lo-label{font-size:11px;}
+  .lo-voice-btn{font-size:9px;padding:3px 6px;}
+  #lang-data-line{padding:4px 14px;font-size:8px;letter-spacing:1px;}
+  #lang-ftr{padding:8px 14px;}
+  #lang-screen::after{display:none;}
+  #access-box{padding:20px 16px;max-width:98vw;}
+  #access-hdr{font-size:10px;letter-spacing:2px;}
+  #access-input{font-size:16px;letter-spacing:3px;}
+  #mother-box{padding:16px 14px;}
+  #mother-hdr{font-size:11px;letter-spacing:2px;}
+  #mother-output{font-size:11px;min-height:200px;}
+  #mother-skip{font-size:9px;}
 }
 
 /* ── BOUTON TUNNEL CLOUDFLARE ───────────────────────────────── */
@@ -396,6 +420,7 @@ button:active{transform:scale(.95);}
 <div id="access-screen">
   <div id="access-box">
     <div id="access-hdr">WEYLAND-YUTANI CORP. // ACCES SECURISE</div>
+    <div style="text-align:center;font-size:9px;letter-spacing:3px;color:#442200;margin-bottom:8px;margin-top:-8px;">&#9656; KYRONEX SYSTEMS // op. MANIX &#9666;</div>
     <div id="access-log"></div>
     <div id="access-input-row">
       <span id="access-prompt">CODE D'ACCES &gt;</span>
@@ -430,13 +455,13 @@ button:active{transform:scale(.95);}
     </div>
     <div id="lang-sub"></div>
     <div id="lang-output"></div>
-    <div id="lang-data-line"><span id="lang-data-l">SYS:NOSTROMO-180924609</span><span id="lang-data-r">CREW:7 &#9679; STAT:NOMINAL</span></div>
+    <div id="lang-data-line"><span id="lang-data-l">KYRONEX // NOSTROMO-180924609</span><span id="lang-data-r">op.MANIX &#9679; STAT:NOMINAL</span></div>
     <div id="lang-ftr">
       <div id="lang-ftr-left">
         <span id="lang-ftr-txt"></span>
         <button id="lang-voice-toggle" onclick="toggleLangVoice()">&#128266; VOIX</button>
       </div>
-      <div id="lang-ftr-right">MU-TH-UR 6000 &#9673;</div>
+      <div id="lang-ftr-right">KYRONEX // MU-TH-UR &#9673;</div>
     </div>
   </div>
 </div>
@@ -789,6 +814,8 @@ async function runMotherIntro() {
   await typeMotherLine('CLASSE   :  VEHICULE DE REMORQUAGE COM', 'm-dim', 14);
   await delay(80);
   await typeMotherLine('EQUIPAGE :  7 MEMBRES', 'm-dim', 16);
+  await delay(80);
+  await typeMotherLine('OPERATEUR:  MANIX  //  KYRONEX SYSTEMS', 'm-dim', 14);
   await delay(400);
   addLine('', 'm-dim');
 
@@ -797,7 +824,8 @@ async function runMotherIntro() {
     ['VERIFICATION SYSTEMES', '[OK]'],
     ['NOYAU NEURAL         ', '[EN LIGNE]'],
     ['MEMOIRE PERSISTANTE  ', '[STABLE]'],
-    ['COMMUNAUTE KITT      ', '[CHARGEE]'],
+    ['MODULE KYRONEX       ', '[ACTIF]'],
+    ['RESEAU KITT          ', '[CHARGEE]'],
   ];
   for (const [label, result] of checks) {
     if (skipped) { addLine(label + ' ...... ' + result, 'm-ok'); continue; }
@@ -818,7 +846,7 @@ async function runMotherIntro() {
   // ── Voix française ────────────────────────────────────────
   if (!skipped) {
     await new Promise(resolve => {
-      motherSpeak("PROTOCOLE D'INTERFACE ACTIVÉ. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.", resolve);
+      motherSpeak("PROTOCOLE D'INTERFACE ACTIVÉ. MODULE KYRONEX EN LIGNE. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.", resolve);
     });
   }
 
@@ -2568,7 +2596,7 @@ window.addEventListener('load', () => runAccessScreen());
   if(!el) return;
   const stati=['STAT:NOMINAL','STAT:SCANNING','STAT:ONLINE','STAT:LOCKED'];
   let i=0;
-  setInterval(()=>{i=(i+1)%stati.length; el.textContent='CREW:7 \u25CF '+stati[i];},3200);
+  setInterval(()=>{i=(i+1)%stati.length; el.textContent='op.MANIX \u25CF '+stati[i];},3200);
 })();
 </script>
 </body>
