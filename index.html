@@ -29,7 +29,7 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 /* ── MU-TH-UR 6000 INTRO ───────────────────────────────── */
 #mother-intro{
   position:fixed;top:0;left:0;right:0;bottom:0;
-  background:#000;z-index:9000;
+  background:rgba(0,0,0,.92);z-index:9000;
   display:flex;align-items:center;justify-content:center;
   padding:20px;font-family:"Courier New",monospace;
 }
@@ -63,11 +63,11 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 /* ── LANGUAGE SELECTION OVERLAY — ALIEN × KITT ───────────── */
 #lang-screen{
   position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,.98);
+  background:rgba(0,0,0,.88);
   z-index:8000;
   display:flex;align-items:center;justify-content:center;
   padding:16px;
-  backdrop-filter:blur(3px);
+  backdrop-filter:blur(2px);
 }
 #lang-screen::before{
   content:'';position:absolute;inset:0;
@@ -180,7 +180,37 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 #lang-flag{font-size:10px;border:1px solid var(--green-dim);padding:1px 5px;letter-spacing:1px;cursor:pointer;color:var(--green-dim);}
 #lang-flag:hover{color:var(--green);border-color:var(--green);}
 
-/* ── ASCII ──────────────────────────────────────────────── */
+/* ── SCANNERS KITT (barres rouges haut/bas) ─────────────── */
+@keyframes ks{0%{left:-200px}100%{left:100%}}
+@keyframes pred{0%,100%{text-shadow:0 0 12px var(--red)}50%{text-shadow:0 0 28px var(--red),0 0 50px rgba(255,26,26,.5)}}
+@keyframes bd{0%,100%{opacity:1}50%{opacity:.25}}
+#sw{position:fixed;top:0;left:0;right:0;height:3px;overflow:hidden;z-index:1000;}
+#sb{position:absolute;top:0;width:200px;height:3px;background:linear-gradient(90deg,transparent,var(--red),var(--red),transparent);box-shadow:0 0 14px 4px var(--red);animation:ks 1.8s ease-in-out infinite alternate;}
+#swb{position:fixed;bottom:0;left:0;right:0;height:3px;overflow:hidden;z-index:1000;}
+#sbb{position:absolute;top:0;width:200px;height:3px;background:linear-gradient(90deg,transparent,var(--red),var(--red),transparent);box-shadow:0 0 14px 4px var(--red);animation:ks 1.8s ease-in-out infinite alternate-reverse;}
+
+/* ── STARFIELD CANVAS ───────────────────────────────────── */
+#starfield{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* ── AMÉLIORATIONS MENU LANGUE ──────────────────────────── */
+@keyframes langBoxPulse{0%,100%{box-shadow:0 0 80px rgba(0,255,102,.08),inset 0 0 60px rgba(0,255,102,.015),0 0 2px rgba(255,26,26,.2)}50%{box-shadow:0 0 120px rgba(0,255,102,.14),inset 0 0 80px rgba(0,255,102,.03),0 0 8px rgba(255,26,26,.35),0 0 30px rgba(255,26,26,.1)}}
+@keyframes scanBar{0%{top:-2px}100%{top:101%}}
+@keyframes cornerBlink{0%,100%{opacity:.6}50%{opacity:1}}
+#lang-box{animation:boxIn .5s ease-out,langBoxPulse 4s ease-in-out 1s infinite;}
+#lang-box::after{content:'';position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,rgba(0,255,102,.25) 50%,transparent 95%);animation:scanBar 4.5s linear infinite;pointer-events:none;z-index:10;}
+#lang-box .hud-tl,#lang-box .hud-tr,#lang-box .hud-bl,#lang-box .hud-br{position:absolute;width:12px;height:12px;animation:cornerBlink 2s ease-in-out infinite;}
+#lang-box .hud-tl{top:-1px;left:-1px;border-top:2px solid var(--red);border-left:2px solid var(--red);}
+#lang-box .hud-tr{top:-1px;right:-1px;border-top:2px solid var(--red);border-right:2px solid var(--red);}
+#lang-box .hud-bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--red);border-left:2px solid var(--red);}
+#lang-box .hud-br{bottom:-1px;right:-1px;border-bottom:2px solid var(--red);border-right:2px solid var(--red);}
+.lang-opt::after{content:'';position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(90deg,transparent,rgba(0,255,102,.04),transparent);transform:translateX(-100%);transition:transform .3s ease;pointer-events:none;}
+.lang-opt:hover::after{transform:translateX(100%);}
+.lang-opt:hover{background:linear-gradient(90deg,rgba(255,26,26,.08),rgba(0,255,102,.06),transparent);border-left-color:var(--red);transform:translateX(3px);box-shadow:inset 0 0 20px rgba(0,255,102,.04),-2px 0 8px rgba(255,26,26,.2);}
+.lang-logo-kitt{font-size:18px !important;letter-spacing:6px !important;}
+.lang-logo-alien{font-size:18px !important;letter-spacing:5px !important;}
+.lang-logo-sep{font-size:14px !important;}
+#lang-hdr{background:linear-gradient(180deg,rgba(255,26,26,.07),rgba(0,255,102,.03));border-bottom:1px solid rgba(255,26,26,.2) !important;}
+#lang-data-line{padding:5px 24px;font-size:9px;letter-spacing:3px;color:rgba(0,255,102,.3);border-top:1px solid rgba(0,255,102,.08);display:flex;justify-content:space-between;font-family:var(--mono);}
 
 /* ── TERMINAL ───────────────────────────────────────────── */
 #terminal{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 4px;font-size:13px;line-height:1.65;scrollbar-width:thin;scrollbar-color:var(--red) #111;}
@@ -298,6 +328,8 @@ button:active{transform:scale(.95);}
 </head>
 <body>
 
+<canvas id="starfield"></canvas>
+
 <!-- MU-TH-UR 6000 INTRO -->
 <div id="mother-intro" style="display:none">
   <div id="mother-box">
@@ -312,6 +344,7 @@ button:active{transform:scale(.95);}
   <div class="lang-scanner-top"></div>
   <div class="lang-scanner-bot"></div>
   <div id="lang-box">
+    <div class="hud-tl"></div><div class="hud-tr"></div><div class="hud-bl"></div><div class="hud-br"></div>
     <div id="lang-hdr">
       <div id="lang-logo-line">
         <span class="lang-logo-kitt">K·I·T·T</span>
@@ -322,6 +355,7 @@ button:active{transform:scale(.95);}
     </div>
     <div id="lang-sub"></div>
     <div id="lang-output"></div>
+    <div id="lang-data-line"><span id="lang-data-l">SYS:NOSTROMO-180924609</span><span id="lang-data-r">CREW:7 &#9679; STAT:NOMINAL</span></div>
     <div id="lang-ftr">
       <div id="lang-ftr-left">
         <span id="lang-ftr-txt"></span>
@@ -2348,6 +2382,50 @@ function startMain() {
 
 // Lancer l'intro MU-TH-UR puis l'écran de sélection de langue
 window.addEventListener('load', () => runMotherIntro());
+
+// ════════════════════════════════════════════════════════════
+// STARFIELD — étoiles animées en fond d'écran
+// ════════════════════════════════════════════════════════════
+(function(){
+  const c=document.getElementById('starfield');
+  if(!c) return;
+  const ctx=c.getContext('2d');
+  let W,H,stars=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  resize();
+  window.addEventListener('resize',resize);
+  for(let i=0;i<220;i++) stars.push({
+    x:Math.random()*W, y:Math.random()*H,
+    r:Math.random()*1.4+.1,
+    b:Math.random()*Math.PI*2,
+    sp:Math.random()*.018+.006,
+    col:Math.random()<.15?'rgba(255,100,0,':(Math.random()<.1?'rgba(0,200,255,':'rgba(0,255,102,')
+  });
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(s=>{
+      s.b+=s.sp;
+      const a=.15+Math.abs(Math.sin(s.b))*.55;
+      ctx.fillStyle=s.col+a+')';
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+      if(a>.55&&s.r>0.9){
+        ctx.fillStyle=s.col+'.12)';
+        ctx.beginPath();ctx.arc(s.x,s.y,s.r*2.8,0,Math.PI*2);ctx.fill();
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── Données HUD animées dans le menu langue ──────────────
+(function(){
+  const el=document.getElementById('lang-data-r');
+  if(!el) return;
+  const stati=['STAT:NOMINAL','STAT:SCANNING','STAT:ONLINE','STAT:LOCKED'];
+  let i=0;
+  setInterval(()=>{i=(i+1)%stati.length; el.textContent='CREW:7 \u25CF '+stati[i];},3200);
+})();
 </script>
 </body>
 </html>
