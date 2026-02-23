@@ -2556,35 +2556,166 @@ function runAccessScreen() {
 window.addEventListener('load', () => runAccessScreen());
 
 // ════════════════════════════════════════════════════════════
-// STARFIELD — étoiles animées en fond d'écran
+// ROUTE NOCTURNE KITT — canvas fond d'écran
 // ════════════════════════════════════════════════════════════
 (function(){
   const c=document.getElementById('starfield');
   if(!c) return;
   const ctx=c.getContext('2d');
-  let W,H,stars=[];
-  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  let W,H;
+  function resize(){
+    W=c.width=window.innerWidth;
+    H=c.height=window.innerHeight;
+  }
   resize();
   window.addEventListener('resize',resize);
-  for(let i=0;i<220;i++) stars.push({
-    x:Math.random()*W, y:Math.random()*H,
-    r:Math.random()*1.4+.1,
+
+  // Étoiles (ciel, moitié haute)
+  const stars=[];
+  for(let i=0;i<180;i++) stars.push({
+    x:Math.random(),y:Math.random()*.52,
+    r:Math.random()*1.1+.1,
     b:Math.random()*Math.PI*2,
-    sp:Math.random()*.018+.006,
-    col:Math.random()<.15?'rgba(255,100,0,':(Math.random()<.1?'rgba(0,200,255,':'rgba(0,255,102,')
+    sp:Math.random()*.012+.004,
+    col:Math.random()<.12?'rgba(255,100,0,':(Math.random()<.08?'rgba(0,200,255,':'rgba(0,255,102,')
   });
+
+  // Feux arrière (2 voitures distantes)
+  const tailLights=[
+    {ox:.485,x:.485,y:.415,drift:.00008},
+    {ox:.515,x:.515,y:.415,drift:-.00008},
+    {ox:.478,x:.478,y:.405,drift:.00015},
+    {ox:.522,x:.522,y:.405,drift:-.00015},
+  ];
+
+  // Lampadaires (gauche et droite alternés)
+  const lamps=[];
+  for(let i=0;i<10;i++) lamps.push({
+    z:i/10,
+    side:i%2===0?-1:1,
+    speed:.0022+Math.random()*.001
+  });
+
+  let dashOff=0;
+  const VPY=.42; // horizon (proportion hauteur)
+  const ROAD_NEAR=.72, ROAD_FAR=.055; // largeur route
+
+  function roadX(side,z){
+    // side: -1=gauche +1=droite, z: 0=loin 1=près
+    const hw=W*(ROAD_FAR+(ROAD_NEAR-ROAD_FAR)*z)/2;
+    return W/2+side*hw;
+  }
+  function roadY(z){return VPY*H+(1-VPY)*H*(1-z);}
+
   function draw(){
     ctx.clearRect(0,0,W,H);
+    const hy=VPY*H;
+
+    // Ciel
+    const sky=ctx.createLinearGradient(0,0,0,hy);
+    sky.addColorStop(0,'#000008');
+    sky.addColorStop(1,'#000d06');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,W,hy);
+
+    // Étoiles
     stars.forEach(s=>{
       s.b+=s.sp;
-      const a=.15+Math.abs(Math.sin(s.b))*.55;
+      const a=.15+Math.abs(Math.sin(s.b))*.5;
       ctx.fillStyle=s.col+a+')';
-      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
-      if(a>.55&&s.r>0.9){
-        ctx.fillStyle=s.col+'.12)';
-        ctx.beginPath();ctx.arc(s.x,s.y,s.r*2.8,0,Math.PI*2);ctx.fill();
+      ctx.beginPath(); ctx.arc(s.x*W,s.y*hy*1.08,s.r,0,Math.PI*2); ctx.fill();
+      if(a>.52&&s.r>.8){
+        ctx.fillStyle=s.col+'.1)';
+        ctx.beginPath(); ctx.arc(s.x*W,s.y*hy*1.08,s.r*2.6,0,Math.PI*2); ctx.fill();
       }
     });
+
+    // Sol (sous horizon)
+    const gnd=ctx.createLinearGradient(0,hy,0,H);
+    gnd.addColorStop(0,'#010603'); gnd.addColorStop(1,'#000200');
+    ctx.fillStyle=gnd; ctx.fillRect(0,hy,W,H-hy);
+
+    // Chaussée (trapèze)
+    ctx.beginPath();
+    ctx.moveTo(roadX(-1,0),hy); ctx.lineTo(roadX(1,0),hy);
+    ctx.lineTo(roadX(1,1),H);   ctx.lineTo(roadX(-1,1),H);
+    ctx.closePath();
+    const rdg=ctx.createLinearGradient(0,hy,0,H);
+    rdg.addColorStop(0,'#040c04'); rdg.addColorStop(.6,'#071007'); rdg.addColorStop(1,'#091409');
+    ctx.fillStyle=rdg; ctx.fill();
+
+    // Bordures route
+    ctx.lineWidth=1;
+    ctx.strokeStyle='rgba(0,255,102,.13)';
+    ctx.beginPath(); ctx.moveTo(roadX(-1,0),hy); ctx.lineTo(roadX(-1,1),H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(roadX(1,0),hy);  ctx.lineTo(roadX(1,1),H);  ctx.stroke();
+
+    // Ligne jaune gauche (axe)
+    ctx.strokeStyle='rgba(255,200,0,.07)';
+    ctx.lineWidth=.8;
+    ctx.beginPath(); ctx.moveTo(roadX(-.34,0),hy); ctx.lineTo(roadX(-.34,1),H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(roadX(.34,0),hy);  ctx.lineTo(roadX(.34,1),H);  ctx.stroke();
+
+    // Tirets blancs centraux (perspective)
+    dashOff=(dashOff+.018)%(1/12);
+    for(let i=0;i<14;i++){
+      let t=(i/13+dashOff)%1;
+      if(t<.001) t=.001;
+      const z1=1-t, z2=1-Math.max(.001,t-.038);
+      if(z1>.99||z2<.005) continue;
+      const y1=roadY(z1), y2=roadY(z2);
+      if(y1>=H||y2<=hy) continue;
+      const a=Math.min(1,z1*.9+.05)*.65;
+      ctx.strokeStyle=`rgba(255,255,255,${a})`;
+      ctx.lineWidth=Math.max(.5,(1-z1)*3.5);
+      ctx.beginPath(); ctx.moveTo(W/2,y1); ctx.lineTo(W/2,Math.min(H,y2)); ctx.stroke();
+    }
+
+    // Feux arrière rouges (distance)
+    tailLights.forEach(tl=>{
+      tl.x+=tl.drift;
+      if(tl.x<.46||tl.x>.54) tl.drift*=-1;
+      const tx=tl.x*W, ty=tl.y*H;
+      const sz=3.5;
+      // halo
+      const hgl=ctx.createRadialGradient(tx,ty,0,tx,ty,sz*9);
+      hgl.addColorStop(0,'rgba(255,20,0,.18)'); hgl.addColorStop(1,'transparent');
+      ctx.fillStyle=hgl; ctx.beginPath(); ctx.arc(tx,ty,sz*9,0,Math.PI*2); ctx.fill();
+      // feux
+      ctx.fillStyle='rgba(255,30,0,.85)';
+      ctx.beginPath(); ctx.arc(tx-sz*1.6,ty,sz,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(tx+sz*1.6,ty,sz,0,Math.PI*2); ctx.fill();
+    });
+
+    // Lampadaires latéraux
+    lamps.forEach(lp=>{
+      lp.z+=lp.speed;
+      if(lp.z>1) lp.z=0;
+      const z=lp.z;
+      const margin=.06; // distance du bord de route
+      const lx=roadX(lp.side*(1+margin),z);
+      const ly=roadY(z);
+      if(ly>H||ly<hy) return;
+      const a=Math.min(1,z*1.2)*.55;
+      // lumière ambre
+      ctx.fillStyle=`rgba(255,180,80,${a})`;
+      ctx.beginPath(); ctx.arc(lx,ly,Math.max(.4,(1-z)*2.5+.5),0,Math.PI*2); ctx.fill();
+      // cône au sol
+      if(z>.2){
+        const cgl=ctx.createRadialGradient(lx,ly,0,lx,ly,(1-z)*55);
+        cgl.addColorStop(0,`rgba(255,180,80,${a*.18})`);
+        cgl.addColorStop(1,'transparent');
+        ctx.fillStyle=cgl;
+        ctx.beginPath(); ctx.arc(lx,ly,(1-z)*55,0,Math.PI*2); ctx.fill();
+      }
+    });
+
+    // Lueur horizon verte KITT
+    const hglow=ctx.createLinearGradient(0,hy-18,0,hy+28);
+    hglow.addColorStop(0,'transparent');
+    hglow.addColorStop(.5,'rgba(0,255,102,.05)');
+    hglow.addColorStop(1,'transparent');
+    ctx.fillStyle=hglow; ctx.fillRect(0,hy-18,W,46);
+
     requestAnimationFrame(draw);
   }
   draw();
