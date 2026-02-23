@@ -1327,12 +1327,12 @@ function _scheduleKittCall() {
   setTimeout(() => {
     _callReady = true;
     _tryKittCall();
-  }, 45000);
+  }, 30000);
 
-  // Fallback absolu : appel dans 3 minutes quoi qu'il arrive
+  // Fallback absolu : appel dans 90 secondes quoi qu'il arrive
   setTimeout(() => {
     _tryKittCall(true);
-  }, 180000);
+  }, 90000);
 }
 
 function _tryKittCall(force) {
