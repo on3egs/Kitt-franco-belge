@@ -38,9 +38,11 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 /* ── Grille HUD subtile (fond) ──────────────────────────── */
 body{
   background-image:
-    linear-gradient(rgba(0,255,102,.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,102,.028) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(0,255,102,.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,102,.022) 1px, transparent 1px),
+    radial-gradient(ellipse at 30% 70%, rgba(255,170,0,.012) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 30%, rgba(255,26,26,.008) 0%, transparent 50%);
+  background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
 }
 
 /* ── SCANNER KITT — INTOUCHÉ ────────────────────────────── */
@@ -86,94 +88,225 @@ body{
 }
 @keyframes score{0%,100%{opacity:.6}50%{opacity:1}}
 
-/* ── LANGUAGE SELECTION OVERLAY ─────────────────────────── */
+/* ── LANGUAGE SELECTION OVERLAY — ALIEN × KITT ───────────── */
 #lang-screen{
   position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,.97);
+  background:rgba(0,0,0,.98);
   z-index:8000;
   display:flex;align-items:center;justify-content:center;
   padding:16px;
-  backdrop-filter:blur(2px);
+  backdrop-filter:blur(3px);
 }
+
+/* Grille HUD dans l'overlay langue */
+#lang-screen::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(0,255,102,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,102,.018) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events:none;
+}
+
+/* Scanner rouge en haut et bas pendant la sélection de langue */
+#lang-screen .lang-scanner-top{
+  position:absolute;top:0;left:0;right:0;height:2px;overflow:hidden;
+}
+#lang-screen .lang-scanner-top::after{
+  content:'';position:absolute;top:0;width:160px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--red),transparent);
+  box-shadow:0 0 10px 3px var(--red);
+  animation:ks 2.2s ease-in-out infinite alternate;
+}
+#lang-screen .lang-scanner-bot{
+  position:absolute;bottom:0;left:0;right:0;height:2px;overflow:hidden;
+}
+#lang-screen .lang-scanner-bot::after{
+  content:'';position:absolute;top:0;width:160px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--red),transparent);
+  box-shadow:0 0 10px 3px var(--red);
+  animation:ks 2.2s ease-in-out infinite alternate-reverse;
+}
+
 #lang-box{
-  width:100%;max-width:460px;
+  width:100%;max-width:520px;
   border:1px solid var(--green-dim);
   box-shadow:
-    0 0 60px rgba(0,255,102,.1),
-    0 0 120px rgba(0,255,102,.04),
-    inset 0 0 40px rgba(0,255,102,.02);
-  background:rgba(0,8,2,.85);
+    0 0 80px rgba(0,255,102,.08),
+    0 0 160px rgba(0,255,102,.03),
+    inset 0 0 60px rgba(0,255,102,.015),
+    0 0 2px rgba(255,26,26,.2);
+  background:rgba(0,6,2,.92);
   font-size:13px;
-  animation:boxIn .4s ease-out;
+  animation:boxIn .5s ease-out;
+  position:relative;
+  overflow:hidden;
 }
-@keyframes boxIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+
+/* Ligne déco gauche rouge — style vaisseau */
+#lang-box::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,transparent,var(--red),rgba(255,26,26,.3),transparent);
+}
+
+@keyframes boxIn{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:none}}
+
+/* En-tête avec double logo */
 #lang-hdr{
   border-bottom:1px solid var(--border-dim);
-  padding:14px 20px;
-  color:var(--green);
-  letter-spacing:4px;
-  font-size:11px;
+  padding:16px 24px 14px;
   text-align:center;
-  text-shadow:0 0 14px var(--green),0 0 30px rgba(0,255,102,.3);
-  font-family:var(--display);
-  background:rgba(0,255,102,.03);
+  background:linear-gradient(180deg,rgba(255,26,26,.04),rgba(0,255,102,.02));
+  position:relative;
 }
+#lang-logo-line{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  margin-bottom:6px;
+}
+.lang-logo-kitt{
+  color:var(--red);font-family:var(--display);font-size:14px;font-weight:900;
+  letter-spacing:5px;
+  text-shadow:0 0 20px var(--red),0 0 50px rgba(255,26,26,.3);
+  animation:pred 3s ease-in-out infinite;
+}
+.lang-logo-sep{
+  color:var(--green-dim);font-size:11px;letter-spacing:1px;
+  text-shadow:0 0 8px var(--green-dim);
+}
+.lang-logo-alien{
+  color:var(--amber);font-family:var(--display);font-size:14px;font-weight:900;
+  letter-spacing:4px;
+  text-shadow:0 0 20px var(--amber),0 0 50px rgba(255,170,0,.3);
+  animation:amberPulse 4s ease-in-out infinite;
+}
+@keyframes amberPulse{
+  0%,100%{text-shadow:0 0 12px var(--amber),0 0 30px rgba(255,170,0,.2)}
+  50%{text-shadow:0 0 28px var(--amber),0 0 70px rgba(255,170,0,.5)}
+}
+#lang-sys-id{
+  color:var(--green);font-family:var(--mono);font-size:10px;letter-spacing:3px;
+  text-shadow:0 0 10px var(--green);
+}
+
 #lang-sub{
-  padding:10px 20px 6px;
+  padding:10px 24px 8px;
   color:var(--amber);
   letter-spacing:3px;
-  font-size:10px;
-  border-bottom:1px solid rgba(255,170,0,.1);
+  font-size:9px;
+  border-bottom:1px solid rgba(255,170,0,.12);
   text-shadow:0 0 8px var(--amber-dim);
+  display:flex;align-items:center;gap:8px;
 }
-#lang-output{padding:6px 0 4px;}
+#lang-sub::before{
+  content:'▶';color:var(--red);font-size:8px;animation:bd 1.2s ease-in-out infinite;
+}
+
+#lang-output{padding:4px 0 2px;}
+
 .lang-opt{
   display:flex;
   align-items:center;
-  gap:16px;
-  padding:8px 24px;
+  gap:14px;
+  padding:9px 24px;
   cursor:pointer;
-  transition:background .1s, border-left-color .1s;
+  transition:background .12s, border-left-color .12s, transform .1s;
   border-left:2px solid transparent;
-  border-bottom:1px solid rgba(0,255,102,.04);
+  border-bottom:1px solid rgba(0,255,102,.05);
+  position:relative;
 }
 .lang-opt:last-child{border-bottom:none;}
 .lang-opt:hover{
-  background:var(--green-glow);
-  border-left-color:var(--green);
+  background:linear-gradient(90deg,rgba(255,26,26,.06),rgba(0,255,102,.04));
+  border-left-color:var(--red);
+  transform:translateX(2px);
 }
-.lang-opt:hover .lo-n{border-color:var(--green);color:var(--green);}
-.lang-opt:hover .lo-l{text-shadow:0 0 10px var(--green);}
+.lang-opt:hover .lo-n{border-color:var(--red);color:var(--red);box-shadow:0 0 8px rgba(255,26,26,.3);}
+.lang-opt:hover .lo-flag{filter:saturate(1.5) brightness(1.2);}
+.lang-opt:hover .lo-label{text-shadow:0 0 12px var(--green);color:var(--green);}
+.lang-opt:hover .lo-native{color:var(--amber);}
+
 .lo-n{
-  color:var(--red);
+  color:var(--green-dim);
   font-size:10px;
-  min-width:26px;
+  min-width:22px;
   text-align:center;
-  border:1px solid rgba(255,26,26,.5);
-  padding:2px 5px;
+  border:1px solid rgba(0,255,102,.4);
+  padding:2px 4px;
   letter-spacing:1px;
   flex-shrink:0;
-  transition:all .1s;
+  transition:all .12s;
+  font-family:var(--display);
 }
-.lo-l{
+.lo-flag{
+  font-size:20px;
+  flex-shrink:0;
+  transition:filter .12s;
+  line-height:1;
+}
+.lo-text{flex:1;display:flex;flex-direction:column;gap:2px;}
+.lo-label{
   color:var(--green);
   letter-spacing:2px;
   font-size:12px;
-  transition:text-shadow .1s;
+  transition:all .12s;
+  font-family:var(--display);
+  font-weight:700;
 }
+.lo-native{
+  color:var(--green-dim);
+  font-size:10px;
+  letter-spacing:1px;
+  opacity:.7;
+  transition:color .12s;
+  font-family:var(--mono);
+}
+.lo-voice-btn{
+  flex-shrink:0;
+  background:rgba(255,170,0,.05);
+  border:1px solid rgba(255,170,0,.25);
+  color:var(--amber-dim);
+  font-size:10px;
+  padding:3px 8px;
+  cursor:pointer;
+  font-family:var(--mono);
+  letter-spacing:1px;
+  transition:all .12s;
+  display:flex;align-items:center;gap:4px;
+}
+.lo-voice-btn:hover{
+  background:rgba(255,170,0,.12);
+  border-color:var(--amber);
+  color:var(--amber);
+  box-shadow:0 0 8px rgba(255,170,0,.2);
+}
+.lo-voice-btn::before{content:'▶';font-size:8px;}
+
 #lang-ftr{
   border-top:1px solid var(--border-dim);
-  padding:10px 20px;
+  padding:10px 24px;
   color:var(--green-dim);
   font-size:10px;
   letter-spacing:2px;
-  text-align:center;
   display:flex;
   align-items:center;
-  justify-content:center;
-  gap:6px;
-  background:rgba(0,255,102,.02);
+  justify-content:space-between;
+  background:rgba(0,255,102,.015);
 }
+#lang-ftr-left{display:flex;align-items:center;gap:6px;}
+#lang-ftr-right{
+  color:rgba(255,26,26,.5);font-size:9px;letter-spacing:1px;
+  animation:bd 2s ease-in-out infinite;
+}
+#lang-voice-toggle{
+  margin-left:8px;
+  background:rgba(0,255,102,.04);
+  border:1px solid rgba(0,255,102,.25);
+  color:var(--green-dim);
+  font-size:9px;padding:2px 7px;
+  cursor:pointer;font-family:var(--mono);letter-spacing:1px;
+  transition:all .12s;
+}
+#lang-voice-toggle:hover{color:var(--green);border-color:var(--green);background:rgba(0,255,102,.08);}
 
 /* ── LAYOUT ─────────────────────────────────────────────── */
 .container{display:flex;flex-direction:column;height:100%;padding:14px 20px 18px;gap:0;}
@@ -473,11 +606,26 @@ button:active{transform:scale(.96);filter:brightness(.85);}
 
 <!-- Language selection overlay -->
 <div id="lang-screen">
+  <div class="lang-scanner-top"></div>
+  <div class="lang-scanner-bot"></div>
   <div id="lang-box">
-    <div id="lang-hdr"></div>
+    <div id="lang-hdr">
+      <div id="lang-logo-line">
+        <span class="lang-logo-kitt">K·I·T·T</span>
+        <span class="lang-logo-sep">×</span>
+        <span class="lang-logo-alien">ALIEN</span>
+      </div>
+      <div id="lang-sys-id"></div>
+    </div>
     <div id="lang-sub"></div>
     <div id="lang-output"></div>
-    <div id="lang-ftr"></div>
+    <div id="lang-ftr">
+      <div id="lang-ftr-left">
+        <span id="lang-ftr-txt"></span>
+        <button id="lang-voice-toggle" onclick="toggleLangVoice()">🔊 VOIX</button>
+      </div>
+      <div id="lang-ftr-right">MU-TH-UR 6000 ◉</div>
+    </div>
   </div>
 </div>
 
@@ -590,12 +738,130 @@ button:active{transform:scale(.96);filter:brightness(.85);}
 
 <script>
 // ════════════════════════════════════════════════════════════
-// AUDIO ENGINE — INTOUCHÉ
+// AUDIO ENGINE — ALIEN × KITT MIX by Manix
+// Ambiance Nostromo + KITT Knight Rider
 // ════════════════════════════════════════════════════════════
 const _ac = new (window.AudioContext || window.webkitAudioContext)();
+let _alienAmbientNode = null;
+let _alienAmbientGain = null;
 
 function _resume() { if (_ac.state === 'suspended') _ac.resume(); }
 
+// ── REVERB helper (ambiance vaisseau spatial) ──────────────
+function _makeReverb(duration=1.2, decay=2.0) {
+  const len = Math.floor(_ac.sampleRate * duration);
+  const buf = _ac.createBuffer(2, len, _ac.sampleRate);
+  for (let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);
+  }
+  const conv = _ac.createConvolver(); conv.buffer=buf; return conv;
+}
+
+// ── AMBIANTE NOSTROMO — bourdonnement réacteur ──────────────
+function startAlienAmbient() {
+  try {
+    _resume();
+    if (_alienAmbientNode) return;
+    const masterGain = _ac.createGain(); masterGain.gain.value = 0.0;
+    masterGain.connect(_ac.destination);
+    _alienAmbientGain = masterGain;
+
+    // Bourdonnement grave du réacteur
+    const osc1 = _ac.createOscillator(); osc1.type='sine'; osc1.frequency.value=42;
+    const g1 = _ac.createGain(); g1.gain.value=0.18;
+    osc1.connect(g1); g1.connect(masterGain);
+
+    // Harmonique moteur
+    const osc2 = _ac.createOscillator(); osc2.type='triangle'; osc2.frequency.value=84;
+    const g2 = _ac.createGain(); g2.gain.value=0.06;
+    osc2.connect(g2); g2.connect(masterGain);
+
+    // Hiss bruit blanc filtré — ventilation vaisseau
+    const bufLen = _ac.sampleRate * 3;
+    const nBuf = _ac.createBuffer(1, bufLen, _ac.sampleRate);
+    const nd = nBuf.getChannelData(0);
+    for(let i=0;i<bufLen;i++) nd[i]=Math.random()*2-1;
+    const nSrc = _ac.createBufferSource(); nSrc.buffer=nBuf; nSrc.loop=true;
+    const lp = _ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=280; lp.Q.value=0.8;
+    const ng = _ac.createGain(); ng.gain.value=0.022;
+    nSrc.connect(lp); lp.connect(ng); ng.connect(masterGain);
+
+    // LFO pulsation lente (respiration du vaisseau)
+    const lfo = _ac.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.08;
+    const lfoGain = _ac.createGain(); lfoGain.gain.value=0.04;
+    lfo.connect(lfoGain); lfoGain.connect(g1.gain);
+
+    osc1.start(); osc2.start(); nSrc.start(); lfo.start();
+    _alienAmbientNode = { osc1, osc2, nSrc, lfo };
+
+    // Fade in progressif
+    masterGain.gain.linearRampToValueAtTime(1.0, _ac.currentTime + 3.5);
+  } catch(e){}
+}
+
+function stopAlienAmbient() {
+  try {
+    if (_alienAmbientGain) {
+      _alienAmbientGain.gain.linearRampToValueAtTime(0.0, _ac.currentTime + 2.0);
+      setTimeout(()=>{
+        if(_alienAmbientNode){
+          try{_alienAmbientNode.osc1.stop();_alienAmbientNode.osc2.stop();
+            _alienAmbientNode.nSrc.stop();_alienAmbientNode.lfo.stop();}catch(e){}
+          _alienAmbientNode=null; _alienAmbientGain=null;
+        }
+      }, 2200);
+    }
+  } catch(e){}
+}
+
+// ── ALERTE NOSTROMO (danger signal) ───────────────────────
+function sndAlienAlert() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    // Son d'alerte descendant — style ordinateur de bord Nostromo
+    [0, 0.18, 0.36].forEach((dt, i) => {
+      const o = _ac.createOscillator(); o.type='square';
+      o.frequency.setValueAtTime(320 - i*40, t+dt);
+      o.frequency.exponentialRampToValueAtTime(180, t+dt+0.15);
+      const g = _ac.createGain(); g.gain.setValueAtTime(0.055, t+dt); g.gain.exponentialRampToValueAtTime(0.001, t+dt+0.17);
+      const lp = _ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=600;
+      o.connect(lp); lp.connect(g); g.connect(_ac.destination); o.start(t+dt); o.stop(t+dt+0.18);
+    });
+  } catch(e){}
+}
+
+// ── PULSE XENOMORPHE (détection biologique) ──────────────
+function sndXenoPulse() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    const o = _ac.createOscillator(); o.type='sawtooth';
+    o.frequency.setValueAtTime(55, t);
+    o.frequency.exponentialRampToValueAtTime(28, t+0.22);
+    const dist = _ac.createWaveShaper();
+    const curve = new Float32Array(256);
+    for(let i=0;i<256;i++){const x=i*2/256-1; curve[i]=Math.tanh(x*4);}
+    dist.curve=curve;
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.09, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.25);
+    o.connect(dist); dist.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.26);
+  } catch(e){}
+}
+
+// ── BEEP MU-TH-UR 6000 (ordinateur de bord Alien) ─────────
+function sndMutherBeep() {
+  try {
+    _resume(); const t = _ac.currentTime;
+    // Bip caractéristique froid et métallique
+    const o = _ac.createOscillator(); o.type='sine';
+    o.frequency.setValueAtTime(1480, t);
+    o.frequency.setValueAtTime(1120, t+0.05);
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.06, t); g.gain.setValueAtTime(0.06, t+0.05); g.gain.exponentialRampToValueAtTime(0.001, t+0.12);
+    const hp = _ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=900;
+    o.connect(hp); hp.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.13);
+  } catch(e){}
+}
+
+// ── CLICK TERMINAL (KITT + Nostromo mix) ──────────────────
 function sndClick() {
   try {
     _resume(); const t = _ac.currentTime;
@@ -604,15 +870,16 @@ function sndClick() {
     const d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/len, 3.5);
     const src = _ac.createBufferSource(); src.buffer = buf;
-    const bp = _ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2700+Math.random()*400; bp.Q.value=4;
-    const hp = _ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=850;
-    const g = _ac.createGain(); g.gain.value=0.25;
+    const bp = _ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2200+Math.random()*300; bp.Q.value=3;
+    const hp = _ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=700;
+    const g = _ac.createGain(); g.gain.value=0.22;
     src.connect(bp); bp.connect(hp); hp.connect(g); g.connect(_ac.destination); src.start(t);
+    // Tonalité KITT légère
     const o = _ac.createOscillator(); o.type='square';
-    o.frequency.setValueAtTime(1350+Math.random()*200, t);
-    o.frequency.exponentialRampToValueAtTime(680, t+0.017);
-    const og = _ac.createGain(); og.gain.setValueAtTime(0.04, t); og.gain.exponentialRampToValueAtTime(0.001, t+0.020);
-    o.connect(og); og.connect(_ac.destination); o.start(t); o.stop(t+0.022);
+    o.frequency.setValueAtTime(1200+Math.random()*150, t);
+    o.frequency.exponentialRampToValueAtTime(600, t+0.015);
+    const og = _ac.createGain(); og.gain.setValueAtTime(0.03, t); og.gain.exponentialRampToValueAtTime(0.001, t+0.018);
+    o.connect(og); og.connect(_ac.destination); o.start(t); o.stop(t+0.020);
   } catch(e){}
 }
 
@@ -620,9 +887,9 @@ function sndTick() {
   try {
     _resume(); const t = _ac.currentTime;
     const o = _ac.createOscillator(); o.type='triangle';
-    o.frequency.setValueAtTime(3800+Math.random()*400, t);
-    o.frequency.exponentialRampToValueAtTime(2400, t+0.012);
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.015);
+    o.frequency.setValueAtTime(3600+Math.random()*300, t);
+    o.frequency.exponentialRampToValueAtTime(2200, t+0.012);
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.025, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.015);
     o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.016);
   } catch(e){}
 }
@@ -630,66 +897,170 @@ function sndTick() {
 function sndData() {
   try {
     _resume(); const t = _ac.currentTime;
+    // Mix : pulse Alien + sawtooth terminal
     const o = _ac.createOscillator(); o.type='sawtooth';
-    o.frequency.value = 1800 + Math.random()*600;
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.012);
-    const lp = _ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=4000;
-    o.connect(lp); lp.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.013);
+    o.frequency.value = 1600 + Math.random()*500;
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.04, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.014);
+    const lp = _ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3500;
+    o.connect(lp); lp.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.015);
+    // Sub-bass Alien subtil
+    if(Math.random()>0.6){
+      const o2=_ac.createOscillator(); o2.type='sine'; o2.frequency.value=60+Math.random()*20;
+      const g2=_ac.createGain(); g2.gain.setValueAtTime(0.018,t); g2.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+      o2.connect(g2); g2.connect(_ac.destination); o2.start(t); o2.stop(t+0.045);
+    }
   } catch(e){}
 }
 
 function sndGlitch() {
   try {
     _resume(); const t = _ac.currentTime;
-    const len = Math.floor(_ac.sampleRate * 0.035);
+    const len = Math.floor(_ac.sampleRate * 0.04);
     const buf = _ac.createBuffer(1, len, _ac.sampleRate);
     const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (Math.random() > 0.5 ? 0.9 : 0.05);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * (Math.random() > 0.5 ? 0.85 : 0.04);
     const src = _ac.createBufferSource(); src.buffer=buf;
-    const bp = _ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200; bp.Q.value=2;
-    const g = _ac.createGain(); g.gain.value=0.12;
+    const bp = _ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=900; bp.Q.value=1.5;
+    const g = _ac.createGain(); g.gain.value=0.10;
     src.connect(bp); bp.connect(g); g.connect(_ac.destination); src.start(t);
+    // Micro-bleep Alien sur glitch
+    const o = _ac.createOscillator(); o.type='square'; o.frequency.value=220;
+    const og=_ac.createGain(); og.gain.setValueAtTime(0.03,t); og.gain.exponentialRampToValueAtTime(0.001,t+0.035);
+    o.connect(og); og.connect(_ac.destination); o.start(t); o.stop(t+0.038);
   } catch(e){}
 }
 
 function sndLineEnd() {
   try {
     _resume(); const t = _ac.currentTime;
+    // Descente Alien + fin de ligne KITT
     const o = _ac.createOscillator(); o.type='sine';
-    o.frequency.setValueAtTime(900, t);
-    o.frequency.exponentialRampToValueAtTime(600, t+0.06);
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.028, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.07);
-    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.08);
+    o.frequency.setValueAtTime(840, t);
+    o.frequency.exponentialRampToValueAtTime(320, t+0.10);
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.032, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.11);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.12);
+    // Sub harmonique
+    const o2=_ac.createOscillator(); o2.type='sine'; o2.frequency.value=80;
+    const g2=_ac.createGain(); g2.gain.setValueAtTime(0.015,t); g2.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+    o2.connect(g2); g2.connect(_ac.destination); o2.start(t); o2.stop(t+0.09);
   } catch(e){}
 }
 
 function sndSelect() {
   try {
     _resume(); const t = _ac.currentTime;
+    // KITT select + confirmation MU-TH-UR
     [440,660,880].forEach((f,i) => {
       const o = _ac.createOscillator(); o.type='square'; o.frequency.value=f;
-      const g = _ac.createGain(); g.gain.setValueAtTime(0.04, t+i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.06+0.05);
-      o.connect(g); g.connect(_ac.destination); o.start(t+i*0.06); o.stop(t+i*0.06+0.055);
+      const g = _ac.createGain(); g.gain.setValueAtTime(0.035, t+i*0.065); g.gain.exponentialRampToValueAtTime(0.001, t+i*0.065+0.055);
+      o.connect(g); g.connect(_ac.destination); o.start(t+i*0.065); o.stop(t+i*0.065+0.06);
     });
+    // Confirmation grave Alien
+    setTimeout(()=>{
+      try{
+        const o=_ac.createOscillator(); o.type='sine'; o.frequency.value=120;
+        const g=_ac.createGain(); g.gain.setValueAtTime(0.05,_ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,_ac.currentTime+0.25);
+        o.connect(g); g.connect(_ac.destination); o.start(); o.stop(_ac.currentTime+0.28);
+      }catch(e){}
+    }, 220);
   } catch(e){}
 }
 
 function sndError() {
   try {
     _resume(); const t = _ac.currentTime;
-    const o = _ac.createOscillator(); o.type='square'; o.frequency.value=180;
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.08);
-    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.09);
+    // Alarme double Alien + buzzer KITT
+    const o = _ac.createOscillator(); o.type='square'; o.frequency.value=160;
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.09);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.10);
+    const o2=_ac.createOscillator(); o2.type='sawtooth'; o2.frequency.value=90;
+    const g2=_ac.createGain(); g2.gain.setValueAtTime(0.04,t+0.12); g2.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+    o2.connect(g2); g2.connect(_ac.destination); o2.start(t+0.12); o2.stop(t+0.23);
   } catch(e){}
 }
 
+// ── KITT CHIME — signature sonore KITT + résonance Alien ──
 function kittChime() {
   try {
     _resume(); const t = _ac.currentTime;
+    // Chime KITT principal
     const o = _ac.createOscillator(); o.type='sine';
-    o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(220, t+0.35);
-    const g = _ac.createGain(); g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
-    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.4);
+    o.frequency.setValueAtTime(920, t); o.frequency.exponentialRampToValueAtTime(240, t+0.38);
+    const g = _ac.createGain(); g.gain.setValueAtTime(0.09, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.42);
+    o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.43);
+    // Résonance grave Alien (comme un écho dans le vaisseau)
+    const o2=_ac.createOscillator(); o2.type='triangle'; o2.frequency.value=58;
+    const g2=_ac.createGain(); g2.gain.setValueAtTime(0.045,t+0.05); g2.gain.exponentialRampToValueAtTime(0.001,t+0.55);
+    o2.connect(g2); g2.connect(_ac.destination); o2.start(t+0.05); o2.stop(t+0.58);
+    // Harmonique KITT (3e partielle)
+    const o3=_ac.createOscillator(); o3.type='sine'; o3.frequency.value=1840;
+    const g3=_ac.createGain(); g3.gain.setValueAtTime(0.02,t); g3.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+    o3.connect(g3); g3.connect(_ac.destination); o3.start(t); o3.stop(t+0.19);
+  } catch(e){}
+}
+
+// ── VOIX SYNTHÈSE — MU-TH-UR / KITT via Web Speech API ───
+const _synth = window.speechSynthesis;
+let _voices = [];
+let _voiceReady = false;
+
+function _loadVoices() {
+  _voices = _synth.getVoices();
+  if(_voices.length > 0) _voiceReady = true;
+}
+_loadVoices();
+if(_synth.onvoiceschanged !== undefined) _synth.onvoiceschanged = _loadVoices;
+
+// Trouver la meilleure voix pour la langue donnée
+function _getBestVoice(lang) {
+  const map = {
+    fr: ['fr-FR','fr-BE','fr'],
+    en: ['en-US','en-GB','en'],
+    nl: ['nl-NL','nl-BE','nl'],
+    de: ['de-DE','de'],
+    it: ['it-IT','it'],
+    es: ['es-ES','es'],
+    pt: ['pt-PT','pt-BR','pt'],
+  };
+  const prefs = map[lang] || ['en-US'];
+  for(const pref of prefs){
+    const v = _voices.find(v => v.lang.startsWith(pref));
+    if(v) return v;
+  }
+  return _voices[0] || null;
+}
+
+// Synthèse vocale façon MU-TH-UR : froide, lente, robotique
+function speakMuther(text, lang) {
+  try {
+    if(!_synth) return;
+    _synth.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    const voice = _getBestVoice(lang || LANG);
+    if(voice) utt.voice = voice;
+    utt.rate = 0.78;   // Lent comme MU-TH-UR
+    utt.pitch = 0.72;  // Grave et froid
+    utt.volume = 0.88;
+    utt.lang = {fr:'fr-FR',en:'en-US',nl:'nl-NL',de:'de-DE',it:'it-IT',es:'es-ES',pt:'pt-PT'}[lang||LANG]||'fr-FR';
+    // Bip avant la voix
+    sndMutherBeep();
+    setTimeout(() => _synth.speak(utt), 140);
+  } catch(e){}
+}
+
+// Voix rapide pour confirmations courtes
+function speakKitt(text, lang) {
+  try {
+    if(!_synth) return;
+    _synth.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    const voice = _getBestVoice(lang || LANG);
+    if(voice) utt.voice = voice;
+    utt.rate = 0.90;
+    utt.pitch = 0.82;
+    utt.volume = 0.82;
+    utt.lang = {fr:'fr-FR',en:'en-US',nl:'nl-NL',de:'de-DE',it:'it-IT',es:'es-ES',pt:'pt-PT'}[lang||LANG]||'fr-FR';
+    _synth.speak(utt);
   } catch(e){}
 }
 
@@ -1086,44 +1457,84 @@ const CMD_ALIASES = {
 // LANGUE — écran sélection
 // ════════════════════════════════════════════════════════════
 const LANG_LIST = [
-  ['1','fr','FRANÇAIS'],['2','en','ENGLISH'],['3','nl','NEDERLANDS'],
-  ['4','it','ITALIANO'],['5','de','DEUTSCH'],['6','es','ESPAÑOL'],['7','pt','PORTUGUÊS'],
+  ['1','fr','FRANÇAIS','Français','🇫🇷','Bonjour, je suis KITT. Système franco-belge activé.'],
+  ['2','en','ENGLISH','English','🇬🇧','Hello, I am KITT. Knight Industries Two Thousand, online.'],
+  ['3','nl','NEDERLANDS','Nederlands','🇧🇪','Hallo, ik ben KITT. Systeem geactiveerd.'],
+  ['4','it','ITALIANO','Italiano','🇮🇹','Ciao, sono KITT. Sistema attivato.'],
+  ['5','de','DEUTSCH','Deutsch','🇩🇪','Hallo, ich bin KITT. System aktiviert.'],
+  ['6','es','ESPAÑOL','Español','🇪🇸','Hola, soy KITT. Sistema activado.'],
+  ['7','pt','PORTUGUÊS','Português','🇵🇹','Olá, eu sou o KITT. Sistema ativado.'],
 ];
 
+let _langVoiceEnabled = true;
+window.toggleLangVoice = function() {
+  _langVoiceEnabled = !_langVoiceEnabled;
+  const btn = document.getElementById('lang-voice-toggle');
+  if(btn) btn.textContent = _langVoiceEnabled ? '🔊 VOIX' : '🔇 VOIX';
+  sndClick();
+};
+window._previewLangVoice = function(code, phrase) {
+  if(!_langVoiceEnabled) return;
+  _resume();
+  sndMutherBeep();
+  setTimeout(()=>speakMuther(phrase, code), 200);
+};
+
 async function showLangScreen() {
+  _resume();
   const screen = document.getElementById('lang-screen');
   screen.style.display = 'flex';
   screen.style.opacity  = '1';
-  ['lang-hdr','lang-sub','lang-output','lang-ftr'].forEach(id => {
-    document.getElementById(id).innerHTML = '';
-  });
-  const hdr = document.getElementById('lang-hdr');
+
+  document.getElementById('lang-sys-id').textContent = '';
+  document.getElementById('lang-sub').textContent = '';
+  document.getElementById('lang-output').innerHTML = '';
+  document.getElementById('lang-ftr-txt').textContent = '';
+
+  // Lancer ambiance Nostromo
+  startAlienAmbient();
+
+  // Bip alien initial
+  await _langDelay(300);
+  sndAlienAlert();
+  await _langDelay(280);
+
+  // Titre système
+  const sysId = document.getElementById('lang-sys-id');
+  await _langType(sysId, 'MU-TH-UR 6000  ×  KITT  //  PROTOCOL v3.1');
+  await _langDelay(90);
+
   const sub = document.getElementById('lang-sub');
+  await _langType(sub, 'SELECT INTERFACE LANGUAGE — CHOISISSEZ VOTRE LANGUE');
+  await _langDelay(70);
+
   const out = document.getElementById('lang-output');
-  const ftr = document.getElementById('lang-ftr');
-  await _langType(hdr, 'MU-TH-UR 6000  //  INTERFACE PROTOCOL v2.1');
-  await _langDelay(80);
-  await _langType(sub, 'SELECT INTERFACE LANGUAGE');
-  await _langDelay(60);
-  for (const [num, code, label] of LANG_LIST) {
+  for (const [num, code, label, native, flag, phrase] of LANG_LIST) {
     const row = document.createElement('div');
     row.className = 'lang-opt';
     row.dataset.code = code;
-    row.innerHTML = `<span class="lo-n">${num}</span><span class="lo-l">${label}</span>`;
+    row.innerHTML = `
+      <span class="lo-n">${num}</span>
+      <span class="lo-flag">${flag}</span>
+      <div class="lo-text">
+        <span class="lo-label">${label}</span>
+        <span class="lo-native">${native}</span>
+      </div>
+      <button class="lo-voice-btn" onclick="event.stopPropagation();_previewLangVoice('${code}','${phrase}')">ÉCOUTER</button>
+    `;
     row.addEventListener('click', () => selectLang(code));
-    row.addEventListener('mouseenter', () => sndTick());
+    row.addEventListener('mouseenter', () => { sndTick(); });
     out.appendChild(row);
     sndClick();
-    await _langDelay(55);
+    await _langDelay(58);
   }
-  await _langDelay(80);
-  const ftrTxt = document.createElement('span');
-  ftr.appendChild(ftrTxt);
-  await _langType(ftrTxt, 'PRESS  [ 1 – 7 ]  OR CLICK');
+
+  await _langDelay(90);
+  const ftrTxt = document.getElementById('lang-ftr-txt');
+  await _langType(ftrTxt, '[ 1–7 ] ou cliquez — ▶ pour entendre la voix');
   const cur = document.createElement('span');
-  cur.className = 'cursor';
-  cur.style.marginLeft = '4px';
-  ftr.appendChild(cur);
+  cur.className = 'cursor'; cur.style.marginLeft = '4px';
+  ftrTxt.after(cur);
 }
 
 function _langType(el, txt) {
@@ -1155,11 +1566,21 @@ function selectLang(lang) {
   document.getElementById('btn-clear').textContent   = t.btn_clear;
   document.getElementById('btn-tunnel-txt').textContent = t.btn_tunnel;
   sndSelect();
+
+  // Voix de bienvenue dans la langue choisie
+  const greet = LANG_LIST.find(l=>l[1]===lang);
+  if(greet && _langVoiceEnabled) {
+    setTimeout(()=>speakMuther(greet[5], lang), 400);
+  }
+
+  // Arrêter l'ambiance Nostromo progressivement
+  stopAlienAmbient();
+
   const screen = document.getElementById('lang-screen');
   screen.style.transition = 'opacity .45s';
   screen.style.opacity = '0';
-  setTimeout(() => { screen.style.display = 'none'; screen.style.opacity = '1'; screen.style.transition = ''; }, 480);
-  setTimeout(() => startMain(), 550);
+  setTimeout(() => { screen.style.display = 'none'; screen.style.opacity = '1'; screen.style.transition = ''; }, 500);
+  setTimeout(() => startMain(), 580);
 }
 
 document.addEventListener('keydown', e => {
@@ -1290,6 +1711,7 @@ const CMDS = {
     await typeText(l.hi,  16, 'line-err');
     await typeText(l.hi2, 14, 'line-ok');
     await typeText(l.hi3, 14, 'line-dim');
+    if(_langVoiceEnabled) speakKitt(l.hi + ' ' + l.hi2, LANG);
   },
   boot:       async () => boot(),
   diagnostic: async () => runSelfTest(),
@@ -1458,17 +1880,32 @@ const CMDS = {
     await typeText(`TOTAL : ${cars.length} RÉPLIQUES. 3 ARTISANS. 1 COMMUNAUTÉ. UNE LÉGENDE.`, 12, 'line-info');
   },
   alien: async () => {
-    kittChime();
-    await typeText('CONNEXION AU VAISSEAU NOSTROMO...', 16, 'line-warn');
-    await delay(500);
-    await typeText('MU-TH-UR 6000 EN LIGNE.', 14, 'line-err');
-    await delay(250);
-    await typeText('PRIORITÉ 1 — SPECIAL ORDER 937 :', 12, 'line-warn');
-    await typeText('  RAMENER L\'ORGANISME. ÉQUIPAGE EXPENDABLE.', 12, 'line-err');
-    await delay(500);
-    await typeText('...connexion interrompue par protocole KITT.', 12, 'line-dim');
-    await typeText('KITT EST PLUS SYMPA QUE WEYLAND-YUTANI.', 14, 'line-ok');
-    await typeText('ET AU MOINS IL NE SACRIFIE PAS SON ÉQUIPAGE.', 12, 'line-dim');
+    sndAlienAlert();
+    await delay(400);
+    await typeText('═══════════════════════════════════════════', 5, 'line-dim');
+    await typeText('  CONNEXION AU VAISSEAU USCSS NOSTROMO...  ', 14, 'line-warn');
+    await typeText('  WEYLAND-YUTANI CORP — UPSILON SECTOR     ', 14, 'line-warn');
+    await typeText('═══════════════════════════════════════════', 5, 'line-dim');
+    await delay(350);
+    sndXenoPulse();
+    await typeText('MU-TH-UR 6000 — EN LIGNE.                 ', 16, 'line-err');
+    await delay(200);
+    sndAlienAlert();
+    await typeText('PRIORITÉ 1 — ORDRE SPÉCIAL 937 :          ', 12, 'line-warn');
+    await typeText('  RAMENER L\'ORGANISME — VIVANT.            ', 12, 'line-err');
+    await typeText('  ÉQUIPAGE : EXPENDABLE.                   ', 12, 'line-err');
+    await delay(600);
+    sndXenoPulse();
+    await typeText('...INTERFÉRENCE DÉTECTÉE SUR LE CANAL...   ', 12, 'line-dim');
+    await delay(400);
+    sndGlitch();
+    await typeText('PROTOCOLE KITT ACTIVÉ — CONNEXION COUPÉE. ', 14, 'line-ok');
+    await delay(200);
+    await typeText('KITT : "Michael, j\'ai trouvé quelque chose."', 13, 'line-ok');
+    await typeText('KITT : "Weyland-Yutani sacrifie son équipage."', 13, 'line-ok');
+    await typeText('KITT : "Heureusement que moi, je surveille le mien."', 13, 'line-dim');
+    await typeText('═══════════════════════════════════════════', 5, 'line-dim');
+    if(_langVoiceEnabled) speakMuther("Priorité un. Ramener l'organisme. Équipage, expendable.", LANG);
   },
   matrix: async () => {
     kittChime();
@@ -1817,6 +2254,10 @@ document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); 
 function startMain() {
   (async () => {
     await delay(200);
+    kittChime();
+    await delay(300);
+    sndAlienAlert();
+    await delay(400);
     await typeText(T[LANG].wait,      14, 'line-dim');
     await typeText(T[LANG].help_hint, 12, 'line-dim');
   })();
