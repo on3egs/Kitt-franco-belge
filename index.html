@@ -274,6 +274,95 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 /* Numéro de langue plus visible */
 .lo-n{font-size:11px;min-width:24px;border:1px solid rgba(0,255,102,.5);transition:all .15s;}
 
+/* ── TABLEAU DE BORD KITT ───────────────────────────────── */
+@keyframes kScan{
+  0%{left:4%}
+  48%{left:calc(100% - 28px)}
+  50%{left:calc(100% - 28px)}
+  98%{left:4%}
+  100%{left:4%}
+}
+@keyframes kScanGlow{
+  0%,48%,52%,100%{box-shadow:0 0 10px 4px rgba(255,20,0,.7),0 0 22px 8px rgba(255,20,0,.35)}
+  49%,51%{box-shadow:0 0 14px 6px rgba(255,60,0,.9),0 0 30px 12px rgba(255,40,0,.5)}
+}
+@keyframes dashFadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+#kitt-dash{
+  position:fixed;bottom:0;left:0;right:0;height:68px;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(2,0,0,.85) 30%,#060000 100%);
+  z-index:110;pointer-events:none;
+  display:none;
+  border-top:1px solid rgba(255,26,26,.08);
+}
+#kitt-dash.visible{display:block;animation:dashFadeIn .8s ease-out forwards;}
+#kitt-hood{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:min(700px,95vw);height:58px;
+  background:linear-gradient(180deg,#0a0000 0%,#000 60%);
+  border-radius:40% 40% 0 0 / 55% 55% 0 0;
+  border-top:1px solid rgba(255,26,26,.15);
+  overflow:hidden;
+}
+#kitt-scan-track{
+  position:absolute;top:18px;left:8%;right:8%;height:6px;
+  background:rgba(40,0,0,.6);border-radius:3px;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.8);
+}
+#kitt-scan-dot{
+  position:absolute;top:-1px;left:4%;
+  width:24px;height:8px;border-radius:4px;
+  background:linear-gradient(90deg,rgba(255,20,0,.3),#ff1a00,rgba(255,20,0,.3));
+  animation:kScan 1.9s ease-in-out infinite,kScanGlow 1.9s ease-in-out infinite;
+}
+#kitt-scan-trail{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(90deg,transparent 10%,rgba(255,20,0,.04) 50%,transparent 90%);
+  border-radius:3px;
+}
+
+/* ── APPEL ENTRANT KITT ─────────────────────────────────── */
+@keyframes callRing{0%,100%{transform:scale(1)}10%,30%{transform:scale(1.04)}20%,40%{transform:scale(.98)}}
+@keyframes callPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,26,26,.4)}70%{box-shadow:0 0 0 16px rgba(255,26,26,0)}}
+@keyframes callIn{from{opacity:0;transform:translate(-50%,-50%) scale(.88)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+#kitt-call{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:9200;
+  background:rgba(2,0,0,.92);
+  border:1px solid var(--red);
+  border-radius:12px;
+  padding:28px 32px;
+  width:min(340px,92vw);
+  text-align:center;
+  font-family:"Courier New",monospace;
+  backdrop-filter:blur(8px);
+  display:none;
+  box-shadow:0 0 60px rgba(255,26,26,.2);
+}
+#kitt-call.active{display:block;animation:callIn .35s cubic-bezier(.34,1.56,.64,1) forwards;}
+#call-avatar{
+  width:64px;height:64px;border-radius:50%;
+  border:2px solid var(--red);margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;letter-spacing:2px;color:var(--red);
+  background:rgba(40,0,0,.6);
+  animation:callRing 1.2s ease-in-out infinite,callPulse 1.4s ease-in-out infinite;
+  font-family:"Courier New",monospace;
+}
+#call-name{color:var(--red);font-size:16px;letter-spacing:5px;text-shadow:0 0 16px var(--red);margin-bottom:4px;}
+#call-status{color:rgba(255,100,0,.7);font-size:9px;letter-spacing:3px;margin-bottom:20px;animation:bd 1.1s ease-in-out infinite;}
+.call-btns{display:flex;gap:14px;justify-content:center;}
+.call-btn{
+  flex:1;padding:10px 0;border:1px solid;border-radius:6px;
+  cursor:pointer;font-family:"Courier New",monospace;
+  font-size:11px;letter-spacing:2px;background:transparent;
+  transition:all .15s;pointer-events:all;
+}
+#call-accept{border-color:var(--green);color:var(--green);}
+#call-accept:hover,#call-accept:active{background:var(--green);color:#000;}
+#call-ignore{border-color:#333;color:#555;}
+#call-ignore:hover,#call-ignore:active{border-color:var(--red);color:var(--red);}
+
 /* ── TERMINAL ───────────────────────────────────────────── */
 #terminal{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 4px;font-size:13px;line-height:1.65;scrollbar-width:thin;scrollbar-color:var(--red) #111;}
 #terminal::-webkit-scrollbar{width:4px}
@@ -1673,6 +1762,9 @@ function selectLang(lang) {
   screen.style.transition = "opacity .45s";
   screen.style.opacity = "0";
   setTimeout(() => { screen.style.display="none"; screen.style.opacity="1"; screen.style.transition=""; }, 500);
+  // Dashboard + appel après la sélection
+  setTimeout(()=>{ try{showKittDash();}catch(e){} }, 600);
+  setTimeout(()=>{ try{showKittCall();}catch(e){} }, 2400);
 }
 
 // Clavier pour sélection de langue
@@ -2729,6 +2821,183 @@ window.addEventListener('load', () => runAccessScreen());
   let i=0;
   setInterval(()=>{i=(i+1)%stati.length; el.textContent='op.MANIX \u25CF '+stati[i];},3200);
 })();
+
+// ════════════════════════════════════════════════════════════
+// PLUIE SUR LE PARE-BRISE
+// ════════════════════════════════════════════════════════════
+(function(){
+  const c=document.createElement('canvas');
+  c.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;';
+  document.body.appendChild(c);
+  const ctx=c.getContext('2d');
+  let W,H;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  resize(); window.addEventListener('resize',resize);
+
+  const N=window.innerWidth<600?28:52;
+  const drops=[];
+
+  function mkDrop(imm){
+    return{
+      x:Math.random()*W,
+      y:imm?Math.random()*H:-8,
+      vy:1.3+Math.random()*2.8,
+      vx:(Math.random()-.5)*.4,
+      r:1.2+Math.random()*2.2,
+      alpha:.2+Math.random()*.32,
+      tail:[],
+      phase:Math.random()*Math.PI*2
+    };
+  }
+  for(let i=0;i<N;i++) drops.push(mkDrop(true));
+
+  // Rivulets
+  const rivs=[];
+  for(let i=0;i<(window.innerWidth<600?4:9);i++) rivs.push({
+    x:W*(.08+Math.random()*.84),y:Math.random()*H*.4,
+    pts:[],speed:.7+Math.random()*1.4,
+    alpha:.07+Math.random()*.1,drift:(Math.random()-.5)*.12,maxPts:55+Math.floor(Math.random()*90)
+  });
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // Rivulets
+    rivs.forEach(rv=>{
+      rv.y+=rv.speed; rv.x+=rv.drift+(Math.random()-.5)*.15;
+      rv.pts.unshift({x:rv.x,y:rv.y});
+      if(rv.pts.length>rv.maxPts) rv.pts.pop();
+      if(rv.y>H+10){rv.y=Math.random()*H*.25;rv.x=W*(.08+Math.random()*.84);rv.pts=[];}
+      if(rv.pts.length<2) return;
+      ctx.beginPath(); ctx.moveTo(rv.pts[0].x,rv.pts[0].y);
+      for(let i=1;i<rv.pts.length;i++) ctx.lineTo(rv.pts[i].x,rv.pts[i].y);
+      ctx.strokeStyle=`rgba(180,240,190,${rv.alpha})`; ctx.lineWidth=.7; ctx.stroke();
+    });
+
+    // Drops
+    for(let i=drops.length-1;i>=0;i--){
+      const d=drops[i];
+      d.phase+=.03; d.vy+=.05; d.x+=d.vx+(Math.sin(d.phase)*.15); d.y+=d.vy;
+      d.tail.unshift({x:d.x,y:d.y});
+      if(d.tail.length>10) d.tail.pop();
+      if(d.y>H+20||d.x<-20||d.x>W+20){ drops[i]=mkDrop(false); continue; }
+
+      // Teardrop shape
+      ctx.save();
+      ctx.translate(d.x,d.y);
+      ctx.rotate(Math.atan2(d.vy,d.vx)-.2);
+      const g=ctx.createRadialGradient(-d.r*.2,-d.r*.3,0,0,d.r*.4,d.r*2);
+      g.addColorStop(0,`rgba(255,255,255,${d.alpha*.9})`);
+      g.addColorStop(.4,`rgba(180,240,190,${d.alpha*.45})`);
+      g.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.ellipse(0,d.r*.2,d.r*.55,d.r,0,0,Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+      // Highlight
+      ctx.beginPath(); ctx.arc(-d.r*.18,-d.r*.25,d.r*.28,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${d.alpha*.55})`; ctx.fill();
+      ctx.restore();
+
+      // Tail streak
+      if(d.tail.length>2){
+        ctx.beginPath(); ctx.moveTo(d.tail[0].x,d.tail[0].y);
+        for(let j=1;j<d.tail.length;j++) ctx.lineTo(d.tail[j].x,d.tail[j].y);
+        ctx.strokeStyle=`rgba(160,230,170,${d.alpha*.28})`; ctx.lineWidth=d.r*.4; ctx.stroke();
+      }
+
+      // Lens glow (refraction verte KITT + rouge feux)
+      const gl=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r*3.5);
+      gl.addColorStop(0,`rgba(0,255,102,${d.alpha*.09})`);
+      gl.addColorStop(.6,`rgba(255,30,0,${d.alpha*.04})`);
+      gl.addColorStop(1,'transparent');
+      ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(d.x,d.y,d.r*3.5,0,Math.PI*2); ctx.fill();
+
+      // Occasional split
+      if(d.vy>4&&Math.random()<.002&&drops.length<N+8){
+        const nd=mkDrop(false); nd.x=d.x; nd.y=d.y; nd.vy=d.vy*.55; nd.r=d.r*.55;
+        nd.vx=d.vx+(Math.random()-.5)*1.8; nd.alpha=d.alpha*.6; drops.push(nd);
+        d.alpha*=.35;
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ════════════════════════════════════════════════════════════
+// TABLEAU DE BORD KITT
+// ════════════════════════════════════════════════════════════
+function showKittDash(){
+  const dash=document.getElementById('kitt-dash');
+  if(dash) dash.classList.add('visible');
+}
+
+// ════════════════════════════════════════════════════════════
+// APPEL ENTRANT K.I.T·T
+// ════════════════════════════════════════════════════════════
+let _callShown=false;
+function showKittCall(){
+  if(_callShown) return;
+  _callShown=true;
+  const call=document.getElementById('kitt-call');
+  if(!call) return;
+  call.classList.add('active');
+  // Sonnerie Web Audio
+  let _ring=null;
+  function startRing(){
+    try{
+      _resume();
+      _ring=setInterval(()=>{
+        const t=_ac.currentTime;
+        [0,.18].forEach(dt=>{
+          const o=_ac.createOscillator(); o.type='sine'; o.frequency.value=880;
+          const g=_ac.createGain(); g.gain.setValueAtTime(.07,t+dt); g.gain.exponentialRampToValueAtTime(.001,t+dt+.15);
+          o.connect(g); g.connect(_ac.destination); o.start(t+dt); o.stop(t+dt+.16);
+        });
+      },1400);
+    }catch(e){}
+  }
+  function stopRing(){ if(_ring) clearInterval(_ring); }
+  startRing();
+
+  document.getElementById('call-accept').onclick=()=>{
+    stopRing(); call.style.transition='opacity .4s'; call.style.opacity='0';
+    setTimeout(()=>{ call.style.display='none'; },420);
+    // Voix KITT
+    try{
+      const txt='Bonjour '+((LANG==='fr')?'Manix':'Manix')+'. Système KYRONEX en ligne. Je suis KITT. Prêt à rouler.';
+      speakMuther(txt,'fr');
+    }catch(e){}
+    // Chime KITT
+    setTimeout(()=>{ try{kittChime();}catch(e){} },300);
+  };
+  document.getElementById('call-ignore').onclick=()=>{
+    stopRing(); call.style.transition='opacity .3s'; call.style.opacity='0';
+    setTimeout(()=>{ call.style.display='none'; },320);
+  };
+}
+
 </script>
+
+<!-- TABLEAU DE BORD KITT -->
+<div id="kitt-dash">
+  <div id="kitt-hood">
+    <div id="kitt-scan-track">
+      <div id="kitt-scan-dot"></div>
+      <div id="kitt-scan-trail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APPEL ENTRANT K.I.T·T -->
+<div id="kitt-call">
+  <div id="call-avatar">K·I·T·T</div>
+  <div id="call-name">K · I · T · T</div>
+  <div id="call-status">APPEL ENTRANT ···</div>
+  <div class="call-btns">
+    <button class="call-btn" id="call-accept">&#9742; ACCEPTER</button>
+    <button class="call-btn" id="call-ignore">&#10005; IGNORER</button>
+  </div>
+</div>
+
 </body>
 </html>
