@@ -1316,22 +1316,30 @@ function typeText(text, speed=16, cls='line-ok') {
 function clearTerm() { term.innerHTML=''; addLine(T[LANG].cleared,'line-dim'); }
 
 // ════════════════════════════════════════════════════════════
-// ★ APPEL KITT — déclenché après 3 commandes ET 2 minutes
+// ★ APPEL KITT — déclenché après 2 commandes ET 45 secondes
 // ════════════════════════════════════════════════════════════
 let _cmdCount = 0;
-let _callReady = false;  // devient true après 2 minutes
+let _callReady = false;
 let _callScheduled = false;
 
 function _scheduleKittCall() {
-  // Fenêtre de 2 minutes minimum avant que l'appel puisse arriver
-  setTimeout(() => { _callReady = true; _tryKittCall(); }, 120000);
+  // Condition 1 : 45 secondes écoulées
+  setTimeout(() => {
+    _callReady = true;
+    _tryKittCall();
+  }, 45000);
+
+  // Fallback absolu : appel dans 3 minutes quoi qu'il arrive
+  setTimeout(() => {
+    _tryKittCall(true);
+  }, 180000);
 }
 
-function _tryKittCall() {
+function _tryKittCall(force) {
   if (_callScheduled || _callShown) return;
-  if (_callReady && _cmdCount >= 3) {
+  if (force || (_callReady && _cmdCount >= 2)) {
     _callScheduled = true;
-    setTimeout(() => { try{ showKittCall(); }catch(e){} }, 2000);
+    setTimeout(() => { try{ showKittCall(); }catch(e){} }, 1500);
   }
 }
 
