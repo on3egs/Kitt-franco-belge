@@ -1028,7 +1028,9 @@ async function runMotherIntro() {
   intro.style.display = 'none';
   intro.style.opacity = '';
   intro.style.transition = '';
-  showLangScreen();
+  // Intro terminée → terminal prêt, dashboard + appel KITT
+  setTimeout(()=>{ try{showKittDash();}catch(e){} }, 800);
+  setTimeout(()=>{ try{showKittCall();}catch(e){} }, 8000);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1771,7 +1773,7 @@ async function showLangScreen() {
     row.dataset.code = code;
     row.innerHTML = `<span class="lo-n">${num}</span><span class="lo-flag" data-code="${code.toUpperCase()}">${flag}</span><div class="lo-text"><span class="lo-label">${label}</span><span class="lo-native">${native}</span></div><button class="lo-voice-btn" onclick="event.stopPropagation();_previewLangVoice('${code}','${phrase}')">&#9654; VOIX</button>`;
     row.addEventListener("click", () => selectLang(code));
-    row.addEventListener("mouseenter", () => { sndTick(); });
+    row.addEventListener("mouseenter", () => { sndTick(); if(_langVoiceEnabled) _previewLangVoice(code, phrase); });
     out.appendChild(row);
     sndClick();
     await _langDelay(58);
@@ -1836,10 +1838,13 @@ function selectLang(lang) {
   const screen = document.getElementById("lang-screen");
   screen.style.transition = "opacity .45s";
   screen.style.opacity = "0";
-  setTimeout(() => { screen.style.display="none"; screen.style.opacity="1"; screen.style.transition=""; }, 500);
-  // Dashboard + appel après la sélection
-  setTimeout(()=>{ try{showKittDash();}catch(e){} }, 800);
-  setTimeout(()=>{ try{showKittCall();}catch(e){} }, 8000);
+  setTimeout(() => {
+    screen.style.display="none";
+    screen.style.opacity="1";
+    screen.style.transition="";
+    // Intro MU-TH-UR APRÈS la sélection de langue
+    runMotherIntro();
+  }, 500);
 }
 
 // Clavier pour sélection de langue
@@ -2712,7 +2717,7 @@ function runAccessScreen() {
       setTimeout(()=>{
         screen.style.transition='opacity .9s';
         screen.style.opacity='0';
-        setTimeout(()=>{ screen.style.display='none'; runMotherIntro(); }, 950);
+        setTimeout(()=>{ screen.style.display='none'; showLangScreen(); }, 950);
       }, 2800);
     } else {
       // Accès refusé
