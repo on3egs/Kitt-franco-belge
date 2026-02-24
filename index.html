@@ -34,13 +34,24 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
   background:rgba(0,0,0,.93);z-index:9500;
   display:flex;align-items:center;justify-content:center;
   padding:20px;font-family:"Courier New",monospace;
+  overflow:hidden;
 }
+#access-screen::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(255,120,0,0.04) 60px),
+    repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(255,120,0,0.04) 60px);
+  pointer-events:none;z-index:0;
+  animation:gridPulse 4s ease-in-out infinite;
+}
+@keyframes gridPulse{0%,100%{opacity:0.4}50%{opacity:1}}
 #access-box{
   width:100%;max-width:480px;
   border:1px solid #CC6600;border-radius:8px;
   background:rgba(4,2,0,.6);backdrop-filter:blur(8px);
-  padding:32px 36px;position:relative;overflow:hidden;
-  box-shadow:0 0 80px rgba(255,100,0,.1),inset 0 0 40px rgba(255,80,0,.03);
+  padding:32px 36px;position:relative;overflow:hidden;z-index:1;
+  box-shadow:0 0 80px rgba(255,100,0,.18),0 0 160px rgba(255,60,0,.08),inset 0 0 40px rgba(255,80,0,.05);
 }
 #access-box::after{content:'';position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,153,0,.35),transparent);animation:scanBar 3s linear infinite;pointer-events:none;}
 #access-hdr{color:#FF9900;letter-spacing:4px;font-size:12px;text-align:center;border-bottom:1px solid #663300;padding-bottom:12px;margin-bottom:20px;animation:accessPulse 3s ease-in-out infinite;}
