@@ -546,7 +546,7 @@ button:active{transform:scale(.95);}
 </div>
 
 <!-- Language selection overlay -->
-<div id="lang-screen">
+<div id="lang-screen" style="display:none">
   <div class="lang-scanner-top"></div>
   <div class="lang-scanner-bot"></div>
   <div id="lang-box">
@@ -1835,8 +1835,8 @@ function selectLang(lang) {
   screen.style.opacity = "0";
   setTimeout(() => { screen.style.display="none"; screen.style.opacity="1"; screen.style.transition=""; }, 500);
   // Dashboard + appel après la sélection
-  setTimeout(()=>{ try{showKittDash();}catch(e){} }, 600);
-  setTimeout(()=>{ try{showKittCall();}catch(e){} }, 2400);
+  setTimeout(()=>{ try{showKittDash();}catch(e){} }, 800);
+  setTimeout(()=>{ try{showKittCall();}catch(e){} }, 8000);
 }
 
 // Clavier pour sélection de langue
