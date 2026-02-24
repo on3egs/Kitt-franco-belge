@@ -1074,7 +1074,11 @@ async function runMotherIntro() {
   intro.style.opacity = '';
   intro.style.transition = '';
   // Intro terminée → terminal prêt, dashboard + appel KITT
-  setTimeout(()=>{ try{showKittDash();}catch(e){} }, 800);
+  setTimeout(async ()=>{
+    try{showKittDash();}catch(e){}
+    await delay(400);
+    try{ addLine(T[LANG].wait, 'line-dim'); addLine(T[LANG].help_hint, 'line-dim'); }catch(e){}
+  }, 800);
   setTimeout(()=>{ try{showKittCall();}catch(e){} }, 8000);
 }
 
@@ -2577,7 +2581,6 @@ const MISSIONS = {
     {id:'kr95',   label:'Consulte le dossier KR95',         cmd:'kr95'},
     {id:'mario',  label:'Consulte le dossier Mario Ravasi', cmd:'mario'},
     {id:'za',     label:'Consulte le dossier ZA Elettronica',cmd:'za'},
-    {id:'connexion',label:'Clique sur Connexion IA',        cmd:null},
   ],
   en:[
     {id:'boot',   label:'Launch the boot sequence',    cmd:'boot'},
@@ -2589,7 +2592,6 @@ const MISSIONS = {
     {id:'kr95',   label:'Access KR95 file',            cmd:'kr95'},
     {id:'mario',  label:'Access Mario Ravasi file',    cmd:'mario'},
     {id:'za',     label:'Access ZA Elettronica file',  cmd:'za'},
-    {id:'connexion',label:'Click on AI Connection',   cmd:null},
   ],
   nl:[
     {id:'boot',   label:'Start de opstartsequentie',     cmd:'boot'},
@@ -2601,7 +2603,6 @@ const MISSIONS = {
     {id:'kr95',   label:'Raadpleeg KR95 dossier',        cmd:'kr95'},
     {id:'mario',  label:'Raadpleeg Mario Ravasi dossier',cmd:'mario'},
     {id:'za',     label:'Raadpleeg ZA Elettronica dossier',cmd:'za'},
-    {id:'connexion',label:'Klik op KITT Verbinding',    cmd:null},
   ],
   it:[
     {id:'boot',   label:'Avvia la sequenza di avvio',    cmd:'boot'},
@@ -2613,7 +2614,6 @@ const MISSIONS = {
     {id:'kr95',   label:'Consulta dossier KR95',         cmd:'kr95'},
     {id:'mario',  label:'Consulta dossier Mario Ravasi', cmd:'mario'},
     {id:'za',     label:'Consulta dossier ZA Elettronica',cmd:'za'},
-    {id:'connexion',label:'Clicca su Connetti KITT',    cmd:null},
   ],
   de:[
     {id:'boot',   label:'Startsequenz ausführen',            cmd:'boot'},
@@ -2625,7 +2625,6 @@ const MISSIONS = {
     {id:'kr95',   label:'KR95 Akte abrufen',                  cmd:'kr95'},
     {id:'mario',  label:'Mario Ravasi Akte abrufen',          cmd:'mario'},
     {id:'za',     label:'ZA Elettronica Akte abrufen',        cmd:'za'},
-    {id:'connexion',label:'Auf KI-Verbindung klicken',       cmd:null},
   ],
   es:[
     {id:'boot',   label:'Iniciar secuencia de arranque',      cmd:'boot'},
@@ -2637,7 +2636,6 @@ const MISSIONS = {
     {id:'kr95',   label:'Consultar expediente KR95',           cmd:'kr95'},
     {id:'mario',  label:'Consultar expediente Mario Ravasi',   cmd:'mario'},
     {id:'za',     label:'Consultar expediente ZA Elettronica', cmd:'za'},
-    {id:'connexion',label:'Clic en Conectar KITT',            cmd:null},
   ],
   pt:[
     {id:'boot',   label:'Iniciar sequência de arranque',       cmd:'boot'},
@@ -2649,7 +2647,6 @@ const MISSIONS = {
     {id:'kr95',   label:'Consultar dossier KR95',               cmd:'kr95'},
     {id:'mario',  label:'Consultar dossier Mario Ravasi',       cmd:'mario'},
     {id:'za',     label:'Consultar dossier ZA Elettronica',     cmd:'za'},
-    {id:'connexion',label:'Clicar em Ligar KITT',              cmd:null},
   ],
 };
 
@@ -2858,7 +2855,6 @@ function _updateTunnelBtn() {
 
 function connectTunnel() {
   sndSelect();
-  try{ _completeMission('connexion'); }catch(e){}
   if (_tunnelStatus === 'online' && _tunnelUrl && _isValidCfUrl(_tunnelUrl)) {
     addLine('[ TUNNEL ] CONNEXION SÉCURISÉE → ' + _tunnelUrl, 'line-ok');
     setTimeout(() => window.open(_tunnelUrl, '_blank', 'noopener,noreferrer'), 300);
