@@ -1109,6 +1109,7 @@ const T = {
       ['pascal',     'dossier K Industrie'],
       ['daemon',     'dossier Daemon Paule'],
       ['geoffrey',   'dossier Geoffrey'],
+      ['musique',    'thème musical K2000'],
       ['covid',      'origine du projet — confinement 2020'],
     ],
     hi:  'BONJOUR. JE SUIS KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
@@ -1185,6 +1186,7 @@ const T = {
       ['pascal',     'K Industrie file'],
       ['daemon',     'Daemon Paule file'],
       ['geoffrey',   'Geoffrey file'],
+      ['music',      'K2000 musical theme'],
       ['covid',      'project origin — lockdown 2020'],
     ],
     hi:  'HELLO. I AM KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
@@ -1261,6 +1263,7 @@ const T = {
       ['pascal',     'K Industrie dossier'],
       ['daemon',     'Daemon Paule dossier'],
       ['geoffrey',   'Geoffrey dossier'],
+      ['muziek',     'K2000 muzikaal thema'],
       ['covid',      'projectoorsprong — lockdown 2020'],
     ],
     hi:  'HALLO. IK BEN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
@@ -1315,7 +1318,7 @@ const T = {
       ['diagnostic', 'test completo del sistema'],
       ['status',     'stato rapido'],
       ['ora',        'ora corrente'],
-      ['version',    'versione interfaccia'],
+      ['versione',   'versione interfaccia'],
       ['suono',      'demo audio'],
       ['clear',      'cancella terminale'],
     ],
@@ -1338,6 +1341,7 @@ const T = {
       ['pascal',     'dossier K Industrie'],
       ['daemon',     'dossier Daemon Paule'],
       ['geoffrey',   'dossier Geoffrey'],
+      ['musica',     'tema musicale K2000'],
       ['covid',      'origine del progetto — lockdown 2020'],
     ],
     hi:  'CIAO. SONO KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
@@ -1415,6 +1419,7 @@ const T = {
       ['pascal',     'K Industrie Akte'],
       ['damon',      'Damon Paule Akte'],
       ['geoffrey',   'Geoffrey Akte'],
+      ['musik',      'K2000 Musikthema'],
       ['covid',      'Projektherkunft — Lockdown 2020'],
     ],
     hi:  'HALLO. ICH BIN KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
@@ -1492,6 +1497,7 @@ const T = {
       ['pascal',     'expediente K Industrie'],
       ['damon',      'expediente Damon Paule'],
       ['geoffrey',   'expediente Geoffrey'],
+      ['musica',     'tema musical K2000'],
       ['covid',      'origen del proyecto — confinamiento 2020'],
     ],
     hi:  'HOLA. SOY KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
@@ -1569,6 +1575,7 @@ const T = {
       ['pascal',     'dossier K Industrie'],
       ['damon',      'dossier Damon Paule'],
       ['geoffrey',   'dossier Geoffrey'],
+      ['musica',     'tema musical K2000'],
       ['covid',      'origem do projeto — confinamento 2020'],
     ],
     hi:  'OLÁ. SOU O KITT — KNIGHT INDUSTRIES TWO THOUSAND.',
@@ -1586,16 +1593,18 @@ const CMD_ALIASES = {
   diagnostic:'diagnostic', boot:'boot', alien:'alien', matrix:'matrix',
   kitt:'kitt', manix:'manix', cedric:'cedric', kr95:'kr95',
   jarvis:'jarvis', mario:'mario', za:'za', pascal:'pascal', geoffrey:'geoffrey',
+  music:'musique',
   // NL
   hulp:'aide', geluid:'son', hallo:'bonjour', grap:'blague',
   tijd:'heure', versie:'version', koffie:'cafe', belgie:'belgique',
-  geheim:'secret', klik:'boot',
+  geheim:'secret', klik:'boot', muziek:'musique',
   // IT
   aiuto:'aide', suono:'son', ciao:'bonjour', barzelletta:'blague',
   ora:'heure', caffe:'cafe', belgio:'belgique', segreto:'secret',
+  versione:'version', musica:'musique',
   // DE
   hilfe:'aide', ton:'son', witz:'blague', uhrzeit:'heure',
-  kaffee:'cafe', belgien:'belgique', geheimnis:'secret',
+  kaffee:'cafe', belgien:'belgique', geheimnis:'secret', musik:'musique',
   // Noms personnes — ZA ≠ Mario Ravasi !
   ravasi:'mario', roadthunder:'mario',
   zagny:'za', zagni:'za', 'za-elettronica':'za', zaelettronica:'za',
@@ -2735,8 +2744,8 @@ function runAccessScreen() {
   input.addEventListener('keydown', e=>{ if(e.key==='Enter') doAccess(); });
 }
 
-// Lancer l'écran d'accès au chargement
-window.addEventListener('load', () => runAccessScreen());
+// Sélection de langue en premier — écran d'accès désactivé au démarrage
+window.addEventListener('load', () => showLangScreen());
 
 // ── FIX MOBILE : garder l'input visible quand le clavier virtuel s'ouvre ──
 // visualViewport s'adapte à la zone réellement visible (clavier exclu)
