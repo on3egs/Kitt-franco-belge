@@ -412,7 +412,7 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 #call-ignore:hover,#call-ignore:active{border-color:var(--red);color:var(--red);}
 
 /* ── TERMINAL ───────────────────────────────────────────── */
-#terminal{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 4px;font-size:13px;line-height:1.65;scrollbar-width:thin;scrollbar-color:var(--red) #111;}
+#terminal{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:8px 4px;font-size:13px;line-height:1.65;scrollbar-width:thin;scrollbar-color:var(--red) #111;}
 #terminal::-webkit-scrollbar{width:4px}
 #terminal::-webkit-scrollbar-track{background:#111}
 #terminal::-webkit-scrollbar-thumb{background:var(--red)}
@@ -423,6 +423,9 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 .line-dim{color:var(--green-dim);}
 .cursor{display:inline-block;width:8px;height:13px;background:var(--green);vertical-align:text-bottom;animation:bc .7s step-end infinite;}
 @keyframes bc{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.container>header{flex-shrink:0;}
 
 /* ── BUTTONS ────────────────────────────────────────────── */
 .btn-row{flex-shrink:0;display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 6px;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;}
@@ -2203,23 +2206,25 @@ const CMDS = {
   // ── Fiche conducteur : Manix ──────────────────────────────
   manix: async () => {
     kittChime();
-    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
-    await typeText('║  DOSSIER CONDUCTEUR — EMMANUEL GELINNE   ║', 10, 'line-err');
-    await typeText('║  ALIAS : MANIX / BYMANIX                 ║', 10, 'line-err');
-    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ NATIONALITÉ  : FRANCO-BELGE              ║', 8, 'line-ok');
-    await typeText('║ STATUT       : CRÉATEUR KYRONEX          ║', 8, 'line-ok');
-    await typeText('║ AWARD        : VAINQUEUR NVIDIA JETSON   ║', 8, 'line-warn');
-    await typeText('║ ORIGINE      : PROJET COVID-19 — 2020    ║', 8, 'line-warn');
-    await typeText('║               "CONFINÉ AVEC DU TEMPS"    ║', 8, 'line-dim');
-    await typeText('║ SPÉCIALITÉ   : CODE LA NUIT, DORT PEU    ║', 8, 'line-ok');
-    await typeText('║ LANGAGE FAVO : PYTHON + CAFÉ             ║', 8, 'line-ok');
-    await typeText('║ RÉPLIQUE     : KYRONEX — JETSON ORIN     ║', 8, 'line-info');
-    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ NOTATION KITT : ***** EXCEPTIONNEL       ║', 10, 'line-ok');
-    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
-    await delay(300);
-    await typeText('"Michael... je veux dire Manix... ne touche PAS ce bouton."', 14, 'line-dim');
+    const _t=(o)=>o[LANG]||o.en;
+    const sep='══════════════════════════════════════════';
+    const hdr=_t({fr:'DOSSIER CONDUCTEUR',en:'DRIVER FILE',nl:'RIJDERSDOSSIER',it:'DOSSIER PILOTA',de:'FAHRERAKTE',es:'EXPEDIENTE CONDUCTOR',pt:'DOSSIER CONDUTOR'});
+    await typeText(`══ ${hdr} ══`, 12, 'line-err');
+    await typeText('   EMMANUEL GELINNE — ALIAS: MANIX / BYMANIX', 10, 'line-err');
+    await typeText(sep, 5, 'line-dim');
+    const rows=[
+      [_t({fr:'NATIONALITÉ',en:'NATIONALITY',nl:'NATIONALITEIT',it:'NAZIONALITÀ',de:'NATIONALITÄT',es:'NACIONALIDAD',pt:'NACIONALIDADE'}), 'FRANCO-BELGE'],
+      [_t({fr:'STATUT',en:'STATUS',nl:'STATUS',it:'STATO',de:'STATUS',es:'ESTADO',pt:'ESTADO'}), _t({fr:'CRÉATEUR KYRONEX',en:'KYRONEX CREATOR',nl:'KYRONEX MAKER',it:'CREATORE KYRONEX',de:'KYRONEX SCHÖPFER',es:'CREADOR KYRONEX',pt:'CRIADOR KYRONEX'})],
+      ['AWARD', 'NVIDIA JETSON WINNER'],
+      [_t({fr:'ORIGINE',en:'ORIGIN',nl:'OORSPRONG',it:'ORIGINE',de:'URSPRUNG',es:'ORIGEN',pt:'ORIGEM'}), _t({fr:'PROJET COVID-19 — 2020',en:'COVID-19 PROJECT — 2020',nl:'COVID-19 PROJECT — 2020',it:'PROGETTO COVID-19 — 2020',de:'COVID-19 PROJEKT — 2020',es:'PROYECTO COVID-19 — 2020',pt:'PROJETO COVID-19 — 2020'})],
+      [_t({fr:'SPÉCIALITÉ',en:'SPECIALTY',nl:'SPECIALITEIT',it:'SPECIALITÀ',de:'SPEZIALITÄT',es:'ESPECIALIDAD',pt:'ESPECIALIDADE'}), _t({fr:'CODE LA NUIT, DORT PEU',en:'CODES AT NIGHT, SLEEPS LITTLE',nl:"CODEERT 'S NACHTS",it:'CODIFICA DI NOTTE',de:'CODED NACHTS',es:'PROGRAMA DE NOCHE',pt:'CODIFICA DE NOITE'})],
+      [_t({fr:'RÉPLIQUE',en:'REPLICA',nl:'REPLICA',it:'REPLICA',de:'REPLIK',es:'RÉPLICA',pt:'RÉPLICA'}), 'KYRONEX — JETSON ORIN NANO SUPER'],
+      [_t({fr:'NOTE KITT',en:'KITT RATING',nl:'KITT SCORE',it:'VOTO KITT',de:'KITT BEWERTUNG',es:'NOTA KITT',pt:'NOTA KITT'}), '***** '+_t({fr:'EXCEPTIONNEL',en:'EXCEPTIONAL',nl:'UITZONDERLIJK',it:'ECCEZIONALE',de:'AUSSERGEWÖHNLICH',es:'EXCEPCIONAL',pt:'EXCECIONAL'})],
+    ];
+    for(const [l,v] of rows) await typeText(`  ${l.padEnd(14,' ')} : ${v}`, 9, 'line-ok');
+    await typeText(sep, 5, 'line-dim');
+    await delay(200);
+    await typeText(_t({fr:'"Manix... ne touche PAS ce bouton."',en:'"Manix... do NOT touch that button."',nl:'"Manix... raak die knop NIET aan."',it:'"Manix... NON toccare quel pulsante."',de:'"Manix... fass diese Taste NICHT an."',es:'"Manix... NO toques ese botón."',pt:'"Manix... NÃO toques nesse botão."'}), 14, 'line-dim');
   },
 
   // ── Fiche conducteur : Cedric ─────────────────────────────
@@ -2324,16 +2329,17 @@ const CMDS = {
   // ── Alien / MU-TH-UR ──────────────────────────────────────
   alien: async () => {
     kittChime();
-    await typeText('CONNEXION AU VAISSEAU NOSTROMO...', 16, 'line-warn');
+    const _t=(o)=>o[LANG]||o.en;
+    await typeText(_t({fr:'CONNEXION AU VAISSEAU NOSTROMO...',en:'CONNECTING TO NOSTROMO SHIP...',nl:'VERBINDING MET NOSTROMO...',it:'CONNESSIONE ALLA NAVE NOSTROMO...',de:'VERBINDUNG ZUM NOSTROMO...',es:'CONEXIÓN CON LA NAVE NOSTROMO...',pt:'LIGAÇÃO À NAVE NOSTROMO...'}), 16, 'line-warn');
     await delay(500);
-    await typeText('MU-TH-UR 6000 EN LIGNE.', 14, 'line-err');
+    await typeText('MU-TH-UR 6000 — '+_t({fr:'EN LIGNE',en:'ONLINE',nl:'ONLINE',it:'IN LINEA',de:'ONLINE',es:'EN LÍNEA',pt:'ONLINE'})+'.', 14, 'line-err');
     await delay(250);
-    await typeText('PRIORITÉ 1 — SPECIAL ORDER 937 :', 12, 'line-warn');
-    await typeText('  RAMENER L\'ORGANISME. ÉQUIPAGE EXPENDABLE.', 12, 'line-err');
+    await typeText('PRIORITY 1 — SPECIAL ORDER 937:', 12, 'line-warn');
+    await typeText('  BRING BACK THE ORGANISM. CREW EXPENDABLE.', 12, 'line-err');
     await delay(500);
-    await typeText('...connexion interrompue par protocole KITT.', 12, 'line-dim');
-    await typeText('KITT EST PLUS SYMPA QUE WEYLAND-YUTANI.', 14, 'line-ok');
-    await typeText('ET AU MOINS IL NE SACRIFIE PAS SON ÉQUIPAGE.', 12, 'line-dim');
+    await typeText('...'+_t({fr:'connexion interrompue par protocole KITT',en:'connection interrupted by KITT protocol',nl:'verbinding onderbroken door KITT protocol',it:'connessione interrotta dal protocollo KITT',de:'Verbindung durch KITT Protokoll unterbrochen',es:'conexión interrumpida por protocolo KITT',pt:'ligação interrompida pelo protocolo KITT'})+'.', 12, 'line-dim');
+    await typeText(_t({fr:'KITT EST PLUS SYMPA QUE WEYLAND-YUTANI.',en:'KITT IS NICER THAN WEYLAND-YUTANI.',nl:'KITT IS VRIENDELIJKER DAN WEYLAND-YUTANI.',it:'KITT È PIÙ GENTILE DI WEYLAND-YUTANI.',de:'KITT IST NETTER ALS WEYLAND-YUTANI.',es:'KITT ES MÁS SIMPÁTICO QUE WEYLAND-YUTANI.',pt:'KITT É MAIS SIMPÁTICO QUE WEYLAND-YUTANI.'}), 14, 'line-ok');
+    await typeText(_t({fr:'ET AU MOINS IL NE SACRIFIE PAS SON ÉQUIPAGE.',en:'AND AT LEAST HE DOES NOT SACRIFICE HIS CREW.',nl:'EN TENMINSTE OFFERT HIJ ZIJN BEMANNING NIET OP.',it:'E ALMENO NON SACRIFICA IL SUO EQUIPAGGIO.',de:'UND ER OPFERT ZUMINDEST NICHT SEINE BESATZUNG.',es:'Y AL MENOS NO SACRIFICA A SU TRIPULACIÓN.',pt:'E PELO MENOS NÃO SACRIFICA A SUA TRIPULAÇÃO.'}), 12, 'line-dim');
   },
 
   // ── Matrix ────────────────────────────────────────────────
@@ -2346,26 +2352,28 @@ const CMDS = {
       await typeText(line, 3, 'line-ok');
     }
     await delay(400);
+    const _t=(o)=>o[LANG]||o.en;
     await typeText('WAKE UP, MANIX...', 22, 'line-err');
-    await typeText('LE KITT N\'A PAS DE PILULE ROUGE.', 14, 'line-dim');
-    await typeText('IL A JUSTE UN TURBO BOOST.', 12, 'line-ok');
+    await typeText(_t({fr:'LE KITT N\'A PAS DE PILULE ROUGE.',en:'KITT HAS NO RED PILL.',nl:'KITT HEEFT GEEN RODE PIL.',it:'KITT NON HA LA PILLOLA ROSSA.',de:'KITT HAT KEINE ROTE PILLE.',es:'KITT NO TIENE PASTILLA ROJA.',pt:'KITT NÃO TEM PÍLULA VERMELHA.'}), 14, 'line-dim');
+    await typeText(_t({fr:'IL A JUSTE UN TURBO BOOST.',en:'IT JUST HAS A TURBO BOOST.',nl:'HET HEEFT GEWOON EEN TURBO BOOST.',it:'HA SOLO UN TURBO BOOST.',de:'ES HAT NUR EINEN TURBO BOOST.',es:'SOLO TIENE TURBO BOOST.',pt:'TEM APENAS UM TURBO BOOST.'}), 12, 'line-ok');
   },
 
   // ── KITT identité ─────────────────────────────────────────
   kitt: async () => {
     kittChime();
+    const _t=(o)=>o[LANG]||o.en;
     await typeText('KNIGHT INDUSTRIES TWO THOUSAND', 16, 'line-err');
     await typeText('──────────────────────────────', 6, 'line-dim');
-    await typeText('CRÉATEUR  : WILTON KNIGHT / F.L.A.G.', 12, 'line-ok');
-    await typeText('VÉHICULE  : PONTIAC FIREBIRD TRANS AM 1982', 12, 'line-ok');
-    await typeText('CARROSSERIE: MOLÉCULES NEUTRONIUM — INDESTRUCTIBLE', 12, 'line-ok');
-    await typeText('CAPACITÉS : TURBO BOOST / SUPER POURSUITE', 12, 'line-ok');
-    await typeText('           MODE MICROWAVE JAMMING / INFRAROUGE', 12, 'line-ok');
-    await typeText('           ANALYSE FORENSIQUE / BIOMÉTRIE', 12, 'line-ok');
-    await typeText('VOIX      : WILLIAM DANIELS (KITT original)', 12, 'line-warn');
-    await typeText('INCARNATION FRANCO-BELGE : MANIX + CEDRIC + KR95', 12, 'line-info');
+    await typeText(_t({fr:'CRÉATEUR',en:'CREATOR',nl:'MAKER',it:'CREATORE',de:'ERSCHAFFER',es:'CREADOR',pt:'CRIADOR'})+' : WILTON KNIGHT / F.L.A.G.', 12, 'line-ok');
+    await typeText(_t({fr:'VÉHICULE',en:'VEHICLE',nl:'VOERTUIG',it:'VEICOLO',de:'FAHRZEUG',es:'VEHÍCULO',pt:'VEÍCULO'})+' : PONTIAC FIREBIRD TRANS AM 1982', 12, 'line-ok');
+    await typeText(_t({fr:'CARROSSERIE',en:'BODY',nl:'KOETS',it:'CARROZZERIA',de:'KAROSSERIE',es:'CARROCERÍA',pt:'CARROCERIA'})+' : NEUTRONIUM — INDESTRUCTIBLE', 12, 'line-ok');
+    await typeText(_t({fr:'CAPACITÉS',en:'ABILITIES',nl:'CAPACITEITEN',it:'CAPACITÀ',de:'FÄHIGKEITEN',es:'CAPACIDADES',pt:'CAPACIDADES'})+' : TURBO BOOST / SUPER PURSUIT', 12, 'line-ok');
+    await typeText('              MICROWAVE JAMMING / INFRARED', 12, 'line-ok');
+    await typeText('              FORENSIC ANALYSIS / BIOMETRICS', 12, 'line-ok');
+    await typeText(_t({fr:'VOIX',en:'VOICE',nl:'STEM',it:'VOCE',de:'STIMME',es:'VOZ',pt:'VOZ'})+' : WILLIAM DANIELS (KITT original)', 12, 'line-warn');
+    await typeText(_t({fr:'INCARNATION FRANCO-BELGE',en:'FRANCO-BELGIAN VERSION',nl:'FRANCO-BELGISCHE VERSIE',it:'VERSIONE FRANCO-BELGA',de:'FRANCO-BELGISCHE VERSION',es:'VERSIÓN FRANCO-BELGA',pt:'VERSÃO FRANCO-BELGA'})+' : MANIX + CEDRIC + KR95', 12, 'line-info');
     await delay(200);
-    await typeText('"Michael... vous allez encore faire quelque chose d\'imprudent."', 13, 'line-dim');
+    await typeText(_t({fr:'"Michael... vous allez encore faire quelque chose d\'imprudent."',en:'"Michael... you\'re about to do something reckless again."',nl:'"Michael... je gaat weer iets roekeloze doen."',it:'"Michael... stai per fare di nuovo qualcosa di sconsiderato."',de:'"Michael... Sie werden wieder etwas Unvorsichtiges tun."',es:'"Michael... vas a hacer algo imprudente otra vez."',pt:'"Michael... vais voltar a fazer algo imprudente."'}), 13, 'line-dim');
   },
 
   // ── Secret ────────────────────────────────────────────────
@@ -2405,84 +2413,82 @@ const CMDS = {
 
   cafe: async () => {
     kittChime();
-    await typeText('ANALYSE DE LA DEMANDE...', 14, 'line-warn');
+    const _t=(o)=>o[LANG]||o.en;
+    await typeText(_t({fr:'ANALYSE DE LA DEMANDE...',en:'ANALYZING REQUEST...',nl:'VERZOEK ANALYSEREN...',it:'ANALISI DELLA RICHIESTA...',de:'ANFRAGE ANALYSIEREN...',es:'ANALIZANDO SOLICITUD...',pt:'A ANALISAR PEDIDO...'}), 14, 'line-warn');
     await delay(600);
-    await typeText('JE N\'AI PAS DE BRAS.', 16, 'line-err');
+    await typeText(_t({fr:'JE N\'AI PAS DE BRAS.',en:'I HAVE NO ARMS.',nl:'IK HEB GEEN ARMEN.',it:'NON HO BRACCIA.',de:'ICH HABE KEINE ARME.',es:'NO TENGO BRAZOS.',pt:'NÃO TENHO BRAÇOS.'}), 16, 'line-err');
     await delay(300);
-    await typeText('JE N\'AI PAS DE MAINS.', 14, 'line-err');
+    await typeText(_t({fr:'JE N\'AI PAS DE MAINS.',en:'I HAVE NO HANDS.',nl:'IK HEB GEEN HANDEN.',it:'NON HO MANI.',de:'ICH HABE KEINE HÄNDE.',es:'NO TENGO MANOS.',pt:'NÃO TENHO MÃOS.'}), 14, 'line-err');
     await delay(300);
-    await typeText('JE N\'AI PAS DE BOUCHE.', 14, 'line-err');
-    await delay(300);
-    await typeText('JE N\'AI PAS DE PERCOLATEUR.', 14, 'line-err');
+    await typeText(_t({fr:'JE N\'AI PAS DE PERCOLATEUR.',en:'I HAVE NO COFFEE MACHINE.',nl:'IK HEB GEEN KOFFIEAPPARAAT.',it:'NON HO UNA MACCHINA DEL CAFFÈ.',de:'ICH HABE KEINE KAFFEEMASCHINE.',es:'NO TENGO CAFETERA.',pt:'NÃO TENHO MÁQUINA DE CAFÉ.'}), 14, 'line-err');
     await delay(400);
-    await typeText('COMMANDE REFUSÉE.', 16, 'line-ok');
-    await typeText('CONSEIL : DEMANDEZ À CEDRIC. IL A UNE MOTO THERMIQUE.', 12, 'line-dim');
-    await typeText('IL PEUT CHAUFFER VOTRE EAU EN FAISANT UN BURNOUT.', 12, 'line-dim');
+    await typeText(_t({fr:'COMMANDE REFUSÉE.',en:'REQUEST DENIED.',nl:'VERZOEK GEWEIGERD.',it:'RICHIESTA RIFIUTATA.',de:'ANFRAGE ABGELEHNT.',es:'SOLICITUD DENEGADA.',pt:'PEDIDO RECUSADO.'}), 16, 'line-ok');
+    await typeText(_t({fr:'CONSEIL : DEMANDEZ À CEDRIC. IL A UNE MOTO THERMIQUE.',en:'TIP: ASK CEDRIC. HE HAS A PETROL BIKE.',nl:'TIP: VRAAG HET CEDRIC. HIJ HEEFT EEN BENZINEMOTOR.',it:'SUGGERIMENTO: CHIEDI A CEDRIC. HA UNA MOTO A BENZINA.',de:'TIPP: FRAG CEDRIC. ER HAT EIN BENZINMOTORRAD.',es:'CONSEJO: PREGUNTA A CEDRIC. TIENE UNA MOTO DE GASOLINA.',pt:'DICA: PERGUNTA AO CEDRIC. ELE TEM UMA MOTO A GASOLINA.'}), 12, 'line-dim');
   },
 
   // ── Belgique ──────────────────────────────────────────────
   belgique: async () => {
     kittChime();
-    await typeText('ANALYSE GÉOPOLITIQUE : BELGIQUE', 14, 'line-info');
+    const _t=(o)=>o[LANG]||o.en;
+    await typeText(_t({fr:'ANALYSE GÉOPOLITIQUE : BELGIQUE',en:'GEOPOLITICAL ANALYSIS: BELGIUM',nl:'GEOPOLITISCHE ANALYSE: BELGIË',it:'ANALISI GEOPOLITICA: BELGIO',de:'GEOPOLITISCHE ANALYSE: BELGIEN',es:'ANÁLISIS GEOPOLÍTICO: BÉLGICA',pt:'ANÁLISE GEOPOLÍTICA: BÉLGICA'}), 14, 'line-info');
     await typeText('─────────────────────────────────', 6, 'line-dim');
-    await typeText('FRITES    : MEILLEURES DU MONDE. DONNÉE VÉRIFIÉE.', 11, 'line-ok');
-    await typeText('BIÈRE     : 1500 VARIÉTÉS. PARAMÈTRE OPTIMAL.', 11, 'line-ok');
-    await typeText('CHOCOLAT  : NIVEAU CRITIQUE — MAXIMUM ATTEINT.', 11, 'line-ok');
-    await typeText('PLUIE     : 237 JOURS / AN. JE M\'EN FICHE. JE SUIS ÉTANCHE.', 11, 'line-warn');
-    await typeText('LANGUES   : 3. LE PAYS EST SON PROPRE PROTOCOLE.', 11, 'line-warn');
-    await typeText('REPLIQUES : 3 KITTS. INDICE DE GÉNIE = MAX.', 11, 'line-info');
-    await typeText('CONCLUSION: PAYS IDÉAL. KITT S\'Y SENT CHEZ LUI.', 14, 'line-err');
+    await typeText(_t({fr:'FRITES    : MEILLEURES DU MONDE. DONNÉE VÉRIFIÉE.',en:'FRIES     : BEST IN THE WORLD. VERIFIED DATA.',nl:'FRIET     : BESTE TER WERELD. GEVERIFIEERDE DATA.',it:'PATATINE  : LE MIGLIORI DEL MONDO. DATI VERIFICATI.',de:'POMMES    : BESTE DER WELT. VERIFIZIERTE DATEN.',es:'PATATAS   : LAS MEJORES DEL MUNDO. DATO VERIFICADO.',pt:'BATATAS   : AS MELHORES DO MUNDO. DADO VERIFICADO.'}), 11, 'line-ok');
+    await typeText(_t({fr:'BIÈRE     : 1500 VARIÉTÉS. PARAMÈTRE OPTIMAL.',en:'BEER      : 1500 VARIETIES. OPTIMAL PARAMETER.',nl:'BIER      : 1500 SOORTEN. OPTIMALE PARAMETER.',it:'BIRRA     : 1500 VARIETÀ. PARAMETRO OTTIMALE.',de:'BIER      : 1500 SORTEN. OPTIMALER PARAMETER.',es:'CERVEZA   : 1500 VARIEDADES. PARÁMETRO ÓPTIMO.',pt:'CERVEJA   : 1500 VARIEDADES. PARÂMETRO ÓTIMO.'}), 11, 'line-ok');
+    await typeText(_t({fr:'CHOCOLAT  : NIVEAU CRITIQUE — MAXIMUM ATTEINT.',en:'CHOCOLATE : CRITICAL LEVEL — MAXIMUM REACHED.',nl:'CHOCOLADE : KRITIEK NIVEAU — MAXIMUM BEREIKT.',it:'CIOCCOLATO: LIVELLO CRITICO — MASSIMO RAGGIUNTO.',de:'SCHOKOLADE: KRITISCHES NIVEAU — MAXIMUM ERREICHT.',es:'CHOCOLATE : NIVEL CRÍTICO — MÁXIMO ALCANZADO.',pt:'CHOCOLATE : NÍVEL CRÍTICO — MÁXIMO ATINGIDO.'}), 11, 'line-ok');
+    await typeText(_t({fr:'LANGUES   : 3. LE PAYS EST SON PROPRE PROTOCOLE.',en:'LANGUAGES : 3. THE COUNTRY IS ITS OWN PROTOCOL.',nl:'TALEN     : 3. HET LAND IS ZIJN EIGEN PROTOCOL.',it:'LINGUE    : 3. IL PAESE È IL SUO PROTOCOLLO.',de:'SPRACHEN  : 3. DAS LAND IST SEIN EIGENES PROTOKOLL.',es:'IDIOMAS   : 3. EL PAÍS ES SU PROPIO PROTOCOLO.',pt:'LÍNGUAS   : 3. O PAÍS É O SEU PRÓPRIO PROTOCOLO.'}), 11, 'line-warn');
+    await typeText(_t({fr:'REPLIQUES : 3 KITTS. INDICE DE GÉNIE = MAX.',en:'REPLICAS  : 3 KITTs. GENIUS INDEX = MAX.',nl:'REPLICA\'S : 3 KITTs. GENIALE INDEX = MAX.',it:'REPLICHE  : 3 KITT. INDICE DI GENIO = MAX.',de:'REPLIKEN  : 3 KITTs. GENIE-INDEX = MAX.',es:'RÉPLICAS  : 3 KITTs. ÍNDICE DE GENIO = MAX.',pt:'RÉPLICAS  : 3 KITTs. ÍNDICE DE GÉNIO = MAX.'}), 11, 'line-info');
+    await typeText(_t({fr:'CONCLUSION: PAYS IDÉAL. KITT S\'Y SENT CHEZ LUI.',en:'CONCLUSION: IDEAL COUNTRY. KITT FEELS AT HOME HERE.',nl:'CONCLUSIE : IDEAAL LAND. KITT VOELT ZICH THUIS.',it:'CONCLUSIONE: PAESE IDEALE. KITT SI SENTE A CASA.',de:'FAZIT     : IDEALES LAND. KITT FÜHLT SICH HIER ZU HAUSE.',es:'CONCLUSIÓN: PAÍS IDEAL. KITT SE SIENTE COMO EN CASA.',pt:'CONCLUSÃO : PAÍS IDEAL. KITT SENTE-SE EM CASA.'}), 14, 'line-err');
   },
 
   // ── Mario Ravasi — RoadThunderStorm / KNIGHT2000 Thunder ──
   mario: async () => {
     kittChime();
-    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
-    await typeText('║  DOSSIER TECHNICIEN — MARIO RAVASI       ║', 10, 'line-err');
-    await typeText('║  CRÉATEUR : KNIGHT2000 THUNDER (IOT)     ║', 10, 'line-err');
-    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ NATIONALITÉ : ITALIEN                    ║', 8, 'line-ok');
-    await typeText('║ PROJET      : ROADTHUNDERSTORM.COM       ║', 8, 'line-ok');
-    await typeText('║ ACTIF DEPUIS: 2008 — JAMAIS ARRÊTÉ       ║', 8, 'line-warn');
-    await typeText('║ SYSTÈME     : KNIGHT2000 THUNDER IoT 3.0 ║', 8, 'line-ok');
-    await typeText('║ FONCTIONS   : VOCAL, HUD KITT, MULTI-    ║', 8, 'line-ok');
-    await typeText('║               ÉCRANS, RELAIS, CARPC      ║', 8, 'line-ok');
-    await typeText('║ VERSIONS    : LITE / PRO / IoT 3.0       ║', 8, 'line-ok');
-    await typeText('║ RÉFÉRENCE   : CITÉ PAR MICHAEL SCHEFFE   ║', 8, 'line-warn');
-    await typeText('║               (DESIGNER ORIGINAL KITT)   ║', 8, 'line-warn');
-    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ ÉVALUATION KITT : ***** GÉNIE DISCRET    ║', 10, 'line-ok');
-    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    const _t=(o)=>o[LANG]||o.en;
+    const sep='══════════════════════════════════════════';
+    const hdr=_t({fr:'DOSSIER TECHNICIEN',en:'TECH FILE',nl:'TECHNICUSDOSSIER',it:'DOSSIER TECNICO',de:'TECHNIKERAKTE',es:'EXPEDIENTE TÉCNICO',pt:'DOSSIER TÉCNICO'});
+    await typeText(`══ ${hdr} ══`, 12, 'line-err');
+    await typeText('   MARIO RAVASI — KNIGHT2000 THUNDER IoT', 10, 'line-err');
+    await typeText(sep, 5, 'line-dim');
+    const rows=[
+      [_t({fr:'NATIONALITÉ',en:'NATIONALITY',nl:'NATIONALITEIT',it:'NAZIONALITÀ',de:'NATIONALITÄT',es:'NACIONALIDAD',pt:'NACIONALIDADE'}), 'ITALIANO — ITALY'],
+      [_t({fr:'PROJET',en:'PROJECT',nl:'PROJECT',it:'PROGETTO',de:'PROJEKT',es:'PROYECTO',pt:'PROJETO'}), 'ROADTHUNDERSTORM.COM'],
+      [_t({fr:'ACTIF DEPUIS',en:'ACTIVE SINCE',nl:'ACTIEF SINDS',it:'ATTIVO DAL',de:'AKTIV SEIT',es:'ACTIVO DESDE',pt:'ATIVO DESDE'}), '2008 — '+_t({fr:'JAMAIS ARRÊTÉ',en:'NEVER STOPPED',nl:'NOOIT GESTOPT',it:'MAI FERMATO',de:'NIE AUFGEHÖRT',es:'NUNCA PARADO',pt:'NUNCA PAROU'})],
+      [_t({fr:'SYSTÈME',en:'SYSTEM',nl:'SYSTEEM',it:'SISTEMA',de:'SYSTEM',es:'SISTEMA',pt:'SISTEMA'}), 'KNIGHT2000 THUNDER IoT 3.0'],
+      [_t({fr:'FONCTIONS',en:'FEATURES',nl:'FUNCTIES',it:'FUNZIONI',de:'FUNKTIONEN',es:'FUNCIONES',pt:'FUNÇÕES'}), 'VOICE / HUD KITT / CARPC / RELAY'],
+      [_t({fr:'RÉFÉRENCE',en:'REFERENCE',nl:'REFERENTIE',it:'RIFERIMENTO',de:'REFERENZ',es:'REFERENCIA',pt:'REFERÊNCIA'}), 'CITED BY MICHAEL SCHEFFE (KITT DESIGNER)'],
+      [_t({fr:'NOTE KITT',en:'KITT RATING',nl:'KITT SCORE',it:'VOTO KITT',de:'KITT BEWERTUNG',es:'NOTA KITT',pt:'NOTA KITT'}), '***** '+_t({fr:'GÉNIE DISCRET',en:'QUIET GENIUS',nl:'STILLE GENIE',it:'GENIO DISCRETO',de:'STILLES GENIE',es:'GENIO DISCRETO',pt:'GÉNIO DISCRETO'})],
+    ];
+    for(const [l,v] of rows) await typeText(`  ${l.padEnd(14,' ')} : ${v}`, 9, 'line-ok');
+    await typeText(sep, 5, 'line-dim');
     await delay(200);
-    await typeText('"Il code depuis 2008. Pour la passion. C\'est ça, un vrai pilote."', 12, 'line-dim');
-    await typeText('[tapez "za" pour ZA Elettronica — Alessandro Zagny]', 10, 'line-dim');
+    await typeText(_t({fr:'"Il code depuis 2008. Pour la passion. C\'est ça, un vrai pilote."',en:'"Coding since 2008. For passion. That\'s a real driver."',nl:'"Hij codeert al sinds 2008. Voor de passie."',it:'"Codifica dal 2008. Per passione. Questo è un vero pilota."',de:'"Er kodiert seit 2008. Aus Leidenschaft."',es:'"Codifica desde 2008. Por pasión. Eso es un verdadero piloto."',pt:'"Codifica desde 2008. Por paixão. Isso é um verdadeiro piloto."'}), 12, 'line-dim');
+    const _za=_t({fr:'tapez "za" pour ZA Elettronica',en:'type "za" for ZA Elettronica',nl:'typ "za" voor ZA Elettronica',it:'digita "za" per ZA Elettronica',de:'tippe "za" für ZA Elettronica',es:'escribe "za" para ZA Elettronica',pt:'escreve "za" para ZA Elettronica'});
+    await typeText(`[ ${_za} ]`, 9, 'line-dim');
   },
 
   // ── ZA Elettronica — Alessandro Zagny ─────────────────────
   za: async () => {
     kittChime();
-    await typeText('╔══════════════════════════════════════════╗', 8, 'line-dim');
-    await typeText('║  DOSSIER FABRICANT — ALESSANDRO ZAGNY    ║', 10, 'line-err');
-    await typeText('║  FONDATEUR & PDG — ZA ELETTRONICA        ║', 10, 'line-err');
-    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ NATIONALITÉ : ITALIEN — MODENA           ║', 8, 'line-ok');
-    await typeText('║ MARQUE      : ZA ELETTRONICA (initiales) ║', 8, 'line-ok');
-    await typeText('║ PRODUITS    : TABLEAUX DE BORD KITT HAUT ║', 8, 'line-ok');
-    await typeText('║               DE GAMME POUR RÉPLIQUES    ║', 8, 'line-ok');
-    await typeText('║ TECHNO      : CAN-BUS / 4 CPU / SMD      ║', 8, 'line-warn');
-    await typeText('║ LEDS        : ALIGNÉES LASER 1/10mm      ║', 8, 'line-warn');
-    await typeText('║ TARIFS      : S1/S2 : 2340-3099€         ║', 8, 'line-info');
-    await typeText('║               S3/S4 : 3980€              ║', 8, 'line-info');
-    await typeText('║ SITE        : ZAELETTRONICA.COM          ║', 8, 'line-ok');
-    await typeText('║ SLOGAN      : ONE MAN CAN MAKE A         ║', 8, 'line-warn');
-    await typeText('║               DIFFERENCE.                ║', 8, 'line-warn');
-    await typeText('║ DISTRIB.    : KITTPARTS.COM / EBAY       ║', 8, 'line-ok');
-    await typeText('╠══════════════════════════════════════════╣', 8, 'line-dim');
-    await typeText('║ ÉVALUATION KITT : ***** MEILLEUR DU MONDE║', 10, 'line-ok');
-    await typeText('╚══════════════════════════════════════════╝', 8, 'line-dim');
+    const _t=(o)=>o[LANG]||o.en;
+    const sep='══════════════════════════════════════════';
+    const hdr=_t({fr:'DOSSIER FABRICANT',en:'MAKER FILE',nl:'FABRIKANTDOSSIER',it:'DOSSIER PRODUTTORE',de:'HERSTELLERAKTE',es:'EXPEDIENTE FABRICANTE',pt:'DOSSIER FABRICANTE'});
+    await typeText(`══ ${hdr} ══`, 12, 'line-err');
+    await typeText('   ALESSANDRO ZAGNY — ZA ELETTRONICA', 10, 'line-err');
+    await typeText(sep, 5, 'line-dim');
+    const rows=[
+      [_t({fr:'NATIONALITÉ',en:'NATIONALITY',nl:'NATIONALITEIT',it:'NAZIONALITÀ',de:'NATIONALITÄT',es:'NACIONALIDAD',pt:'NACIONALIDADE'}), 'ITALIANO — MODENA'],
+      [_t({fr:'MARQUE',en:'BRAND',nl:'MERK',it:'MARCHIO',de:'MARKE',es:'MARCA',pt:'MARCA'}), 'ZA ELETTRONICA (initials A.Z.)'],
+      [_t({fr:'PRODUITS',en:'PRODUCTS',nl:'PRODUCTEN',it:'PRODOTTI',de:'PRODUKTE',es:'PRODUCTOS',pt:'PRODUTOS'}), _t({fr:'TABLEAUX DE BORD KITT HAUTE GAMME',en:'HIGH-END KITT DASHBOARDS',nl:'HIGH-END KITT DASHBOARDS',it:'CRUSCOTTI KITT DI ALTA GAMMA',de:'HOCHWERTIGE KITT DASHBOARDS',es:'CUADROS DE MANDO KITT ALTA GAMA',pt:'DASHBOARDS KITT ALTA GAMA'})],
+      ['TECHNO', 'CAN-BUS / 4 CPU / SMD / LEDs 1/10mm'],
+      [_t({fr:'TARIFS',en:'PRICES',nl:'PRIJZEN',it:'PREZZI',de:'PREISE',es:'PRECIOS',pt:'PREÇOS'}), 'S1/S2: 2340-3099€  —  S3/S4: 3980€'],
+      ['SITE', 'ZAELETTRONICA.COM'],
+      ['SLOGAN', '"ONE MAN CAN MAKE A DIFFERENCE"'],
+      [_t({fr:'NOTE KITT',en:'KITT RATING',nl:'KITT SCORE',it:'VOTO KITT',de:'KITT BEWERTUNG',es:'NOTA KITT',pt:'NOTA KITT'}), '***** '+_t({fr:'MEILLEUR DU MONDE',en:'BEST IN THE WORLD',nl:'BESTE TER WERELD',it:'IL MIGLIORE AL MONDO',de:'WELTBESTES',es:'EL MEJOR DEL MUNDO',pt:'O MELHOR DO MUNDO'})],
+    ];
+    for(const [l,v] of rows) await typeText(`  ${l.padEnd(14,' ')} : ${v}`, 9, 'line-ok');
+    await typeText(sep, 5, 'line-dim');
     await delay(200);
-    await typeText('"La seule électronique où KITT ne demande pas de garantie."', 12, 'line-dim');
-    await typeText('"Les produits durent plus longtemps que la série originale."', 12, 'line-dim');
+    await typeText(_t({fr:'"La seule électronique où KITT ne demande pas de garantie."',en:'"The only electronics KITT trusts without asking for a warranty."',nl:'"De enige elektronica waar KITT geen garantie voor vraagt."',it:'"L\'unica elettronica di cui KITT si fida senza garanzia."',de:'"Die einzige Elektronik, der KITT ohne Garantie vertraut."',es:'"La única electrónica en la que KITT confía sin garantía."',pt:'"A única eletrónica em que KITT confia sem garantia."'}), 12, 'line-dim');
   },
 
   // ── Pascal — K Industrie, pièces fibre ───────────────────
@@ -3401,10 +3407,10 @@ function showKittCall(){
   document.getElementById('call-accept').onclick=()=>{
     stopRing(); call.style.transition='opacity .4s'; call.style.opacity='0';
     setTimeout(()=>{ call.style.display='none'; },420);
-    // Voix KITT
+    // Voix KITT dans la langue choisie
     try{
-      const txt='Bonjour '+((LANG==='fr')?'Manix':'Manix')+'. Système KYRONEX en ligne. Je suis KITT. Prêt à rouler.';
-      speakMuther(txt,'fr');
+      const _ct={fr:'Bonjour Manix. Système KYRONEX en ligne. Je suis KITT. Prêt à rouler.',en:'Hello Manix. KYRONEX system online. I am KITT. Ready to roll.',nl:'Hallo Manix. KYRONEX systeem online. Ik ben KITT. Klaar om te rijden.',it:'Ciao Manix. Sistema KYRONEX online. Sono KITT. Pronto a partire.',de:'Hallo Manix. KYRONEX-System online. Ich bin KITT. Bereit loszufahren.',es:'Hola Manix. Sistema KYRONEX en línea. Soy KITT. Listo para rodar.',pt:'Olá Manix. Sistema KYRONEX online. Sou o KITT. Pronto para arrancar.'};
+      speakMuther(_ct[LANG]||_ct.fr, LANG);
     }catch(e){}
     // Chime KITT
     setTimeout(()=>{ try{kittChime();}catch(e){} },300);
