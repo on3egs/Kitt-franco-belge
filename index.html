@@ -1077,7 +1077,12 @@ async function runMotherIntro() {
   setTimeout(async ()=>{
     try{showKittDash();}catch(e){}
     await delay(400);
-    try{ addLine(T[LANG].wait, 'line-dim'); addLine(T[LANG].help_hint, 'line-dim'); }catch(e){}
+    try{
+      const _t=document.getElementById('terminal');
+      const _d1=document.createElement('div');_d1.className='line-dim';_d1.textContent=T[LANG].wait;_t.appendChild(_d1);
+      const _d2=document.createElement('div');_d2.className='line-dim';_d2.textContent=T[LANG].help_hint;_t.appendChild(_d2);
+      _t.scrollTop=_t.scrollHeight;
+    }catch(e){}
   }, 800);
   setTimeout(()=>{ try{showKittCall();}catch(e){} }, 8000);
 }
@@ -2357,6 +2362,11 @@ const CMDS = {
     await delay(400);
     await typeText('CE PROJET EST UN CHEF-D\'OEUVRE. JE LE SAIS.', 14, 'line-ok');
     await typeText('JE SUIS OBJECTIF. JE SUIS UNE IA.', 12, 'line-dim');
+    await delay(600);
+    const _sm={fr:'CODE ACCÈS DIRECT IA : kitt1982',en:'DIRECT AI ACCESS CODE: kitt1982',nl:'DIRECTE TOEGANGSCODE IA: kitt1982',it:'CODICE ACCESSO DIRETTO IA: kitt1982',de:'DIREKTZUGANGSCODE KI: kitt1982',es:'CÓDIGO ACCESO DIRECTO IA: kitt1982',pt:'CÓDIGO ACESSO DIRETO IA: kitt1982'}[LANG]||'DIRECT ACCESS CODE: kitt1982';
+    await typeText('──────────────────────────────────────────', 5, 'line-dim');
+    await typeText(_sm, 14, 'line-err');
+    await typeText('──────────────────────────────────────────', 5, 'line-dim');
   },
 
   // ── Café ──────────────────────────────────────────────────
@@ -2572,81 +2582,53 @@ CMDS['daemon']   = CMDS['damon'];   // compat ancien alias
 // ════════════════════════════════════════════════════════════
 const MISSIONS = {
   fr:[
-    {id:'boot',   label:'Lance la séquence de démarrage',   cmd:'boot'},
-    {id:'aide',   label:'Consulte les commandes (aide)',    cmd:'aide'},
-    {id:'blague', label:'Demande une blague à KITT',         cmd:'blague'},
-    {id:'diag',   label:'Effectue un diagnostic complet',   cmd:'diagnostic'},
-    {id:'manix',  label:'Consulte le dossier Manix',        cmd:'manix'},
-    {id:'cedric', label:'Consulte le dossier Cédric',       cmd:'cedric'},
-    {id:'kr95',   label:'Consulte le dossier KR95',         cmd:'kr95'},
-    {id:'mario',  label:'Consulte le dossier Mario Ravasi', cmd:'mario'},
-    {id:'za',     label:'Consulte le dossier ZA Elettronica',cmd:'za'},
+    {id:'boot',  label:'Lance la séquence de démarrage',      cmd:'boot'},
+    {id:'aide',  label:'Consulte les commandes disponibles',  cmd:'aide'},
+    {id:'manix', label:'Consulte le dossier Manix',           cmd:'manix'},
+    {id:'mario', label:'Consulte le dossier Mario Ravasi',    cmd:'mario'},
+    {id:'za',    label:'Consulte le dossier ZA Elettronica',  cmd:'za'},
   ],
   en:[
-    {id:'boot',   label:'Launch the boot sequence',    cmd:'boot'},
-    {id:'aide',   label:'Consult command list (help)', cmd:'aide'},
-    {id:'blague', label:'Ask KITT for a joke',          cmd:'blague'},
-    {id:'diag',   label:'Run a full diagnostic',       cmd:'diagnostic'},
-    {id:'manix',  label:'Access Manix file',           cmd:'manix'},
-    {id:'cedric', label:'Access Cédric file',          cmd:'cedric'},
-    {id:'kr95',   label:'Access KR95 file',            cmd:'kr95'},
-    {id:'mario',  label:'Access Mario Ravasi file',    cmd:'mario'},
-    {id:'za',     label:'Access ZA Elettronica file',  cmd:'za'},
+    {id:'boot',  label:'Launch the boot sequence',            cmd:'boot'},
+    {id:'aide',  label:'Consult the command list',            cmd:'aide'},
+    {id:'manix', label:'Access Manix file',                   cmd:'manix'},
+    {id:'mario', label:'Access Mario Ravasi file',            cmd:'mario'},
+    {id:'za',    label:'Access ZA Elettronica file',          cmd:'za'},
   ],
   nl:[
-    {id:'boot',   label:'Start de opstartsequentie',     cmd:'boot'},
-    {id:'aide',   label:"Raadpleeg commando's (hulp)",   cmd:'aide'},
-    {id:'blague', label:'Vraag KITT om een grap',        cmd:'blague'},
-    {id:'diag',   label:'Volledige diagnose uitvoeren',  cmd:'diagnostic'},
-    {id:'manix',  label:'Raadpleeg Manix dossier',       cmd:'manix'},
-    {id:'cedric', label:'Raadpleeg Cédric dossier',      cmd:'cedric'},
-    {id:'kr95',   label:'Raadpleeg KR95 dossier',        cmd:'kr95'},
-    {id:'mario',  label:'Raadpleeg Mario Ravasi dossier',cmd:'mario'},
-    {id:'za',     label:'Raadpleeg ZA Elettronica dossier',cmd:'za'},
+    {id:'boot',  label:'Start de opstartsequentie',           cmd:'boot'},
+    {id:'aide',  label:"Raadpleeg de commando's",             cmd:'aide'},
+    {id:'manix', label:'Raadpleeg Manix dossier',             cmd:'manix'},
+    {id:'mario', label:'Raadpleeg Mario Ravasi dossier',      cmd:'mario'},
+    {id:'za',    label:'Raadpleeg ZA Elettronica dossier',    cmd:'za'},
   ],
   it:[
-    {id:'boot',   label:'Avvia la sequenza di avvio',    cmd:'boot'},
-    {id:'aide',   label:'Consulta i comandi (aiuto)',    cmd:'aide'},
-    {id:'blague', label:"Chiedi una barzelletta a KITT", cmd:'blague'},
-    {id:'diag',   label:'Diagnosi completa del sistema', cmd:'diagnostic'},
-    {id:'manix',  label:'Consulta dossier Manix',        cmd:'manix'},
-    {id:'cedric', label:'Consulta dossier Cédric',       cmd:'cedric'},
-    {id:'kr95',   label:'Consulta dossier KR95',         cmd:'kr95'},
-    {id:'mario',  label:'Consulta dossier Mario Ravasi', cmd:'mario'},
-    {id:'za',     label:'Consulta dossier ZA Elettronica',cmd:'za'},
+    {id:'boot',  label:'Avvia la sequenza di avvio',          cmd:'boot'},
+    {id:'aide',  label:'Consulta la lista dei comandi',       cmd:'aide'},
+    {id:'manix', label:'Consulta dossier Manix',              cmd:'manix'},
+    {id:'mario', label:'Consulta dossier Mario Ravasi',       cmd:'mario'},
+    {id:'za',    label:'Consulta dossier ZA Elettronica',     cmd:'za'},
   ],
   de:[
-    {id:'boot',   label:'Startsequenz ausführen',            cmd:'boot'},
-    {id:'aide',   label:'Befehlsliste abrufen (hilfe)',       cmd:'aide'},
-    {id:'blague', label:'KITT um einen Witz bitten',          cmd:'blague'},
-    {id:'diag',   label:'Vollständige Diagnose durchführen',  cmd:'diagnostic'},
-    {id:'manix',  label:'Manix Akte abrufen',                 cmd:'manix'},
-    {id:'cedric', label:'Cédric Akte abrufen',                cmd:'cedric'},
-    {id:'kr95',   label:'KR95 Akte abrufen',                  cmd:'kr95'},
-    {id:'mario',  label:'Mario Ravasi Akte abrufen',          cmd:'mario'},
-    {id:'za',     label:'ZA Elettronica Akte abrufen',        cmd:'za'},
+    {id:'boot',  label:'Startsequenz ausführen',              cmd:'boot'},
+    {id:'aide',  label:'Befehlsliste abrufen',                cmd:'aide'},
+    {id:'manix', label:'Manix Akte abrufen',                  cmd:'manix'},
+    {id:'mario', label:'Mario Ravasi Akte abrufen',           cmd:'mario'},
+    {id:'za',    label:'ZA Elettronica Akte abrufen',         cmd:'za'},
   ],
   es:[
-    {id:'boot',   label:'Iniciar secuencia de arranque',      cmd:'boot'},
-    {id:'aide',   label:'Consultar comandos (ayuda)',          cmd:'aide'},
-    {id:'blague', label:'Pedir un chiste a KITT',              cmd:'blague'},
-    {id:'diag',   label:'Diagnóstico completo del sistema',    cmd:'diagnostic'},
-    {id:'manix',  label:'Consultar expediente Manix',          cmd:'manix'},
-    {id:'cedric', label:'Consultar expediente Cédric',         cmd:'cedric'},
-    {id:'kr95',   label:'Consultar expediente KR95',           cmd:'kr95'},
-    {id:'mario',  label:'Consultar expediente Mario Ravasi',   cmd:'mario'},
-    {id:'za',     label:'Consultar expediente ZA Elettronica', cmd:'za'},
+    {id:'boot',  label:'Iniciar secuencia de arranque',       cmd:'boot'},
+    {id:'aide',  label:'Consultar lista de comandos',         cmd:'aide'},
+    {id:'manix', label:'Consultar expediente Manix',          cmd:'manix'},
+    {id:'mario', label:'Consultar expediente Mario Ravasi',   cmd:'mario'},
+    {id:'za',    label:'Consultar expediente ZA Elettronica', cmd:'za'},
   ],
   pt:[
-    {id:'boot',   label:'Iniciar sequência de arranque',       cmd:'boot'},
-    {id:'aide',   label:'Consultar comandos (ajuda)',           cmd:'aide'},
-    {id:'blague', label:'Pedir uma piada ao KITT',              cmd:'blague'},
-    {id:'diag',   label:'Diagnóstico completo do sistema',      cmd:'diagnostic'},
-    {id:'manix',  label:'Consultar dossier Manix',              cmd:'manix'},
-    {id:'cedric', label:'Consultar dossier Cédric',             cmd:'cedric'},
-    {id:'kr95',   label:'Consultar dossier KR95',               cmd:'kr95'},
-    {id:'mario',  label:'Consultar dossier Mario Ravasi',       cmd:'mario'},
-    {id:'za',     label:'Consultar dossier ZA Elettronica',     cmd:'za'},
+    {id:'boot',  label:'Iniciar sequência de arranque',       cmd:'boot'},
+    {id:'aide',  label:'Consultar lista de comandos',         cmd:'aide'},
+    {id:'manix', label:'Consultar dossier Manix',             cmd:'manix'},
+    {id:'mario', label:'Consultar dossier Mario Ravasi',      cmd:'mario'},
+    {id:'za',    label:'Consultar dossier ZA Elettronica',    cmd:'za'},
   ],
 };
 
@@ -2658,8 +2640,13 @@ function _completeMission(id) {
   _missionsCompleted.add(id);
   _renderMissions();
   const labels = {
-    fr:{boot:'SÉQUENCE DÉMARRÉE',aide:'COMMANDES CONSULTÉES',blague:'BLAGUE DEMANDÉE',diag:'DIAGNOSTIC EFFECTUÉ',manix:'MANIX CONSULTÉ',cedric:'CÉDRIC CONSULTÉ',kr95:'KR95 CONSULTÉ',mario:'MARIO CONSULTÉ',za:'ZA CONSULTÉ',connexion:'CONNEXION IA CLIQUÉE'},
-    en:{boot:'BOOT RUN',aide:'COMMANDS CONSULTED',blague:'JOKE REQUESTED',diag:'DIAGNOSTIC COMPLETE',manix:'MANIX ACCESSED',cedric:'CÉDRIC ACCESSED',kr95:'KR95 ACCESSED',mario:'MARIO ACCESSED',za:'ZA ACCESSED',connexion:'AI CONNECTION CLICKED'},
+    fr:{boot:'SÉQUENCE DÉMARRÉE',aide:'COMMANDES CONSULTÉES',manix:'MANIX CONSULTÉ',mario:'MARIO CONSULTÉ',za:'ZA CONSULTÉ'},
+    en:{boot:'BOOT RUN',aide:'COMMANDS CONSULTED',manix:'MANIX ACCESSED',mario:'MARIO ACCESSED',za:'ZA ACCESSED'},
+    nl:{boot:'OPSTART GESTART',aide:'COMMANDO\'S GERAADPLEEGD',manix:'MANIX GERAADPLEEGD',mario:'MARIO GERAADPLEEGD',za:'ZA GERAADPLEEGD'},
+    it:{boot:'SEQUENZA AVVIATA',aide:'COMANDI CONSULTATI',manix:'MANIX CONSULTATO',mario:'MARIO CONSULTATO',za:'ZA CONSULTATO'},
+    de:{boot:'SEQUENZ GESTARTET',aide:'BEFEHLE ABGERUFEN',manix:'MANIX ABGERUFEN',mario:'MARIO ABGERUFEN',za:'ZA ABGERUFEN'},
+    es:{boot:'SECUENCIA INICIADA',aide:'COMANDOS CONSULTADOS',manix:'MANIX CONSULTADO',mario:'MARIO CONSULTADO',za:'ZA CONSULTADO'},
+    pt:{boot:'SEQUÊNCIA INICIADA',aide:'COMANDOS CONSULTADOS',manix:'MANIX CONSULTADO',mario:'MARIO CONSULTADO',za:'ZA CONSULTADO'},
   };
   const pfx = {fr:'✦ MISSION ACCOMPLIE',en:'✦ MISSION COMPLETE',nl:'✦ MISSIE VOLTOOID',it:'✦ MISSIONE COMPIUTA',de:'✦ MISSION ERFÜLLT',es:'✦ MISIÓN CUMPLIDA',pt:'✦ MISSÃO CUMPRIDA'}[LANG]||'✦ MISSION COMPLETE';
   const lset = labels[LANG]||labels.en;
@@ -2733,12 +2720,9 @@ CMD_ALIASES['mission']='missions'; CMD_ALIASES['missionen']='missions'; CMD_ALIA
 CMD_ALIASES['missioni']='missions'; CMD_ALIASES['misiones']='missions'; CMD_ALIASES['missoes']='missions';
 
 const _MISSION_CMD_MAP = {
-  boot:'boot', aide:'aide', diagnostic:'diag', blague:'blague',
-  manix:'manix', cedric:'cedric', damon:'damon', kr95:'kr95', mario:'mario', za:'za',
-  // aliases
-  hulp:'aide', hilfe:'aide', ayuda:'aide', ajuda:'aide', aiuto:'aide',
-  witz:'blague', grap:'blague', barzelletta:'blague', chiste:'blague', piada:'blague',
-  daemon:'damon',
+  boot:'boot', aide:'aide', manix:'manix', mario:'mario', za:'za',
+  // aliases multilingues → mêmes 5 missions
+  help:'aide', hulp:'aide', hilfe:'aide', ayuda:'aide', ajuda:'aide', aiuto:'aide',
 };
 
 function _showLockMessage() {
@@ -2776,6 +2760,16 @@ document.getElementById('cmd-input').addEventListener('keydown', async function(
   if (!raw || typing) return;
 
   addLine(`KITT> ${raw}`, 'line-warn');
+
+  // ★ Code maître — accès direct IA (bypass missions)
+  if (raw === 'kitt1982') {
+    try{sndMotherChime();}catch(e){}
+    const _bm={fr:'CODE MAÎTRE ACCEPTÉ — CONNEXION IA DÉBLOQUÉE.',en:'MASTER CODE ACCEPTED — AI CONNECTION UNLOCKED.',nl:'MASTERCODE AANVAARD — AI-VERBINDING ONTGRENDELD.',it:'CODICE MASTER ACCETTATO — CONNESSIONE IA SBLOCCATA.',de:'MASTERCODE AKZEPTIERT — KI-VERBINDUNG FREIGESCHALTET.',es:'CÓDIGO MAESTRO ACEPTADO — CONEXIÓN IA DESBLOQUEADA.',pt:'CÓDIGO MESTRE ACEITE — LIGAÇÃO IA DESBLOQUEADA.'}[LANG]||'MASTER CODE ACCEPTED.';
+    await typeText(_bm, 14, 'line-ok');
+    setTimeout(()=>{ try{_unlockTunnelBtn();}catch(e){} }, 500);
+    return;
+  }
+
   const cmd = CMD_ALIASES[raw] || raw;
 
   if (CMDS[cmd]) {
