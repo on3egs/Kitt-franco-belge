@@ -958,12 +958,15 @@ function motherSpeak(text, onEnd) {
   if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
   speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'fr-FR'; utt.rate = 0.72; utt.pitch = 0.5; utt.volume = 0.85;
+  const _lc = {fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE',es:'es-ES',pt:'pt-PT'}[LANG]||'fr-FR';
+  utt.lang = _lc; utt.rate = 0.72; utt.pitch = 0.5; utt.volume = 0.85;
   if (onEnd) utt.onend = onEnd;
   const loadVoices = () => {
     const voices = speechSynthesis.getVoices();
-    const v = voices.find(v => v.lang.startsWith('fr') && v.name.toLowerCase().includes('female'))
-           || voices.find(v => v.lang.startsWith('fr'));
+    const pfx = _lc.split('-')[0];
+    const v = voices.find(v => v.lang.startsWith(pfx) && v.name.toLowerCase().includes('female'))
+           || voices.find(v => v.lang.startsWith(pfx))
+           || voices[0];
     if (v) utt.voice = v;
     speechSynthesis.speak(utt);
   };
@@ -1052,10 +1055,19 @@ async function runMotherIntro() {
     await delay(900);
   }
 
-  // ── Voix française ────────────────────────────────────────
+  // ── Voix dans la langue choisie ───────────────────────────
   if (!skipped) {
+    const _iv={
+      fr:"PROTOCOLE D'INTERFACE ACTIVÉ. MODULE KYRONEX EN LIGNE. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.",
+      en:"INTERFACE PROTOCOL ACTIVATED. KYRONEX MODULE ONLINE. I AM MU-TH-UR. YOU MAY PROCEED.",
+      nl:"INTERFACEPROTOCOL GEACTIVEERD. KYRONEX MODULE ONLINE. IK BEN MU-TH-UR. U KUNT DOORGAAN.",
+      it:"PROTOCOLLO INTERFACCIA ATTIVATO. MODULO KYRONEX ONLINE. SONO MU-TH-UR. POTETE PROCEDERE.",
+      de:"SCHNITTSTELLEN-PROTOKOLL AKTIVIERT. KYRONEX MODUL ONLINE. ICH BIN MU-TH-UR. SIE KÖNNEN FORTFAHREN.",
+      es:"PROTOCOLO DE INTERFAZ ACTIVADO. MÓDULO KYRONEX EN LÍNEA. SOY MU-TH-UR. PUEDE PROCEDER.",
+      pt:"PROTOCOLO DE INTERFACE ATIVADO. MÓDULO KYRONEX ONLINE. SOU MU-TH-UR. PODE PROSSEGUIR.",
+    };
     await new Promise(resolve => {
-      motherSpeak("PROTOCOLE D'INTERFACE ACTIVÉ. MODULE KYRONEX EN LIGNE. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.", resolve);
+      motherSpeak(_iv[LANG]||_iv.fr, resolve);
     });
   }
 
@@ -1889,6 +1901,8 @@ function selectLang(lang) {
   if(btnClear) btnClear.textContent = t.btn_clear;
   const btnTunnelTxt = document.getElementById("btn-tunnel-txt");
   if(btnTunnelTxt) btnTunnelTxt.textContent = t.btn_tunnel;
+  const btnMissions = document.getElementById('btn-missions');
+  if(btnMissions) btnMissions.textContent = {fr:'[ MISSIONS ]',en:'[ MISSIONS ]',nl:'[ MISSIES ]',it:'[ MISSIONI ]',de:'[ MISSIONEN ]',es:'[ MISIONES ]',pt:'[ MISSÕES ]'}[lang]||'[ MISSIONS ]';
   sndSelect();
 
   const greet = LANG_LIST.find(l=>l[1]===lang);
@@ -2052,10 +2066,16 @@ const CMDS = {
   status: async () => {
     kittChime();
     const now = new Date(), loc = getLoc();
-    await typeText(`HEURE / TIME   : ${now.toLocaleTimeString(loc)}`, 10, 'line-ok');
-    await typeText(`DATE           : ${now.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`, 10, 'line-ok');
-    await typeText('VRAM           : ~3.9 GB / 8 GB', 10, 'line-ok');
-    await typeText('STATUT / STATUS: NOMINAL', 10, 'line-info');
+    const _sl = {
+      t:{fr:'HEURE',en:'TIME',nl:'TIJD',it:'ORA',de:'UHRZEIT',es:'HORA',pt:'HORA'}[LANG]||'TIME',
+      d:{fr:'DATE',en:'DATE',nl:'DATUM',it:'DATA',de:'DATUM',es:'FECHA',pt:'DATA'}[LANG]||'DATE',
+      v:{fr:'MÉMOIRE GPU',en:'GPU MEMORY',nl:'GPU GEHEUGEN',it:'MEMORIA GPU',de:'GPU SPEICHER',es:'MEMORIA GPU',pt:'MEMÓRIA GPU'}[LANG]||'GPU MEMORY',
+      s:{fr:'STATUT',en:'STATUS',nl:'STATUS',it:'STATO',de:'STATUS',es:'ESTADO',pt:'ESTADO'}[LANG]||'STATUS',
+    };
+    await typeText(`${_sl.t}        : ${now.toLocaleTimeString(loc)}`, 10, 'line-ok');
+    await typeText(`${_sl.d}         : ${now.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`, 10, 'line-ok');
+    await typeText(`${_sl.v}  : ~3.9 GB / 8 GB`, 10, 'line-ok');
+    await typeText(`${_sl.s}       : NOMINAL`, 10, 'line-info');
   },
 
   heure: async () => {
@@ -2065,32 +2085,36 @@ const CMDS = {
   },
 
   version: async () => {
-    await typeText('KITT FRANCO-BELGE — INTERFACE v3.0', 12, 'line-err');
-    await typeText('BUILD 2026-02-20 — KYRONEX TECHNOLOGY', 12, 'line-dim');
-    await typeText('ORIGINE : PROJET COVID-19 — CONFINEMENT 2020', 12, 'line-warn');
-    await typeText('© EMMANUEL GELINNE (MANIX) — TOUS DROITS RÉSERVÉS', 12, 'line-dim');
+    await typeText('KITT FRANCO-BELGE — INTERFACE v3.2', 12, 'line-err');
+    await typeText('BUILD 2026-02-24 — KYRONEX TECHNOLOGY', 12, 'line-dim');
+    const _vo={fr:'ORIGINE : PROJET COVID-19 — CONFINEMENT 2020',en:'ORIGIN: COVID-19 PROJECT — LOCKDOWN 2020',nl:'OORSPRONG: COVID-19 PROJECT — LOCKDOWN 2020',it:'ORIGINE: PROGETTO COVID-19 — LOCKDOWN 2020',de:'URSPRUNG: COVID-19 PROJEKT — LOCKDOWN 2020',es:'ORIGEN: PROYECTO COVID-19 — CONFINAMIENTO 2020',pt:'ORIGEM: PROJETO COVID-19 — CONFINAMENTO 2020'}[LANG]||'ORIGIN: COVID-19 PROJECT — LOCKDOWN 2020';
+    const _vc={fr:'© EMMANUEL GELINNE (MANIX) — TOUS DROITS RÉSERVÉS',en:'© EMMANUEL GELINNE (MANIX) — ALL RIGHTS RESERVED',nl:'© EMMANUEL GELINNE (MANIX) — ALLE RECHTEN VOORBEHOUDEN',it:'© EMMANUEL GELINNE (MANIX) — TUTTI I DIRITTI RISERVATI',de:'© EMMANUEL GELINNE (MANIX) — ALLE RECHTE VORBEHALTEN',es:'© EMMANUEL GELINNE (MANIX) — TODOS LOS DERECHOS RESERVADOS',pt:'© EMMANUEL GELINNE (MANIX) — TODOS OS DIREITOS RESERVADOS'}[LANG]||'© EMMANUEL GELINNE (MANIX) — ALL RIGHTS RESERVED';
+    await typeText(_vo, 12, 'line-warn');
+    await typeText(_vc, 12, 'line-dim');
   },
 
   clear: async () => clearTerm(),
 
   son: async () => {
     kittChime(); await delay(400);
+    const _sh={fr:'─── DÉMONSTRATION DES SONS ───',en:'─── SOUND DEMONSTRATION ───',nl:'─── GELUIDDEMONSTRATIE ───',it:'─── DIMOSTRAZIONE SUONI ───',de:'─── KLANGDEMONSTRATION ───',es:'─── DEMOSTRACIÓN DE SONIDOS ───',pt:'─── DEMONSTRAÇÃO DE SONS ───'}[LANG]||'─── SOUND DEMONSTRATION ───';
+    const _sf={fr:'FIN DE LA DÉMONSTRATION.',en:'END OF DEMONSTRATION.',nl:'EINDE VAN DE DEMONSTRATIE.',it:'FINE DELLA DIMOSTRAZIONE.',de:'ENDE DER DEMONSTRATION.',es:'FIN DE LA DEMOSTRACIÓN.',pt:'FIM DA DEMONSTRAÇÃO.'}[LANG]||'END OF DEMONSTRATION.';
     const demos = [
-      [sndClick,  'MU-TH-UR CLICK    (principal)'],
-      [sndTick,   'TICK LÉGER        (haute fréq)'],
-      [sndData,   'IMPULSION DATA    (caract. spéciaux)'],
-      [sndGlitch, 'GLITCH NUMÉRIQUE  (rare)'],
-      [sndLineEnd,'FIN DE LIGNE      (souffle)'],
-      [sndSelect, 'SÉLECTION         (confirmation)'],
-      [sndError,  'ERREUR            (buzzer)'],
+      [sndClick,  'MU-TH-UR CLICK    (main)'],
+      [sndTick,   'TICK              (high freq)'],
+      [sndData,   'DATA PULSE        (special chars)'],
+      [sndGlitch, 'GLITCH            (rare)'],
+      [sndLineEnd,'LINE END          (breath)'],
+      [sndSelect, 'SELECT            (confirm)'],
+      [sndError,  'ERROR             (buzzer)'],
     ];
-    await typeText('─── DÉMONSTRATION DES SONS ───', 10, 'line-info');
+    await typeText(_sh, 10, 'line-info');
     for (const [fn, name] of demos) {
       fn();
       await typeText(`  ${name}`, 8, 'line-dim');
       await delay(250);
     }
-    await typeText('FIN DE LA DÉMONSTRATION.', 12, 'line-ok');
+    await typeText(_sf, 12, 'line-ok');
   },
 
   // ══════════════════════════════════════════════════════════
