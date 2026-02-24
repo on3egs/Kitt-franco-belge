@@ -59,6 +59,8 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
 }
 #access-input::placeholder{color:#442200;letter-spacing:2px;font-size:11px;}
 #access-hint{font-size:9px;color:#442200;letter-spacing:2px;text-align:center;}
+#access-progress{height:2px;background:rgba(255,153,0,.1);margin-top:16px;border-radius:1px;overflow:hidden;}
+#access-progress-bar{height:100%;width:0;background:linear-gradient(90deg,#FF6600,#FF9900);transition:width .3s ease;border-radius:1px;}
 #access-box.wrong{animation:wrongShake .4s ease;}
 @keyframes accessGranted{0%{box-shadow:0 0 0 rgba(0,255,102,0);border-color:#CC6600}50%{box-shadow:0 0 40px rgba(0,255,102,.7),inset 0 0 20px rgba(0,255,102,.1);border-color:#00ff66}100%{box-shadow:0 0 80px rgba(0,255,102,.3);border-color:#00ff66}}
 #access-box.granted{animation:accessGranted .8s ease forwards;border-color:#00ff66;}
@@ -97,6 +99,47 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
   animation:mskip 1.1s step-end infinite;
 }
 @keyframes mskip{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* ★ HUD MISSIONS */
+#kitt-mission-hud{
+  position:fixed;top:50px;right:10px;z-index:500;
+  width:200px;background:rgba(2,0,0,.9);
+  border:1px solid rgba(255,26,26,.25);border-radius:8px;
+  padding:10px 12px;font-family:"Courier New",monospace;
+  backdrop-filter:blur(8px);
+  box-shadow:0 0 20px rgba(255,26,26,.1);
+  display:none;
+  animation:hudSlide .3s ease-out forwards;
+}
+#kitt-mission-hud.visible{ display:block; }
+@keyframes hudSlide{ from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+#mission-title{
+  font-size:9px;letter-spacing:3px;
+  color:var(--red);text-shadow:0 0 8px var(--red);margin-bottom:8px;
+  border-bottom:1px solid rgba(255,26,26,.2);padding-bottom:5px;
+}
+#mission-progress-bar{
+  height:2px;background:rgba(255,26,26,.15);border-radius:1px;margin-bottom:8px;
+}
+#mission-progress-fill{
+  height:100%;background:var(--green);border-radius:1px;
+  transition:width .5s ease;box-shadow:0 0 6px var(--green);
+}
+.mission-item{
+  font-size:9px;letter-spacing:1px;padding:2px 0;
+  display:flex;gap:6px;align-items:center;
+  color:rgba(255,255,255,.35);transition:color .3s;
+}
+.mission-item.done{ color:var(--green); }
+.mission-item.done .m-check{ color:var(--green); }
+.m-check{ font-size:10px;width:10px;flex-shrink:0; }
+#mission-close{
+  margin-top:8px;font-size:8px;letter-spacing:2px;color:rgba(255,26,26,.4);
+  cursor:pointer;text-align:center;
+  border-top:1px solid rgba(255,26,26,.1);padding-top:6px;
+  transition:color .2s;
+}
+#mission-close:hover{ color:var(--red); }
 
 /* ── LANGUAGE SELECTION OVERLAY — ALIEN × KITT ───────────── */
 #lang-screen{
@@ -536,6 +579,7 @@ button:active{transform:scale(.95);}
       <input id="access-input" type="password" maxlength="10" placeholder="_ _ _ _" autocomplete="off" spellcheck="false"/>
     </div>
     <div id="access-hint">ENTREZ LE CODE D'ACCES SYSTEME</div>
+    <div id="access-progress"><div id="access-progress-bar"></div></div>
   </div>
 </div>
 
@@ -655,6 +699,7 @@ button:active{transform:scale(.95);}
   <div class="btn-row">
     <button id="btn-boot" onclick="boot()">[ INITIALISER ]</button>
     <button id="btn-diag" onclick="runSelfTest()" class="btn-cyan">[ DIAGNOSTIC ]</button>
+    <button id="btn-missions" onclick="_toggleMissionHud()" style="border-color:rgba(255,180,0,.5);color:rgba(255,180,0,.7);">[ MISSIONS ]</button>
     <button id="btn-mentions" onclick="openFile('Mentions.txt',T[LANG].modal_mentions)" class="btn-red">[ MENTIONS ]</button>
     <button id="btn-licence" onclick="openFile('License.txt',T[LANG].modal_licence)" class="btn-red">[ LICENCE ]</button>
     <button id="btn-clear" onclick="clearTerm()">[ EFFACER ]</button>
@@ -1851,8 +1896,8 @@ function selectLang(lang) {
     screen.style.display="none";
     screen.style.opacity="1";
     screen.style.transition="";
-    // Intro MU-TH-UR APRÈS la sélection de langue
-    runMotherIntro();
+    // Écran code d'accès APRÈS la sélection de langue → puis MU-TH-UR
+    runAccessScreen();
   }, 500);
 }
 
@@ -2519,6 +2564,212 @@ CMDS['replicas'] = CMDS['repliques'];
 CMDS['daemon']   = CMDS['damon'];   // compat ancien alias
 
 // ════════════════════════════════════════════════════════════
+// ★ MISSIONS KITT — Système de progression
+// ════════════════════════════════════════════════════════════
+const MISSIONS = {
+  fr:[
+    {id:'boot',   label:'Lance la séquence de démarrage',   cmd:'boot'},
+    {id:'aide',   label:'Consulte les commandes (aide)',    cmd:'aide'},
+    {id:'blague', label:'Demande une blague à KITT',         cmd:'blague'},
+    {id:'diag',   label:'Effectue un diagnostic complet',   cmd:'diagnostic'},
+    {id:'manix',  label:'Consulte le dossier Manix',        cmd:'manix'},
+    {id:'cedric', label:'Consulte le dossier Cédric',       cmd:'cedric'},
+    {id:'kr95',   label:'Consulte le dossier KR95',         cmd:'kr95'},
+    {id:'mario',  label:'Consulte le dossier Mario Ravasi', cmd:'mario'},
+    {id:'za',     label:'Consulte le dossier ZA Elettronica',cmd:'za'},
+    {id:'connexion',label:'Clique sur Connexion IA',        cmd:null},
+  ],
+  en:[
+    {id:'boot',   label:'Launch the boot sequence',    cmd:'boot'},
+    {id:'aide',   label:'Consult command list (help)', cmd:'aide'},
+    {id:'blague', label:'Ask KITT for a joke',          cmd:'blague'},
+    {id:'diag',   label:'Run a full diagnostic',       cmd:'diagnostic'},
+    {id:'manix',  label:'Access Manix file',           cmd:'manix'},
+    {id:'cedric', label:'Access Cédric file',          cmd:'cedric'},
+    {id:'kr95',   label:'Access KR95 file',            cmd:'kr95'},
+    {id:'mario',  label:'Access Mario Ravasi file',    cmd:'mario'},
+    {id:'za',     label:'Access ZA Elettronica file',  cmd:'za'},
+    {id:'connexion',label:'Click on AI Connection',   cmd:null},
+  ],
+  nl:[
+    {id:'boot',   label:'Start de opstartsequentie',     cmd:'boot'},
+    {id:'aide',   label:"Raadpleeg commando's (hulp)",   cmd:'aide'},
+    {id:'blague', label:'Vraag KITT om een grap',        cmd:'blague'},
+    {id:'diag',   label:'Volledige diagnose uitvoeren',  cmd:'diagnostic'},
+    {id:'manix',  label:'Raadpleeg Manix dossier',       cmd:'manix'},
+    {id:'cedric', label:'Raadpleeg Cédric dossier',      cmd:'cedric'},
+    {id:'kr95',   label:'Raadpleeg KR95 dossier',        cmd:'kr95'},
+    {id:'mario',  label:'Raadpleeg Mario Ravasi dossier',cmd:'mario'},
+    {id:'za',     label:'Raadpleeg ZA Elettronica dossier',cmd:'za'},
+    {id:'connexion',label:'Klik op KITT Verbinding',    cmd:null},
+  ],
+  it:[
+    {id:'boot',   label:'Avvia la sequenza di avvio',    cmd:'boot'},
+    {id:'aide',   label:'Consulta i comandi (aiuto)',    cmd:'aide'},
+    {id:'blague', label:"Chiedi una barzelletta a KITT", cmd:'blague'},
+    {id:'diag',   label:'Diagnosi completa del sistema', cmd:'diagnostic'},
+    {id:'manix',  label:'Consulta dossier Manix',        cmd:'manix'},
+    {id:'cedric', label:'Consulta dossier Cédric',       cmd:'cedric'},
+    {id:'kr95',   label:'Consulta dossier KR95',         cmd:'kr95'},
+    {id:'mario',  label:'Consulta dossier Mario Ravasi', cmd:'mario'},
+    {id:'za',     label:'Consulta dossier ZA Elettronica',cmd:'za'},
+    {id:'connexion',label:'Clicca su Connetti KITT',    cmd:null},
+  ],
+  de:[
+    {id:'boot',   label:'Startsequenz ausführen',            cmd:'boot'},
+    {id:'aide',   label:'Befehlsliste abrufen (hilfe)',       cmd:'aide'},
+    {id:'blague', label:'KITT um einen Witz bitten',          cmd:'blague'},
+    {id:'diag',   label:'Vollständige Diagnose durchführen',  cmd:'diagnostic'},
+    {id:'manix',  label:'Manix Akte abrufen',                 cmd:'manix'},
+    {id:'cedric', label:'Cédric Akte abrufen',                cmd:'cedric'},
+    {id:'kr95',   label:'KR95 Akte abrufen',                  cmd:'kr95'},
+    {id:'mario',  label:'Mario Ravasi Akte abrufen',          cmd:'mario'},
+    {id:'za',     label:'ZA Elettronica Akte abrufen',        cmd:'za'},
+    {id:'connexion',label:'Auf KI-Verbindung klicken',       cmd:null},
+  ],
+  es:[
+    {id:'boot',   label:'Iniciar secuencia de arranque',      cmd:'boot'},
+    {id:'aide',   label:'Consultar comandos (ayuda)',          cmd:'aide'},
+    {id:'blague', label:'Pedir un chiste a KITT',              cmd:'blague'},
+    {id:'diag',   label:'Diagnóstico completo del sistema',    cmd:'diagnostic'},
+    {id:'manix',  label:'Consultar expediente Manix',          cmd:'manix'},
+    {id:'cedric', label:'Consultar expediente Cédric',         cmd:'cedric'},
+    {id:'kr95',   label:'Consultar expediente KR95',           cmd:'kr95'},
+    {id:'mario',  label:'Consultar expediente Mario Ravasi',   cmd:'mario'},
+    {id:'za',     label:'Consultar expediente ZA Elettronica', cmd:'za'},
+    {id:'connexion',label:'Clic en Conectar KITT',            cmd:null},
+  ],
+  pt:[
+    {id:'boot',   label:'Iniciar sequência de arranque',       cmd:'boot'},
+    {id:'aide',   label:'Consultar comandos (ajuda)',           cmd:'aide'},
+    {id:'blague', label:'Pedir uma piada ao KITT',              cmd:'blague'},
+    {id:'diag',   label:'Diagnóstico completo do sistema',      cmd:'diagnostic'},
+    {id:'manix',  label:'Consultar dossier Manix',              cmd:'manix'},
+    {id:'cedric', label:'Consultar dossier Cédric',             cmd:'cedric'},
+    {id:'kr95',   label:'Consultar dossier KR95',               cmd:'kr95'},
+    {id:'mario',  label:'Consultar dossier Mario Ravasi',       cmd:'mario'},
+    {id:'za',     label:'Consultar dossier ZA Elettronica',     cmd:'za'},
+    {id:'connexion',label:'Clicar em Ligar KITT',              cmd:null},
+  ],
+};
+
+let _missionsCompleted = new Set();
+let _missionHudOpen = false;
+
+function _completeMission(id) {
+  if(_missionsCompleted.has(id)) return;
+  _missionsCompleted.add(id);
+  _renderMissions();
+  const labels = {
+    fr:{boot:'SÉQUENCE DÉMARRÉE',aide:'COMMANDES CONSULTÉES',blague:'BLAGUE DEMANDÉE',diag:'DIAGNOSTIC EFFECTUÉ',manix:'MANIX CONSULTÉ',cedric:'CÉDRIC CONSULTÉ',kr95:'KR95 CONSULTÉ',mario:'MARIO CONSULTÉ',za:'ZA CONSULTÉ',connexion:'CONNEXION IA CLIQUÉE'},
+    en:{boot:'BOOT RUN',aide:'COMMANDS CONSULTED',blague:'JOKE REQUESTED',diag:'DIAGNOSTIC COMPLETE',manix:'MANIX ACCESSED',cedric:'CÉDRIC ACCESSED',kr95:'KR95 ACCESSED',mario:'MARIO ACCESSED',za:'ZA ACCESSED',connexion:'AI CONNECTION CLICKED'},
+  };
+  const pfx = {fr:'✦ MISSION ACCOMPLIE',en:'✦ MISSION COMPLETE',nl:'✦ MISSIE VOLTOOID',it:'✦ MISSIONE COMPIUTA',de:'✦ MISSION ERFÜLLT',es:'✦ MISIÓN CUMPLIDA',pt:'✦ MISSÃO CUMPRIDA'}[LANG]||'✦ MISSION COMPLETE';
+  const lset = labels[LANG]||labels.en;
+  const msg = `${pfx} : ${lset[id]||id.toUpperCase()} ✦`;
+  try{ addLine(msg, 'line-ok'); kittChime(); }catch(e){}
+  const missions = MISSIONS[LANG]||MISSIONS.en;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  if(done === missions.length) setTimeout(()=>_showFinalReward(), 1200);
+}
+
+async function _showFinalReward() {
+  kittChime(); await delay(300); kittChime(); await delay(300); kittChime();
+  const sep = '══════════════════════════════════════════';
+  const reward = {
+    fr:{title:'  ✦ TOUTES LES MISSIONS ACCOMPLIES ✦  ',msg:'FÉLICITATIONS AGENT — CONNEXION KITT DÉBLOQUÉE !',lines:['VOUS AVEZ MAÎTRISÉ LE SYSTÈME KITT FRANCO-BELGE.','▶ LE BOUTON [ CONNEXION KITT ] EST MAINTENANT ACTIF.','CLIQUEZ POUR ACCÉDER À L\'IA KITT EN DIRECT.','— MANIX // KYRONEX SYSTEMS —']},
+    en:{title:'  ✦ ALL MISSIONS COMPLETE ✦  ',msg:'CONGRATULATIONS AGENT — KITT CONNECTION UNLOCKED!',lines:['YOU HAVE MASTERED THE KITT FRANCO-BELGIAN SYSTEM.','▶ THE [ KITT CONNECTION ] BUTTON IS NOW ACTIVE.','CLICK TO ACCESS THE LIVE KITT AI.','— MANIX // KYRONEX SYSTEMS —']},
+    nl:{title:'  ✦ ALLE MISSIES VOLTOOID ✦  ',msg:'GEFELICITEERD AGENT — KITT VERBINDING ONTGRENDELD!',lines:['U BEHEERST HET KITT FRANCO-BELGISCH SYSTEEM.','▶ DE [ KITT VERBINDING ] KNOP IS NU ACTIEF.','KLIK OM TOEGANG TE KRIJGEN TOT DE LIVE KITT AI.','— MANIX // KYRONEX SYSTEMS —']},
+    it:{title:'  ✦ TUTTE LE MISSIONI COMPIUTE ✦  ',msg:'CONGRATULAZIONI AGENTE — CONNESSIONE KITT SBLOCCATA!',lines:['HAI PADRONEGGIATO IL SISTEMA KITT FRANCO-BELGA.','▶ IL PULSANTE [ CONNETTI KITT ] È ORA ATTIVO.','CLICCA PER ACCEDERE AL KITT AI DAL VIVO.','— MANIX // KYRONEX SYSTEMS —']},
+    de:{title:'  ✦ ALLE MISSIONEN ERFÜLLT ✦  ',msg:'GLÜCKWUNSCH AGENT — KITT-VERBINDUNG FREIGESCHALTET!',lines:['SIE BEHERRSCHEN DAS KITT FRANCO-BELGISCHE SYSTEM.','▶ DER [ KITT VERBINDEN ] KNOPF IST JETZT AKTIV.','KLICKEN SIE FÜR DEN LIVE-ZUGANG ZUR KITT-KI.','— MANIX // KYRONEX SYSTEMS —']},
+    es:{title:'  ✦ TODAS LAS MISIONES CUMPLIDAS ✦  ',msg:'FELICIDADES AGENTE — ¡CONEXIÓN KITT DESBLOQUEADA!',lines:['HAS DOMINADO EL SISTEMA KITT FRANCO-BELGA.','▶ EL BOTÓN [ CONECTAR KITT ] ESTÁ AHORA ACTIVO.','HAZ CLIC PARA ACCEDER AL KITT AI EN DIRECTO.','— MANIX // KYRONEX SYSTEMS —']},
+    pt:{title:'  ✦ TODAS AS MISSÕES CUMPRIDAS ✦  ',msg:'PARABÉNS AGENTE — LIGAÇÃO KITT DESBLOQUEADA!',lines:['DOMINOU O SISTEMA KITT FRANCO-BELGA.','▶ O BOTÃO [ LIGAR KITT ] ESTÁ AGORA ATIVO.','CLIQUE PARA ACEDER AO KITT AI AO VIVO.','— MANIX // KYRONEX SYSTEMS —']},
+  };
+  const r = reward[LANG]||reward.en;
+  try{ for(let i=0;i<4;i++){ setTimeout(()=>document.body.style.background='rgba(0,255,100,0.06)',i*250); setTimeout(()=>document.body.style.background='#000',i*250+125); } setTimeout(()=>document.body.style.background='',1200); }catch(e){}
+  await typeText(sep, 3, 'line-dim');
+  await typeText(r.title, 8, 'line-ok');
+  await typeText(sep, 3, 'line-dim');
+  for(const line of r.lines) await typeText(line, 10, line.startsWith('▶')?'line-info':'line-ok');
+  await typeText(sep, 3, 'line-dim');
+  await typeText(r.msg, 12, 'line-err');
+  await typeText(sep, 3, 'line-dim');
+  setTimeout(()=>_unlockTunnelBtn(), 500);
+}
+
+function _renderMissions() {
+  const list = document.getElementById('mission-list');
+  const fill = document.getElementById('mission-progress-fill');
+  const title = document.getElementById('mission-title');
+  if(!list) return;
+  const missions = MISSIONS[LANG]||MISSIONS.fr;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  if(fill) fill.style.width = `${Math.round(done/missions.length*100)}%`;
+  const mTitle = {fr:'⬡ MISSIONS KITT',en:'⬡ KITT MISSIONS',nl:'⬡ KITT MISSIES',it:'⬡ MISSIONI KITT',de:'⬡ KITT MISSIONEN',es:'⬡ MISIONES KITT',pt:'⬡ MISSÕES KITT'}[LANG]||'⬡ KITT MISSIONS';
+  if(title) title.textContent = mTitle + ` (${done}/${missions.length})`;
+  list.innerHTML = missions.map(m=>`<div class="mission-item ${_missionsCompleted.has(m.id)?'done':''}"><span class="m-check">${_missionsCompleted.has(m.id)?'▶':'○'}</span><span>${m.label}</span></div>`).join('');
+}
+
+function _toggleMissionHud() {
+  const hud = document.getElementById('kitt-mission-hud');
+  if(!hud) return;
+  _missionHudOpen = !_missionHudOpen;
+  if(_missionHudOpen) { _renderMissions(); hud.classList.add('visible'); }
+  else { hud.classList.remove('visible'); }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const mc = document.getElementById('mission-close');
+  if(mc) mc.addEventListener('click', _toggleMissionHud);
+});
+
+CMDS['missions'] = async function() {
+  _toggleMissionHud();
+  const mTitle={fr:'── MISSIONS KITT ──',en:'── KITT MISSIONS ──',nl:'── KITT MISSIES ──',it:'── MISSIONI KITT ──',de:'── KITT MISSIONEN ──',es:'── MISIONES KITT ──',pt:'── MISSÕES KITT ──'}[LANG]||'── KITT MISSIONS ──';
+  await typeText(mTitle, 10, 'line-info');
+  const missions = MISSIONS[LANG]||MISSIONS.en;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  const progLabel={fr:'PROGRESSION',en:'PROGRESS',nl:'VOORTGANG',it:'PROGRESSIONE',de:'FORTSCHRITT',es:'PROGRESIÓN',pt:'PROGRESSO'}[LANG]||'PROGRESS';
+  await typeText(`${progLabel} : ${done}/${missions.length}`, 12, done===missions.length?'line-ok':'line-warn');
+};
+CMD_ALIASES['mission']='missions'; CMD_ALIASES['missionen']='missions'; CMD_ALIASES['missies']='missions';
+CMD_ALIASES['missioni']='missions'; CMD_ALIASES['misiones']='missions'; CMD_ALIASES['missoes']='missions';
+
+const _MISSION_CMD_MAP = {
+  boot:'boot', aide:'aide', diagnostic:'diag', blague:'blague',
+  manix:'manix', cedric:'cedric', damon:'damon', kr95:'kr95', mario:'mario', za:'za',
+  // aliases
+  hulp:'aide', hilfe:'aide', ayuda:'aide', ajuda:'aide', aiuto:'aide',
+  witz:'blague', grap:'blague', barzelletta:'blague', chiste:'blague', piada:'blague',
+  daemon:'damon',
+};
+
+function _showLockMessage() {
+  sndError();
+  const missions = MISSIONS[LANG]||MISSIONS.en;
+  const done = missions.filter(m=>_missionsCompleted.has(m.id)).length;
+  const remaining = missions.length - done;
+  const msg = {
+    fr:`[ ACCÈS VERROUILLÉ ] Complétez encore ${remaining} mission(s) pour débloquer la connexion IA.`,
+    en:`[ ACCESS LOCKED ] Complete ${remaining} more mission(s) to unlock the AI connection.`,
+    nl:`[ TOEGANG VERGRENDELD ] Voltooi nog ${remaining} missie(s) om de AI-verbinding te ontgrendelen.`,
+    it:`[ ACCESSO BLOCCATO ] Completa ancora ${remaining} missione/i per sbloccare la connessione IA.`,
+    de:`[ ZUGANG GESPERRT ] Schließe noch ${remaining} Mission(en) ab, um die KI-Verbindung freizuschalten.`,
+    es:`[ ACCESO BLOQUEADO ] Completa ${remaining} misión/misiones más para desbloquear la conexión IA.`,
+    pt:`[ ACESSO BLOQUEADO ] Completa mais ${remaining} missão/missões para desbloquear a ligação IA.`,
+  }[LANG]||`[ LOCKED ] Complete ${remaining} more mission(s).`;
+  try{ addLine(msg, 'line-err'); }catch(e){}
+}
+
+function _unlockTunnelBtn() {
+  const btn = document.getElementById('btn-tunnel');
+  if(!btn) return;
+  btn.classList.remove('tunnel-locked');
+  btn.onclick = (e) => { try{ripple(e);}catch(ee){} connectTunnel(); };
+  setTimeout(() => _updateTunnelBtn(), 100);
+}
+
+// ════════════════════════════════════════════════════════════
 // INPUT handler
 // ════════════════════════════════════════════════════════════
 document.getElementById('cmd-input').addEventListener('keydown', async function(e) {
@@ -2531,6 +2782,8 @@ document.getElementById('cmd-input').addEventListener('keydown', async function(
   const cmd = CMD_ALIASES[raw] || raw;
 
   if (CMDS[cmd]) {
+    // ★ Tracking missions
+    if(_MISSION_CMD_MAP && _MISSION_CMD_MAP[cmd]) try{ _completeMission(_MISSION_CMD_MAP[cmd]); }catch(e){}
     await CMDS[cmd]();
   } else {
     sndError();
@@ -2605,6 +2858,7 @@ function _updateTunnelBtn() {
 
 function connectTunnel() {
   sndSelect();
+  try{ _completeMission('connexion'); }catch(e){}
   if (_tunnelStatus === 'online' && _tunnelUrl && _isValidCfUrl(_tunnelUrl)) {
     addLine('[ TUNNEL ] CONNEXION SÉCURISÉE → ' + _tunnelUrl, 'line-ok');
     setTimeout(() => window.open(_tunnelUrl, '_blank', 'noopener,noreferrer'), 300);
@@ -2674,23 +2928,47 @@ function startMain() {
 })();
 
 // ════════════════════════════════════════════════════════════
-// ÉCRAN ACCÈS — Mot de passe style Alien
+// ÉCRAN ACCÈS — Mot de passe style Alien (multilingue)
 // ════════════════════════════════════════════════════════════
 function runAccessScreen() {
   const screen = document.getElementById('access-screen');
   const log    = document.getElementById('access-log');
   const input  = document.getElementById('access-input');
   const box    = document.getElementById('access-box');
-  screen.style.display = 'flex';
+  const progressBar = document.getElementById('access-progress-bar');
+  // Réinitialiser
+  log.innerHTML = ''; input.value = ''; input.disabled = false;
+  if(progressBar) { progressBar.style.width='0'; progressBar.style.opacity='1'; progressBar.style.background='linear-gradient(90deg,#FF6600,#FF9900)'; }
+  screen.style.display = 'flex'; screen.style.opacity = '1'; screen.style.transition = '';
 
-  const lines = [
-    'INITIALISATION DU PROTOCOLE...',
-    'CONNEXION AU NOYAU MU-TH-UR...',
-    'INTERFACE SECURISEE ACTIVE.',
-  ];
+  // Textes multilingues
+  const accessLines = {
+    fr:['INITIALISATION DU PROTOCOLE...','CONNEXION AU NOYAU MU-TH-UR...','INTERFACE SÉCURISÉE ACTIVE.'],
+    en:['PROTOCOL INITIALIZATION...','CONNECTING TO MU-TH-UR CORE...','SECURE INTERFACE ACTIVE.'],
+    nl:['PROTOCOL INITIALISEREN...','VERBINDING MET MU-TH-UR KERN...','BEVEILIGDE INTERFACE ACTIEF.'],
+    it:['INIZIALIZZAZIONE PROTOCOLLO...','CONNESSIONE AL NUCLEO MU-TH-UR...','INTERFACCIA SICURA ATTIVA.'],
+    de:['PROTOKOLL INITIALISIERUNG...','VERBINDUNG ZUM MU-TH-UR KERN...','SICHERE SCHNITTSTELLE AKTIV.'],
+    es:['INICIALIZANDO PROTOCOLO...','CONECTANDO AL NÚCLEO MU-TH-UR...','INTERFAZ SEGURA ACTIVA.'],
+    pt:['INICIALIZAÇÃO DO PROTOCOLO...','LIGAÇÃO AO NÚCLEO MU-TH-UR...','INTERFACE SEGURA ATIVA.'],
+  };
+  const accessOk  = {fr:'> ACCÈS ACCORDÉ. BIENVENUE.',en:'> ACCESS GRANTED. WELCOME.',nl:'> TOEGANG VERLEEND. WELKOM.',it:'> ACCESSO CONCESSO. BENVENUTO.',de:'> ZUGANG GEWÄHRT. WILLKOMMEN.',es:'> ACCESO CONCEDIDO. BIENVENIDO.',pt:'> ACESSO CONCEDIDO. BEM-VINDO.'};
+  const accessErr = {fr:'> CODE INCORRECT. ACCÈS REFUSÉ.',en:'> WRONG CODE. ACCESS DENIED.',nl:'> ONJUISTE CODE. TOEGANG GEWEIGERD.',it:'> CODICE ERRATO. ACCESSO NEGATO.',de:'> FALSCHER CODE. ZUGANG VERWEIGERT.',es:'> CÓDIGO INCORRECTO. ACCESO DENEGADO.',pt:'> CÓDIGO ERRADO. ACESSO NEGADO.'};
+  const accessVoice = {fr:'Accès accordé. Je suis MU-TH-UR. Bienvenue.',en:'Access granted. I am MU-TH-UR. Welcome.',nl:'Toegang verleend. Ik ben MU-TH-UR. Welkom.',it:'Accesso concesso. Sono MU-TH-UR. Benvenuto.',de:'Zugang gewährt. Ich bin MU-TH-UR. Willkommen.',es:'Acceso concedido. Soy MU-TH-UR. Bienvenido.',pt:'Acesso concedido. Eu sou MU-TH-UR. Bem-vindo.'};
+
+  const lines = accessLines[LANG] || accessLines.en;
   let li = 0;
+  let progress = 0;
+  const progInterval = setInterval(() => {
+    if (progress < 75) { progress += 2; if(progressBar) progressBar.style.width = progress + '%'; }
+  }, 80);
+
   function typeLine() {
-    if (li >= lines.length) { input.focus(); return; }
+    if (li >= lines.length) {
+      clearInterval(progInterval);
+      if(progressBar) progressBar.style.width = '100%';
+      setTimeout(() => { if(progressBar) progressBar.style.opacity='0'; }, 600);
+      input.focus(); return;
+    }
     const d = document.createElement('div');
     d.className = 'a-line'; log.appendChild(d);
     let ci = 0, txt = lines[li];
@@ -2704,35 +2982,34 @@ function runAccessScreen() {
   function doAccess() {
     const val = input.value.trim();
     if (val === '1982') {
-      // Accès accordé
       input.disabled = true;
-      box.classList.add('granted');
-      screen.classList.add('granted');
+      if(progressBar){ progressBar.style.opacity='1'; progressBar.style.width='100%'; progressBar.style.background='linear-gradient(90deg,#00aa44,#00ff66)'; }
+      box.classList.add('granted'); screen.classList.add('granted');
       const ok = document.createElement('div');
-      ok.className = 'a-ok'; ok.textContent = '> ACCES ACCORDE. BIENVENUE.';
+      ok.className = 'a-ok'; ok.textContent = accessOk[LANG] || accessOk.en;
       log.appendChild(ok);
       try{ sndMotherChime(); }catch(e){}
-      // Voix
+      // Voix dans la langue choisie
       setTimeout(()=>{
         try{
-          const utt = new SpeechSynthesisUtterance('Accès accordé. Je suis MU-TH-UR. Bienvenue.');
-          utt.lang='fr-FR'; utt.rate=0.72; utt.pitch=0.5; utt.volume=0.9;
+          const msg = accessVoice[LANG] || accessVoice.en;
+          const langCode = {fr:'fr-FR',en:'en-US',nl:'nl-NL',it:'it-IT',de:'de-DE',es:'es-ES',pt:'pt-PT'}[LANG]||'en-US';
+          const utt = new SpeechSynthesisUtterance(msg);
+          utt.lang=langCode; utt.rate=0.72; utt.pitch=0.5; utt.volume=0.9;
           const vs=speechSynthesis.getVoices();
-          const v=vs.find(v=>v.lang.startsWith('fr'))||vs[0];
-          if(v) utt.voice=v;
-          speechSynthesis.speak(utt);
+          const v=vs.find(v=>v.lang.startsWith(langCode.split('-')[0]))||vs[0];
+          if(v) utt.voice=v; speechSynthesis.speak(utt);
         }catch(e){}
       }, 300);
       setTimeout(()=>{
-        screen.style.transition='opacity .9s';
-        screen.style.opacity='0';
-        setTimeout(()=>{ screen.style.display='none'; showLangScreen(); }, 950);
+        screen.style.transition='opacity .9s'; screen.style.opacity='0';
+        setTimeout(()=>{ screen.style.display='none'; screen.style.opacity='1'; screen.style.transition=''; runMotherIntro(); }, 950);
       }, 2800);
     } else {
-      // Accès refusé
       input.value='';
+      if(progressBar){ progressBar.style.background='linear-gradient(90deg,#ff1a1a,#ff6600)'; progressBar.style.width='100%'; setTimeout(()=>{ progressBar.style.width='0'; progressBar.style.background='linear-gradient(90deg,#FF6600,#FF9900)'; },600); }
       const err = document.createElement('div');
-      err.className='a-err'; err.textContent='> CODE INCORRECT. ACCES REFUSE.';
+      err.className='a-err'; err.textContent = accessErr[LANG] || accessErr.en;
       log.appendChild(err);
       try{ sndMotherBeep(); setTimeout(()=>sndMotherBeep(),160); }catch(e){}
       box.classList.add('wrong');
@@ -2740,12 +3017,18 @@ function runAccessScreen() {
       input.focus();
     }
   }
-
   input.addEventListener('keydown', e=>{ if(e.key==='Enter') doAccess(); });
 }
 
-// Sélection de langue en premier — écran d'accès désactivé au démarrage
-window.addEventListener('load', () => showLangScreen());
+// Langue en premier au chargement
+window.addEventListener('load', () => {
+  document.getElementById('access-screen').style.display = 'none';
+  document.getElementById('mother-intro').style.display = 'none';
+  // Verrouiller le bouton Connexion KITT jusqu'aux missions complètes
+  const tb = document.getElementById('btn-tunnel');
+  if(tb) { tb.classList.add('tunnel-locked'); tb.style.pointerEvents='auto'; tb.onclick=(e)=>{ try{ripple(e);}catch(ee){} _showLockMessage(); }; }
+  showLangScreen();
+});
 
 // ── FIX MOBILE : garder l'input visible quand le clavier virtuel s'ouvre ──
 // visualViewport s'adapte à la zone réellement visible (clavier exclu)
@@ -3139,6 +3422,14 @@ function showKittCall(){
     <button class="call-btn" id="call-accept">&#9742; ACCEPTER</button>
     <button class="call-btn" id="call-ignore">&#10005; IGNORER</button>
   </div>
+</div>
+
+<!-- ★ HUD MISSIONS -->
+<div id="kitt-mission-hud">
+  <div id="mission-title">⬡ MISSIONS KITT</div>
+  <div id="mission-progress-bar"><div id="mission-progress-fill" style="width:0%"></div></div>
+  <div id="mission-list"></div>
+  <div id="mission-close">[ FERMER ]</div>
 </div>
 
 </body>
