@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://bay-cam-permitted-honor.trycloudflare.com",
-  "last_update": "2026-02-24T03:14:54.641105+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-24T03:18:41.666773+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
