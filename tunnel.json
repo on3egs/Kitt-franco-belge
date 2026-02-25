@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-02-25T07:40:37.975757+00:00",
+  "status": "online",
+  "url": "https://research-solar-devices-deliver.trycloudflare.com",
+  "last_update": "2026-02-25T07:40:45.216910+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
