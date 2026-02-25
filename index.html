@@ -724,31 +724,53 @@ button:hover::after{left:0;right:0;}
 .btn-red::after{background:var(--red);}
 
 /* ── Clavier virtuel KITT — mobile uniquement ── */
-.kitt-vkb{
+#kitt-vkb{
   position:fixed;bottom:0;left:0;right:0;z-index:600;
-  background:#060a06;border-top:1px solid rgba(0,255,102,.2);
-  padding:5px 4px 7px;user-select:none;-webkit-user-select:none;
-  touch-action:manipulation;box-shadow:0 -4px 20px rgba(0,0,0,.8);
+  background:#000600;
+  border-top:2px solid #003a10;
+  box-shadow:0 -5px 30px rgba(0,180,60,.24),0 -1px 0 #002200;
+  padding:0 3px max(6px,env(safe-area-inset-bottom)) 3px;
+  transform:translateY(110%);
+  transition:transform .24s cubic-bezier(.22,1,.36,1);
+  will-change:transform;
 }
-.vkb-panel{display:flex;flex-direction:column;gap:3px;}
-.vkb-row{display:flex;justify-content:center;gap:3px;}
-.vkb-key{
-  display:inline-flex;align-items:center;justify-content:center;
-  flex:1;max-width:42px;height:32px;
-  background:rgba(0,255,102,.06);border:1px solid rgba(0,255,102,.2);
-  border-bottom:2px solid rgba(0,255,102,.35);border-radius:4px;
-  color:#00ff66;font-family:var(--display);font-size:12px;
-  cursor:pointer;-webkit-tap-highlight-color:transparent;
-  transition:background .06s,transform .04s;
+#kitt-vkb.kb-on{transform:translateY(0);}
+body.kb-open{padding-bottom:222px;}
+.kb-header{
+  text-align:center;font-family:'Courier New',monospace;
+  font-size:8px;color:#005522;letter-spacing:3px;
+  padding:5px 0 4px;border-bottom:1px solid #001800;margin-bottom:3px;
 }
-.vkb-key:active,.vkb-key.vkb-pressed{
-  background:rgba(0,255,102,.18);transform:translateY(1px);border-bottom-width:1px;
+.kb-row{display:flex;justify-content:center;gap:3px;margin-bottom:3px;}
+.kb-key{
+  flex:1;min-width:0;height:40px;
+  background:#000800;border:1px solid #001a00;border-bottom:2px solid #002a00;
+  border-radius:4px;color:#00cc55;
+  font-family:'Courier New',Courier,monospace;font-size:13px;font-weight:bold;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .06s,box-shadow .06s,color .06s;
+  touch-action:manipulation;
 }
-.vkb-key-wide{flex:2;max-width:none;font-size:11px;color:rgba(0,255,102,.6);letter-spacing:.04em;}
-.vkb-key-enter{background:rgba(255,26,26,.12);border-color:rgba(255,26,26,.35);color:var(--red);flex:2;max-width:none;}
-.vkb-key-switch{flex:1.5;max-width:none;font-size:10px;color:rgba(0,255,102,.5);}
-.vkb-shift-on{background:rgba(0,255,102,.2);color:#aaffcc;}
-@media(min-width:601px){.kitt-vkb{display:none !important;}}
+.kb-key:active{
+  background:#001a00;border-color:#007700;border-bottom-color:#00ee44;
+  box-shadow:0 0 10px #00aa4444,inset 0 0 8px #002200;
+  color:#44ff88;transform:translateY(1px);
+}
+.kb-w15{flex:1.5;font-size:11px;}
+.kb-w2{flex:2;font-size:12px;}
+.kb-w4{flex:4;}
+.kb-send{
+  flex:2.2;background:#001100;border-color:#005500;border-bottom-color:#00bb44;
+  color:#00ff66;font-size:11px;letter-spacing:1px;box-shadow:0 0 12px #00ff6618;
+}
+.kb-send:active{
+  background:#002600;border-bottom-color:#00ff44;
+  box-shadow:0 0 20px #00ff6655;color:#88ffaa;
+}
+.kb-shift-on{background:#001300;border-color:#005000;color:#33ff77;}
+@media(min-width:601px){#kitt-vkb{display:none !important;}}
 </style>
 </head>
 <body>
@@ -902,10 +924,7 @@ button:hover::after{left:0;right:0;}
   </div>
 
   <!-- ── Clavier virtuel KITT (mobile uniquement) ── -->
-  <div id="kitt-vkb" class="kitt-vkb" hidden>
-    <div id="kitt-vkb-letters" class="vkb-panel"></div>
-    <div id="kitt-vkb-special" class="vkb-panel" hidden></div>
-  </div>
+  <div id="kitt-vkb" aria-label="Clavier KITT" aria-hidden="true"></div>
 </div>
 
 <!-- Modal -->
@@ -3780,10 +3799,130 @@ function showKittCall(){
 <script>
 // ════════════════════════════════════════════════════════════
 // CLAVIER VIRTUEL KITT — mobile uniquement (<= 600px)
-// Anti-conflit : inputmode=none + readonly iOS + preventDefault
+// Design inspiré KYRONEX local — thème vert — 3 modes AZERTY
 // ════════════════════════════════════════════════════════════
+const _kittKb = (() => {
+  'use strict';
+  let el, shifted = false, nums = false, accs = false;
+
+  const AL = [
+    ['a','z','e','r','t','y','u','i','o','p'],
+    ['q','s','d','f','g','h','j','k','l','m'],
+    ['SH','w','x','c','v','b','n','BS'],
+    ['MODE','SPACE','SEND']
+  ];
+  const AC = [
+    ['\u00e9','\u00e8','\u00ea','\u00eb','\u00e0','\u00e2','\u00e4','\u00f9','\u00fb'],
+    ['\u00ee','\u00ef','\u00f4','\u00f6','\u00e7','\u0153','\u00e6','-','_'],
+    ['!','?','.',',',';',':','\'','BS'],
+    ['MODE','SPACE','SEND']
+  ];
+  const NM = [
+    ['1','2','3','4','5','6','7','8','9','0'],
+    ['-','/',':', ';','(',')', '@','#','?','!'],
+    ['.',',','\'','"','&','*','+','=','BS'],
+    ['MODE','SPACE','SEND']
+  ];
+
+  function render() {
+    if (!el) return;
+    const rows = accs ? AC : (nums ? NM : AL);
+    el.innerHTML = '<div class="kb-header">[ K.I.T.T. NEURAL INPUT ]</div>'
+      + rows.map(function(row) {
+        return '<div class="kb-row">' + row.map(keyHtml).join('') + '</div>';
+      }).join('');
+    el.querySelectorAll('.kb-key').forEach(function(b) {
+      b.addEventListener('pointerdown', function(e) { e.preventDefault(); press(b.dataset.k); });
+    });
+  }
+
+  function keyHtml(k) {
+    return '<button class="kb-key ' + kCls(k) + '" data-k="' + k + '" tabindex="-1">' + kLbl(k) + '</button>';
+  }
+
+  function kLbl(k) {
+    if (k === 'BS')    return '&#9003;';
+    if (k === 'SH')    return shifted ? '&#8682;' : '&#8679;';
+    if (k === 'SPACE') return '&#9135;&#9135;&#9135;';
+    if (k === 'SEND')  return '&#9654;&nbsp;ENTER';
+    if (k === 'MODE') {
+      if (!nums && !accs) return '\u00e9\u00e0\u00e7';
+      if (accs)           return '123';
+      return 'ABC';
+    }
+    return (shifted && !nums && !accs) ? k.toUpperCase() : k;
+  }
+
+  function kCls(k) {
+    if (k === 'SEND')  return 'kb-send kb-w2';
+    if (k === 'SPACE') return 'kb-w4';
+    if (k === 'SH')    return 'kb-w15' + (shifted ? ' kb-shift-on' : '');
+    if (k === 'BS' || k === 'MODE') return 'kb-w15';
+    return '';
+  }
+
+  function press(k) {
+    if (typeof sndClick === 'function') sndClick();
+    const inp = document.getElementById('cmd-input');
+    if (!inp) return;
+    if      (k === 'BS')    { inp.value = inp.value.slice(0, -1); }
+    else if (k === 'SEND')  { inp.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter',bubbles:true})); hide(); return; }
+    else if (k === 'SH')    { shifted = !shifted; render(); return; }
+    else if (k === 'MODE') {
+      if (!nums && !accs)  { accs = true; }
+      else if (accs)       { accs = false; nums = true; }
+      else                 { nums = false; }
+      render(); return;
+    }
+    else if (k === 'SPACE') { inp.value += ' '; }
+    else {
+      inp.value += (shifted && !nums && !accs) ? k.toUpperCase() : k;
+      if (shifted) { shifted = false; render(); return; }
+    }
+    inp.dispatchEvent(new Event('input'));
+  }
+
+  function show() {
+    if (!el) return;
+    const inp = document.getElementById('cmd-input');
+    if (inp) inp.setAttribute('inputmode', 'none');
+    document.body.classList.add('kb-open');
+    el.classList.add('kb-on');
+  }
+
+  function hide() {
+    if (!el) return;
+    el.classList.remove('kb-on');
+    document.body.classList.remove('kb-open');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!('ontouchstart' in window)) return;
+    el = document.getElementById('kitt-vkb');
+    if (!el) return;
+    render();
+    const inp = document.getElementById('cmd-input');
+    if (inp) {
+      inp.setAttribute('inputmode', 'none');
+      inp.addEventListener('focus', show);
+      inp.addEventListener('touchend', function(e) {
+        if (!el.classList.contains('kb-on')) { e.preventDefault(); show(); }
+      });
+    }
+    el.addEventListener('pointerdown', function(e) { e.preventDefault(); });
+    document.addEventListener('pointerdown', function(e) {
+      if (!el.classList.contains('kb-on')) return;
+      var path = e.composedPath ? e.composedPath() : [];
+      if (path.indexOf(el) === -1 && e.target.id !== 'cmd-input') hide();
+    });
+  });
+
+  return { show, hide };
+})();
+
+// ── Ancienne IIFE désactivée (remplacée par _kittKb ci-dessus) ──
 (function() {
-  if (window.innerWidth > 600) return; // desktop : clavier natif
+  return; // désactivé
 
   var inp  = document.getElementById('cmd-input');
   var vkb  = document.getElementById('kitt-vkb');
