@@ -606,26 +606,26 @@ button:active{transform:scale(.95);}
   .lang-opt:active{background:rgba(255,26,26,.1);border-left-color:var(--red);}
 }
 @media(max-width:600px){
-  .hdr-title{font-size:13px;letter-spacing:2px;}
-  button{padding:6px 10px;font-size:11px;}
-  #terminal{font-size:12px;}
+  .hdr-title{font-size:15px;letter-spacing:2px;}
+  button{padding:6px 10px;font-size:13px;}
+  #terminal{font-size:14px;}
   #lang-box{padding:16px 12px;max-width:98vw;border-radius:8px;}
   #lang-hdr{padding:12px 14px 10px;}
   .lang-logo-kitt,.lang-logo-alien{font-size:14px !important;letter-spacing:3px !important;}
   .lang-opt{padding:8px 12px;gap:10px;margin:1px 4px;}
   .lo-flag{font-size:18px !important;}
-  .lo-label{font-size:11px;}
+  .lo-label{font-size:13px;}
   .lo-voice-btn{font-size:9px;padding:3px 6px;}
-  #lang-data-line{padding:4px 14px;font-size:8px;letter-spacing:1px;}
+  #lang-data-line{padding:4px 14px;font-size:11px;letter-spacing:1px;}
   #lang-ftr{padding:8px 14px;}
   #lang-screen::after{display:none;}
   #access-box{padding:20px 16px;max-width:98vw;}
-  #access-hdr{font-size:10px;letter-spacing:2px;}
+  #access-hdr{font-size:12px;letter-spacing:2px;}
   #access-input{font-size:16px;letter-spacing:3px;}
   #mother-box{padding:16px 14px;}
-  #mother-hdr{font-size:11px;letter-spacing:2px;}
-  #mother-output{font-size:11px;min-height:200px;}
-  #mother-skip{font-size:9px;}
+  #mother-hdr{font-size:14px;letter-spacing:2px;}
+  #mother-output{font-size:14px;min-height:200px;line-height:1.7;}
+  #mother-skip{font-size:12px;}
 }
 
 /* ── BOUTON TUNNEL CLOUDFLARE ───────────────────────────────── */
@@ -702,6 +702,44 @@ button:active{transform:scale(.95);}
   white-space:nowrap;user-select:none;
   text-shadow:0 0 6px var(--green-dim);
 }
+
+/* ── Menus Knight Rider — underline slide couleur ── */
+button::after{
+  content:'';position:absolute;bottom:0;left:50%;right:50%;
+  height:1px;background:var(--green);
+  transition:left .22s ease,right .22s ease;
+  z-index:1;
+}
+button:hover::after{left:0;right:0;}
+.btn-cyan::after{background:var(--cyan);}
+.btn-red::after{background:var(--red);}
+
+/* ── Clavier virtuel KITT — mobile uniquement ── */
+.kitt-vkb{
+  position:fixed;bottom:0;left:0;right:0;z-index:600;
+  background:#060a06;border-top:1px solid rgba(0,255,102,.2);
+  padding:8px 6px 10px;user-select:none;-webkit-user-select:none;
+  touch-action:manipulation;box-shadow:0 -4px 20px rgba(0,0,0,.8);
+}
+.vkb-panel{display:flex;flex-direction:column;gap:5px;}
+.vkb-row{display:flex;justify-content:center;gap:4px;}
+.vkb-key{
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:1;max-width:42px;height:38px;
+  background:rgba(0,255,102,.06);border:1px solid rgba(0,255,102,.2);
+  border-bottom:2px solid rgba(0,255,102,.35);border-radius:4px;
+  color:#00ff66;font-family:var(--display);font-size:13px;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background .06s,transform .04s;
+}
+.vkb-key:active,.vkb-key.vkb-pressed{
+  background:rgba(0,255,102,.18);transform:translateY(1px);border-bottom-width:1px;
+}
+.vkb-key-wide{flex:2;max-width:none;font-size:11px;color:rgba(0,255,102,.6);letter-spacing:.04em;}
+.vkb-key-enter{background:rgba(255,26,26,.12);border-color:rgba(255,26,26,.35);color:var(--red);flex:2;max-width:none;}
+.vkb-key-switch{flex:1.5;max-width:none;font-size:10px;color:rgba(0,255,102,.5);}
+.vkb-shift-on{background:rgba(0,255,102,.2);color:#aaffcc;}
+@media(min-width:601px){.kitt-vkb{display:none !important;}}
 </style>
 </head>
 <body>
@@ -851,7 +889,13 @@ button:active{transform:scale(.95);}
 
   <div class="input-row">
     <span class="prompt-lbl">KITT&gt;</span>
-    <input id="cmd-input" type="text" placeholder="entrez une commande..." autocomplete="off" spellcheck="false"/>
+    <input id="cmd-input" type="text" placeholder="entrez une commande..." autocomplete="off" spellcheck="false" inputmode="none" readonly/>
+  </div>
+
+  <!-- ── Clavier virtuel KITT (mobile uniquement) ── -->
+  <div id="kitt-vkb" class="kitt-vkb" hidden>
+    <div id="kitt-vkb-letters" class="vkb-panel"></div>
+    <div id="kitt-vkb-special" class="vkb-panel" hidden></div>
   </div>
 </div>
 
@@ -1181,6 +1225,9 @@ async function runMotherIntro() {
     ['MEMOIRE PERSISTANTE  ', '[STABLE]'],
     ['MODULE KYRONEX       ', '[ACTIF]'],
     ['RESEAU KITT          ', '[CHARGEE]'],
+    ['REQUETE KITT-II      ', '[PROTOCOLE]'],
+    ['MODULE THU DEFENSIF  ', '[ACTIF]'],
+    ['PROTECTION KYRONEX   ', '[MAXIMALE]'],
   ];
   for (const [label, result] of checks) {
     if (skipped) { addLine(label + ' ...... ' + result, 'm-ok'); continue; }
@@ -1198,16 +1245,32 @@ async function runMotherIntro() {
     await delay(900);
   }
 
+  // ── Narration THU — renfort protection KYRONEX ────────────
+  if (!skipped) {
+    await delay(300);
+    const _thr = {
+      fr:'KYRONEX — ARCHITECTURE AVANCEE CONFIRMEE. ASSISTANCE THU ACTIVEE.',
+      en:'KYRONEX — ADVANCED ARCHITECTURE CONFIRMED. THU ASSISTANCE ACTIVATED.',
+      nl:'KYRONEX — GEAVANCEERDE ARCHITECTUUR BEVESTIGD. THU ASSISTENTIE GEACTIVEERD.',
+      it:'KYRONEX — ARCHITETTURA AVANZATA CONFERMATA. ASSISTENZA THU ATTIVATA.',
+      de:'KYRONEX — FORTGESCHRITTENE ARCHITEKTUR BESTAETIGT. THU-UNTERSTUETZUNG AKTIVIERT.',
+      es:'KYRONEX — ARQUITECTURA AVANZADA CONFIRMADA. ASISTENCIA THU ACTIVADA.',
+      pt:'KYRONEX — ARQUITETURA AVANCADA CONFIRMADA. ASSISTENCIA THU ATIVADA.',
+    };
+    addLine(_thr[LANG]||_thr.fr, 'm-ok');
+    await delay(600);
+  }
+
   // ── Voix dans la langue choisie ───────────────────────────
   if (!skipped) {
     const _iv={
-      fr:"PROTOCOLE D'INTERFACE ACTIVÉ. MODULE KYRONEX EN LIGNE. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.",
-      en:"INTERFACE PROTOCOL ACTIVATED. KYRONEX MODULE ONLINE. I AM MU-TH-UR. YOU MAY PROCEED.",
-      nl:"INTERFACEPROTOCOL GEACTIVEERD. KYRONEX MODULE ONLINE. IK BEN MU-TH-UR. U KUNT DOORGAAN.",
-      it:"PROTOCOLLO INTERFACCIA ATTIVATO. MODULO KYRONEX ONLINE. SONO MU-TH-UR. POTETE PROCEDERE.",
-      de:"SCHNITTSTELLEN-PROTOKOLL AKTIVIERT. KYRONEX MODUL ONLINE. ICH BIN MU-TH-UR. SIE KÖNNEN FORTFAHREN.",
-      es:"PROTOCOLO DE INTERFAZ ACTIVADO. MÓDULO KYRONEX EN LÍNEA. SOY MU-TH-UR. PUEDE PROCEDER.",
-      pt:"PROTOCOLO DE INTERFACE ATIVADO. MÓDULO KYRONEX ONLINE. SOU MU-TH-UR. PODE PROSSEGUIR.",
+      fr:"PROTOCOLE D'INTERFACE ACTIVÉ. MODULE KYRONEX EN LIGNE. PROTECTION THU CONFIRMÉE. JE SUIS MU-TH-UR. VOUS POUVEZ PROCÉDER.",
+      en:"INTERFACE PROTOCOL ACTIVATED. KYRONEX MODULE ONLINE. THU PROTECTION CONFIRMED. I AM MU-TH-UR. YOU MAY PROCEED.",
+      nl:"INTERFACEPROTOCOL GEACTIVEERD. KYRONEX MODULE ONLINE. THU BESCHERMING BEVESTIGD. IK BEN MU-TH-UR. U KUNT DOORGAAN.",
+      it:"PROTOCOLLO INTERFACCIA ATTIVATO. MODULO KYRONEX ONLINE. PROTEZIONE THU CONFERMATA. SONO MU-TH-UR. POTETE PROCEDERE.",
+      de:"SCHNITTSTELLEN-PROTOKOLL AKTIVIERT. KYRONEX MODUL ONLINE. THU-SCHUTZ BESTAETIGT. ICH BIN MU-TH-UR. SIE KÖNNEN FORTFAHREN.",
+      es:"PROTOCOLO DE INTERFAZ ACTIVADO. MÓDULO KYRONEX EN LÍNEA. PROTECCIÓN THU CONFIRMADA. SOY MU-TH-UR. PUEDE PROCEDER.",
+      pt:"PROTOCOLO DE INTERFACE ATIVADO. MÓDULO KYRONEX ONLINE. PROTEÇÃO THU CONFIRMADA. SOU MU-TH-UR. PODE PROSSEGUIR.",
     };
     await new Promise(resolve => {
       motherSpeak(_iv[LANG]||_iv.fr, resolve);
@@ -3704,6 +3767,131 @@ function showKittCall(){
   <div id="mission-list"></div>
   <div id="mission-close">[ FERMER ]</div>
 </div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// CLAVIER VIRTUEL KITT — mobile uniquement (<= 600px)
+// Anti-conflit : inputmode=none + readonly iOS + preventDefault
+// ════════════════════════════════════════════════════════════
+(function() {
+  if (window.innerWidth > 600) return; // desktop : clavier natif
+
+  var inp  = document.getElementById('cmd-input');
+  var vkb  = document.getElementById('kitt-vkb');
+  var panL = document.getElementById('kitt-vkb-letters');
+  var panS = document.getElementById('kitt-vkb-special');
+  if (!inp || !vkb || !panL || !panS) return;
+
+  var shiftOn = false, specialMode = false, vkbVisible = false;
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  var ROWS_LETTERS = [
+    ['a','z','e','r','t','y','u','i','o','p'],
+    ['q','s','d','f','g','h','j','k','l'],
+    ['w','x','c','v','b','n','m','\u232B']
+  ];
+  var ROW_BOTTOM_L = ['\u21E7','?!@','[ESPACE]','.','\u21A9'];
+  var SPECIALS_ROW1 = ['\u00E0','\u00E2','\u00E9','\u00E8','\u00EA','\u00EB','\u00EE','\u00EF','\u00F4','\u00F9','\u00FB','\u00FC','\u00E7'];
+  var SPECIALS_ROW2 = ['@','.fr','.com','.be','#','&','/','!','?',':',';'];
+  var ROW_BOTTOM_S = ['ABC','[ESPACE]','.',',','\u21A9'];
+
+  function buildRow(chars, panel) {
+    var row = document.createElement('div');
+    row.className = 'vkb-row';
+    chars.forEach(function(ch) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      var isSpace  = ch === '[ESPACE]';
+      var isEnter  = ch === '\u21A9';
+      var isBksp   = ch === '\u232B';
+      var isShift  = ch === '\u21E7';
+      var isSwitch = (ch === '?!@' || ch === 'ABC');
+      btn.textContent = isSpace ? 'ESP' : ch;
+      btn.className = 'vkb-key';
+      if (isSpace)  btn.classList.add('vkb-key-wide');
+      if (isEnter)  btn.classList.add('vkb-key-enter');
+      if (isShift || isSwitch) btn.classList.add('vkb-key-switch');
+
+      function act(e) {
+        e.preventDefault(); // CRITIQUE — bloque blur + clavier natif
+        try { if(typeof _resume==='function')_resume(); if(typeof sndClick==='function')sndClick(); } catch(er) {}
+        if (isBksp) {
+          inp.value = inp.value.slice(0, -1);
+        } else if (isEnter) {
+          inp.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', bubbles:true}));
+          hideVKB();
+        } else if (isSpace) {
+          inp.value += ' ';
+        } else if (isShift) {
+          shiftOn = !shiftOn;
+          btn.classList.toggle('vkb-shift-on', shiftOn);
+          updateShift();
+        } else if (isSwitch) {
+          specialMode = !specialMode;
+          panL.hidden =  specialMode;
+          panS.hidden = !specialMode;
+        } else {
+          var c = shiftOn ? ch.toUpperCase() : ch;
+          inp.value += c;
+          if (shiftOn) { shiftOn = false; updateShift(); }
+        }
+        inp.removeAttribute('readonly');
+        inp.focus();
+      }
+
+      btn.addEventListener('mousedown',  act, {passive:false});
+      btn.addEventListener('touchstart', act, {passive:false});
+      row.appendChild(btn);
+    });
+    panel.appendChild(row);
+  }
+
+  function updateShift() {
+    panL.querySelectorAll('.vkb-key').forEach(function(b) {
+      if (b.textContent.length === 1 && /[a-z]/i.test(b.textContent)) {
+        b.textContent = shiftOn ? b.textContent.toUpperCase() : b.textContent.toLowerCase();
+      }
+    });
+  }
+
+  function showVKB() {
+    if (vkbVisible) return;
+    vkbVisible = true;
+    inp.removeAttribute('readonly');
+    vkb.hidden = false;
+    inp.focus();
+  }
+
+  function hideVKB() {
+    if (!vkbVisible) return;
+    vkbVisible = false;
+    vkb.hidden = true;
+    if (isIOS) inp.setAttribute('readonly', 'readonly');
+  }
+
+  // Construction du clavier
+  ROWS_LETTERS.forEach(function(r) { buildRow(r, panL); });
+  buildRow(ROW_BOTTOM_L, panL);
+  buildRow(SPECIALS_ROW1, panS);
+  buildRow(SPECIALS_ROW2, panS);
+  buildRow(ROW_BOTTOM_S, panS);
+  panS.hidden = true;
+
+  // Affichage au focus
+  inp.addEventListener('focus', showVKB);
+  // iOS : touch sur champ readonly → ouvrir VKB manuellement
+  inp.addEventListener('touchend', function(e) {
+    if (inp.hasAttribute('readonly')) { e.preventDefault(); showVKB(); }
+  });
+  // Cacher VKB au clic hors champ et hors clavier
+  document.addEventListener('mousedown', function(e) {
+    if (vkbVisible && !vkb.contains(e.target) && e.target !== inp) hideVKB();
+  });
+  document.addEventListener('touchstart', function(e) {
+    if (vkbVisible && !vkb.contains(e.target) && e.target !== inp) hideVKB();
+  }, {passive:true});
+})();
+</script>
 
 </body>
 </html>
