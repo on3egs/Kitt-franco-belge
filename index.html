@@ -107,7 +107,8 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
     inset 0 0 50px rgba(255,80,0,.04),
     inset 0 1px 0 rgba(255,160,0,.1);
   padding:0;
-  overflow:hidden;
+  overflow-y:auto;
+  max-height:calc(100dvh - 40px);
   backdrop-filter:blur(4px);
 }
 /* Scan bar sur le box */
@@ -147,6 +148,14 @@ body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:r
   border-top:1px solid rgba(255,100,0,.1);
 }
 @keyframes mskip{0%,49%{opacity:1}50%,100%{opacity:0}}
+@media(max-width:480px){
+  #mother-box{max-height:calc(100dvh - 20px);}
+  #mother-hdr{padding:10px 14px 8px;}
+  #mother-hdr-corp{font-size:8px;letter-spacing:3px;}
+  #mother-hdr-title{font-size:11px;letter-spacing:3px;}
+  #mother-output{padding:12px 14px;letter-spacing:0.8px;line-height:1.6;min-height:0;font-size:11px;}
+  #mother-skip{padding:8px 14px 12px;font-size:8px;letter-spacing:3px;}
+}
 
 /* ★ HUD MISSIONS */
 #kitt-mission-hud{
@@ -718,17 +727,17 @@ button:hover::after{left:0;right:0;}
 .kitt-vkb{
   position:fixed;bottom:0;left:0;right:0;z-index:600;
   background:#060a06;border-top:1px solid rgba(0,255,102,.2);
-  padding:8px 6px 10px;user-select:none;-webkit-user-select:none;
+  padding:5px 4px 7px;user-select:none;-webkit-user-select:none;
   touch-action:manipulation;box-shadow:0 -4px 20px rgba(0,0,0,.8);
 }
-.vkb-panel{display:flex;flex-direction:column;gap:5px;}
-.vkb-row{display:flex;justify-content:center;gap:4px;}
+.vkb-panel{display:flex;flex-direction:column;gap:3px;}
+.vkb-row{display:flex;justify-content:center;gap:3px;}
 .vkb-key{
   display:inline-flex;align-items:center;justify-content:center;
-  flex:1;max-width:42px;height:38px;
+  flex:1;max-width:42px;height:32px;
   background:rgba(0,255,102,.06);border:1px solid rgba(0,255,102,.2);
   border-bottom:2px solid rgba(0,255,102,.35);border-radius:4px;
-  color:#00ff66;font-family:var(--display);font-size:13px;
+  color:#00ff66;font-family:var(--display);font-size:12px;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
   transition:background .06s,transform .04s;
 }
@@ -3790,10 +3799,11 @@ function showKittCall(){
     ['q','s','d','f','g','h','j','k','l'],
     ['w','x','c','v','b','n','m','\u232B']
   ];
-  var ROW_BOTTOM_L = ['\u21E7','?!@','[ESPACE]','.','\u21A9'];
-  var SPECIALS_ROW1 = ['\u00E0','\u00E2','\u00E9','\u00E8','\u00EA','\u00EB','\u00EE','\u00EF','\u00F4','\u00F9','\u00FB','\u00FC','\u00E7'];
-  var SPECIALS_ROW2 = ['@','.fr','.com','.be','#','&','/','!','?',':',';'];
-  var ROW_BOTTOM_S = ['ABC','[ESPACE]','.',',','\u21A9'];
+  var ROW_BOTTOM_L = ['MAJ','123','[ESPACE]','.','\u21A9'];
+  var NUMS_ROW     = ['1','2','3','4','5','6','7','8','9','0','\u232B'];
+  var ACCENTS_ROW  = ['\u00E0','\u00E2','\u00E9','\u00E8','\u00EA','\u00F4','\u00F9','\u00FB','\u00E7'];
+  var SYMBOLS_ROW  = ['@','#','&','/','!','?',':',';','-','.'];
+  var ROW_BOTTOM_S = ['ABC','[ESPACE]','.fr','.com','\u21A9'];
 
   function buildRow(chars, panel) {
     var row = document.createElement('div');
@@ -3804,8 +3814,8 @@ function showKittCall(){
       var isSpace  = ch === '[ESPACE]';
       var isEnter  = ch === '\u21A9';
       var isBksp   = ch === '\u232B';
-      var isShift  = ch === '\u21E7';
-      var isSwitch = (ch === '?!@' || ch === 'ABC');
+      var isShift  = ch === 'MAJ';
+      var isSwitch = (ch === '123' || ch === 'ABC');
       btn.textContent = isSpace ? 'ESP' : ch;
       btn.className = 'vkb-key';
       if (isSpace)  btn.classList.add('vkb-key-wide');
@@ -3872,8 +3882,9 @@ function showKittCall(){
   // Construction du clavier
   ROWS_LETTERS.forEach(function(r) { buildRow(r, panL); });
   buildRow(ROW_BOTTOM_L, panL);
-  buildRow(SPECIALS_ROW1, panS);
-  buildRow(SPECIALS_ROW2, panS);
+  buildRow(NUMS_ROW, panS);
+  buildRow(ACCENTS_ROW, panS);
+  buildRow(SYMBOLS_ROW, panS);
   buildRow(ROW_BOTTOM_S, panS);
   panS.hidden = true;
 
