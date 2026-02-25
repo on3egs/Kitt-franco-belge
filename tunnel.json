@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://licenses-attributes-fares-airplane.trycloudflare.com",
-  "last_update": "2026-02-25T02:34:17.605686+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-25T02:34:24.666756+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
