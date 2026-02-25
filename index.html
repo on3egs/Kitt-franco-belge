@@ -770,6 +770,14 @@ body.kb-open{padding-bottom:222px;}
   box-shadow:0 0 20px #00ff6655;color:#88ffaa;
 }
 .kb-shift-on{background:#001300;border-color:#005000;color:#33ff77;}
+/* ── Thème MU-TH-UR 6000 (orange/ambre) pour écran code d'accès ── */
+#kitt-vkb.theme-mother{background:#060200;border-top-color:#3a1500;box-shadow:0 -5px 30px rgba(180,80,0,.24),0 -1px 0 #220800;}
+#kitt-vkb.theme-mother .kb-header{color:#553300;border-bottom-color:#1a0800;}
+#kitt-vkb.theme-mother .kb-key{background:#080200;border-color:#1a0800;border-bottom-color:#2a1000;color:#cc6600;}
+#kitt-vkb.theme-mother .kb-key:active{border-color:#887700;border-bottom-color:#ffaa00;box-shadow:0 0 10px #aa660044,inset 0 0 8px #221000;color:#ffcc44;}
+#kitt-vkb.theme-mother .kb-send{background:#110600;border-color:#553300;border-bottom-color:#cc6600;color:#ff9900;box-shadow:0 0 12px #ff880018;}
+#kitt-vkb.theme-mother .kb-send:active{background:#261000;border-bottom-color:#ffaa00;box-shadow:0 0 20px #ff880055;color:#ffdd88;}
+#kitt-vkb.theme-mother .kb-shift-on{background:#131000;border-color:#504400;color:#ffaa33;}
 @media(min-width:601px){#kitt-vkb{display:none !important;}}
 </style>
 </head>
@@ -3308,7 +3316,9 @@ function runAccessScreen() {
       clearInterval(progInterval);
       if(progressBar) progressBar.style.width = '100%';
       setTimeout(() => { if(progressBar) progressBar.style.opacity='0'; }, 600);
-      input.focus(); return;
+      input.focus();
+      if (typeof _kittKb !== 'undefined') _kittKb.showFor('access-input', 'mother');
+      return;
     }
     const d = document.createElement('div');
     d.className = 'a-line'; log.appendChild(d);
@@ -3326,6 +3336,7 @@ function runAccessScreen() {
       input.disabled = true;
       if(progressBar){ progressBar.style.opacity='1'; progressBar.style.width='100%'; progressBar.style.background='linear-gradient(90deg,#00aa44,#00ff66)'; }
       box.classList.add('granted'); screen.classList.add('granted');
+      if (typeof _kittKb !== 'undefined') _kittKb.hide();
       const ok = document.createElement('div');
       ok.className = 'a-ok'; ok.textContent = accessOk[LANG] || accessOk.en;
       log.appendChild(ok);
@@ -3803,7 +3814,7 @@ function showKittCall(){
 // ════════════════════════════════════════════════════════════
 const _kittKb = (() => {
   'use strict';
-  let el, shifted = false, nums = false, accs = false;
+  let el, shifted = false, nums = false, accs = false, targetId = 'cmd-input';
 
   const AL = [
     ['a','z','e','r','t','y','u','i','o','p'],
@@ -3863,10 +3874,14 @@ const _kittKb = (() => {
 
   function press(k) {
     if (typeof sndClick === 'function') sndClick();
-    const inp = document.getElementById('cmd-input');
+    const inp = document.getElementById(targetId);
     if (!inp) return;
     if      (k === 'BS')    { inp.value = inp.value.slice(0, -1); }
-    else if (k === 'SEND')  { inp.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter',bubbles:true})); hide(); return; }
+    else if (k === 'SEND')  {
+      inp.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter',bubbles:true}));
+      if (targetId !== 'access-input') hide(); // accès : clavier reste visible si code faux
+      return;
+    }
     else if (k === 'SH')    { shifted = !shifted; render(); return; }
     else if (k === 'MODE') {
       if (!nums && !accs)  { accs = true; }
@@ -3882,18 +3897,32 @@ const _kittKb = (() => {
     inp.dispatchEvent(new Event('input'));
   }
 
+  function _applyTarget(id) {
+    targetId = id || 'cmd-input';
+    const inp = document.getElementById(targetId);
+    if (inp) inp.setAttribute('inputmode', 'none');
+  }
+
   function show() {
     if (!el) return;
-    const inp = document.getElementById('cmd-input');
-    if (inp) inp.setAttribute('inputmode', 'none');
+    _applyTarget(targetId);
     document.body.classList.add('kb-open');
     el.classList.add('kb-on');
   }
 
+  function showFor(id, theme) {
+    if (!el) return;
+    targetId = id || 'cmd-input';
+    el.classList.remove('theme-mother');
+    if (theme) el.classList.add('theme-' + theme);
+    show();
+  }
+
   function hide() {
     if (!el) return;
-    el.classList.remove('kb-on');
+    el.classList.remove('kb-on', 'theme-mother');
     document.body.classList.remove('kb-open');
+    targetId = 'cmd-input';
   }
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -3901,23 +3930,30 @@ const _kittKb = (() => {
     el = document.getElementById('kitt-vkb');
     if (!el) return;
     render();
+    // Listener #cmd-input (terminal principal — thème vert)
     const inp = document.getElementById('cmd-input');
     if (inp) {
       inp.setAttribute('inputmode', 'none');
-      inp.addEventListener('focus', show);
+      inp.addEventListener('focus', function() { showFor('cmd-input', null); });
       inp.addEventListener('touchend', function(e) {
-        if (!el.classList.contains('kb-on')) { e.preventDefault(); show(); }
+        if (!el.classList.contains('kb-on')) { e.preventDefault(); showFor('cmd-input', null); }
       });
+    }
+    // Listener #access-input (code d'accès — thème MU-TH-UR orange)
+    const acc = document.getElementById('access-input');
+    if (acc) {
+      acc.setAttribute('inputmode', 'none');
+      acc.addEventListener('focus', function() { showFor('access-input', 'mother'); });
     }
     el.addEventListener('pointerdown', function(e) { e.preventDefault(); });
     document.addEventListener('pointerdown', function(e) {
       if (!el.classList.contains('kb-on')) return;
       var path = e.composedPath ? e.composedPath() : [];
-      if (path.indexOf(el) === -1 && e.target.id !== 'cmd-input') hide();
+      if (path.indexOf(el) === -1 && e.target.id !== 'cmd-input' && e.target.id !== 'access-input') hide();
     });
   });
 
-  return { show, hide };
+  return { show, hide, showFor };
 })();
 
 // ── Ancienne IIFE désactivée (remplacée par _kittKb ci-dessus) ──
