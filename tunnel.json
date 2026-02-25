@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://vegetation-evans-schema-rock.trycloudflare.com",
-  "last_update": "2026-02-25T02:53:02.933011+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-25T02:55:00.914623+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
