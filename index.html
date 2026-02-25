@@ -2249,8 +2249,32 @@ function selectLang(lang) {
     screen.style.display="none";
     screen.style.opacity="1";
     screen.style.transition="";
-    // Écran code d'accès APRÈS la sélection de langue → puis MU-TH-UR
-    runAccessScreen();
+    // Accès direct à l'interface IA sans code ni MU-TH-UR
+    try { showKittDash(); } catch(e) {}
+    setTimeout(() => {
+      try {
+        const _tm = document.getElementById('terminal');
+        const _mHint = {
+          fr:'▶ SUIVEZ VOS MISSIONS — CLIQUEZ [ MISSIONS ]',
+          en:'▶ TRACK YOUR MISSIONS — CLICK [ MISSIONS ]',
+          nl:'▶ VOLG UW MISSIES — KLIK [ MISSIES ]',
+          it:'▶ SEGUI LE TUE MISSIONI — CLICCA [ MISSIONI ]',
+          de:'▶ MISSIONEN VERFOLGEN — KLICK [ MISSIONEN ]',
+          es:'▶ SIGUE TUS MISIONES — HAZ CLIC EN [ MISIONES ]',
+          pt:'▶ ACOMPANHE AS MISSÕES — CLIQUE EM [ MISSÕES ]'
+        };
+        [{c:'line-dim',t:T[LANG].wait},
+         {c:'line-dim',t:T[LANG].help_hint},
+         {c:'line-dim',t:'──────────────────────────────────────────'},
+         {c:'line-info',t:_mHint[LANG]||_mHint.en}
+        ].forEach(({c,t})=>{
+          const d=document.createElement('div');d.className=c;d.textContent=t;
+          _tm.appendChild(d);
+        });
+        _tm.scrollTop = _tm.scrollHeight;
+      } catch(e) {}
+    }, 400);
+    setTimeout(() => { try { showKittCall(); } catch(e) {} }, 8000);
   }, 500);
 }
 
