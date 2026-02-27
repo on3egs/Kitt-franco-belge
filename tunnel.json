@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://choices-sectors-sherman-ict.trycloudflare.com",
-  "last_update": "2026-02-27T00:09:18.541263+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-27T00:10:54.753387+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
