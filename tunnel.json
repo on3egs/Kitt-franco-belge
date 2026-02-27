@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://evaluation-exist-amount-adjustments.trycloudflare.com",
-  "last_update": "2026-02-27T22:42:35.544342+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-27T22:43:06.383311+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
