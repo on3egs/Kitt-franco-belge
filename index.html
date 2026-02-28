@@ -325,18 +325,36 @@
     }, 400);
   };
 
-  /* ── AUDIO ──────────────────────────────────────────────── */
+  /* ── AUDIO — Knight Rider Enhanced ─────────────────────── */
+  var COMP = null, DRY = null;
+
   function _mkAudio() {
     try {
       AC = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Compresseur dynamique (evite saturation, son pro)
+      COMP = AC.createDynamicsCompressor();
+      COMP.threshold.value = -18;
+      COMP.knee.value      = 8;
+      COMP.ratio.value     = 4;
+      COMP.attack.value    = 0.003;
+      COMP.release.value   = 0.25;
+      COMP.connect(AC.destination);
+
+      // Bus master (fade-in 5s)
       MASTER = AC.createGain();
       MASTER.gain.value = 0;
-      MASTER.gain.linearRampToValueAtTime(0.30, AC.currentTime + 5);
-      MASTER.connect(AC.destination);
-      var dly = AC.createDelay(1.0); dly.delayTime.value = 0.40;
-      var fb = AC.createGain(); fb.gain.value = 0.34;
-      REV = AC.createGain(); REV.gain.value = 0.18;
+      MASTER.gain.linearRampToValueAtTime(0.72, AC.currentTime + 5);
+      MASTER.connect(COMP);
+
+      // Bus reverb (delay + feedback)
+      var dly = AC.createDelay(1.2); dly.delayTime.value = 0.48;
+      var fb  = AC.createGain();     fb.gain.value = 0.28;
+      REV     = AC.createGain();     REV.gain.value = 0.22;
       dly.connect(fb); fb.connect(dly); dly.connect(REV); REV.connect(MASTER);
+
+      // Bus sec (sans reverb, pour percus)
+      DRY = AC.createGain(); DRY.gain.value = 1.0; DRY.connect(COMP);
     } catch(e) { AC = null; }
   }
 
@@ -345,26 +363,107 @@
     var o = AC.createOscillator(), e = AC.createGain();
     o.type = type; o.frequency.value = f;
     e.gain.setValueAtTime(0, t);
-    e.gain.linearRampToValueAtTime(amp, t + 0.022);
+    e.gain.linearRampToValueAtTime(amp, t + 0.018);
     e.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(e); e.connect(dest);
     o.start(t); o.stop(t + dur + 0.05);
   }
 
+  // Bip typewriter
   function _beep() {
     if (!AC || !MASTER) return;
-    _osc(650 + Math.random() * 950, 'square', AC.currentTime, 0.065, 0.028, MASTER);
+    _osc(700 + Math.random() * 800, 'square', AC.currentTime, 0.055, 0.022, MASTER);
   }
 
+  // Bips boot ascendants (3 tonalites)
   function _alienBoot() {
     if (!AC || !MASTER) return;
     [880, 1047, 1319].forEach(function(f, i) {
-      var t = AC.currentTime + i * 0.20;
-      _osc(f, 'square', t, 0.14, 0.055, MASTER);
-      if (REV) _osc(f, 'square', t, 0.14, 0.018, REV);
+      var t = AC.currentTime + i * 0.18;
+      _osc(f, 'square', t, 0.12, 0.06, MASTER);
+      if (REV) _osc(f, 'square', t, 0.12, 0.022, REV);
     });
   }
 
+  // Son iconique du scanner KITT (sweep 300→900→300 Hz)
+  function _scannerSound(t) {
+    if (!AC || !MASTER) return;
+    var o = AC.createOscillator(), e = AC.createGain();
+    var flt = AC.createBiquadFilter();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(320, t);
+    o.frequency.linearRampToValueAtTime(880, t + 0.75);
+    o.frequency.linearRampToValueAtTime(320, t + 1.5);
+    flt.type = 'bandpass'; flt.frequency.value = 600; flt.Q.value = 1.5;
+    e.gain.setValueAtTime(0, t);
+    e.gain.linearRampToValueAtTime(0.18, t + 0.08);
+    e.gain.setValueAtTime(0.18, t + 1.42);
+    e.gain.exponentialRampToValueAtTime(0.0001, t + 1.55);
+    o.connect(flt); flt.connect(e); e.connect(MASTER);
+    if (REV) e.connect(REV);
+    o.start(t); o.stop(t + 1.6);
+  }
+
+  // Kick drum 808 (basse impulsion)
+  function _kick(t) {
+    if (!AC || !DRY) return;
+    var o = AC.createOscillator(), e = AC.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(180, t);
+    o.frequency.exponentialRampToValueAtTime(38, t + 0.12);
+    e.gain.setValueAtTime(0, t);
+    e.gain.linearRampToValueAtTime(0.95, t + 0.005);
+    e.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
+    o.connect(e); e.connect(DRY);
+    o.start(t); o.stop(t + 0.42);
+    // Sub layer
+    var o2 = AC.createOscillator(), e2 = AC.createGain();
+    o2.type = 'sine'; o2.frequency.value = 55;
+    e2.gain.setValueAtTime(0.55, t); e2.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    o2.connect(e2); e2.connect(DRY);
+    o2.start(t); o2.stop(t + 0.2);
+  }
+
+  // Snare electronique
+  function _snare(t) {
+    if (!AC || !DRY) return;
+    try {
+      var sr  = AC.sampleRate;
+      var len = Math.floor(sr * 0.18);
+      var buf = AC.createBuffer(1, len, sr);
+      var d   = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1);
+      var src = AC.createBufferSource(); src.buffer = buf;
+      var flt = AC.createBiquadFilter(); flt.type = 'highpass'; flt.frequency.value = 900;
+      var e   = AC.createGain();
+      e.gain.setValueAtTime(0.38, t); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+      src.connect(flt); flt.connect(e); e.connect(DRY);
+      if (MASTER) e.connect(MASTER);
+      src.start(t); src.stop(t + 0.18);
+      // Tone body
+      _osc(185, 'triangle', t, 0.06, 0.22, DRY);
+    } catch(e2) {}
+  }
+
+  // Hi-hat ferme
+  function _hat(t, amp) {
+    if (!AC || !DRY) return;
+    try {
+      var sr  = AC.sampleRate;
+      var len = Math.floor(sr * 0.045);
+      var buf = AC.createBuffer(1, len, sr);
+      var d   = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1);
+      var src = AC.createBufferSource(); src.buffer = buf;
+      var flt = AC.createBiquadFilter(); flt.type = 'highpass'; flt.frequency.value = 9000;
+      var e   = AC.createGain();
+      e.gain.setValueAtTime(amp || 0.12, t); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+      src.connect(flt); flt.connect(e); e.connect(DRY);
+      src.start(t); src.stop(t + 0.05);
+    } catch(e2) {}
+  }
+
+  // Stab cuivres (brass synth additive)
   function _brass(freq, amp) {
     if (!AC || !MASTER) return;
     amp = amp || 0.15;
@@ -373,81 +472,130 @@
       var o = AC.createOscillator(), flt = AC.createBiquadFilter(), e = AC.createGain();
       o.type = h <= 2 ? 'sawtooth' : 'square'; o.frequency.value = freq * h;
       flt.type = 'lowpass';
-      flt.frequency.setValueAtTime(400, t);
-      flt.frequency.exponentialRampToValueAtTime(3800, t + 0.07);
-      flt.frequency.exponentialRampToValueAtTime(1100, t + 2.0);
-      flt.Q.value = 2.0;
-      var hAmp = amp / (h * 0.78);
+      flt.frequency.setValueAtTime(350, t);
+      flt.frequency.exponentialRampToValueAtTime(4200, t + 0.055);
+      flt.frequency.exponentialRampToValueAtTime(900, t + 2.2);
+      flt.Q.value = 2.5;
+      var hAmp = amp / (h * 0.72);
       e.gain.setValueAtTime(0, t);
-      e.gain.linearRampToValueAtTime(hAmp, t + 0.038);
-      e.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+      e.gain.linearRampToValueAtTime(hAmp, t + 0.030);
+      e.gain.exponentialRampToValueAtTime(0.0001, t + 2.4);
       o.connect(flt); flt.connect(e); e.connect(MASTER);
       if (REV) e.connect(REV);
-      o.start(t); o.stop(t + 2.3);
+      o.start(t); o.stop(t + 2.5);
     });
   }
 
+  // Whoosh de survol (fly-through Superman)
   function _whoosh() {
     if (!AC || !MASTER) return;
     try {
       var dur = 3.2, sr = AC.sampleRate;
       var buf = AC.createBuffer(1, Math.floor(sr * dur), sr);
-      var d = buf.getChannelData(0);
+      var d   = buf.getChannelData(0);
       for (var i = 0; i < d.length; i++) {
-        var tt = i / sr;
-        var env = tt < 0.3 ? tt / 0.3 : Math.exp(-(tt - 0.3) * 2.0);
+        var tt  = i / sr;
+        var env = tt < 0.25 ? tt / 0.25 : Math.exp(-(tt - 0.25) * 2.2);
         d[i] = (Math.random() * 2 - 1) * env;
       }
-      var src = AC.createBufferSource(), flt = AC.createBiquadFilter(), g = AC.createGain();
-      flt.type = 'bandpass'; flt.Q.value = 0.45;
-      flt.frequency.setValueAtTime(100, AC.currentTime);
-      flt.frequency.exponentialRampToValueAtTime(5500, AC.currentTime + 2.0);
-      flt.frequency.exponentialRampToValueAtTime(150, AC.currentTime + 3.2);
-      g.gain.value = 0.58;
+      var src = AC.createBufferSource();
+      var flt = AC.createBiquadFilter();
+      var g   = AC.createGain();
+      flt.type = 'bandpass'; flt.Q.value = 0.4;
+      flt.frequency.setValueAtTime(80, AC.currentTime);
+      flt.frequency.exponentialRampToValueAtTime(6000, AC.currentTime + 1.8);
+      flt.frequency.exponentialRampToValueAtTime(120, AC.currentTime + 3.2);
+      g.gain.value = 0.65;
       src.buffer = buf; src.connect(flt); flt.connect(g); g.connect(MASTER);
       src.start(AC.currentTime);
     } catch(e) {}
   }
 
+  // Theme Knight Rider — arrangement complet
   function _playTheme() {
     if (!AC) return;
-    var B = 60 / 116, now = AC.currentTime + 0.3;
-    var BF = [82.4,82.4,73.4,82.4,87.3,87.3,73.4,82.4];
-    for (var i = 0; i < 52; i++) {
-      var bt = now + i * B * 0.5, bfq = BF[i % BF.length];
-      var bMod = AC.createOscillator(), bModG = AC.createGain();
-      var bCar = AC.createOscillator(), bFlt = AC.createBiquadFilter(), bEnv = AC.createGain();
-      bMod.type = 'sine'; bMod.frequency.value = bfq * 0.5; bModG.gain.value = bfq * 2.5;
-      bCar.type = 'sine'; bCar.frequency.value = bfq;
-      bFlt.type = 'lowpass'; bFlt.frequency.value = 440; bFlt.Q.value = 4.5;
-      bEnv.gain.setValueAtTime(0.52, bt); bEnv.gain.exponentialRampToValueAtTime(0.001, bt + B * 0.44);
-      bMod.connect(bModG); bModG.connect(bCar.frequency);
-      bCar.connect(bFlt); bFlt.connect(bEnv); bEnv.connect(MASTER);
-      bMod.start(bt); bMod.stop(bt + B * 0.5); bCar.start(bt); bCar.stop(bt + B * 0.5);
+    var BPM = 116, B = 60 / BPM;  // duree d'une noire
+    var now = AC.currentTime + 0.3;
+
+    // == BATTERIE (kick + snare + hihat) ==
+    var BARS = 16; // nombre de mesures de batterie
+    for (var bar = 0; bar < BARS; bar++) {
+      var bt = now + bar * B * 4;
+      // Kick : temps 1 et 3 (et une syncope sur l'et-du-2)
+      _kick(bt);
+      _kick(bt + B * 1.5);
+      _kick(bt + B * 2);
+      _kick(bt + B * 3.5);
+      // Snare : temps 2 et 4
+      _snare(bt + B);
+      _snare(bt + B * 3);
+      // Hi-hat : croches regulieres (8 par mesure)
+      for (var h = 0; h < 8; h++) {
+        _hat(bt + h * B * 0.5, h % 2 === 0 ? 0.14 : 0.08);
+      }
     }
+
+    // == BASSE MOOG SUB (E2 a B1, racine Em) ==
+    var BASS = [
+      // freq, duree_en_B (noires)
+      [41.2,0.5],[41.2,0.5],[36.7,0.5],[41.2,0.5],  // E2 E2 D2 E2
+      [43.7,0.5],[43.7,0.5],[36.7,0.5],[41.2,0.5],  // F2 F2 D2 E2
+      [41.2,0.5],[41.2,0.5],[36.7,0.5],[41.2,0.5],
+      [43.7,0.5],[43.7,0.5],[36.7,0.5],[41.2,1.0]
+    ];
+    var bsT = now;
+    for (var rep = 0; rep < 4; rep++) {
+      for (var bi = 0; bi < BASS.length; bi++) {
+        var bf = BASS[bi][0], bd = BASS[bi][1] * B;
+        var bMod = AC.createOscillator(), bModG = AC.createGain();
+        var bCar = AC.createOscillator(), bFlt  = AC.createBiquadFilter(), bEnv = AC.createGain();
+        bMod.type = 'sine';   bMod.frequency.value = bf * 0.5;  bModG.gain.value = bf * 3.0;
+        bCar.type = 'sawtooth'; bCar.frequency.value = bf;
+        bFlt.type = 'lowpass'; bFlt.frequency.value = 320; bFlt.Q.value = 3.5;
+        bEnv.gain.setValueAtTime(0, bsT);
+        bEnv.gain.linearRampToValueAtTime(0.62, bsT + 0.012);
+        bEnv.gain.exponentialRampToValueAtTime(0.0001, bsT + bd - 0.02);
+        bMod.connect(bModG); bModG.connect(bCar.frequency);
+        bCar.connect(bFlt); bFlt.connect(bEnv);
+        bEnv.connect(DRY || MASTER);
+        bMod.start(bsT); bMod.stop(bsT + bd);
+        bCar.start(bsT); bCar.stop(bsT + bd);
+        bsT += bd;
+      }
+    }
+
+    // == MELODIE PRINCIPALE (FM synth — DX7 style) ==
     var MEL = [
-      [329.6,0.5],[329.6,0.5],[392.0,0.5],[329.6,0.5],[293.7,0.5],[329.6,0.5],[246.9,1.0],[0,1.0],
-      [392.0,0.5],[392.0,0.5],[440.0,0.5],[392.0,0.5],[349.2,0.5],[329.6,0.5],[293.7,1.0],[0,1.0],
-      [493.9,0.5],[493.9,0.5],[587.3,0.5],[493.9,0.5],[440.0,0.5],[493.9,0.5],[392.0,1.0],[0,1.0],
-      [587.3,0.5],[587.3,0.5],[659.3,0.5],[587.3,0.5],[523.3,0.5],[493.9,0.5],[440.0,2.0],[0,1.0]
+      [329.6,0.5],[329.6,0.5],[392.0,0.5],[329.6,0.5],
+      [293.7,0.5],[329.6,0.5],[246.9,1.0],[0,1.0],
+      [392.0,0.5],[392.0,0.5],[440.0,0.5],[392.0,0.5],
+      [349.2,0.5],[329.6,0.5],[293.7,1.0],[0,1.0],
+      [493.9,0.5],[493.9,0.5],[587.3,0.5],[493.9,0.5],
+      [440.0,0.5],[493.9,0.5],[392.0,1.0],[0,1.0],
+      [587.3,0.5],[587.3,0.5],[659.3,0.5],[587.3,0.5],
+      [523.3,0.5],[493.9,0.5],[440.0,2.0],[0,1.0]
     ];
     var mt = now;
-    for (var rep = 0; rep < 3; rep++) {
+    for (var rep2 = 0; rep2 < 3; rep2++) {
       for (var j = 0; j < MEL.length; j++) {
         var mf = MEL[j][0], md = MEL[j][1] * B;
         if (mf > 0) {
-          var fmMod = AC.createOscillator(), fmModG = AC.createGain();
-          var fmCar = AC.createOscillator(), fmEnv = AC.createGain();
-          var fmCar2 = AC.createOscillator(), fmEnv2 = AC.createGain();
-          fmMod.type = 'sine'; fmMod.frequency.value = mf * 3.5; fmModG.gain.value = mf * 5.2;
-          fmCar.type = 'sine'; fmCar.frequency.value = mf;
-          fmCar2.type = 'sine'; fmCar2.frequency.value = mf * 1.0035;
-          fmEnv.gain.setValueAtTime(0, mt); fmEnv.gain.linearRampToValueAtTime(0.17, mt + 0.022);
-          fmEnv.gain.exponentialRampToValueAtTime(0.0001, mt + md - 0.030);
-          fmEnv2.gain.setValueAtTime(0, mt); fmEnv2.gain.linearRampToValueAtTime(0.065, mt + 0.022);
-          fmEnv2.gain.exponentialRampToValueAtTime(0.0001, mt + md - 0.030);
-          fmMod.connect(fmModG); fmModG.connect(fmCar.frequency); fmModG.connect(fmCar2.frequency);
-          fmCar.connect(fmEnv); fmEnv.connect(MASTER);
+          // FM carrier + modulator (son "cloche electrique DX7")
+          var fmMod  = AC.createOscillator(), fmModG  = AC.createGain();
+          var fmCar  = AC.createOscillator(), fmEnv   = AC.createGain();
+          var fmCar2 = AC.createOscillator(), fmEnv2  = AC.createGain();
+          fmMod.type = 'sine'; fmMod.frequency.value = mf * 3.5; fmModG.gain.value = mf * 5.8;
+          fmCar.type  = 'sine'; fmCar.frequency.value  = mf;
+          fmCar2.type = 'sine'; fmCar2.frequency.value = mf * 1.004; // chorus leger
+          fmEnv.gain.setValueAtTime(0, mt);
+          fmEnv.gain.linearRampToValueAtTime(0.20, mt + 0.018);
+          fmEnv.gain.exponentialRampToValueAtTime(0.0001, mt + md - 0.02);
+          fmEnv2.gain.setValueAtTime(0, mt);
+          fmEnv2.gain.linearRampToValueAtTime(0.075, mt + 0.018);
+          fmEnv2.gain.exponentialRampToValueAtTime(0.0001, mt + md - 0.02);
+          fmMod.connect(fmModG);
+          fmModG.connect(fmCar.frequency); fmModG.connect(fmCar2.frequency);
+          fmCar.connect(fmEnv);   fmEnv.connect(MASTER);
           fmCar2.connect(fmEnv2); fmEnv2.connect(MASTER);
           if (REV) { fmEnv.connect(REV); fmEnv2.connect(REV); }
           fmMod.start(mt); fmMod.stop(mt + md);
@@ -457,13 +605,18 @@
         mt += md;
       }
     }
-    [82.4,130.8,196.0,246.9].forEach(function(f) {
+
+    // == PAD ATMOSPHERIQUE (Em — tient toute la duree) ==
+    [41.2, 82.4, 130.8, 196.0, 246.9].forEach(function(f) {
       var po = AC.createOscillator(), pe = AC.createGain();
       po.type = 'sine'; po.frequency.value = f;
-      pe.gain.setValueAtTime(0, now); pe.gain.linearRampToValueAtTime(0.048, now + 5);
-      pe.gain.setValueAtTime(0.048, now + 22); pe.gain.linearRampToValueAtTime(0, now + 28);
-      po.connect(pe); pe.connect(MASTER); if (REV) pe.connect(REV);
-      po.start(now); po.stop(now + 30);
+      pe.gain.setValueAtTime(0, now);
+      pe.gain.linearRampToValueAtTime(0.038, now + 6);
+      pe.gain.setValueAtTime(0.038, now + 24);
+      pe.gain.linearRampToValueAtTime(0, now + 30);
+      po.connect(pe); pe.connect(MASTER);
+      if (REV) pe.connect(REV);
+      po.start(now); po.stop(now + 32);
     });
   }
 
@@ -566,6 +719,9 @@
       }
       decel();
     }, 2800);
+    // Sons scanner KITT pendant le boot (avant le thème)
+    _t(function() { _scannerSound(AC ? AC.currentTime : 0); }, 3200);
+    _t(function() { _scannerSound(AC ? AC.currentTime : 0); }, 4800);
     _t(function() { _alienBoot(); }, 4500);
     _t(function() {
       TL.style.opacity = '1'; TL.style.color = '#4e8f4e';
