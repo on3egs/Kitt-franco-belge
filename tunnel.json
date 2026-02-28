@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://seminars-extras-input-sic.trycloudflare.com",
-  "last_update": "2026-02-28T02:50:41.158809+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-28T02:53:17.175546+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
