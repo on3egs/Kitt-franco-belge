@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-02-28T02:41:41.556929+00:00",
+  "status": "online",
+  "url": "https://labels-acm-marine-dried.trycloudflare.com",
+  "last_update": "2026-02-28T02:41:47.830661+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
