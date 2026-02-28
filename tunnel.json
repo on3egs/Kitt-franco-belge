@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://secondary-drink-ferry-graphical.trycloudflare.com",
-  "last_update": "2026-02-28T12:42:44.813962+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-28T12:45:13.266804+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
