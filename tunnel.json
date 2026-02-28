@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-02-28T00:02:53.674846+00:00",
+  "status": "online",
+  "url": "https://region-promises-suburban-anna.trycloudflare.com",
+  "last_update": "2026-02-28T00:02:59.894920+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
