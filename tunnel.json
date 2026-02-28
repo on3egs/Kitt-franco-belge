@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://performer-biographies-bus-translator.trycloudflare.com",
-  "last_update": "2026-02-28T16:22:48.616132+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-28T16:26:36.367105+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
