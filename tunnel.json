@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://fitting-receive-compilation-levels.trycloudflare.com",
-  "last_update": "2026-02-28T11:34:11.170990+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-02-28T11:34:43.190322+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
