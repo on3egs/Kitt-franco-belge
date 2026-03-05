@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-05T20:56:15.326003+00:00",
+  "status": "online",
+  "url": "https://they-pins-parks-mid.trycloudflare.com",
+  "last_update": "2026-03-05T20:56:22.655080+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
