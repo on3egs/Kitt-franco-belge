@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-05T07:31:53.025542+00:00",
+  "status": "online",
+  "url": "https://boards-overview-replacement-spirits.trycloudflare.com",
+  "last_update": "2026-03-05T11:35:40.288221+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
