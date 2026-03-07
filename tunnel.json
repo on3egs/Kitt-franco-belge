@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-07T21:18:45.174072+00:00",
+  "status": "online",
+  "url": "https://stations-farming-please-organizing.trycloudflare.com",
+  "last_update": "2026-03-07T21:18:51.396857+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
