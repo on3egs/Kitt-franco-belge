@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://optional-vault-terminal-band.trycloudflare.com",
-  "last_update": "2026-03-11T23:13:34.751039+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-11T23:14:50.980464+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
