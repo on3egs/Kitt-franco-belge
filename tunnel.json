@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-18T17:13:03.375560+00:00",
+  "status": "online",
+  "url": "https://effective-warming-goes-catalogs.trycloudflare.com",
+  "last_update": "2026-03-18T17:13:09.678921+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
