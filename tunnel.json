@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://pad-pool-pitch-navigation.trycloudflare.com",
-  "last_update": "2026-03-18T10:42:17.271800+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-18T10:44:38.665003+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
