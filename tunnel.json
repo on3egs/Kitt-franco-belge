@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-18T15:59:04.522966+00:00",
+  "status": "online",
+  "url": "https://panels-biotechnology-facility-composer.trycloudflare.com",
+  "last_update": "2026-03-18T15:59:11.348815+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
