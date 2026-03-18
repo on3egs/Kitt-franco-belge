@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-18T12:10:46.439226+00:00",
+  "status": "online",
+  "url": "https://ridge-project-lamb-operated.trycloudflare.com",
+  "last_update": "2026-03-18T12:10:52.716962+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
