@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://challenge-mats-painting-ink.trycloudflare.com",
-  "last_update": "2026-03-18T19:11:42.592827+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-18T19:15:00.531189+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
