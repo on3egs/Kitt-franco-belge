@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://native-vehicle-trigger-endif.trycloudflare.com",
-  "last_update": "2026-03-20T23:06:47.217550+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-20T23:08:10.750973+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
