@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://shall-machines-rain-expression.trycloudflare.com",
-  "last_update": "2026-03-20T16:03:13.775164+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-20T16:06:14.928863+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
