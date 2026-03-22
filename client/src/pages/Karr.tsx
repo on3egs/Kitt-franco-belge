@@ -4,11 +4,11 @@ import KittScanner from "@/components/KittScanner";
 
 const COMPARAISON = [
   { label: "Couleur principale", kitt: "Noir brillant", karr: "Noir mat" },
-  { label: "Pare-choc avant", kitt: "Chrome argenté", karr: "Noir mat / Gris" },
+  { label: "Pare-choc avant", kitt: "Noir brillant", karr: "Noir mat / Gris" },
   { label: "Personnalité", kitt: "Protecteur, loyal", karr: "Instinct de survie" },
   { label: "Priorité", kitt: "Protéger son conducteur", karr: "Se protéger lui-même" },
-  { label: "Voix", kitt: "William Daniels", karr: "Peter Cullen" },
-  { label: "Scanner", kitt: "Rouge — de gauche à droite", karr: "Rouge — identique" },
+  { label: "Voix (VF)", kitt: "Guy Chapellier", karr: "Guy Chapellier" },
+  { label: "Scanner", kitt: "Rouge", karr: "Ambre / Jaune (saison 3)" },
   { label: "Numéro de série", kitt: "Knight Industries Two Thousand", karr: "Knight Automated Roving Robot" },
   { label: "Statut", kitt: "Héros de la série", karr: "Antagoniste — 3 épisodes" },
 ];
@@ -80,7 +80,7 @@ export default function Karr() {
           </h2>
 
           <div className="max-w-md mx-auto mb-8">
-            <KittScanner height={8} />
+            <KittScanner height={8} color={{ r: 255, g: 160, b: 0 }} />
           </div>
 
           <p className="max-w-2xl mx-auto text-lg mb-10" style={{ fontFamily: "Rajdhani, sans-serif", color: "rgba(192,192,192,0.75)", lineHeight: 1.9 }}>
@@ -110,7 +110,7 @@ export default function Karr() {
 
       {/* Comparaison */}
       <section id="comparaison" ref={comparRef} className="relative py-24" style={{ background: "#060000" }}>
-        <KittScanner height={3} />
+        <KittScanner height={3} color={{ r: 255, g: 160, b: 0 }} />
         <div className="relative container pt-12">
           <div className="mb-12 text-center" style={{
             opacity: visibleCompar ? 1 : 0,
@@ -158,6 +158,32 @@ export default function Karr() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Note voix */}
+          <div className="mt-10 max-w-3xl mx-auto p-4" style={{
+            background: "rgba(255,34,34,0.04)",
+            border: "1px solid rgba(255,34,34,0.15)",
+            opacity: visibleCompar ? 1 : 0,
+            transition: "all 0.8s ease 0.6s"
+          }}>
+            <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,34,34,0.5)", letterSpacing: "0.2em", marginBottom: "8px" }}>
+              // ANECDOTE — DOUBLAGE VF
+            </div>
+            <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.95rem", color: "rgba(192,192,192,0.7)", lineHeight: 1.8 }}>
+              En version française, <strong style={{ color: "rgba(220,220,220,0.9)" }}>Guy Chapellier</strong> a prêté sa voix aux deux voitures — KITT et KARR. Le même homme pour le héros et son ennemi.
+            </p>
+            <div className="flex flex-wrap gap-3 mt-4">
+              <a
+                href="https://fr.wikipedia.org/wiki/Guy_Chapelier"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 transition-all"
+                style={{ background: "rgba(255,34,34,0.1)", border: "1px solid rgba(255,34,34,0.3)", fontFamily: "Orbitron, monospace", fontSize: "0.6rem", letterSpacing: "0.1em", color: "#ff2222" }}
+              >
+                ▶ BIO GUY CHAPELLIER — WIKIPEDIA
+              </a>
+            </div>
           </div>
         </div>
       </section>

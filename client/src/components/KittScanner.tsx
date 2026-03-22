@@ -8,9 +8,10 @@ import { useEffect, useRef } from "react";
 interface KittScannerProps {
   height?: number;
   className?: string;
+  color?: { r: number; g: number; b: number };
 }
 
-export default function KittScanner({ height = 8, className = "" }: KittScannerProps) {
+export default function KittScanner({ height = 8, className = "", color = { r: 255, g: 34, b: 34 } }: KittScannerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
   const posRef = useRef(0);
@@ -38,21 +39,21 @@ export default function KittScanner({ height = 8, className = "" }: KittScannerP
         const maxDist = 3;
         const intensity = Math.max(0, 1 - dist / maxDist);
 
-        const r = Math.floor(255 * intensity);
-        const g = 0;
-        const b = 0;
+        const cr = Math.floor(color.r * intensity);
+        const cg = Math.floor(color.g * intensity);
+        const cb = Math.floor(color.b * intensity);
         const alpha = 0.15 + intensity * 0.85;
 
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${alpha})`;
         const x = i * LED_W + 2;
         const w = LED_W - 4;
         ctx.fillRect(x, 1, w, canvas.height - 2);
 
         // Glow
         if (intensity > 0.3) {
-          ctx.shadowColor = `rgba(255, 34, 34, ${intensity})`;
+          ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, ${intensity})`;
           ctx.shadowBlur = 10 * intensity;
-          ctx.fillStyle = `rgba(255, 100, 100, ${intensity * 0.5})`;
+          ctx.fillStyle = `rgba(${Math.min(255, color.r + 66)}, ${Math.min(255, color.g + 66)}, ${Math.min(255, color.b + 66)}, ${intensity * 0.5})`;
           ctx.fillRect(x + 2, 2, w - 4, canvas.height - 4);
           ctx.shadowBlur = 0;
         }
