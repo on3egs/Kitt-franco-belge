@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>KITT Thumbnail Generator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; display: flex; flex-direction: column; align-items: center; padding: 30px; font-family: Arial, sans-serif; }
+  h1 { color: #ff2222; font-family: monospace; margin-bottom: 20px; letter-spacing: 0.2em; font-size: 1rem; }
+
+  /* Controls */
+  .controls { background: #1a0000; border: 1px solid rgba(255,34,34,0.3); padding: 20px; margin-bottom: 20px; width: 1280px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+  .controls label { color: #c0c0c0; font-size: 0.8rem; font-family: monospace; }
+  .controls input, .controls select, .controls textarea {
+    background: #0a0000; border: 1px solid rgba(255,34,34,0.3); color: #fff;
+    padding: 6px 10px; font-family: monospace; font-size: 0.85rem; outline: none;
+  }
+  .controls input:focus, .controls textarea:focus { border-color: #ff2222; }
+  .controls textarea { resize: vertical; min-height: 50px; width: 300px; }
+  .btn { background: #ff2222; color: white; border: none; padding: 8px 20px; cursor: pointer; font-family: monospace; font-size: 0.8rem; letter-spacing: 0.1em; }
+  .btn:hover { background: #cc1111; }
+
+  /* Thumbnail */
+  #thumb {
+    width: 1280px; height: 720px; position: relative; overflow: hidden;
+    background: #0a0000;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* Background grid */
+  #thumb::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,34,34,0.06) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,34,34,0.06) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+
+  /* Red glow corners */
+  .corner-glow {
+    position: absolute; width: 400px; height: 400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,34,34,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .corner-glow.tl { top: -100px; left: -100px; }
+  .corner-glow.br { bottom: -100px; right: -100px; }
+
+  /* Scanner bar */
+  .scanner-bar {
+    position: absolute; left: 60px; right: 60px;
+    display: flex; gap: 5px; align-items: center;
+  }
+  .led {
+    flex: 1; height: 14px; border-radius: 2px;
+    background: linear-gradient(180deg, #fff5e0 0%, #ff2222 40%, #8b0000 100%);
+    box-shadow: 0 0 12px rgba(255,34,34,0.8), 0 0 4px rgba(255,255,255,0.3);
+  }
+  .led.dim { opacity: 0.15; background: linear-gradient(180deg, #331111 0%, #220000 100%); box-shadow: none; }
+
+  /* Logo */
+  .logo {
+    position: absolute; top: 40px; left: 60px;
+    display: flex; align-items: center; gap: 15px;
+  }
+  .logo-hex {
+    width: 50px; height: 50px;
+    background: linear-gradient(135deg, #cc1111, #ff2222);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .logo-text { line-height: 1.2; }
+  .logo-text .main { color: #fff; font-size: 1.4rem; font-weight: bold; letter-spacing: 0.3em; }
+  .logo-text .sub { color: #ff2222; font-size: 0.7rem; letter-spacing: 0.4em; }
+
+  /* Main title */
+  .main-title {
+    position: absolute; left: 60px; right: 60px;
+    color: white; font-weight: bold; line-height: 1.1;
+    text-shadow: 0 0 30px rgba(255,34,34,0.5);
+  }
+  .main-title .accent { color: #ff2222; }
+
+  /* Tag */
+  .tag {
+    position: absolute;
+    background: rgba(255,34,34,0.15);
+    border: 1px solid #ff2222;
+    color: #ff2222;
+    font-size: 0.85rem;
+    letter-spacing: 0.25em;
+    padding: 6px 18px;
+  }
+
+  /* Border frame */
+  .frame-corner {
+    position: absolute; width: 40px; height: 40px;
+    border-color: #ff2222; border-style: solid;
+  }
+  .frame-corner.tl { top: 20px; left: 20px; border-width: 3px 0 0 3px; }
+  .frame-corner.tr { top: 20px; right: 20px; border-width: 3px 3px 0 0; }
+  .frame-corner.bl { bottom: 20px; left: 20px; border-width: 0 0 3px 3px; }
+  .frame-corner.br { bottom: 20px; right: 20px; border-width: 0 3px 3px 0; }
+
+  /* Download button */
+  #downloadBtn { margin-top: 15px; }
+</style>
+</head>
+<body>
+
+<h1>// KITT FRANCO-BELGE — THUMBNAIL GENERATOR 1280×720</h1>
+
+<div class="controls">
+  <div>
+    <label>TITRE LIGNE 1</label><br>
+    <input type="text" id="line1" value="KITT FRANCO-BELGE" style="width:280px">
+  </div>
+  <div>
+    <label>TITRE LIGNE 2 (rouge)</label><br>
+    <input type="text" id="line2" value="PROJET K2000" style="width:280px">
+  </div>
+  <div>
+    <label>TAG (ex: KARR / ÉLECTRONIQUE)</label><br>
+    <input type="text" id="tag" value="KNIGHT RIDER 1982" style="width:200px">
+  </div>
+  <div>
+    <label>POSITION SCANNER</label><br>
+    <select id="scannerPos">
+      <option value="200">Haut</option>
+      <option value="360" selected>Milieu</option>
+      <option value="550">Bas</option>
+    </select>
+  </div>
+  <div>
+    <label>TAILLE TITRE (px)</label><br>
+    <input type="number" id="titleSize" value="90" style="width:80px">
+  </div>
+  <button class="btn" onclick="renderThumb()">GENERER</button>
+  <button class="btn" id="downloadBtn" onclick="downloadThumb()">TELECHARGER PNG</button>
+</div>
+
+<canvas id="thumb" width="1280" height="720"></canvas>
+
+<script>
+function renderThumb() {
+  const canvas = document.getElementById('thumb');
+  const ctx = canvas.getContext('2d');
+  const W = 1280, H = 720;
+
+  const line1 = document.getElementById('line1').value;
+  const line2 = document.getElementById('line2').value;
+  const tag = document.getElementById('tag').value;
+  const scannerY = parseInt(document.getElementById('scannerPos').value);
+  const titleSize = parseInt(document.getElementById('titleSize').value);
+
+  // Background
+  ctx.fillStyle = '#0a0000';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,34,34,0.06)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 80) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Corner glows
+  const grd1 = ctx.createRadialGradient(0, 0, 0, 0, 0, 500);
+  grd1.addColorStop(0, 'rgba(255,34,34,0.18)');
+  grd1.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd1;
+  ctx.fillRect(-100, -100, 500, 500);
+
+  const grd2 = ctx.createRadialGradient(W, H, 0, W, H, 500);
+  grd2.addColorStop(0, 'rgba(255,34,34,0.12)');
+  grd2.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd2;
+  ctx.fillRect(W-400, H-400, 500, 500);
+
+  // Frame corners
+  ctx.strokeStyle = '#ff2222';
+  ctx.lineWidth = 3;
+  [[20,20,1,1],[W-20,20,-1,1],[20,H-20,1,-1],[W-20,H-20,-1,-1]].forEach(([x,y,sx,sy]) => {
+    ctx.beginPath(); ctx.moveTo(x+sx*40,y); ctx.lineTo(x,y); ctx.lineTo(x,y+sy*40); ctx.stroke();
+  });
+
+  // Logo
+  const hexX = 60, hexY = 40, hexS = 25;
+  const angles = [0,1,2,3,4,5].map(i => i * Math.PI / 3 - Math.PI/6);
+  const grdHex = ctx.createLinearGradient(hexX, hexY, hexX+hexS*2, hexY+hexS*2);
+  grdHex.addColorStop(0, '#cc1111'); grdHex.addColorStop(1, '#ff2222');
+  ctx.fillStyle = grdHex;
+  ctx.beginPath();
+  angles.forEach((a,i) => { const px=hexX+hexS+hexS*Math.cos(a), py=hexY+hexS+hexS*Math.sin(a); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 26px "Courier New"';
+  ctx.letterSpacing = '0.3em';
+  ctx.fillText('KITT', hexX + hexS*2 + 18, hexY + hexS + 10);
+  ctx.fillStyle = '#ff2222';
+  ctx.font = '13px "Courier New"';
+  ctx.fillText('FRANCO-BELGE', hexX + hexS*2 + 18, hexY + hexS + 28);
+
+  // Scanner bar
+  const numLeds = 18, ledW = (W - 120 - (numLeds-1)*5) / numLeds;
+  const activeCenter = Math.floor(numLeds / 2);
+  for (let i = 0; i < numLeds; i++) {
+    const dist = Math.abs(i - activeCenter);
+    const intensity = Math.max(0, 1 - dist / 5);
+    const x = 60 + i * (ledW + 5);
+    if (intensity > 0.1) {
+      const grd = ctx.createLinearGradient(x, scannerY, x, scannerY+14);
+      grd.addColorStop(0, `rgba(255,245,224,${intensity})`);
+      grd.addColorStop(0.4, `rgba(255,34,34,${intensity})`);
+      grd.addColorStop(1, `rgba(139,0,0,${intensity})`);
+      ctx.fillStyle = grd;
+      ctx.shadowColor = `rgba(255,34,34,${intensity*0.8})`;
+      ctx.shadowBlur = 15 * intensity;
+      ctx.fillRect(x, scannerY, ledW, 14);
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = 'rgba(80,0,0,0.3)';
+      ctx.fillRect(x, scannerY, ledW, 14);
+    }
+  }
+
+  // Tag
+  const tagText = tag.toUpperCase();
+  ctx.font = '14px "Courier New"';
+  const tagW = ctx.measureText(tagText).width + 36;
+  const tagX = 60, tagY = scannerY + 40;
+  ctx.fillStyle = 'rgba(255,34,34,0.12)';
+  ctx.fillRect(tagX, tagY, tagW, 32);
+  ctx.strokeStyle = '#ff2222';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(tagX, tagY, tagW, 32);
+  ctx.fillStyle = '#ff2222';
+  ctx.letterSpacing = '0.25em';
+  ctx.fillText(tagText, tagX + 18, tagY + 21);
+
+  // Main title
+  const titleY = tagY + 60;
+  ctx.font = `bold ${titleSize}px "Courier New"`;
+  ctx.letterSpacing = '0.05em';
+  ctx.shadowColor = 'rgba(255,34,34,0.5)';
+  ctx.shadowBlur = 30;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(line1.toUpperCase(), 60, titleY);
+  ctx.fillStyle = '#ff2222';
+  ctx.fillText(line2.toUpperCase(), 60, titleY + titleSize + 10);
+  ctx.shadowBlur = 0;
+
+  // Bottom bar
+  ctx.fillStyle = 'rgba(255,34,34,0.08)';
+  ctx.fillRect(0, H-50, W, 50);
+  ctx.fillStyle = 'rgba(255,34,34,0.3)';
+  ctx.fillRect(0, H-50, W, 1);
+  ctx.fillStyle = 'rgba(192,192,192,0.4)';
+  ctx.font = '13px "Courier New"';
+  ctx.letterSpacing = '0.2em';
+  ctx.fillText('KITT FRANCO-BELGE  ·  BY MANIX  ·  KNIGHT RIDER PROJECT', 60, H-18);
+  ctx.fillStyle = '#ff2222';
+  ctx.fillText('youtube.com/@KITTK2000', W-310, H-18);
+}
+
+function downloadThumb() {
+  renderThumb();
+  const canvas = document.getElementById('thumb');
+  const link = document.createElement('a');
+  const t1 = document.getElementById('line1').value.replace(/\s+/g,'-').toLowerCase();
+  link.download = `kitt-thumb-${t1}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+renderThumb();
+</script>
+</body>
+</html>

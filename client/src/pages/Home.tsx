@@ -1190,6 +1190,86 @@ function SocialProofSection() {
   );
 }
 
+// ─── Progression Section ──────────────────────────────────────────────────────
+const PROGRESSION = [
+  { label: "Scanner K.I.T.T.", value: 100, tag: "COMPLET" },
+  { label: "Intelligence Artificielle KYRONEX", value: 82, tag: "EN LIGNE" },
+  { label: "Carrosserie Extérieure", value: 70, tag: "EN COURS" },
+  { label: "Dashboard Knight Rider S4", value: 65, tag: "EN COURS" },
+  { label: "Électronique Embarquée", value: 58, tag: "EN COURS" },
+  { label: "Pare-choc KARR", value: 40, tag: "EN COURS" },
+];
+
+function ProgressionSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useIntersection(ref);
+  const [animated, setAnimated] = useState(false);
+
+  useEffect(() => {
+    if (visible) setTimeout(() => setAnimated(true), 200);
+  }, [visible]);
+
+  return (
+    <section
+      ref={ref}
+      className="relative py-20 overflow-hidden"
+      style={{ background: "#050000" }}
+    >
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: "linear-gradient(rgba(255,34,34,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,34,34,0.03) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+      <div className="relative container">
+        <div
+          className="mb-12"
+          style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}
+        >
+          <div className="section-label mb-3">// DIAGNOSTIC — ÉTAT DU PROJET</div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white" style={{ fontFamily: "Orbitron, monospace" }}>
+            PROGRESSION<br /><span style={{ color: "#ff2222" }}>DU SYSTÈME</span>
+          </h2>
+        </div>
+        <div className="space-y-6 max-w-3xl">
+          {PROGRESSION.map((item, i) => (
+            <div
+              key={item.label}
+              style={{ opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-20px)", transition: `all 0.6s ease ${i * 0.1}s` }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.65rem", color: "rgba(192,192,192,0.8)", letterSpacing: "0.1em" }}>
+                  {item.label}
+                </span>
+                <div className="flex items-center gap-3">
+                  <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.1em" }}>
+                    {item.tag}
+                  </span>
+                  <span className="stat-number" style={{ fontSize: "0.85rem" }}>{item.value}%</span>
+                </div>
+              </div>
+              <div style={{ height: "6px", background: "rgba(255,34,34,0.1)", border: "1px solid rgba(255,34,34,0.15)", position: "relative", overflow: "hidden" }}>
+                <div
+                  style={{
+                    position: "absolute", top: 0, left: 0, height: "100%",
+                    width: animated ? `${item.value}%` : "0%",
+                    background: item.value === 100
+                      ? "linear-gradient(90deg, #ff2222, #ff6666)"
+                      : "linear-gradient(90deg, #cc1111, #ff2222)",
+                    transition: `width 1.2s ease ${i * 0.15}s`,
+                    boxShadow: "0 0 8px rgba(255,34,34,0.6)",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Videos Section ───────────────────────────────────────────────────────────
 const YOUTUBE_VIDEOS = [
   {
@@ -1361,13 +1441,10 @@ function VideosSection() {
           ))}
         </div>
 
-        {/* CTA YouTube */}
+        {/* CTAs YouTube */}
         <div
-          className="mt-12 text-center"
-          style={{
-            opacity: visible ? 1 : 0,
-            transition: "opacity 0.8s ease 0.6s",
-          }}
+          className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
+          style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease 0.6s" }}
         >
           <a
             href="https://www.youtube.com/@KITTK2000"
@@ -1384,7 +1461,26 @@ function VideosSection() {
             onMouseEnter={() => play("hover")}
           >
             <span style={{ fontSize: "1.2rem" }}>▶</span>
-            VOIR TOUTES LES VIDÉOS SUR YOUTUBE
+            VOIR TOUTES LES VIDÉOS
+          </a>
+          <a
+            href="https://www.youtube.com/@KITTK2000?sub_confirmation=1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-8 py-4 transition-all"
+            style={{
+              background: "rgba(255,34,34,0.15)",
+              border: "1px solid #ff2222",
+              fontFamily: "Orbitron, monospace",
+              fontSize: "0.7rem",
+              letterSpacing: "0.15em",
+              color: "#ff2222",
+              boxShadow: "0 0 15px rgba(255,34,34,0.2)",
+            }}
+            onMouseEnter={() => play("hover")}
+          >
+            <span style={{ fontSize: "1rem" }}>+</span>
+            S'ABONNER À LA CHAÎNE
           </a>
         </div>
       </div>
@@ -1740,6 +1836,7 @@ function Footer() {
               {[
                 { label: "Interface KITT (KYRONEX)", href: "https://on3egs.github.io/Kitt-franco-belge/kyronex/" },
                 { label: "Groupe Facebook", href: "https://www.facebook.com/groups/757797724622219/" },
+                { label: "Chaine YouTube KITT K2000", href: "https://www.youtube.com/@KITTK2000" },
               ].map(({ label, href }) => (
                 <a
                   key={href}
@@ -1921,6 +2018,7 @@ export default function Home() {
       <VisitorCounter />
       <StorySection />
       <ServicesSection />
+      <ProgressionSection />
       <VideosSection />
       <SocialProofSection />
       <ContactSection />
