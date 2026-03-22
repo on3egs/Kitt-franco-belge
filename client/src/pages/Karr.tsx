@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
 
 const COMPARAISON = [
@@ -89,13 +90,13 @@ export default function Karr() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/Kitt-franco-belge/"
+            <Link
+              href="/"
               className="inline-flex items-center gap-3 px-8 py-4 transition-all hover:border-red-500"
               style={{ border: "1px solid rgba(255,34,34,0.3)", fontFamily: "Orbitron, monospace", fontSize: "0.7rem", letterSpacing: "0.15em", color: "rgba(192,192,192,0.8)" }}
             >
               ← RETOUR KITT
-            </a>
+            </Link>
             <button
               onClick={() => document.getElementById("comparaison")?.scrollIntoView({ behavior: "smooth" })}
               className="inline-flex items-center gap-3 px-8 py-4 transition-all"
@@ -231,9 +232,9 @@ export default function Karr() {
 
       {/* Footer simple */}
       <footer className="py-8 text-center" style={{ borderTop: "1px solid rgba(255,34,34,0.1)", background: "#050000" }}>
-        <a href="/Kitt-franco-belge/" style={{ fontFamily: "Orbitron, monospace", fontSize: "0.65rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.2em" }}>
+        <Link href="/" style={{ fontFamily: "Orbitron, monospace", fontSize: "0.65rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.2em" }}>
           ← RETOUR AU SYSTÈME KITT FRANCO-BELGE
-        </a>
+        </Link>
       </footer>
 
     </div>
