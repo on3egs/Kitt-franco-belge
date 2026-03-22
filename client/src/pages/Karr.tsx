@@ -67,7 +67,7 @@ export default function Karr() {
           background: "radial-gradient(ellipse at 50% 50%, rgba(255,34,34,0.08) 0%, transparent 70%)"
         }} />
 
-        <div className="relative container py-32 text-center">
+        <div className="relative container py-20 md:py-32 text-center px-4">
           <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.3em", marginBottom: "1rem" }}>
             // KNIGHT INDUSTRIES — PROTOTYPE NON AUTORISÉ
           </div>
@@ -75,7 +75,7 @@ export default function Karr() {
           <h1 className="text-6xl md:text-8xl font-black text-white mb-2" style={{ fontFamily: "Orbitron, monospace" }}>
             K.A.R.R.
           </h1>
-          <h2 className="text-xl md:text-3xl font-bold mb-6" style={{ fontFamily: "Orbitron, monospace", color: "#ff2222" }}>
+          <h2 className="text-sm md:text-3xl font-bold mb-6" style={{ fontFamily: "Orbitron, monospace", color: "#ff2222" }}>
             KNIGHT AUTOMATED ROVING ROBOT
           </h2>
 
@@ -132,8 +132,8 @@ export default function Karr() {
             </h2>
           </div>
 
-          {/* Headers */}
-          <div className="grid grid-cols-3 gap-4 mb-4 max-w-3xl mx-auto">
+          {/* Desktop headers — cachés sur mobile */}
+          <div className="hidden md:grid grid-cols-3 gap-4 mb-4 max-w-3xl mx-auto">
             <div />
             <div className="text-center p-3" style={{ background: "rgba(255,34,34,0.05)", border: "1px solid rgba(255,34,34,0.2)" }}>
               <span style={{ fontFamily: "Orbitron, monospace", fontSize: "0.7rem", color: "#ff2222" }}>K.I.T.T.</span>
@@ -147,21 +147,37 @@ export default function Karr() {
             {COMPARAISON.map((row, i) => (
               <div
                 key={row.label}
-                className="grid grid-cols-3 gap-4"
                 style={{
                   opacity: visibleCompar ? 1 : 0,
                   transform: visibleCompar ? "translateY(0)" : "translateY(20px)",
                   transition: `all 0.5s ease ${i * 0.08}s`
                 }}
               >
-                <div className="flex items-center px-3 py-3" style={{ background: "rgba(255,34,34,0.03)", borderLeft: "2px solid rgba(255,34,34,0.2)" }}>
-                  <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(192,192,192,0.5)", letterSpacing: "0.05em" }}>{row.label}</span>
+                {/* Mobile : carte empilée */}
+                <div className="md:hidden" style={{ background: "rgba(255,34,34,0.03)", borderLeft: "2px solid rgba(255,34,34,0.2)", padding: "10px 12px", marginBottom: "2px" }}>
+                  <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(192,192,192,0.45)", letterSpacing: "0.05em", marginBottom: "8px" }}>{row.label}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-center py-2 px-2" style={{ background: "rgba(255,34,34,0.06)", border: "1px solid rgba(255,34,34,0.15)" }}>
+                      <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.45rem", color: "#ff2222", marginBottom: "4px" }}>KITT</div>
+                      <div style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(220,220,220,0.85)" }}>{row.kitt}</div>
+                    </div>
+                    <div className="text-center py-2 px-2" style={{ background: "rgba(60,60,60,0.06)", border: "1px solid rgba(120,120,120,0.15)" }}>
+                      <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.45rem", color: "rgba(192,192,192,0.5)", marginBottom: "4px" }}>KARR</div>
+                      <div style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(160,160,160,0.7)" }}>{row.karr}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center px-3 py-3 text-center" style={{ background: "rgba(255,34,34,0.06)", border: "1px solid rgba(255,34,34,0.15)" }}>
-                  <span style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.9rem", color: "rgba(220,220,220,0.85)" }}>{row.kitt}</span>
-                </div>
-                <div className="flex items-center justify-center px-3 py-3 text-center" style={{ background: "rgba(60,60,60,0.06)", border: "1px solid rgba(120,120,120,0.15)" }}>
-                  <span style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.9rem", color: "rgba(160,160,160,0.7)" }}>{row.karr}</span>
+                {/* Desktop : 3 colonnes */}
+                <div className="hidden md:grid grid-cols-3 gap-4">
+                  <div className="flex items-center px-3 py-3" style={{ background: "rgba(255,34,34,0.03)", borderLeft: "2px solid rgba(255,34,34,0.2)" }}>
+                    <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(192,192,192,0.5)", letterSpacing: "0.05em" }}>{row.label}</span>
+                  </div>
+                  <div className="flex items-center justify-center px-3 py-3 text-center" style={{ background: "rgba(255,34,34,0.06)", border: "1px solid rgba(255,34,34,0.15)" }}>
+                    <span style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.9rem", color: "rgba(220,220,220,0.85)" }}>{row.kitt}</span>
+                  </div>
+                  <div className="flex items-center justify-center px-3 py-3 text-center" style={{ background: "rgba(60,60,60,0.06)", border: "1px solid rgba(120,120,120,0.15)" }}>
+                    <span style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.9rem", color: "rgba(160,160,160,0.7)" }}>{row.karr}</span>
+                  </div>
                 </div>
               </div>
             ))}
