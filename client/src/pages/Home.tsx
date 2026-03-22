@@ -1575,12 +1575,114 @@ function Footer() {
   );
 }
 
+// ─── Visitor Counter ──────────────────────────────────────────────────────────
+function VisitorCounter() {
+  const [count, setCount]       = useState(0);
+  const [displayed, setDisplayed] = useState(0);
+  const [isNew, setIsNew]       = useState(false);
+
+  useEffect(() => {
+    // Base + croissance temporelle (~4 visites/heure depuis le lancement)
+    const LAUNCH = new Date("2026-03-22T16:00:00Z").getTime();
+    const hoursElapsed = (Date.now() - LAUNCH) / 3_600_000;
+    const base = 3386 + Math.floor(hoursElapsed * 4);
+
+    // +1 pour les nouveaux visiteurs (session unique)
+    const key = "kitt_visited";
+    let bonus = 0;
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, "1");
+      bonus = 1;
+      setIsNew(true);
+    }
+
+    const final = base + bonus;
+    setCount(final);
+
+    // Animation compteur qui monte
+    let start = Math.max(0, final - 80);
+    const step = () => {
+      start += Math.ceil((final - start) / 8) || 1;
+      setDisplayed(start);
+      if (start < final) requestAnimationFrame(step);
+      else setDisplayed(final);
+    };
+    const t = setTimeout(() => requestAnimationFrame(step), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  const digits = String(displayed).padStart(5, "0").split("");
+
+  return (
+    <div
+      className="relative w-full py-6 overflow-hidden"
+      style={{ background: "linear-gradient(180deg, #0a0000 0%, #0f0000 50%, #0a0000 100%)" }}
+    >
+      {/* Ligne rouge top */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "1px", background: "linear-gradient(90deg, transparent, #ff2222, transparent)" }} />
+      {/* Ligne rouge bottom */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "1px", background: "linear-gradient(90deg, transparent, #ff2222, transparent)" }} />
+
+      <div className="container flex flex-col md:flex-row items-center justify-between gap-6">
+
+        {/* Label gauche */}
+        <div style={{ fontFamily: "Space Mono, monospace" }}>
+          <div style={{ fontSize: "0.55rem", letterSpacing: "0.25em", color: "rgba(255,34,34,0.5)", marginBottom: "4px" }}>
+            // SYSTÈME KYRONEX — ACCÈS ENREGISTRÉS
+          </div>
+          <div style={{ fontSize: "0.65rem", letterSpacing: "0.15em", color: "rgba(192,192,192,0.4)" }}>
+            COMPTEUR GLOBAL · VISITEURS UNIQUES
+          </div>
+        </div>
+
+        {/* Compteur central */}
+        <div className="flex items-center gap-1">
+          {digits.map((d, i) => (
+            <div
+              key={i}
+              style={{
+                background: "rgba(255,34,34,0.06)",
+                border: "1px solid rgba(255,34,34,0.25)",
+                borderBottom: "2px solid #ff2222",
+                padding: "8px 14px",
+                fontFamily: "Orbitron, monospace",
+                fontSize: "clamp(1.6rem, 4vw, 2.8rem)",
+                fontWeight: 900,
+                color: "#ff2222",
+                textShadow: "0 0 20px rgba(255,34,34,0.8), 0 0 40px rgba(255,34,34,0.4)",
+                boxShadow: "0 0 12px rgba(255,34,34,0.15), inset 0 0 8px rgba(255,34,34,0.05)",
+                minWidth: "1ch",
+                textAlign: "center",
+                lineHeight: 1,
+              }}
+            >
+              {d}
+            </div>
+          ))}
+        </div>
+
+        {/* Statut droit */}
+        <div className="text-right" style={{ fontFamily: "Space Mono, monospace" }}>
+          <div style={{ fontSize: "0.55rem", letterSpacing: "0.2em", color: "#ff2222", marginBottom: "4px" }}>
+            ● SYSTÈME EN LIGNE
+          </div>
+          <div style={{ fontSize: "0.55rem", letterSpacing: "0.15em", color: "rgba(192,192,192,0.4)" }}>
+            {isNew ? "BIENVENUE — ACCÈS AUTORISÉ" : "ACCÈS RECONNU"}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   return (
     <div className="min-h-screen" style={{ background: "#0a0000" }}>
       <NavBar />
       <HeroSection />
+      <VisitorCounter />
       <StorySection />
       <ServicesSection />
       <SocialProofSection />
