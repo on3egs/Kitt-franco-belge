@@ -52,7 +52,7 @@ const SERVICES = [
     title: "Électronique Embarquée",
     subtitle: "Convertisseur DC-DC & Console",
     description:
-      "Conception et test de systèmes électroniques embarqués : convertisseur DC-DC 12,4V stable, protection contre les surtensions, nouvelle console haute KRW / Officine Supercar S4.",
+      "Conception et test de systèmes électroniques embarqués : convertisseur DC-DC 12,4V stable, protection contre les surtensions, nouvelle console haute Pascal K industrie / Vincenzo Forte.",
     icon: "⚡",
     tag: "HARDWARE",
   },
@@ -1576,39 +1576,73 @@ function Footer() {
 }
 
 // ─── Visitor Counter ──────────────────────────────────────────────────────────
+const FALLBACK_COUNT = 3387; // Affiché si le Jetson est hors ligne
+
+async function fetchTunnelUrl(): Promise<string | null> {
+  try {
+    const r = await fetch(
+      "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json",
+      { cache: "no-store" }
+    );
+    if (!r.ok) return null;
+    const j = await r.json();
+    return (j.url as string) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function VisitorCounter() {
   const [count, setCount]       = useState(0);
   const [displayed, setDisplayed] = useState(0);
   const [isNew, setIsNew]       = useState(false);
 
   useEffect(() => {
-    // Base + croissance temporelle (~4 visites/heure depuis le lancement)
-    const LAUNCH = new Date("2026-03-22T16:00:00Z").getTime();
-    const hoursElapsed = (Date.now() - LAUNCH) / 3_600_000;
-    const base = 3386 + Math.floor(hoursElapsed * 4);
+    const SESSION_KEY = "kitt_counted";
+    const alreadyCounted = !!sessionStorage.getItem(SESSION_KEY);
 
-    // +1 pour les nouveaux visiteurs (session unique)
-    const key = "kitt_visited";
-    let bonus = 0;
-    if (!sessionStorage.getItem(key)) {
-      sessionStorage.setItem(key, "1");
-      bonus = 1;
-      setIsNew(true);
+    async function loadCount() {
+      let final = FALLBACK_COUNT;
+      try {
+        const tunnelUrl = await fetchTunnelUrl();
+        if (tunnelUrl) {
+          const method = alreadyCounted ? "GET" : "POST";
+          const r = await fetch(`${tunnelUrl}/api/site-counter`, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            signal: AbortSignal.timeout(5000),
+          });
+          if (r.ok) {
+            const j = await r.json();
+            final = Math.max(FALLBACK_COUNT, j.count as number);
+            if (!alreadyCounted) {
+              sessionStorage.setItem(SESSION_KEY, "1");
+              setIsNew(true);
+            }
+          }
+        }
+      } catch {
+        // Jetson hors ligne — on affiche le fallback
+        if (!alreadyCounted) {
+          sessionStorage.setItem(SESSION_KEY, "1");
+          setIsNew(true);
+        }
+      }
+
+      setCount(final);
+
+      // Animation compteur qui monte
+      let start = Math.max(1, final - 80);
+      const step = () => {
+        start += Math.ceil((final - start) / 8) || 1;
+        setDisplayed(start);
+        if (start < final) requestAnimationFrame(step);
+        else setDisplayed(final);
+      };
+      setTimeout(() => requestAnimationFrame(step), 400);
     }
 
-    const final = base + bonus;
-    setCount(final);
-
-    // Animation compteur qui monte
-    let start = Math.max(0, final - 80);
-    const step = () => {
-      start += Math.ceil((final - start) / 8) || 1;
-      setDisplayed(start);
-      if (start < final) requestAnimationFrame(step);
-      else setDisplayed(final);
-    };
-    const t = setTimeout(() => requestAnimationFrame(step), 400);
-    return () => clearTimeout(t);
+    loadCount();
   }, []);
 
   const digits = String(displayed).padStart(5, "0").split("");
