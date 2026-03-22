@@ -559,7 +559,7 @@ function HeroSection() {
 
       {/* System status top-right */}
       <div
-        className="absolute top-24 right-6 md:right-12 text-right"
+        className="absolute top-24 right-6 md:right-12 text-right hidden md:block"
         style={{
           fontFamily: "Space Mono, monospace",
           fontSize: "0.6rem",
@@ -577,7 +577,7 @@ function HeroSection() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 container pb-20 pt-32">
+      <div className="relative z-10 container pb-20 pt-32 text-center md:text-left">
         {/* Label */}
         <div
           className="section-label mb-4"
@@ -652,7 +652,7 @@ function HeroSection() {
 
         {/* CTA buttons */}
         <div
-          className="flex flex-wrap gap-4"
+          className="flex flex-wrap gap-4 justify-center md:justify-start"
           style={{
             opacity: phase >= 3 ? 1 : 0,
             transform: phase >= 3 ? "translateY(0)" : "translateY(15px)",
@@ -735,9 +735,9 @@ function StorySection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3">// DOSSIER_01 — HISTOIRE DU PROJET</div>
+          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_01 — HISTOIRE DU PROJET</div>
           <h2
-            className="text-3xl md:text-5xl font-bold text-white"
+            className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
             L'HISTOIRE DE
@@ -932,9 +932,9 @@ function ServicesSection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3">// DOSSIER_02 — CAPACITÉS SYSTÈME</div>
+          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_02 — CAPACITÉS SYSTÈME</div>
           <h2
-            className="text-3xl md:text-5xl font-bold text-white"
+            className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
             MODULES &amp;
@@ -1061,9 +1061,9 @@ function SocialProofSection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3">// DOSSIER_03 — RETOURS COMMUNAUTÉ</div>
+          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_03 — RETOURS COMMUNAUTÉ</div>
           <h2
-            className="text-3xl md:text-5xl font-bold text-white"
+            className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
             CE QUE DIT
@@ -1227,8 +1227,8 @@ function ProgressionSection() {
           className="mb-12"
           style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}
         >
-          <div className="section-label mb-3">// DIAGNOSTIC — ÉTAT DU PROJET</div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white" style={{ fontFamily: "Orbitron, monospace" }}>
+          <div className="section-label mb-3 text-center md:text-left">// DIAGNOSTIC — ÉTAT DU PROJET</div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-center md:text-left" style={{ fontFamily: "Orbitron, monospace" }}>
             PROGRESSION<br /><span style={{ color: "#ff2222" }}>DU SYSTÈME</span>
           </h2>
         </div>
@@ -1339,9 +1339,9 @@ function VideosSection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3">// DOSSIER_03 — ARCHIVES VIDÉO</div>
+          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_03 — ARCHIVES VIDÉO</div>
           <h2
-            className="text-3xl md:text-5xl font-bold text-white"
+            className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
             CHAÎNE YOUTUBE
@@ -1554,9 +1554,9 @@ function ContactSection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3">// DOSSIER_04 — COMMUNICATION</div>
+          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_04 — COMMUNICATION</div>
           <h2
-            className="text-3xl md:text-5xl font-bold text-white"
+            className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
             TRANSMETTRE UN
@@ -2009,6 +2009,75 @@ function VisitorCounter() {
   );
 }
 
+// ─── Subscribe Popup ──────────────────────────────────────────────────────────
+function SubscribePopup() {
+  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const { play } = useSoundEffects();
+
+  useEffect(() => {
+    if (sessionStorage.getItem("kitt_sub_popup")) return;
+    const t = setTimeout(() => setVisible(true), 30000);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!visible || dismissed) return null;
+
+  return (
+    <div
+      className="fixed bottom-6 right-6 z-50 max-w-xs w-full"
+      style={{
+        background: "rgba(10,0,0,0.97)",
+        border: "1px solid #ff2222",
+        boxShadow: "0 0 30px rgba(255,34,34,0.3)",
+        animation: "slideInRight 0.4s ease",
+      }}
+    >
+      <style>{`@keyframes slideInRight { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }`}</style>
+
+      {/* Top bar */}
+      <div style={{ height: "3px", background: "linear-gradient(90deg, #ff2222, transparent)" }} />
+
+      <div className="p-4">
+        <button
+          onClick={() => { setDismissed(true); sessionStorage.setItem("kitt_sub_popup","1"); }}
+          className="absolute top-3 right-3"
+          style={{ color: "rgba(192,192,192,0.4)", fontSize: "1rem", lineHeight: 1, background: "none", border: "none", cursor: "pointer" }}
+        >✕</button>
+
+        <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "#ff2222", letterSpacing: "0.2em", marginBottom: "8px" }}>
+          // SYSTÈME KYRONEX — NOTIFICATION
+        </div>
+        <p style={{ fontFamily: "Orbitron, monospace", fontSize: "0.75rem", color: "white", marginBottom: "12px", lineHeight: 1.5 }}>
+          Tu suis le projet KITT ?<br />
+          <span style={{ color: "#ff2222" }}>Abonne-toi à la chaîne !</span>
+        </p>
+        <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(192,192,192,0.6)", marginBottom: "14px" }}>
+          Nouvelles vidéos chaque semaine — construction, électronique, KARR...
+        </p>
+        <a
+          href="https://www.youtube.com/@KITTK2000?sub_confirmation=1"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => { setDismissed(true); sessionStorage.setItem("kitt_sub_popup","1"); play("scanner"); }}
+          onMouseEnter={() => play("hover")}
+          className="flex items-center justify-center gap-2 w-full py-3"
+          style={{
+            background: "rgba(255,34,34,0.15)",
+            border: "1px solid #ff2222",
+            fontFamily: "Orbitron, monospace",
+            fontSize: "0.65rem",
+            letterSpacing: "0.15em",
+            color: "#ff2222",
+          }}
+        >
+          ▶ S'ABONNER MAINTENANT
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   return (
@@ -2023,6 +2092,7 @@ export default function Home() {
       <SocialProofSection />
       <ContactSection />
       <Footer />
+      <SubscribePopup />
     </div>
   );
 }
