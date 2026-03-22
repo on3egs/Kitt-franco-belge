@@ -155,6 +155,8 @@ def main():
     print("  [3] Juste afficher les vidéos")
     print("  [4] Mettre à jour les 3 Shorts KARR/KITT")
     print("  [5] Corriger le titre 'Altrernateur' -> 'Alternateur'")
+    print("  [6] Creer les playlists organisees (Construction, Electronique, KARR, Evenements)")
+    print("  [7] Ameliorer descriptions vides (joyeux noel, shorts sans desc)")
     print("  [0] Quitter")
 
     choice = input("\nChoix : ").strip()
@@ -216,6 +218,79 @@ def main():
                 update_video(youtube, v, new_title="Alternateur Firebird — Réparation CS130 ACDelco Remy")
                 print("[OK] Titre corrigé !")
                 break
+
+    elif choice == "6":
+        print("\nCréation des playlists organisées...")
+        playlists = [
+            {
+                "title": "KITT Franco-Belge — Construction & Carrosserie",
+                "description": "Toutes les vidéos sur la construction, la carrosserie et la peinture du projet KITT Franco-Belge. Pontiac Trans Am réplique Knight Rider by Manix.",
+                "video_ids": ["wNIHv_39V_8", "77MWglJ7wH0", "-LZcgCjkEHs", "u6uJdicP9ms"]
+            },
+            {
+                "title": "KITT Franco-Belge — Électronique & Mécanique",
+                "description": "Réparations, montages électroniques et travaux mécaniques sur la Pontiac Firebird KITT Franco-Belge. Alternateur, dashboard, convertisseur DC-DC.",
+                "video_ids": ["LGY_-kAH_do"]
+            },
+            {
+                "title": "KITT Franco-Belge — KARR le Jumeau Maléfique",
+                "description": "Vidéos dédiées à KARR, le double maléfique de KITT dans Knight Rider 1982. Pare-choc noir mat et gris style série originale.",
+                "video_ids": ["wNIHv_39V_8", "77MWglJ7wH0"]
+            },
+            {
+                "title": "KITT Franco-Belge — Événements & Rassemblements",
+                "description": "Sorties, rassemblements de voitures de films et événements autour du projet KITT Franco-Belge et de la communauté Knight Rider francophone.",
+                "video_ids": ["pl7B0E6fnYs", "SBSGHLUBRe0", "QB240B7PtY8"]
+            },
+        ]
+        for pl in playlists:
+            try:
+                res = youtube.playlists().insert(
+                    part="snippet,status",
+                    body={
+                        "snippet": {
+                            "title": pl["title"],
+                            "description": pl["description"],
+                        },
+                        "status": {"privacyStatus": "public"}
+                    }
+                ).execute()
+                pl_id = res["id"]
+                print(f"  [OK] Playlist créée : {pl['title']}")
+                for vid_id in pl["video_ids"]:
+                    try:
+                        youtube.playlistItems().insert(
+                            part="snippet",
+                            body={"snippet": {"playlistId": pl_id, "resourceId": {"kind": "youtube#video", "videoId": vid_id}}}
+                        ).execute()
+                    except Exception:
+                        pass
+            except Exception as e:
+                print(f"  [ERR] {pl['title']} : {e}")
+        print("\n[OK] Playlists créées !")
+
+    elif choice == "7":
+        IMPROVED_DESCRIPTIONS = {
+            "SBSGHLUBRe0": {
+                "title": "Joyeux Noël — KITT Franco-Belge",
+                "desc": "Joyeux Noël à toute la communauté KITT Franco-Belge et aux passionnés de Knight Rider ! Merci pour votre soutien tout au long de cette aventure.\n\nProjet KITT Franco-Belge by Manix — Réplique Pontiac Trans Am K2000."
+            },
+            "ZSK_rWGmlNM": {
+                "title": "The Dance (IA) — KITT Franco-Belge #Country",
+                "desc": "Création musicale assistée par intelligence artificielle dans l'univers KITT Franco-Belge. L'IA au service de la créativité.\n\n#IA #Country #KITTFrancoBelge #IntelligenceArtificielle"
+            },
+            "QB240B7PtY8": {
+                "title": "Je chante pour les amis de KITT — Noël #Shorts",
+                "desc": "Un petit message musical de Noël pour tous les membres de la communauté KITT Franco-Belge. Joyeuses fêtes à tous les passionnés de K2000 !\n\n#KITT #KnightRider #Noel #Shorts"
+            },
+        }
+        print("\nAmélioration des descriptions...")
+        for v in videos:
+            vid_id = v["id"]
+            if vid_id in IMPROVED_DESCRIPTIONS:
+                data = IMPROVED_DESCRIPTIONS[vid_id]
+                update_video(youtube, v, new_title=data["title"], new_description=data["desc"])
+        print("\n[OK] Descriptions améliorées !")
 
     print("\n[KITT] KITT out.\n")
 
