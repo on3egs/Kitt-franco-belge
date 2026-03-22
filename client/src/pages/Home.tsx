@@ -1197,7 +1197,7 @@ function ContactSection() {
   const [sending, setSending] = useState(false);
   const { play } = useSoundEffects();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
       play("glitch");
@@ -1206,14 +1206,34 @@ function ContactSection() {
     }
     play("notification");
     setSending(true);
-    setTimeout(() => {
-      setSending(false);
-      setForm({ name: "", email: "", subject: "", message: "" });
+
+    const text =
+      `\u{1F534} NOUVEAU MESSAGE — KITT Franco-Belge\n` +
+      `\u{1F464} Nom : ${form.name}\n` +
+      `\u{1F4E7} Email : ${form.email}\n` +
+      `\u{1F4CB} Sujet : ${form.subject || "(aucun)"}\n` +
+      `\u{1F4AC} Message :\n${form.message}`;
+
+    try {
+      await fetch(
+        `https://api.telegram.org/bot8639685200:AAEkGrfpmQkFCP8TlfB-pq5KsQN8s3OlfWU/sendMessage`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: "8591807736", text }),
+        }
+      );
       play("scanner");
       toast.success("Message transmis au système KITT. Réponse en cours de traitement...", {
         duration: 5000,
       });
-    }, 1500);
+      setForm({ name: "", email: "", subject: "", message: "" });
+    } catch {
+      play("glitch");
+      toast.error("Erreur de transmission. Réessaie dans un instant.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
