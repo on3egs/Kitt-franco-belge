@@ -1160,79 +1160,45 @@ function SocialProofSection() {
           ))}
         </div>
 
-        {/* Facebook Widget + CTA */}
+        {/* Facebook CTA */}
         <div
-          className="mt-12 flex flex-col md:flex-row items-center gap-8 justify-center"
-          style={{
-            opacity: visible ? 1 : 0,
-            transition: "opacity 0.8s ease 0.6s",
-          }}
+          className="mt-12 flex flex-col sm:flex-row items-center gap-4 justify-center"
+          style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease 0.6s" }}
         >
-          {/* Widget Facebook officiel */}
-          <div
-            className="relative"
+          <a
+            href="https://www.facebook.com/groups/757797724622219/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-8 py-4 transition-all hover:border-red-500"
             style={{
               border: "1px solid rgba(255,34,34,0.3)",
-              padding: "3px",
-              background: "rgba(10,0,0,0.8)",
-              boxShadow: "0 0 20px rgba(255,34,34,0.1)",
+              fontFamily: "Orbitron, monospace",
+              fontSize: "0.7rem",
+              letterSpacing: "0.15em",
+              color: "rgba(192,192,192,0.8)",
             }}
           >
-            <div style={{ height: "2px", background: "linear-gradient(90deg, #ff2222, transparent)", marginBottom: "3px" }} />
-            <div className="text-center mb-2">
-              <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.2em" }}>
-                // GROUPE OFFICIEL
-              </span>
-            </div>
-            <iframe
-              src="https://www.facebook.com/plugins/group.php?href=https%3A%2F%2Fwww.facebook.com%2Fgroups%2F757797724622219%2F&width=280&height=130&show_metadata=true&appId=981304397664300"
-              width="280"
-              height="130"
-              style={{ border: "none", overflow: "hidden", display: "block" }}
-              scrolling="no"
-              frameBorder="0"
-              allowFullScreen
-              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-            />
-          </div>
-
-          {/* Bouton CTA */}
-          <div className="flex flex-col gap-4 items-center">
-            <a
-              href="https://www.facebook.com/groups/757797724622219/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 px-8 py-4 transition-all hover:border-red-500"
-              style={{
-                border: "1px solid rgba(255,34,34,0.3)",
-                fontFamily: "Orbitron, monospace",
-                fontSize: "0.7rem",
-                letterSpacing: "0.15em",
-                color: "rgba(192,192,192,0.8)",
-              }}
-            >
-              <span style={{ fontSize: "1.2rem" }}>👥</span>
-              VOIR LE GROUPE
-            </a>
-            <a
-              href="https://www.facebook.com/groups/757797724622219/join_request/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 px-8 py-4 transition-all"
-              style={{
-                background: "rgba(255,34,34,0.15)",
-                border: "1px solid #ff2222",
-                fontFamily: "Orbitron, monospace",
-                fontSize: "0.7rem",
-                letterSpacing: "0.15em",
-                color: "#ff2222",
-                boxShadow: "0 0 15px rgba(255,34,34,0.2)",
-              }}
-            >
-              <span style={{ fontSize: "1rem" }}>+</span>
-              REJOINDRE LE GROUPE
-            </a>
-          </div>
+            <span style={{ fontSize: "1.2rem" }}>👥</span>
+            VOIR LE GROUPE
+          </a>
+          <a
+            href="https://www.facebook.com/groups/757797724622219/join_request/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-8 py-4 transition-all"
+            style={{
+              background: "rgba(255,34,34,0.15)",
+              border: "1px solid #ff2222",
+              fontFamily: "Orbitron, monospace",
+              fontSize: "0.7rem",
+              letterSpacing: "0.15em",
+              color: "#ff2222",
+              boxShadow: "0 0 15px rgba(255,34,34,0.2)",
+            }}
+          >
+            <span style={{ fontSize: "1rem" }}>+</span>
+            REJOINDRE LE GROUPE
+          </a>
         </div>
       </div>
     </section>
