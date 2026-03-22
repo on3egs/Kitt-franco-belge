@@ -198,6 +198,14 @@ function NavBar() {
             </button>
           ))}
           <a
+            href="/Kitt-franco-belge/karr"
+            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onMouseEnter={() => play("hover")}
+          >
+            KARR
+          </a>
+          <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
             rel="noopener noreferrer"
