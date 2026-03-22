@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
 import TypewriterText from "@/components/TypewriterText";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
@@ -197,14 +198,14 @@ function NavBar() {
               {id}
             </button>
           ))}
-          <a
-            href="/Kitt-franco-belge/karr"
+          <Link
+            href="/karr"
             className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onMouseEnter={() => play("hover")}
           >
             KARR
-          </a>
+          </Link>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
