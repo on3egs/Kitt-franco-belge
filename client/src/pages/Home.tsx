@@ -183,7 +183,7 @@ function NavBar() {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
-          {["histoire", "services", "avis", "contact"].map((id) => (
+          {["histoire", "services", "videos", "avis", "contact"].map((id) => (
             <button
               key={id}
               onClick={() => scrollTo(id)}
@@ -244,7 +244,7 @@ function NavBar() {
           className="md:hidden py-4 px-6 flex flex-col gap-4"
           style={{ background: "rgba(10, 0, 0, 0.98)", borderTop: "1px solid rgba(255,34,34,0.2)" }}
         >
-          {["histoire", "services", "avis", "contact"].map((id) => (
+          {["histoire", "services", "videos", "avis", "contact"].map((id) => (
             <button
               key={id}
               onClick={() => scrollTo(id)}
@@ -1190,6 +1190,208 @@ function SocialProofSection() {
   );
 }
 
+// ─── Videos Section ───────────────────────────────────────────────────────────
+const YOUTUBE_VIDEOS = [
+  {
+    id: "u6uJdicP9ms",
+    title: "Kitt Franco Belge",
+    desc: "Présentation générale du projet KITT sur base Pontiac Firebird.",
+  },
+  {
+    id: "LGY_-kAH_do",
+    title: "Alternateur Firebird",
+    desc: "Réparation d'un alternateur CS130 ACDelco Remy — démontage, diagnostic et essais.",
+  },
+  {
+    id: "pl7B0E6fnYs",
+    title: "Rassemblement Voitures de Films — Sazilly",
+    desc: "Incroyable rassemblement de voitures de films et séries télévisées.",
+  },
+  {
+    id: "EUxVQxS8syo",
+    title: "K2000 — 16 secondes de merci",
+    desc: "Un immense merci aux membres du groupe pour leur expertise et leur soutien.",
+  },
+  {
+    id: "wNIHv_39V_8",
+    title: "KARR — Pare-choc mise en peinture",
+    desc: "Avancement de la mise en peinture du pare-choc style KARR (Knight Rider 1982).",
+  },
+  {
+    id: "-LZcgCjkEHs",
+    title: "Progression générale du projet",
+    desc: "Aperçu intérieur & extérieur : dashboard Knight Rider S4, ponçage et peinture.",
+  },
+];
+
+function VideosSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useIntersection(ref);
+  const { play } = useSoundEffects();
+  const [active, setActive] = useState<string | null>(null);
+
+  return (
+    <section
+      id="videos"
+      ref={ref}
+      className="relative py-24 overflow-hidden"
+      style={{ background: "#060000" }}
+    >
+      {/* Grid overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,34,34,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,34,34,0.03) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+
+      <KittScanner height={3} />
+
+      <div className="relative container pt-12">
+        {/* Header */}
+        <div
+          className="mb-16"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(30px)",
+            transition: "all 0.8s ease",
+          }}
+        >
+          <div className="section-label mb-3">// DOSSIER_03 — ARCHIVES VIDÉO</div>
+          <h2
+            className="text-3xl md:text-5xl font-bold text-white"
+            style={{ fontFamily: "Orbitron, monospace" }}
+          >
+            CHAÎNE YOUTUBE
+            <br />
+            <span style={{ color: "#ff2222" }}>KITT FRANCO-BELGE</span>
+          </h2>
+        </div>
+
+        {/* Video grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {YOUTUBE_VIDEOS.map((v, i) => (
+            <div
+              key={v.id}
+              className="group relative overflow-hidden"
+              style={{
+                border: "1px solid rgba(255,34,34,0.2)",
+                background: "rgba(10,0,0,0.8)",
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(0)" : "translateY(30px)",
+                transition: `all 0.6s ease ${i * 0.1}s`,
+              }}
+            >
+              {/* Video player */}
+              {active === v.id ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
+                  title={v.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full"
+                  style={{ aspectRatio: "16/9", border: "none" }}
+                />
+              ) : (
+                <div
+                  className="relative cursor-pointer"
+                  style={{ aspectRatio: "16/9" }}
+                  onClick={() => { play("click"); setActive(v.id); }}
+                  onMouseEnter={() => play("hover")}
+                >
+                  <img
+                    src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
+                    alt={v.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Red overlay on hover */}
+                  <div
+                    className="absolute inset-0 transition-opacity duration-300"
+                    style={{ background: "rgba(255,34,34,0.15)", opacity: 0 }}
+                  />
+                  {/* Play button */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="w-14 h-14 flex items-center justify-center transition-transform group-hover:scale-110"
+                      style={{
+                        background: "rgba(255,34,34,0.9)",
+                        clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                      }}
+                    >
+                      <div
+                        className="ml-1"
+                        style={{
+                          width: 0,
+                          height: 0,
+                          borderTop: "8px solid transparent",
+                          borderBottom: "8px solid transparent",
+                          borderLeft: "14px solid white",
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {/* Scanner line on hover */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-0.5 transition-transform duration-300 origin-left scale-x-0 group-hover:scale-x-100"
+                    style={{ background: "linear-gradient(90deg, #ff2222, transparent)" }}
+                  />
+                </div>
+              )}
+
+              {/* Info */}
+              <div className="p-4">
+                <div
+                  className="font-bold text-white mb-1 truncate"
+                  style={{ fontFamily: "Orbitron, monospace", fontSize: "0.7rem", letterSpacing: "0.05em" }}
+                >
+                  {v.title}
+                </div>
+                <p
+                  style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(192,192,192,0.6)", lineHeight: 1.5 }}
+                >
+                  {v.desc}
+                </p>
+              </div>
+
+              {/* Bottom accent */}
+              <div style={{ height: "2px", background: "linear-gradient(90deg, #ff2222, transparent)" }} />
+            </div>
+          ))}
+        </div>
+
+        {/* CTA YouTube */}
+        <div
+          className="mt-12 text-center"
+          style={{
+            opacity: visible ? 1 : 0,
+            transition: "opacity 0.8s ease 0.6s",
+          }}
+        >
+          <a
+            href="https://www.youtube.com/@on3egs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-8 py-4 transition-all hover:border-red-500"
+            style={{
+              border: "1px solid rgba(255,34,34,0.3)",
+              fontFamily: "Orbitron, monospace",
+              fontSize: "0.7rem",
+              letterSpacing: "0.15em",
+              color: "rgba(192,192,192,0.8)",
+            }}
+            onMouseEnter={() => play("hover")}
+          >
+            <span style={{ fontSize: "1.2rem" }}>▶</span>
+            VOIR TOUTES LES VIDÉOS SUR YOUTUBE
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ContactSection() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useIntersection(ref);
@@ -1719,6 +1921,7 @@ export default function Home() {
       <VisitorCounter />
       <StorySection />
       <ServicesSection />
+      <VideosSection />
       <SocialProofSection />
       <ContactSection />
       <Footer />
