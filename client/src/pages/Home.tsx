@@ -198,7 +198,7 @@ function NavBar() {
             </button>
           ))}
           <a
-            href="https://on3egs.github.io/Kitt-franco-belge"
+            href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
             rel="noopener noreferrer"
             className="kitt-btn text-xs px-4 py-2 hover:play-sound"
@@ -255,7 +255,7 @@ function NavBar() {
             </button>
           ))}
           <a
-            href="https://on3egs.github.io/Kitt-franco-belge"
+            href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
             rel="noopener noreferrer"
             className="kitt-btn text-center"
@@ -660,7 +660,7 @@ function HeroSection() {
           }}
         >
           <a
-            href="https://on3egs.github.io/Kitt-franco-belge"
+            href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
             rel="noopener noreferrer"
             className="kitt-btn"
@@ -1277,7 +1277,7 @@ function ContactSection() {
                   icon: "🌐",
                   label: "INTERFACE KITT",
                   value: "on3egs.github.io/Kitt-franco-belge",
-                  href: "https://on3egs.github.io/Kitt-franco-belge",
+                  href: "https://on3egs.github.io/Kitt-franco-belge/kyronex/",
                 },
                 {
                   icon: "🔑",
@@ -1516,7 +1516,7 @@ function Footer() {
             <div className="section-label mb-4">LIENS EXTERNES</div>
             <div className="space-y-2">
               {[
-                { label: "Interface KITT (KYRONEX)", href: "https://on3egs.github.io/Kitt-franco-belge" },
+                { label: "Interface KITT (KYRONEX)", href: "https://on3egs.github.io/Kitt-franco-belge/kyronex/" },
                 { label: "Groupe Facebook", href: "https://www.facebook.com/groups/757797724622219/" },
               ].map(({ label, href }) => (
                 <a
