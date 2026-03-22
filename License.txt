@@ -1,0 +1,18 @@
+PROPRIETARY LICENSE AGREEMENT
+KITT Franco-Belge Project
+Version 1.0
+
+Copyright (c) 2026 Emmanuel Gelinne (Manix)
+All Rights Reserved.
+
+This project is a personal, experimental and strictly non-commercial development.
+
+No permission is granted to copy, modify, distribute, sublicense,
+sell or exploit any part of this software without prior written
+authorization from the author.
+
+Public access to the repository or website does not grant usage rights.
+
+All trademarks mentioned remain the property of their respective owners.
+
+Unauthorized use constitutes copyright infringement.
