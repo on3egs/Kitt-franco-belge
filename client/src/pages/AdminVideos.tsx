@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 
-const TUNNEL_URL = "https://on3egs.github.io/Kitt-franco-belge/tunnel.json";
+const TUNNEL_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
 const ADMIN_TOKEN = "8c03437292a68baec2fd5374c6adb4d0ddcfc2aade2407fdee2d4f024e423ef3";
 const EXPECTED_PWD = "Microsoft198@";
 

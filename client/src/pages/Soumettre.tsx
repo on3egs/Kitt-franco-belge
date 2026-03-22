@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
 
-const JETSON_URL = "https://on3egs.github.io/Kitt-franco-belge/tunnel.json";
+const JETSON_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
 
 async function getApiBase(): Promise<string | null> {
   try {
