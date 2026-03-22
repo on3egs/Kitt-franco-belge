@@ -214,6 +214,14 @@ function NavBar() {
           >
             SOUMETTRE
           </Link>
+          <Link
+            href="/videos"
+            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onMouseEnter={() => play("hover")}
+          >
+            GALERIE
+          </Link>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
@@ -286,6 +294,14 @@ function NavBar() {
             onClick={() => setMenuOpen(false)}
           >
             SOUMETTRE
+          </Link>
+          <Link
+            href="/videos"
+            className="text-left text-xs tracking-widest uppercase"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onClick={() => setMenuOpen(false)}
+          >
+            GALERIE
           </Link>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"

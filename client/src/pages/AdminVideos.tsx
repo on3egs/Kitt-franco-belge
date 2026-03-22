@@ -91,7 +91,7 @@ export default function AdminVideos() {
   if (!authed) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0000" }}>
-        <div className="w-full max-w-sm p-8" style={{ background: "rgba(255,34,34,0.04)", border: "1px solid rgba(255,34,34,0.2)" }}>
+        <div className="w-full max-w-sm p-8" style={{ background: "rgba(255,34,34,0.12)", border: "2px solid rgba(255,34,34,0.6)" }}>
           <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "12px" }}>// ACCÈS ADMIN</div>
           <h1 className="text-2xl font-black text-white mb-8" style={{ fontFamily: "Orbitron, monospace" }}>VIDÉOS</h1>
           <form onSubmit={login} className="space-y-4">
