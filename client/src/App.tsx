@@ -8,6 +8,8 @@ import Home from "./pages/Home";
 import Privacy from "./pages/Privacy";
 import DataDeletion from "./pages/DataDeletion";
 import Karr from "./pages/Karr";
+import Soumettre from "./pages/Soumettre";
+import AdminVideos from "./pages/AdminVideos";
 
 function AppRouter() {
   return (
@@ -17,6 +19,8 @@ function AppRouter() {
         <Route path={"/privacy"} component={Privacy} />
         <Route path={"/data-deletion"} component={DataDeletion} />
         <Route path={"/karr"} component={Karr} />
+        <Route path={"/soumettre"} component={Soumettre} />
+        <Route path={"/admin-videos"} component={AdminVideos} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
