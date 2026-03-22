@@ -1,0 +1,341 @@
+/*
+ * KITT FRANCO-BELGE — Design System
+ * Style: Retro-Futuriste Automobile / Dashboard Haute Performance
+ * Palette: Noir profond (#0A0000) + Rouge KITT (#FF2222) + Argent (#C0C0C0)
+ * Typographie: Orbitron (display) + Space Mono (données) + Rajdhani (corps)
+ * Animations: Scanner rouge pulsant, typewriter, hover élévation
+ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --radius: 0.25rem;
+
+  /* KITT Color Palette */
+  --kitt-black: oklch(0.05 0.01 20);
+  --kitt-dark: oklch(0.08 0.015 20);
+  --kitt-red: oklch(0.55 0.25 25);
+  --kitt-red-bright: oklch(0.65 0.28 25);
+  --kitt-red-dim: oklch(0.35 0.18 25);
+  --kitt-amber: oklch(0.7 0.2 55);
+  --kitt-silver: oklch(0.75 0.005 0);
+  --kitt-silver-dim: oklch(0.45 0.005 0);
+
+  /* Semantic tokens */
+  --background: oklch(0.05 0.01 20);
+  --foreground: oklch(0.9 0.005 0);
+  --card: oklch(0.09 0.015 20);
+  --card-foreground: oklch(0.9 0.005 0);
+  --popover: oklch(0.09 0.015 20);
+  --popover-foreground: oklch(0.9 0.005 0);
+  --primary: oklch(0.55 0.25 25);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.12 0.015 20);
+  --secondary-foreground: oklch(0.75 0.005 0);
+  --muted: oklch(0.12 0.01 20);
+  --muted-foreground: oklch(0.5 0.01 20);
+  --accent: oklch(0.55 0.25 25);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.55 0.25 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.2 0.02 20);
+  --input: oklch(0.12 0.015 20);
+  --ring: oklch(0.55 0.25 25);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Rajdhani', sans-serif;
+    background-color: #0a0000;
+    overflow-x: hidden;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', monospace;
+  }
+
+  code, pre, .mono {
+    font-family: 'Space Mono', monospace;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1280px;
+    }
+  }
+
+  /* KITT Scanner Bar Animation */
+  .kitt-scanner {
+    position: relative;
+    overflow: hidden;
+    height: 4px;
+    background: #1a0000;
+  }
+
+  .kitt-scanner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -20%;
+    width: 20%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, #ff2222, #ff6666, #ff2222, transparent);
+    animation: kitt-scan 2s ease-in-out infinite;
+    box-shadow: 0 0 20px #ff2222, 0 0 40px #ff2222;
+  }
+
+  @keyframes kitt-scan {
+    0% { left: -20%; }
+    100% { left: 120%; }
+  }
+
+  /* KITT Glow Effect */
+  .kitt-glow {
+    text-shadow: 0 0 10px #ff2222, 0 0 20px #ff2222, 0 0 40px #cc1111;
+  }
+
+  .kitt-glow-box {
+    box-shadow: 0 0 10px rgba(255, 34, 34, 0.3), 0 0 30px rgba(255, 34, 34, 0.1), inset 0 0 20px rgba(255, 34, 34, 0.05);
+  }
+
+  /* Carbon texture overlay */
+  .carbon-bg {
+    background-color: #0a0000;
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 34, 34, 0.015) 2px,
+        rgba(255, 34, 34, 0.015) 4px
+      );
+  }
+
+  /* Red border accent */
+  .kitt-border {
+    border: 1px solid rgba(255, 34, 34, 0.3);
+    border-left: 3px solid #ff2222;
+  }
+
+  /* Scanline overlay */
+  .scanlines::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Service card hover */
+  .service-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid rgba(255, 34, 34, 0.2);
+  }
+
+  .service-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 34, 34, 0.6);
+    box-shadow: 0 10px 40px rgba(255, 34, 34, 0.2), 0 0 20px rgba(255, 34, 34, 0.1);
+  }
+
+  /* Typewriter cursor */
+  .typewriter-cursor::after {
+    content: '_';
+    animation: blink 1s step-end infinite;
+    color: #ff2222;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Diagonal section divider */
+  .diagonal-top {
+    clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 100%);
+    margin-top: -3rem;
+    padding-top: 5rem;
+  }
+
+  .diagonal-bottom {
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+    padding-bottom: 5rem;
+  }
+
+  /* Pulse animation for scanner dot */
+  .pulse-red {
+    animation: pulse-red 2s ease-in-out infinite;
+  }
+
+  /* Scanner sweep animation for links */
+  @keyframes scanner-sweep {
+    0% { transform: translateX(-100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; box-shadow: 0 0 5px #ff2222; }
+    50% { opacity: 0.5; box-shadow: 0 0 20px #ff2222, 0 0 40px #ff2222; }
+  }
+
+  /* Number counter display */
+  .stat-number {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    color: #ff2222;
+    text-shadow: 0 0 10px rgba(255, 34, 34, 0.5);
+  }
+
+  /* Form input style */
+  .kitt-input {
+    background: rgba(255, 34, 34, 0.05);
+    border: 1px solid rgba(255, 34, 34, 0.3);
+    color: #e0e0e0;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .kitt-input:focus {
+    border-color: #ff2222;
+    box-shadow: 0 0 10px rgba(255, 34, 34, 0.2);
+  }
+
+  .kitt-input::placeholder {
+    color: rgba(192, 192, 192, 0.4);
+  }
+
+  /* Button primary */
+  .kitt-btn {
+    background: linear-gradient(135deg, #cc1111, #ff2222);
+    color: white;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.875rem 2rem;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .kitt-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+
+  .kitt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 34, 34, 0.4);
+  }
+
+  .kitt-btn:hover::before {
+    transform: translateX(100%);
+  }
+
+  /* Section label */
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #ff2222;
+    opacity: 0.8;
+  }
+
+  /* Review card */
+  .review-card {
+    background: linear-gradient(135deg, rgba(255, 34, 34, 0.05), rgba(0, 0, 0, 0.5));
+    border: 1px solid rgba(255, 34, 34, 0.15);
+    border-top: 2px solid rgba(255, 34, 34, 0.4);
+    transition: transform 0.3s, border-color 0.3s;
+  }
+
+  .review-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 34, 34, 0.4);
+  }
+}
