@@ -29,26 +29,7 @@ export function useSoundEffects() {
       audioRefs.current[key] = audio;
     });
 
-    // Créer et démarrer l'ambient hum en boucle (très discret)
-    const ambient = new Audio(SFX_URLS.ambient);
-    ambient.preload = "auto";
-    ambient.volume = 0.08; // Très faible
-    ambient.loop = true;
-    ambientRef.current = ambient;
-
-    // Démarrer l'ambient après un court délai
-    const ambientTimeout = setTimeout(() => {
-      ambient.play().catch(() => {
-        // Silencieusement ignorer si l'autoplay est bloqué
-      });
-    }, 2000);
-
-    return () => {
-      clearTimeout(ambientTimeout);
-      if (ambientRef.current) {
-        ambientRef.current.pause();
-      }
-    };
+    return () => {};
   }, []);
 
   const play = (soundKey: keyof typeof SFX_URLS) => {
