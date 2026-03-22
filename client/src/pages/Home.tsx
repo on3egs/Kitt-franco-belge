@@ -1185,7 +1185,7 @@ function SocialProofSection() {
               </span>
             </div>
             <iframe
-              src="https://www.facebook.com/plugins/group.php?href=https%3A%2F%2Fwww.facebook.com%2Fgroups%2F757797724622219%2F&width=280&height=130&show_metadata=true&appId"
+              src="https://www.facebook.com/plugins/group.php?href=https%3A%2F%2Fwww.facebook.com%2Fgroups%2F757797724622219%2F&width=280&height=130&show_metadata=true&appId=981304397664300"
               width="280"
               height="130"
               style={{ border: "none", overflow: "hidden", display: "block" }}
