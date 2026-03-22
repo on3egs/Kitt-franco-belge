@@ -1370,7 +1370,7 @@ function VideosSection() {
           }}
         >
           <a
-            href="https://www.youtube.com/@on3egs"
+            href="https://www.youtube.com/@KITTK2000"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-8 py-4 transition-all hover:border-red-500"
