@@ -157,6 +157,8 @@ def main():
     print("  [5] Corriger le titre 'Altrernateur' -> 'Alternateur'")
     print("  [6] Creer les playlists organisees (Construction, Electronique, KARR, Evenements)")
     print("  [7] Ameliorer descriptions vides (joyeux noel, shorts sans desc)")
+    print("  [8] Mettre a jour la description de la chaine (SEO)")
+    print("  [9] Ajouter commentaire epingle 'Abonne-toi' sur toutes les videos")
     print("  [0] Quitter")
 
     choice = input("\nChoix : ").strip()
@@ -291,6 +293,72 @@ def main():
                 data = IMPROVED_DESCRIPTIONS[vid_id]
                 update_video(youtube, v, new_title=data["title"], new_description=data["desc"])
         print("\n[OK] Descriptions améliorées !")
+
+    elif choice == "8":
+        CHANNEL_DESC = """Bienvenue sur la chaîne officielle du projet KITT Franco-Belge by Manix !
+
+Réplique Knight Rider (K2000) sur base Pontiac Trans Am / Firebird.
+Intelligence artificielle locale KYRONEX sur Jetson AJX 32/64.
+
+Ce que tu trouveras ici :
+- Construction et restauration de la Pontiac Trans Am KITT
+- Électronique embarquée : dashboard Knight Rider Saison 4, convertisseur DC-DC, scanner LED
+- KARR le jumeau maléfique : pare-choc noir mat style série 1982
+- Intelligence artificielle locale — IA embarquée sans cloud
+- Rassemblements et événements voitures de films
+
+Site officiel : https://on3egs.github.io/Kitt-franco-belge/
+Interface KYRONEX (IA en ligne) : https://on3egs.github.io/Kitt-franco-belge/kyronex/
+
+Abonne-toi et active la cloche pour suivre l'évolution du projet !
+
+#KITT #K2000 #KnightRider #KITTFrancoBelge #PontiacTransAm #Firebird #KARR
+#ElectroniqueEmbarquee #IntelligenceArtificielle #Jetson #DIYAuto #ReplicaAuto
+#VoitureDeFiction #ManualCar #PassionAuto #Manix"""
+
+        try:
+            channel_id = youtube.channels().list(part="id", mine=True).execute()["items"][0]["id"]
+            youtube.channels().update(
+                part="brandingSettings",
+                body={
+                    "id": channel_id,
+                    "brandingSettings": {
+                        "channel": {
+                            "description": CHANNEL_DESC,
+                            "keywords": "KITT K2000 Knight Rider Pontiac Trans Am KARR IA embarquée Jetson Manix Franco-Belge électronique DIY réplique voiture fiction"
+                        }
+                    }
+                }
+            ).execute()
+            print("[OK] Description de la chaîne mise à jour !")
+        except Exception as e:
+            print(f"[ERR] {e}")
+
+    elif choice == "9":
+        PINNED_COMMENT = "Abonne-toi a la chaine et active la cloche pour suivre l'evolution du projet KITT Franco-Belge ! Nouvelles videos chaque semaine : construction, electronique, KARR, IA embarquee... https://www.youtube.com/@KITTK2000"
+        print("\nAjout des commentaires epingles...")
+        for v in videos:
+            try:
+                res = youtube.commentThreads().insert(
+                    part="snippet",
+                    body={
+                        "snippet": {
+                            "videoId": v["id"],
+                            "topLevelComment": {
+                                "snippet": {"textOriginal": PINNED_COMMENT}
+                            }
+                        }
+                    }
+                ).execute()
+                comment_id = res["snippet"]["topLevelComment"]["id"]
+                youtube.comments().setModerationStatus(
+                    id=comment_id,
+                    moderationStatus="published"
+                ).execute()
+                print(f"  [OK] {v['snippet']['title'][:50]}")
+            except Exception as e:
+                print(f"  [ERR] {v['snippet']['title'][:40]} : {e}")
+        print("\n[OK] Commentaires ajoutes !")
 
     print("\n[KITT] KITT out.\n")
 
