@@ -264,13 +264,29 @@ function NavBar() {
           {["histoire", "services", "videos", "avis", "contact"].map((id) => (
             <button
               key={id}
-              onClick={() => scrollTo(id)}
+              onClick={() => { scrollTo(id); setMenuOpen(false); }}
               className="text-left text-xs tracking-widest uppercase"
               style={{ fontFamily: "Space Mono, monospace", color: "#c0c0c0" }}
             >
               {id}
             </button>
           ))}
+          <Link
+            href="/karr"
+            className="text-left text-xs tracking-widest uppercase"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onClick={() => setMenuOpen(false)}
+          >
+            KARR
+          </Link>
+          <Link
+            href="/soumettre"
+            className="text-left text-xs tracking-widest uppercase"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onClick={() => setMenuOpen(false)}
+          >
+            SOUMETTRE
+          </Link>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
