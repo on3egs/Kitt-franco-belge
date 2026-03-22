@@ -34,9 +34,9 @@ const SERVICES = [
     title: "Interface Publique KITT",
     subtitle: "Système Central en Ligne",
     description:
-      "La première interface publique du projet KITT Franco-Belge est accessible en ligne. Évolution continue : améliorations déployées quotidiennement, parfois heure par heure.",
+      "La première interface publique du projet KITT Franco-Belge est accessible en ligne. Évolution continue : améliorations déployées quotidiennement, parfois heure par heure. Disponible tous les jours de 08h00 à 23h00.",
     icon: "🖥️",
-    tag: "KYRONEX ONLINE",
+    tag: "08H00 — 23H00",
   },
   {
     id: "03",
