@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>KITT — Archive Musicale</title>
+  <meta name="theme-color" content="#000000">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: #000;
+      color: #cc3333;
+      font-family: 'Courier New', monospace;
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    /* CRT scanlines */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── HEADER ── */
+    .hdr {
+      position: sticky; top: 0;
+      background: #000;
+      border-bottom: 1px solid #440000;
+      padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 100;
+    }
+    .hdr-title {
+      font-size: clamp(0.85em, 2.5vw, 1.1em);
+      letter-spacing: 4px;
+      color: #cc2222;
+      text-shadow: 0 0 10px #aa0000;
+    }
+    .hdr-back {
+      font-size: 0.7em;
+      letter-spacing: 2px;
+      color: #551111;
+      text-decoration: none;
+      border: 1px solid #330000;
+      padding: 5px 12px;
+      transition: all 0.2s;
+    }
+    .hdr-back:hover {
+      color: #ff2222;
+      border-color: #880000;
+      background: #0a0000;
+      box-shadow: 0 0 8px rgba(200,0,0,0.3);
+    }
+
+    /* Scanner décoratif header */
+    .hdr-scanner {
+      width: 120px; height: 8px;
+      background: #080000;
+      border: 1px solid #330000;
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 0 16px;
+    }
+    .hdr-scanner-head {
+      height: 100%;
+      width: 36px;
+      background: linear-gradient(90deg, transparent, #ff2222, #ff6666, #ff2222, transparent);
+      border-radius: 2px;
+      box-shadow: 0 0 10px #ff2222;
+      animation: sweep 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes sweep { 0% { transform: translateX(0); } 100% { transform: translateX(84px); } }
+
+    /* ── STATUS ── */
+    #status-bar {
+      padding: 8px 20px;
+      font-size: 0.65em;
+      letter-spacing: 2px;
+      color: #442211;
+      border-bottom: 1px solid #1a0000;
+      min-height: 28px;
+    }
+    #status-bar.loading { color: #664422; }
+    #status-bar.ok     { color: #336622; }
+    #status-bar.error  { color: #882222; }
+
+    /* ── MAIN ── */
+    .main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+    }
+
+    /* ── SECTION TITRE ── */
+    .section-hdr {
+      font-size: 0.7em;
+      letter-spacing: 4px;
+      color: #441111;
+      border-bottom: 1px solid #220000;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    /* ── NOW PLAYING ── */
+    #now-playing {
+      display: none;
+      background: #050000;
+      border: 1px solid #660000;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      border-radius: 2px;
+      box-shadow: 0 0 20px rgba(180,0,0,0.15);
+    }
+    #now-playing.active { display: block; }
+    .np-label {
+      font-size: 0.58em;
+      letter-spacing: 4px;
+      color: #551111;
+      margin-bottom: 4px;
+    }
+    .np-title {
+      font-size: 1em;
+      color: #ff4444;
+      letter-spacing: 2px;
+      margin-bottom: 2px;
+      text-shadow: 0 0 8px rgba(255,68,68,0.4);
+    }
+    .np-artist {
+      font-size: 0.75em;
+      color: #884422;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .progress-wrap {
+      background: #0d0000;
+      border: 1px solid #330000;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #880000, #ff2222);
+      box-shadow: 0 0 8px #ff2222;
+      transition: width 0.3s linear;
+      border-radius: 3px;
+    }
+    .np-controls {
+      display: flex; gap: 10px; align-items: center;
+    }
+    .btn-stop {
+      background: none;
+      border: 1px solid #440000;
+      color: #882222;
+      font-family: 'Courier New', monospace;
+      font-size: 0.65em;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-stop:hover { color: #ff2222; border-color: #880000; background: #0a0000; }
+    .np-time {
+      font-size: 0.62em;
+      color: #553322;
+      letter-spacing: 1px;
+    }
+
+    /* ── TRACK CARD ── */
+    .track-card {
+      background: #030000;
+      border: 1px solid #2a0000;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border-radius: 2px;
+      display: flex; align-items: center; gap: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .track-card:hover { border-color: #550000; box-shadow: 0 0 10px rgba(150,0,0,0.1); }
+    .track-card.playing {
+      border-color: #880000;
+      background: #080000;
+      box-shadow: 0 0 16px rgba(200,0,0,0.2);
+    }
+    .btn-play {
+      background: none;
+      border: 1px solid #550000;
+      color: #cc2222;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75em;
+      letter-spacing: 2px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      min-width: 70px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .btn-play:hover   { color: #ff4444; border-color: #aa2222; background: #0d0000; box-shadow: 0 0 8px rgba(200,0,0,0.25); }
+    .btn-play.active  { color: #ff6666; border-color: #cc2222; background: #0d0000; box-shadow: 0 0 10px rgba(200,0,0,0.3); }
+    .btn-play:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .track-info { flex: 1; min-width: 0; }
+    .track-title  { font-size: 0.9em; color: #ff3333; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-artist { font-size: 0.72em; color: #884422; margin-top: 2px; }
+    .track-meta   { font-size: 0.58em; color: #441111; margin-top: 4px; letter-spacing: 1px; }
+
+    /* ── VIDE / ERREUR ── */
+    .empty-msg {
+      color: #331100;
+      font-size: 0.75em;
+      letter-spacing: 3px;
+      text-align: center;
+      padding: 40px 20px;
+      border: 1px solid #1a0000;
+    }
+
+    /* ── LOADER ── */
+    .loader {
+      display: flex; justify-content: center; padding: 40px;
+    }
+    .loader-dots span {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: #550000;
+      border-radius: 50%;
+      margin: 0 3px;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    .loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%,80%,100% { opacity: 0.2; } 40% { opacity: 1; } }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      font-size: 0.55em;
+      letter-spacing: 2px;
+      color: #2a0000;
+      padding: 20px;
+      border-top: 1px solid #110000;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <a class="hdr-back" href="/">[ RETOUR ]</a>
+  <div class="hdr-scanner"><div class="hdr-scanner-head"></div></div>
+  <div class="hdr-title">ARCHIVE MUSICALE</div>
+</div>
+
+<!-- STATUS -->
+<div id="status-bar" class="loading">CONNEXION AU SYSTEME...</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- NOW PLAYING -->
+  <div id="now-playing">
+    <div class="np-label">EN COURS</div>
+    <div class="np-title" id="np-title">—</div>
+    <div class="np-artist" id="np-artist">—</div>
+    <div class="progress-wrap"><div id="progress-bar"></div></div>
+    <div class="np-controls">
+      <button class="btn-stop" onclick="stopTrack()">[ STOP ]</button>
+      <div class="np-time" id="np-time">0:00 / 0:00</div>
+    </div>
+  </div>
+
+  <div class="section-hdr">MORCEAUX APPROUVES</div>
+
+  <!-- LISTE -->
+  <div id="track-list">
+    <div class="loader"><div class="loader-dots"><span></span><span></span><span></span></div></div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">KITT FRANCO-BELGE — ARCHIVE MUSICALE — KYRONEX A.I. by MANIX</div>
+
+<script>
+'use strict';
+
+var TUNNEL_URL = 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json';
+var TUNNEL_MAX_AGE_MIN = 60;
+
+var _baseUrl = null;
+var _audioCtx = null;
+var _currentSource = null;
+var _currentAudio = null;
+var _currentId = null;
+var _progressTimer = null;
+var _startTime = 0;
+var _duration = 0;
+
+/* ── TUNNEL ─────────────────────────────────────────────── */
+function _loadTunnel() {
+  return fetch(TUNNEL_URL + '?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status !== 'online' || !data.url) throw new Error('offline');
+      var age = (Date.now() - new Date(data.last_update).getTime()) / 60000;
+      if (age > TUNNEL_MAX_AGE_MIN) throw new Error('stale');
+      return data.url.replace(/\/$/, '');
+    });
+}
+
+/* ── INIT ────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  var status = document.getElementById('status-bar');
+
+  status.textContent = 'CONNEXION AU SYSTEME...';
+  status.className = 'loading';
+
+  _loadTunnel()
+    .then(function(url) {
+      _baseUrl = url;
+      status.textContent = 'SYSTEME EN LIGNE — CHARGEMENT ARCHIVE...';
+      return fetch(_baseUrl + '/api/music/approved');
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('API error ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      var tracks = data.approved || [];
+      status.className = 'ok';
+      status.textContent = 'SYSTEME EN LIGNE — ' + tracks.length + ' MORCEAU' + (tracks.length !== 1 ? 'X' : '') + ' DISPONIBLE' + (tracks.length !== 1 ? 'S' : '');
+      _renderTracks(tracks);
+    })
+    .catch(function(err) {
+      status.className = 'error';
+      status.textContent = 'SYSTEME HORS LIGNE — ARCHIVE INDISPONIBLE';
+      document.getElementById('track-list').innerHTML =
+        '<div class="empty-msg">SYSTEME HORS LIGNE<br>IMPOSSIBLE DE CHARGER L\'ARCHIVE MUSICALE<br>REESSAYEZ PLUS TARD</div>';
+    });
+});
+
+/* ── RENDER ──────────────────────────────────────────────── */
+function _renderTracks(tracks) {
+  var list = document.getElementById('track-list');
+  if (!tracks.length) {
+    list.innerHTML = '<div class="empty-msg">AUCUN MORCEAU DISPONIBLE</div>';
+    return;
+  }
+  list.innerHTML = '';
+  tracks.forEach(function(t) {
+    var card = document.createElement('div');
+    card.className = 'track-card';
+    card.id = 'card-' + t.id;
+    var date = t.ts ? new Date(t.ts * 1000).toLocaleDateString('fr-FR') : '';
+    var plays = t.plays || 0;
+    card.innerHTML =
+      '<button class="btn-play" id="btn-' + t.id + '" onclick="playTrack(' + JSON.stringify(t) + ')">' +
+        '[ PLAY ]' +
+      '</button>' +
+      '<div class="track-info">' +
+        '<div class="track-title">' + _esc(t.titre) + '</div>' +
+        '<div class="track-artist">' + _esc(t.artiste) + '</div>' +
+        '<div class="track-meta">' +
+          'PAR ' + _esc(t.pseudo) +
+          (date ? ' — ' + date : '') +
+          ' — ' + plays + ' ECOUTE' + (plays !== 1 ? 'S' : '') +
+        '</div>' +
+      '</div>';
+    list.appendChild(card);
+  });
+}
+
+function _esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── AUDIO ───────────────────────────────────────────────── */
+function playTrack(track) {
+  // Arrêter le morceau en cours
+  stopTrack();
+
+  _currentId = track.id;
+
+  // Marquer la carte active
+  document.querySelectorAll('.track-card').forEach(function(c) { c.classList.remove('playing'); });
+  document.querySelectorAll('.btn-play').forEach(function(b) { b.textContent = '[ PLAY ]'; b.classList.remove('active'); });
+  var card = document.getElementById('card-' + track.id);
+  var btn  = document.getElementById('btn-'  + track.id);
+  if (card) card.classList.add('playing');
+  if (btn)  { btn.textContent = '[ ...  ]'; btn.classList.add('active'); btn.disabled = true; }
+
+  // Now playing
+  document.getElementById('np-title').textContent  = track.titre;
+  document.getElementById('np-artist').textContent = track.artiste + ' — par ' + track.pseudo;
+  document.getElementById('now-playing').classList.add('active');
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('np-time').textContent = '0:00 / 0:00';
+
+  // URL via proxy (évite CORS avec catbox.moe)
+  var proxyUrl = _baseUrl + '/api/audio-proxy?url=' + encodeURIComponent(track.url);
+
+  // Créer AudioContext dans le geste utilisateur
+  if (!_audioCtx) {
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (_audioCtx.state === 'suspended') {
+    _audioCtx.resume();
+  }
+
+  fetch(proxyUrl)
+    .then(function(r) {
+      if (!r.ok) throw new Error('proxy ' + r.status);
+      return r.arrayBuffer();
+    })
+    .then(function(buf) {
+      return _audioCtx.decodeAudioData(buf);
+    })
+    .then(function(decoded) {
+      if (_currentId !== track.id) return; // annulé
+
+      _duration = decoded.duration;
+      _startTime = _audioCtx.currentTime;
+
+      var source = _audioCtx.createBufferSource();
+      source.buffer = decoded;
+      source.connect(_audioCtx.destination);
+      source.onended = function() {
+        if (_currentId === track.id) _onEnded(track.id);
+      };
+      source.start(0);
+      _currentSource = source;
+
+      if (btn) { btn.textContent = '[ STOP ]'; btn.disabled = false; }
+      _startProgress();
+      _countPlay(track.id);
+    })
+    .catch(function(err) {
+      console.warn('[KITT] Audio error:', err);
+      // Fallback : <audio> element
+      _fallbackAudio(track, proxyUrl, btn, card);
+    });
+}
+
+function _fallbackAudio(track, proxyUrl, btn, card) {
+  var audio = new Audio(proxyUrl);
+  _currentAudio = audio;
+
+  audio.addEventListener('loadedmetadata', function() {
+    _duration = audio.duration || 0;
+  });
+  audio.addEventListener('timeupdate', function() {
+    _updateProgressManual(audio.currentTime, audio.duration || 0);
+  });
+  audio.addEventListener('ended', function() {
+    if (_currentId === track.id) _onEnded(track.id);
+  });
+  audio.addEventListener('canplay', function() {
+    if (btn) { btn.textContent = '[ STOP ]'; btn.disabled = false; }
+  });
+  audio.play().then(function() {
+    _countPlay(track.id);
+  }).catch(function(e) {
+    console.error('[KITT] Fallback audio failed:', e);
+    if (btn) { btn.textContent = '[ ERR ]'; btn.disabled = false; }
+  });
+}
+
+function stopTrack() {
+  clearInterval(_progressTimer);
+  _progressTimer = null;
+
+  if (_currentSource) {
+    try { _currentSource.stop(); } catch(e) {}
+    _currentSource = null;
+  }
+  if (_currentAudio) {
+    _currentAudio.pause();
+    _currentAudio = null;
+  }
+
+  var prevId = _currentId;
+  _currentId = null;
+
+  if (prevId) {
+    var btn  = document.getElementById('btn-'  + prevId);
+    var card = document.getElementById('card-' + prevId);
+    if (btn)  { btn.textContent = '[ PLAY ]'; btn.classList.remove('active'); btn.disabled = false; }
+    if (card) card.classList.remove('playing');
+  }
+
+  document.getElementById('now-playing').classList.remove('active');
+  document.getElementById('progress-bar').style.width = '0%';
+}
+
+function _onEnded(id) {
+  clearInterval(_progressTimer);
+  _progressTimer = null;
+  _currentSource = null;
+  _currentAudio  = null;
+  _currentId     = null;
+
+  var btn  = document.getElementById('btn-'  + id);
+  var card = document.getElementById('card-' + id);
+  if (btn)  { btn.textContent = '[ PLAY ]'; btn.classList.remove('active'); btn.disabled = false; }
+  if (card) card.classList.remove('playing');
+  document.getElementById('now-playing').classList.remove('active');
+  document.getElementById('progress-bar').style.width = '0%';
+}
+
+/* ── PROGRESS ────────────────────────────────────────────── */
+function _startProgress() {
+  clearInterval(_progressTimer);
+  _progressTimer = setInterval(function() {
+    if (!_audioCtx || !_currentSource) return;
+    var elapsed = _audioCtx.currentTime - _startTime;
+    _updateProgressManual(elapsed, _duration);
+  }, 200);
+}
+
+function _updateProgressManual(elapsed, total) {
+  if (total > 0) {
+    var pct = Math.min(100, (elapsed / total) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('np-time').textContent = _fmt(elapsed) + ' / ' + _fmt(total);
+  }
+}
+
+function _fmt(s) {
+  s = Math.max(0, s | 0);
+  return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+}
+
+/* ── COMPTEUR PLAYS ──────────────────────────────────────── */
+function _countPlay(id) {
+  if (!_baseUrl) return;
+  fetch(_baseUrl + '/api/music/play/' + id, { method: 'POST' }).catch(function() {});
+}
+</script>
+</body>
+</html>
