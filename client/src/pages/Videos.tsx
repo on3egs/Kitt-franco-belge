@@ -20,6 +20,7 @@ interface VideoEntry {
   pseudo: string;
   message: string;
   ts: number;
+  views?: number;
 }
 
 export default function Videos() {
@@ -27,9 +28,11 @@ export default function Videos() {
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [apiBase, setApiBase] = useState<string | null>(null);
 
   useEffect(() => {
     getApiBase().then(base => {
+      setApiBase(base);
       if (!base) { setOffline(true); setLoading(false); return; }
       fetch(`${base}/api/videos/approved`)
         .then(r => r.json())
@@ -38,6 +41,12 @@ export default function Videos() {
         .finally(() => setLoading(false));
     });
   }, []);
+
+  function trackView(id: string) {
+    if (!apiBase) return;
+    fetch(`${apiBase}/api/videos/view/${id}`, { method: "POST" }).catch(() => {});
+    setVideos(vs => vs.map(v => v.id === id ? { ...v, views: (v.views || 0) + 1 } : v));
+  }
 
   const label = { fontFamily: "Space Mono, monospace", fontSize: "0.5rem", letterSpacing: "0.2em" };
 
@@ -103,7 +112,11 @@ export default function Videos() {
               <div
                 key={v.id}
                 style={{ background: "rgba(255,34,34,0.04)", border: "1px solid rgba(255,34,34,0.15)", cursor: "pointer" }}
-                onClick={() => setSelected(selected === v.id ? null : v.id)}
+                onClick={() => {
+                  const opening = selected !== v.id;
+                  setSelected(opening ? v.id : null);
+                  if (opening) trackView(v.id);
+                }}
               >
                 {selected === v.id ? (
                   /* YouTube embed */
@@ -145,8 +158,15 @@ export default function Videos() {
                       "{v.message}"
                     </p>
                   )}
-                  <div style={{ ...label, color: "rgba(255,34,34,0.4)", fontSize: "0.45rem" }}>
-                    {v.pseudo} — {new Date(v.ts * 1000).toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ ...label, color: "rgba(255,34,34,0.4)", fontSize: "0.45rem" }}>
+                      {v.pseudo} — {new Date(v.ts * 1000).toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                    </div>
+                    {v.views !== undefined && v.views > 0 && (
+                      <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.45rem", color: "rgba(255,100,0,0.6)" }}>
+                        ▶ {v.views}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

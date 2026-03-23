@@ -224,6 +224,9 @@ export default function Musique() {
       setIsPlaying(true);
       startFakeVisualizer();
     }
+    // Track play count
+    fetch(`${apiBase}/api/music/play/${track.id}`, { method: "POST" }).catch(() => {});
+    setTracks(ts => ts.map((t, i) => i === idx ? { ...t, plays: (t.plays || 0) + 1 } : t));
   }
 
   function togglePlay() {
@@ -404,8 +407,15 @@ export default function Musique() {
                         <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.5rem", color: currentIdx === i ? "#fff" : "rgba(210,210,210,0.8)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {t.titre || "Sans titre"}
                         </div>
-                        <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.42rem", color: "rgba(255,100,0,0.65)", marginTop: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {t.artiste || "—"}
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: "4px" }}>
+                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.42rem", color: "rgba(255,100,0,0.65)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {t.artiste || "—"}
+                          </span>
+                          {t.plays !== undefined && t.plays > 0 && (
+                            <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.4rem", color: "rgba(255,100,0,0.45)", flexShrink: 0 }}>
+                              ♪ {t.plays}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
