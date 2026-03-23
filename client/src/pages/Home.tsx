@@ -12,6 +12,8 @@ import KittScanner from "@/components/KittScanner";
 import TypewriterText from "@/components/TypewriterText";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { toast } from "sonner";
+import LangSelector from "@/components/LangSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // ─── Image Assets (CDN) ───────────────────────────────────────────────────────
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_hero_bg-VWv6QwEucPEXJkzKqNiyZu.webp";
@@ -130,6 +132,7 @@ function NavBar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { play } = useSoundEffects();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -184,7 +187,7 @@ function NavBar() {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
-          {["histoire", "services", "videos", "avis", "contact"].map((id) => (
+          {(["histoire", "services", "videos", "avis", "contact"] as const).map((id) => (
             <button
               key={id}
               onClick={() => scrollTo(id)}
@@ -195,7 +198,7 @@ function NavBar() {
                 fontSize: "0.65rem",
               }}
             >
-              {id}
+              {t(`nav.${id}`)}
             </button>
           ))}
           <Link
@@ -204,7 +207,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onMouseEnter={() => play("hover")}
           >
-            KARR
+            {t("nav.karr")}
           </Link>
           <Link
             href="/soumettre"
@@ -212,7 +215,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onMouseEnter={() => play("hover")}
           >
-            SOUMETTRE
+            {t("nav.soumettre")}
           </Link>
           <Link
             href="/videos"
@@ -220,7 +223,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onMouseEnter={() => play("hover")}
           >
-            GALERIE
+            {t("nav.galerie")}
           </Link>
           <Link
             href="/musique"
@@ -228,7 +231,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onMouseEnter={() => play("hover")}
           >
-            MUSIQUE
+            {t("nav.musique")}
           </Link>
           <Link
             href="/documents"
@@ -236,8 +239,9 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onMouseEnter={() => play("hover")}
           >
-            DOCS
+            {t("nav.docs")}
           </Link>
+          <LangSelector />
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
@@ -246,7 +250,7 @@ function NavBar() {
             style={{ fontSize: "0.6rem" }}
             onMouseEnter={() => play("hover")}
           >
-            ACCÉDER À KITT
+            {t("nav.access")}
           </a>
         </div>
 
@@ -354,6 +358,7 @@ function NavBar() {
 function HeroSection() {
   const [phase, setPhase] = useState(0);
   const { play } = useSoundEffects();
+  const { t } = useLanguage();
   const bgScannerRef = useRef<HTMLCanvasElement>(null);
   const bgScannerPosRef = useRef(0);
   const bgScannerDirRef = useRef(1);
@@ -668,7 +673,7 @@ function HeroSection() {
             transition: "all 0.6s ease",
           }}
         >
-          KNIGHT INDUSTRIES TWO THOUSAND — SYSTÈME KYRONEX
+          {t("hero.label")}
         </div>
 
         {/* Main title */}
@@ -720,13 +725,13 @@ function HeroSection() {
             className="text-lg md:text-xl mb-2"
             style={{ fontFamily: "Rajdhani, sans-serif", color: "rgba(220,220,220,0.9)", fontWeight: 500 }}
           >
-            Intelligence artificielle locale expérimentale
+            {t("hero.tagline")}
           </p>
           <p
             className="text-sm"
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.6)", lineHeight: 1.8 }}
           >
-            Projet passionnel & non commercial — par{" "}
+            {t("hero.subtitle")}{" "}
             <span style={{ color: "#ff2222" }}>Emmanuel Gelinne (Manix)</span>
           </p>
         </div>
@@ -746,7 +751,7 @@ function HeroSection() {
             rel="noopener noreferrer"
             className="kitt-btn"
           >
-            ACCÉDER À L'INTERFACE
+            {t("hero.cta1")}
           </a>
           <button
             onClick={() => {
@@ -761,7 +766,7 @@ function HeroSection() {
               fontSize: "0.7rem",
             }}
           >
-            DÉCOUVRIR LE PROJET
+            {t("hero.cta2")}
           </button>
         </div>
       </div>
@@ -1867,6 +1872,7 @@ function ContactSection() {
 }
 
 function Footer() {
+  const { t } = useLanguage();
   return (
     <footer
       className="relative py-12"
@@ -1963,7 +1969,7 @@ function Footer() {
           <div
             style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.4)", letterSpacing: "0.1em" }}
           >
-            KNIGHT INDUSTRIES TWO THOUSAND — SYSTÈME KYRONEX
+            {t("hero.label")}
           </div>
         </div>
       </div>
