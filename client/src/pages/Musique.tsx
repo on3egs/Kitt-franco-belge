@@ -282,7 +282,7 @@ export default function Musique() {
       <div className="relative container py-16 max-w-5xl mx-auto px-4">
         <div className="mb-2 text-center">
           <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "12px" }}>
-            // SYSTÃˆME KITT FRANCO-BELGE â€” LECTEUR AUDIO
+            // SYSTÃˆME KITT FRANCO-BELGE — LECTEUR AUDIO
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3" style={{ fontFamily: "Orbitron, monospace" }}>
             MUSIQUE
@@ -311,7 +311,7 @@ export default function Musique() {
               <div style={{ background: "#0d0000", border: "1px solid rgba(255,34,34,0.35)" }}>
                 <div style={{ background: "linear-gradient(90deg,#2a0000,#1a0000)", padding: "5px 12px", display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid rgba(255,34,34,0.25)" }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff2222", boxShadow: "0 0 6px #ff2222" }} />
-                  <span style={{ ...label, color: "#ff5500", fontSize: "0.45rem" }}>KITT AUDIO SYSTEM v2.5 â€” KYRONEX</span>
+                  <span style={{ ...label, color: "#ff5500", fontSize: "0.45rem" }}>KITT AUDIO SYSTEM v2.5 — KYRONEX</span>
                 </div>
 
                 <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid rgba(255,34,34,0.12)", minHeight: "46px" }}>
@@ -339,7 +339,7 @@ export default function Musique() {
                     style={{ width: "100%", height: "128px", display: "block" }}
                   />
                   <div style={{ position: "absolute", top: 4, right: 8, fontFamily: "Space Mono, monospace", fontSize: "0.38rem", color: "rgba(255,80,0,0.35)", letterSpacing: "0.15em" }}>
-                    KYRONEX VIZ â– 
+                    KYRONEX VIZ ■
                   </div>
                 </div>
 
@@ -365,7 +365,7 @@ export default function Musique() {
                     onClick={() => setIsMuted(!isMuted)}
                     style={{ ...ctrlBtn, padding: "4px 8px", fontSize: "0.7rem", minWidth: "40px" }}
                   >
-                    {isMuted ? "ðŸ”‡" : "ðŸ”Š"}
+                    {isMuted ? "🔇" : "🔊"}
                   </button>
                   <input
                     type="range"
@@ -382,15 +382,15 @@ export default function Musique() {
                 </div>
 
                 <div style={{ padding: "6px 14px 14px", display: "flex", gap: "8px", alignItems: "center", justifyContent: "center" }}>
-                  <button onClick={prev} style={ctrlBtn} title="PrÃ©cÃ©dent">â®</button>
+                  <button onClick={prev} style={ctrlBtn} title="Précédent">⏮</button>
                   <button
                     onClick={togglePlay}
                     style={{ ...ctrlBtn, background: isPlaying ? "rgba(255,34,34,0.25)" : "rgba(255,34,34,0.15)", border: "1px solid #ff2222", padding: "8px 22px", color: "#ff2222", fontSize: "1rem" }}
                     title={isPlaying ? "Pause" : "Lecture"}
                   >
-                    {isPlaying ? "â¸" : "â–¶"}
+                    {isPlaying ? "⏸" : "▶"}
                   </button>
-                  <button onClick={next} style={ctrlBtn} title="Suivant">â­</button>
+                  <button onClick={next} style={ctrlBtn} title="Suivant">⏭</button>
                 </div>
               </div>
             </div>
@@ -398,7 +398,7 @@ export default function Musique() {
             <div className="md:col-span-2" style={{ background: "#0d0000", border: "1px solid rgba(255,34,34,0.2)", display: "flex", flexDirection: "column" }}>
               <div style={{ background: "#1a0000", padding: "5px 12px", borderBottom: "1px solid rgba(255,34,34,0.2)", flexShrink: 0 }}>
                 <span style={{ ...label, color: "#ff4444", fontSize: "0.45rem" }}>
-                  PLAYLIST â€” {tracks.length} PISTE{tracks.length !== 1 ? "S" : ""}
+                  PLAYLIST — {tracks.length} PISTE{tracks.length !== 1 ? "S" : ""}
                 </span>
               </div>
 
@@ -423,7 +423,7 @@ export default function Musique() {
                       }}
                     >
                       <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.42rem", color: currentIdx === i ? "#ff4400" : "rgba(255,34,34,0.4)", minWidth: "16px" }}>
-                        {currentIdx === i && isPlaying ? "â–¶" : `${i + 1}`}
+                        {currentIdx === i && isPlaying ? "▶" : `${i + 1}`}
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.5rem", color: currentIdx === i ? "#fff" : "rgba(210,210,210,0.8)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -431,7 +431,7 @@ export default function Musique() {
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", gap: "4px" }}>
                           <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.42rem", color: "rgba(255,100,0,0.65)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {t.artiste || "â€”"}
+                            {t.artiste || "—"}
                           </span>
                           {t.plays !== undefined && t.plays > 0 && (
                             <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.4rem", color: "rgba(255,100,0,0.45)", flexShrink: 0 }}>
@@ -457,7 +457,7 @@ export default function Musique() {
             â™ª PROPOSER UNE MUSIQUE
           </Link>
           <Link href="/" style={{ fontFamily: "Orbitron, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.4)", letterSpacing: "0.2em" }}>
-            â† RETOUR AU SYSTÃˆME KITT
+            ← RETOUR AU SYSTÈME KITT
           </Link>
         </div>
       </div>
