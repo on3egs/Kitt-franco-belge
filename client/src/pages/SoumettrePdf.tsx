@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const TUNNEL_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
 
@@ -22,6 +23,7 @@ export default function SoumettrePdf() {
   const [pseudo, setPseudo] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const { t } = useLanguage();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,59 +73,58 @@ export default function SoumettrePdf() {
       <div className="relative container py-24 max-w-2xl mx-auto px-4">
         <div className="mb-2 text-center">
           <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,34,34,0.5)", letterSpacing: "0.3em", marginBottom: "12px" }}>
-            // SYSTÈME KITT FRANCO-BELGE — SOUMISSION DOCUMENT
+            {t("soumettrepdf.sys")}
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-3" style={{ fontFamily: "Orbitron, monospace" }}>SOUMETTRE</h1>
-          <h2 className="text-lg font-bold mb-6" style={{ fontFamily: "Orbitron, monospace", color: "#ff2222" }}>UN DOCUMENT PDF</h2>
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-3" style={{ fontFamily: "Orbitron, monospace" }}>{t("soumettrepdf.title")}</h1>
+          <h2 className="text-lg font-bold mb-6" style={{ fontFamily: "Orbitron, monospace", color: "#ff2222" }}>{t("soumettrepdf.subtitle")}</h2>
         </div>
 
         <div className="mb-10"><KittScanner height={6} /></div>
 
         <p className="text-center mb-10" style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "rgba(192,192,192,0.65)", lineHeight: 1.9 }}>
-          Fournis un lien vers un PDF hébergé (Google Drive, Dropbox, archive.org…).
-          Manix recevra la soumission pour approbation.
+          {t("soumettrepdf.desc")}
         </p>
 
         {status === "ok" ? (
           <div className="p-8 text-center" style={{ background: "rgba(255,34,34,0.05)", border: "1px solid rgba(255,34,34,0.3)" }}>
-            <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.2em", marginBottom: "12px" }}>// TRANSMISSION REÇUE</div>
+            <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.2em", marginBottom: "12px" }}>{t("soumettrepdf.success.label")}</div>
             <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.1rem", color: "rgba(220,220,220,0.9)" }}>
-              Document soumis avec succès. Manix recevra une notification.
+              {t("soumettrepdf.success.msg")}
             </p>
             <button onClick={() => setStatus("idle")} className="mt-6 px-6 py-3"
               style={{ background: "rgba(255,34,34,0.1)", border: "1px solid rgba(255,34,34,0.3)", fontFamily: "Orbitron, monospace", fontSize: "0.6rem", letterSpacing: "0.1em", color: "#ff2222" }}>
-              SOUMETTRE UN AUTRE
+              {t("soumettrepdf.success.btn")}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label style={labelStyle}>// LIEN VERS LE PDF *</label>
+              <label style={labelStyle}>{t("soumettrepdf.url.label")}</label>
               <input type="url" required value={url} onChange={e => setUrl(e.target.value)}
-                placeholder="https://drive.google.com/..." style={inputStyle} />
+                placeholder={t("soumettrepdf.url.ph")} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>// TITRE DU DOCUMENT *</label>
+              <label style={labelStyle}>{t("soumettrepdf.titre.label")}</label>
               <input type="text" required value={titre} onChange={e => setTitre(e.target.value)}
-                placeholder="Titre" maxLength={120} style={inputStyle} />
+                placeholder={t("soumettrepdf.titre.ph")} maxLength={120} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>// CATÉGORIE</label>
+              <label style={labelStyle}>{t("soumettrepdf.categorie.label")}</label>
               <select value={categorie} onChange={e => setCategorie(e.target.value)}
                 style={{ ...inputStyle, cursor: "pointer" }}>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>// DESCRIPTION (optionnel)</label>
+              <label style={labelStyle}>{t("soumettrepdf.desc2.label")}</label>
               <textarea value={description} onChange={e => setDescription(e.target.value)}
-                placeholder="Décris brièvement ce document…" maxLength={300} rows={3}
+                placeholder={t("soumettrepdf.desc2.ph")} maxLength={300} rows={3}
                 style={{ ...inputStyle, resize: "vertical", fontFamily: "Rajdhani, sans-serif", fontSize: "0.9rem" }} />
             </div>
             <div>
-              <label style={labelStyle}>// TON PSEUDO (optionnel)</label>
+              <label style={labelStyle}>{t("soumettrepdf.pseudo.label")}</label>
               <input type="text" value={pseudo} onChange={e => setPseudo(e.target.value)}
-                placeholder="Anonyme" maxLength={50} style={{ ...inputStyle, border: "1px solid rgba(255,34,34,0.15)" }} />
+                placeholder={t("soumettrepdf.pseudo.ph")} maxLength={50} style={{ ...inputStyle, border: "1px solid rgba(255,34,34,0.15)" }} />
             </div>
 
             {status === "error" && (
@@ -138,14 +139,14 @@ export default function SoumettrePdf() {
                 border: "1px solid #ff2222", fontFamily: "Orbitron, monospace", fontSize: "0.7rem",
                 letterSpacing: "0.2em", color: "#ff2222", cursor: status === "loading" ? "wait" : "pointer",
               }}>
-              {status === "loading" ? "TRANSMISSION EN COURS..." : "📄 ENVOYER LE DOCUMENT"}
+              {status === "loading" ? t("soumettrepdf.sending") : <>📄 {t("soumettrepdf.send")}</>}
             </button>
           </form>
         )}
 
         <div className="mt-12 text-center">
           <Link href="/" style={{ fontFamily: "Orbitron, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.5)", letterSpacing: "0.2em" }}>
-            ← RETOUR AU SYSTÈME KITT
+            {t("soumettrepdf.back")}
           </Link>
         </div>
       </div>

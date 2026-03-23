@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const TUNNEL_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
 
@@ -38,6 +39,7 @@ function getFbEmbedUrl(url: string): string {
 }
 
 export default function Videos() {
+  const { t } = useLanguage();
   const [videos, setVideos] = useState<VideoEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
@@ -77,13 +79,13 @@ export default function Videos() {
         {/* Header */}
         <div className="mb-2 text-center">
           <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "12px" }}>
-            // SYSTÈME KITT FRANCO-BELGE — GALERIE VIDÉO
+            {t("videospage.sys")}
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3" style={{ fontFamily: "Orbitron, monospace" }}>
-            VIDÉOS
+            {t("videospage.title")}
           </h1>
           <h2 className="text-lg font-bold mb-6" style={{ fontFamily: "Orbitron, monospace", color: "#ff2222" }}>
-            SÉLECTIONNÉES PAR MANIX
+            {t("videospage.subtitle")}
           </h2>
         </div>
 
@@ -92,8 +94,7 @@ export default function Videos() {
         </div>
 
         <p className="text-center mb-12" style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "rgba(192,192,192,0.65)", lineHeight: 1.9 }}>
-          Vidéos liées au projet KITT Franco-Belge, sélectionnées et approuvées par Manix.
-          Tu peux <Link href="/soumettre" style={{ color: "#ff2222", textDecoration: "none" }}>soumettre une vidéo</Link> si tu en as une.
+          {t("videospage.desc")} <Link href="/soumettre" style={{ color: "#ff2222", textDecoration: "none" }}>{t("videospage.submit.link")}</Link> {t("videospage.desc2")}
         </p>
 
         {/* Loading state — pulsing dot */}
@@ -108,7 +109,7 @@ export default function Videos() {
                 background: "#ff2222",
                 animation: "pulse-red 1.2s ease-in-out infinite",
               }} />
-              <span style={{ ...label, color: "rgba(255,34,34,0.6)" }}>// CHARGEMENT EN COURS...</span>
+              <span style={{ ...label, color: "rgba(255,34,34,0.6)" }}>{t("videospage.loading")}</span>
               <span style={{
                 display: "inline-block",
                 width: "10px",
@@ -129,9 +130,9 @@ export default function Videos() {
 
         {!loading && offline && (
           <div className="p-6 text-center" style={{ background: "rgba(255,34,34,0.06)", border: "1px solid rgba(255,34,34,0.2)" }}>
-            <div style={{ ...label, color: "#ff4444", marginBottom: "8px" }}>[HORS LIGNE]</div>
+            <div style={{ ...label, color: "#ff4444", marginBottom: "8px" }}>{t("videospage.offline")}</div>
             <p style={{ fontFamily: "Rajdhani, sans-serif", color: "rgba(192,192,192,0.6)" }}>
-              Le système KITT est temporairement hors ligne. Réessaie plus tard.
+              {t("videospage.offline.msg")}
             </p>
           </div>
         )}
@@ -139,13 +140,13 @@ export default function Videos() {
         {/* Empty state with scanner animation */}
         {!loading && !offline && videos.length === 0 && (
           <div className="py-16 text-center flex flex-col items-center gap-6" style={{ background: "rgba(255,34,34,0.04)", border: "1px solid rgba(255,34,34,0.15)" }}>
-            <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "4px" }}>// AUCUNE VIDÉO EN BASE</div>
+            <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "4px" }}>{t("videospage.empty")}</div>
             <div style={{ width: "280px" }}>
               <KittScanner height={5} />
             </div>
             <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "rgba(192,192,192,0.5)", maxWidth: "380px", lineHeight: 1.8 }}>
-              Aucune vidéo n'a encore été approuvée par Manix.{" "}
-              <Link href="/soumettre" style={{ color: "#ff2222", textDecoration: "none" }}>Soumettre la première ?</Link>
+              {t("videospage.empty.msg")}{" "}
+              <Link href="/soumettre" style={{ color: "#ff2222", textDecoration: "none" }}>{t("videospage.empty.first")}</Link>
             </p>
           </div>
         )}
@@ -369,10 +370,10 @@ export default function Videos() {
             color: "#ff2222", border: "1px solid rgba(255,34,34,0.4)", padding: "10px 24px",
             background: "rgba(255,34,34,0.08)",
           }}>
-            ▶ SOUMETTRE UNE VIDÉO
+            {t("videospage.cta.submit")}
           </Link>
           <Link href="/" style={{ fontFamily: "Orbitron, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.4)", letterSpacing: "0.2em" }}>
-            ← RETOUR AU SYSTÈME KITT
+            {t("videospage.cta.back")}
           </Link>
         </div>
       </div>

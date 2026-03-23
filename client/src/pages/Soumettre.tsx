@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const JETSON_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
 
@@ -15,6 +16,7 @@ async function getApiBase(): Promise<string | null> {
 }
 
 export default function Soumettre() {
+  const { t } = useLanguage();
   const [url, setUrl] = useState("");
   const [pseudo, setPseudo] = useState("");
   const [message, setMessage] = useState("");
@@ -58,13 +60,13 @@ export default function Soumettre() {
         {/* Header */}
         <div className="mb-2 text-center">
           <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,34,34,0.5)", letterSpacing: "0.3em", marginBottom: "12px" }}>
-            // SYSTÈME KITT FRANCO-BELGE — SOUMISSION VIDÉO
+            {t("soumettre.sys")}
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3" style={{ fontFamily: "Orbitron, monospace" }}>
-            SOUMETTRE
+            {t("soumettre.title")}
           </h1>
           <h2 className="text-lg font-bold mb-6" style={{ fontFamily: "Orbitron, monospace", color: "#ff2222" }}>
-            UNE VIDÉO
+            {t("soumettre.subtitle")}
           </h2>
         </div>
 
@@ -73,24 +75,23 @@ export default function Soumettre() {
         </div>
 
         <p className="text-center mb-10" style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "rgba(192,192,192,0.65)", lineHeight: 1.9 }}>
-          Tu as trouvé une vidéo liée au projet KITT Franco-Belge ? Partage-la ici.
-          Manix la recevra et décidera de l'ajouter ou non à la galerie officielle.
+          {t("soumettre.desc")}
         </p>
 
         {status === "ok" ? (
           <div className="p-8 text-center" style={{ background: "rgba(255,34,34,0.05)", border: "1px solid rgba(255,34,34,0.3)" }}>
             <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.2em", marginBottom: "12px" }}>
-              // TRANSMISSION REÇUE
+              {t("soumettre.success.label")}
             </div>
             <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.1rem", color: "rgba(220,220,220,0.9)" }}>
-              Vidéo soumise avec succès. Manix recevra une notification et examinera ta soumission.
+              {t("soumettre.success.msg")}
             </p>
             <button
               onClick={() => setStatus("idle")}
               className="mt-6 px-6 py-3"
               style={{ background: "rgba(255,34,34,0.1)", border: "1px solid rgba(255,34,34,0.3)", fontFamily: "Orbitron, monospace", fontSize: "0.6rem", letterSpacing: "0.1em", color: "#ff2222" }}
             >
-              SOUMETTRE UNE AUTRE
+              {t("soumettre.success.btn")}
             </button>
           </div>
         ) : (
@@ -98,14 +99,14 @@ export default function Soumettre() {
             {/* URL */}
             <div>
               <label style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.15em", display: "block", marginBottom: "8px" }}>
-                // LIEN VIDÉO (YouTube ou Facebook) *
+                {t("soumettre.url.label")}
               </label>
               <input
                 type="url"
                 required
                 value={url}
                 onChange={e => setUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=... ou https://fb.watch/..."
+                placeholder={t("soumettre.url.ph")}
                 style={{
                   width: "100%", background: "rgba(255,34,34,0.04)", border: "1px solid rgba(255,34,34,0.25)",
                   padding: "12px 16px", color: "rgba(220,220,220,0.9)", fontFamily: "Space Mono, monospace",
@@ -117,13 +118,13 @@ export default function Soumettre() {
             {/* Pseudo */}
             <div>
               <label style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.15em", display: "block", marginBottom: "8px" }}>
-                // TON PSEUDO (optionnel)
+                {t("soumettre.pseudo.label")}
               </label>
               <input
                 type="text"
                 value={pseudo}
                 onChange={e => setPseudo(e.target.value)}
-                placeholder="Anonyme"
+                placeholder={t("soumettre.pseudo.ph")}
                 maxLength={50}
                 style={{
                   width: "100%", background: "rgba(255,34,34,0.04)", border: "1px solid rgba(255,34,34,0.15)",
@@ -136,12 +137,12 @@ export default function Soumettre() {
             {/* Message */}
             <div>
               <label style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.15em", display: "block", marginBottom: "8px" }}>
-                // MESSAGE (optionnel)
+                {t("soumettre.msg.label")}
               </label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
-                placeholder="Pourquoi cette vidéo mérite-t-elle d'être ajoutée ?"
+                placeholder={t("soumettre.msg.ph")}
                 maxLength={300}
                 rows={3}
                 style={{
@@ -171,7 +172,7 @@ export default function Soumettre() {
                 color: "#ff2222", cursor: status === "loading" ? "wait" : "pointer",
               }}
             >
-              {status === "loading" ? "TRANSMISSION EN COURS..." : "▶ ENVOYER LA VIDÉO"}
+              {status === "loading" ? t("soumettre.sending") : t("soumettre.send")}
             </button>
           </form>
         )}
@@ -179,7 +180,7 @@ export default function Soumettre() {
         {/* Retour */}
         <div className="mt-12 text-center">
           <Link href="/" style={{ fontFamily: "Orbitron, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.5)", letterSpacing: "0.2em" }}>
-            ← RETOUR AU SYSTÈME KITT
+            {t("soumettre.back")}
           </Link>
         </div>
       </div>

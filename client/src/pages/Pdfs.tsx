@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const TUNNEL_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
 
@@ -32,6 +33,7 @@ const CAT_COLORS: Record<string, string> = {
 };
 
 export default function Pdfs() {
+  const { t } = useLanguage();
   const [pdfs, setPdfs] = useState<PdfEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
@@ -72,22 +74,20 @@ export default function Pdfs() {
       <div className="relative container py-16 max-w-5xl mx-auto px-4">
         <div className="mb-2 text-center">
           <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "12px" }}>
-            // SYSTÈME KITT FRANCO-BELGE — BIBLIOTHÈQUE PDF
+            {t("pdfs.sys")}
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3" style={{ fontFamily: "Orbitron, monospace" }}>
-            DOCUMENTS
+            {t("pdfs.title")}
           </h1>
           <h2 className="text-lg font-bold mb-6" style={{ fontFamily: "Orbitron, monospace", color: "#ff2222" }}>
-            BIBLIOTHÈQUE KITT
+            {t("pdfs.subtitle")}
           </h2>
         </div>
 
         <div className="mb-8"><KittScanner height={6} /></div>
 
         <p className="text-center mb-8" style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "rgba(192,192,192,0.65)", lineHeight: 1.9 }}>
-          Documents, manuels et ressources liés au projet KITT Franco-Belge.
-          Sélectionnés et approuvés par Manix. Tu peux{" "}
-          <Link href="/soumettre-pdf" style={{ color: "#ff2222", textDecoration: "none" }}>soumettre un document</Link>.
+          {t("pdfs.desc")} <Link href="/soumettre-pdf" style={{ color: "#ff2222", textDecoration: "none" }}>{t("pdfs.submit.link")}</Link>.
         </p>
 
         {/* Filtres catégories */}
@@ -110,20 +110,20 @@ export default function Pdfs() {
 
         {loading && (
           <div className="text-center py-20">
-            <div style={{ ...label, color: "rgba(255,34,34,0.5)" }}>// CHARGEMENT EN COURS...</div>
+            <div style={{ ...label, color: "rgba(255,34,34,0.5)" }}>{t("pdfs.loading")}</div>
           </div>
         )}
         {!loading && offline && (
           <div className="p-6 text-center" style={{ background: "rgba(255,34,34,0.06)", border: "1px solid rgba(255,34,34,0.2)" }}>
-            <div style={{ ...label, color: "#ff4444" }}>[HORS LIGNE] Système KITT inaccessible.</div>
+            <div style={{ ...label, color: "#ff4444" }}>{t("pdfs.offline")}</div>
           </div>
         )}
         {!loading && !offline && filtered.length === 0 && (
           <div className="p-8 text-center" style={{ background: "rgba(255,34,34,0.04)", border: "1px solid rgba(255,34,34,0.15)" }}>
-            <div style={{ ...label, color: "rgba(255,34,34,0.4)", marginBottom: "12px" }}>// AUCUN DOCUMENT</div>
+            <div style={{ ...label, color: "rgba(255,34,34,0.4)", marginBottom: "12px" }}>{t("pdfs.empty")}</div>
             <p style={{ fontFamily: "Rajdhani, sans-serif", color: "rgba(192,192,192,0.5)" }}>
-              Aucun document disponible.{" "}
-              <Link href="/soumettre-pdf" style={{ color: "#ff2222" }}>Soumettre le premier ?</Link>
+              {t("pdfs.empty")}{" "}
+              <Link href="/soumettre-pdf" style={{ color: "#ff2222" }}>{t("pdfs.submit.first")}</Link>
             </p>
           </div>
         )}
@@ -168,7 +168,7 @@ export default function Pdfs() {
                   </div>
                 </div>
                 <div style={{ marginTop: "10px", fontFamily: "Space Mono, monospace", fontSize: "0.48rem", color: "#ff2222", letterSpacing: "0.1em" }}>
-                  OUVRIR ↗
+                  {t("pdfs.open")} ↗
                 </div>
               </div>
             ))}
@@ -181,10 +181,10 @@ export default function Pdfs() {
             color: "#ff2222", border: "1px solid rgba(255,34,34,0.4)", padding: "10px 24px",
             background: "rgba(255,34,34,0.08)",
           }}>
-            📄 SOUMETTRE UN DOCUMENT
+            📄 {t("pdfs.cta.submit")}
           </Link>
           <Link href="/" style={{ fontFamily: "Orbitron, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.4)", letterSpacing: "0.2em" }}>
-            ← RETOUR AU SYSTÈME KITT
+            {t("pdfs.cta.back")}
           </Link>
         </div>
       </div>
