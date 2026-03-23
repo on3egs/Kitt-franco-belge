@@ -15,12 +15,26 @@ async function getApiBase(): Promise<string | null> {
 }
 
 interface VideoEntry {
-  id: string;
+  id: string;       // YouTube ID ou URL complète Facebook
   url: string;
   pseudo: string;
   message: string;
   ts: number;
   views?: number;
+  platform?: "youtube" | "facebook" | "other";
+}
+
+function getYtId(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function isFacebook(url: string): boolean {
+  return url.includes("facebook.com") || url.includes("fb.watch");
+}
+
+function getFbEmbedUrl(url: string): string {
+  return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&autoplay=true`;
 }
 
 export default function Videos() {
@@ -119,33 +133,48 @@ export default function Videos() {
                 }}
               >
                 {selected === v.id ? (
-                  /* YouTube embed */
+                  /* Embed */
                   <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
-                    <iframe
-                      src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
-                      title="YouTube video"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
-                    />
+                    {isFacebook(v.url) ? (
+                      <iframe
+                        src={getFbEmbedUrl(v.url)}
+                        title="Facebook video"
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                        allowFullScreen
+                        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                      />
+                    ) : (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${getYtId(v.url) || v.id}?autoplay=1`}
+                        title="YouTube video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                      />
+                    )}
                   </div>
                 ) : (
                   /* Thumbnail */
                   <div style={{ position: "relative" }}>
-                    <img
-                      src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
-                      alt="thumbnail"
-                      style={{ width: "100%", display: "block", border: "none" }}
-                    />
-                    {/* Play button overlay */}
+                    {isFacebook(v.url) ? (
+                      <div style={{ width: "100%", paddingBottom: "56.25%", background: "#1a0000", position: "relative" }}>
+                        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "2.5rem" }}>📘</span>
+                          <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.45rem", color: "rgba(100,150,255,0.8)" }}>FACEBOOK VIDEO</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <img
+                        src={`https://img.youtube.com/vi/${getYtId(v.url) || v.id}/mqdefault.jpg`}
+                        alt="thumbnail"
+                        style={{ width: "100%", display: "block", border: "none" }}
+                      />
+                    )}
                     <div style={{
                       position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                      background: "rgba(0,0,0,0.35)",
+                      background: "rgba(0,0,0,0.3)",
                     }}>
-                      <div style={{
-                        width: 52, height: 52, borderRadius: "50%",
-                        background: "rgba(255,34,34,0.85)", display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
+                      <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,34,34,0.85)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <span style={{ color: "white", fontSize: "1.4rem", marginLeft: "4px" }}>▶</span>
                       </div>
                     </div>

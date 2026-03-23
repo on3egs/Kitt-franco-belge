@@ -98,14 +98,14 @@ export default function Soumettre() {
             {/* URL */}
             <div>
               <label style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.15em", display: "block", marginBottom: "8px" }}>
-                // LIEN YOUTUBE *
+                // LIEN VIDÉO (YouTube ou Facebook) *
               </label>
               <input
                 type="url"
                 required
                 value={url}
                 onChange={e => setUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
+                placeholder="https://www.youtube.com/watch?v=... ou https://fb.watch/..."
                 style={{
                   width: "100%", background: "rgba(255,34,34,0.04)", border: "1px solid rgba(255,34,34,0.25)",
                   padding: "12px 16px", color: "rgba(220,220,220,0.9)", fontFamily: "Space Mono, monospace",

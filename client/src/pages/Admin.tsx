@@ -190,8 +190,14 @@ export default function Admin() {
             {pendingVideos.map(v => (
               <div key={v.id} style={card}>
                 <div className="flex gap-4">
-                  <img src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`} alt="thumb"
-                    style={{ width: "140px", height: "79px", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(255,34,34,0.2)" }} />
+                  {v.url.includes("facebook.com") || v.url.includes("fb.watch") ? (
+                    <div style={{ width: "140px", height: "79px", flexShrink: 0, background: "#1a0000", border: "1px solid rgba(100,150,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: "1.8rem" }}>📘</span>
+                    </div>
+                  ) : (
+                    <img src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`} alt="thumb"
+                      style={{ width: "140px", height: "79px", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(255,34,34,0.2)" }} />
+                  )}
                   <div className="flex-1 min-w-0">
                     <div style={{ ...label, color: "rgba(192,192,192,0.5)", marginBottom: "4px" }}>{formatDate(v.ts)} — {v.pseudo}</div>
                     <a href={v.url} target="_blank" rel="noopener noreferrer"
