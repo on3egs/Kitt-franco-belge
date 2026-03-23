@@ -1926,6 +1926,7 @@ function Footer() {
             style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(192,192,192,0.3)", letterSpacing: "0.1em" }}
           >
             © 2026 KITT FRANCO-BELGE — Emmanuel Gelinne (Manix) — Tous droits réservés
+            {" "}<Link href="/admin-videos" style={{ color: "rgba(255,34,34,0.15)", textDecoration: "none" }} title="Accès système">·</Link>
           </div>
           <div
             style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.4)", letterSpacing: "0.1em" }}
