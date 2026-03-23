@@ -91,9 +91,9 @@ export default function AdminVideos() {
   if (!authed) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0000" }}>
-        <div className="w-full max-w-sm p-8" style={{ background: "rgba(255,34,34,0.12)", border: "2px solid rgba(255,34,34,0.6)" }}>
-          <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "12px" }}>// ACCÈS ADMIN</div>
-          <h1 className="text-2xl font-black text-white mb-8" style={{ fontFamily: "Orbitron, monospace" }}>VIDÉOS</h1>
+        <div className="w-full max-w-sm p-8" style={{ background: "#1a0000", border: "2px solid #ff2222", boxShadow: "0 0 30px rgba(255,34,34,0.2)" }}>
+          <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", letterSpacing: "0.2em", color: "#ff4444", marginBottom: "12px" }}>// ACCÈS ADMIN</div>
+          <h1 className="text-2xl font-black mb-8" style={{ fontFamily: "Orbitron, monospace", color: "#ffffff" }}>MODÉRATION VIDÉOS</h1>
           <form onSubmit={login} className="space-y-4">
             <input
               type="password"
@@ -102,18 +102,18 @@ export default function AdminVideos() {
               placeholder="Mot de passe"
               autoFocus
               style={{
-                width: "100%", background: "rgba(255,34,34,0.04)", border: `1px solid ${pwdError ? "#ff2222" : "rgba(255,34,34,0.25)"}`,
-                padding: "12px 16px", color: "rgba(220,220,220,0.9)", fontFamily: "Space Mono, monospace",
-                fontSize: "0.7rem", outline: "none",
+                width: "100%", background: "#0d0000", border: `1px solid ${pwdError ? "#ff2222" : "#660000"}`,
+                padding: "12px 16px", color: "#ffffff", fontFamily: "Space Mono, monospace",
+                fontSize: "0.75rem", outline: "none",
               }}
             />
-            {pwdError && <p style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "#ff4444" }}>[ERREUR] Mot de passe incorrect</p>}
-            <button type="submit" className="w-full py-3" style={{ background: "rgba(255,34,34,0.15)", border: "1px solid #ff2222", fontFamily: "Orbitron, monospace", fontSize: "0.65rem", letterSpacing: "0.15em", color: "#ff2222" }}>
+            {pwdError && <p style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "#ff4444" }}>[ERREUR] Mot de passe incorrect</p>}
+            <button type="submit" className="w-full py-3" style={{ background: "#ff2222", border: "none", fontFamily: "Orbitron, monospace", fontSize: "0.7rem", letterSpacing: "0.15em", color: "#ffffff", cursor: "pointer" }}>
               ACCÉDER
             </button>
           </form>
           <div className="mt-6 text-center">
-            <Link href="/" style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,34,34,0.4)", letterSpacing: "0.1em" }}>← retour</Link>
+            <Link href="/" style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,34,34,0.5)", letterSpacing: "0.1em" }}>← retour</Link>
           </div>
         </div>
       </div>
