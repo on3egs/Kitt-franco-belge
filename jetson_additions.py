@@ -266,10 +266,38 @@ async def handle_pdfs_options(request):
         "Access-Control-Allow-Headers": "Content-Type,X-Admin-Token",
     })
 
+# ─── VIDEO VIEW COUNTER ───────────────────────────────────────────────────────
+# Ajouter aussi dans kyronex_server.py (le fichier video_submissions.json existant)
+
+VIDEO_FILE = "/home/kitt/kitt-ai/video_submissions.json"
+
+def _load_videos():
+    if os.path.exists(VIDEO_FILE):
+        with open(VIDEO_FILE) as f:
+            return json.load(f)
+    return {"pending": [], "approved": [], "rejected": []}
+
+def _save_videos(data):
+    with open(VIDEO_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+async def handle_video_view(request):
+    entry_id = request.match_info.get("id", "")
+    data = _load_videos()
+    for v in data["approved"]:
+        if v["id"] == entry_id:
+            v["views"] = v.get("views", 0) + 1
+            break
+    _save_videos(data)
+    return web.json_response({"ok": True}, headers={"Access-Control-Allow-Origin": "*"})
+
 """
 =============================================================
 ROUTES à ajouter dans create_app() — dans la liste app.router.add_routes([...])
 =============================================================
+
+    # Compteur vues vidéos
+    web.post("/api/videos/view/{id}",   handle_video_view),
 
     # Audio proxy
     web.get("/api/audio-proxy",         handle_audio_proxy),
