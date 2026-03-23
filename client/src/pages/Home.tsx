@@ -222,6 +222,22 @@ function NavBar() {
           >
             GALERIE
           </Link>
+          <Link
+            href="/musique"
+            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onMouseEnter={() => play("hover")}
+          >
+            MUSIQUE
+          </Link>
+          <Link
+            href="/documents"
+            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onMouseEnter={() => play("hover")}
+          >
+            DOCS
+          </Link>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
@@ -302,6 +318,22 @@ function NavBar() {
             onClick={() => setMenuOpen(false)}
           >
             GALERIE
+          </Link>
+          <Link
+            href="/musique"
+            className="text-left text-xs tracking-widest uppercase"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onClick={() => setMenuOpen(false)}
+          >
+            MUSIQUE
+          </Link>
+          <Link
+            href="/documents"
+            className="text-left text-xs tracking-widest uppercase"
+            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
+            onClick={() => setMenuOpen(false)}
+          >
+            DOCS
           </Link>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
@@ -1927,6 +1959,8 @@ function Footer() {
           >
             © 2026 KITT FRANCO-BELGE — Emmanuel Gelinne (Manix) — Tous droits réservés
             {" "}<Link href="/admin-videos" style={{ color: "rgba(255,34,34,0.15)", textDecoration: "none" }} title="Accès système">·</Link>
+            <Link href="/admin-musique" style={{ color: "rgba(255,34,34,0.15)", textDecoration: "none" }} title="Accès système audio">·</Link>
+            <Link href="/admin-pdfs" style={{ color: "rgba(255,34,34,0.15)", textDecoration: "none" }} title="Accès système docs">·</Link>
           </div>
           <div
             style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.4)", letterSpacing: "0.1em" }}

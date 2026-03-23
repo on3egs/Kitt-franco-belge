@@ -11,6 +11,12 @@ import Karr from "./pages/Karr";
 import Soumettre from "./pages/Soumettre";
 import AdminVideos from "./pages/AdminVideos";
 import Videos from "./pages/Videos";
+import Musique from "./pages/Musique";
+import SoumettreMusique from "./pages/SoumettreMusique";
+import AdminMusique from "./pages/AdminMusique";
+import Pdfs from "./pages/Pdfs";
+import SoumettrePdf from "./pages/SoumettrePdf";
+import AdminPdfs from "./pages/AdminPdfs";
 
 function AppRouter() {
   return (
@@ -23,6 +29,12 @@ function AppRouter() {
         <Route path={"/soumettre"} component={Soumettre} />
         <Route path={"/videos"} component={Videos} />
         <Route path={"/admin-videos"} component={AdminVideos} />
+        <Route path={"/musique"} component={Musique} />
+        <Route path={"/soumettre-musique"} component={SoumettreMusique} />
+        <Route path={"/admin-musique"} component={AdminMusique} />
+        <Route path={"/documents"} component={Pdfs} />
+        <Route path={"/soumettre-pdf"} component={SoumettrePdf} />
+        <Route path={"/admin-pdfs"} component={AdminPdfs} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
