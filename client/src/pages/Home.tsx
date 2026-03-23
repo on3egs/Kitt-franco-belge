@@ -782,6 +782,7 @@ function HeroSection() {
 function StorySection() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useIntersection(ref);
+  const { t } = useLanguage();
 
   return (
     <section
@@ -821,14 +822,14 @@ function StorySection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_01 — HISTOIRE DU PROJET</div>
+          <div className="section-label mb-3 text-center md:text-left">{t("story.label")}</div>
           <h2
             className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
-            L'HISTOIRE DE
+            {t("story.title1")}
             <br />
-            <span style={{ color: "#ff2222" }}>KITT FRANCO-BELGE</span>
+            <span style={{ color: "#ff2222" }}>{t("story.title2")}</span>
           </h2>
         </div>
 
@@ -850,14 +851,12 @@ function StorySection() {
                 borderBottom: "1px solid rgba(255,34,34,0.2)",
               }}
             >
-              <div className="section-label mb-2">GENÈSE DU PROJET</div>
+              <div className="section-label mb-2">{t("story.genesis")}</div>
               <p
                 className="text-base leading-relaxed"
                 style={{ fontFamily: "Rajdhani, sans-serif", color: "rgba(220,220,220,0.85)", fontSize: "1.05rem" }}
               >
-                Le projet <strong style={{ color: "#ff2222" }}>KITT Franco-Belge</strong> est une initiative
-                personnelle et expérimentale dédiée au développement d'une intelligence artificielle locale
-                fonctionnant sur architecture <strong style={{ color: "#c0c0c0" }}>Jetson AJX 32/64</strong>.
+                {t("story.p1")}
               </p>
             </div>
 
@@ -865,27 +864,22 @@ function StorySection() {
               className="mb-6 leading-relaxed"
               style={{ fontFamily: "Rajdhani, sans-serif", color: "rgba(192,192,192,0.75)", fontSize: "1rem", lineHeight: 1.9 }}
             >
-              Né de la passion pour la série télévisée <em>Knight Rider</em> (K2000), ce projet transcende
-              le simple hommage pour devenir une véritable plateforme technologique. Emmanuel Gelinne,
-              alias <strong style={{ color: "#ff2222" }}>Manix</strong>, y consacre son expertise en
-              électronique embarquée et en intelligence artificielle.
+              {t("story.p2")}
             </p>
 
             <p
               className="mb-8 leading-relaxed"
               style={{ fontFamily: "Rajdhani, sans-serif", color: "rgba(192,192,192,0.75)", fontSize: "1rem", lineHeight: 1.9 }}
             >
-              Le système évolue en continu : certaines améliorations sont déployées chaque jour, d'autres
-              chaque semaine. Lors de phases expérimentales, des changements peuvent apparaître presque
-              heure par heure. Revenir régulièrement permet de suivre l'évolution réelle du système.
+              {t("story.p3")}
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               {[
-                { value: "5K+", label: "MEMBRES" },
-                { value: "2026", label: "EN LIGNE" },
-                { value: "24/7", label: "ÉVOLUTION" },
+                { value: "5K+", label: t("story.stat1") },
+                { value: "2026", label: t("story.stat2") },
+                { value: "24/7", label: t("story.stat3") },
               ].map(({ value, label }) => (
                 <div
                   key={label}
@@ -929,7 +923,7 @@ function StorySection() {
                 className="absolute bottom-0 left-0 right-0 p-4"
                 style={{ background: "linear-gradient(to top, rgba(10,0,0,0.95), transparent)" }}
               >
-                <div className="section-label">SCANNER K.I.T.T. — SIGNATURE VISUELLE</div>
+                <div className="section-label">{t("story.scanner")}</div>
               </div>
             </div>
 
@@ -944,15 +938,15 @@ function StorySection() {
               }}
             >
               <div style={{ color: "#ff2222", marginBottom: "0.75rem", letterSpacing: "0.15em" }}>
-                // FICHE SYSTÈME
+                {t("story.sheet")}
               </div>
               {[
-                ["PROJET", "KITT Franco-Belge"],
-                ["AUTEUR", "Emmanuel Gelinne (Manix)"],
-                ["ARCHITECTURE", "Jetson AJX 32/64"],
-                ["STATUT", "CONSTRUCTION ACTIVE"],
-                ["CADRE", "Non commercial / Passionnel"],
-                ["LICENCE", "Propriétaire — Tous droits réservés"],
+                [t("story.key.projet"), "KITT Franco-Belge"],
+                [t("story.key.auteur"), "Emmanuel Gelinne (Manix)"],
+                [t("story.key.arch"), "Jetson AJX 32/64"],
+                [t("story.key.statut"), t("story.val.statut")],
+                [t("story.key.cadre"), t("story.val.cadre")],
+                [t("story.key.licence"), t("story.val.licence")],
               ].map(([key, val]) => (
                 <div key={key} className="flex gap-4 mb-2" style={{ borderBottom: "1px solid rgba(255,34,34,0.08)", paddingBottom: "0.4rem" }}>
                   <span style={{ color: "rgba(192,192,192,0.5)", minWidth: "120px", fontSize: "0.65rem" }}>{key}</span>
@@ -973,14 +967,11 @@ function StorySection() {
             transition: "opacity 0.8s ease 0.6s",
           }}
         >
-          <div className="section-label mb-2">// CADRE JURIDIQUE</div>
+          <div className="section-label mb-2">{t("story.legal")}</div>
           <p
             style={{ fontFamily: "Space Mono, monospace", fontSize: "0.65rem", color: "rgba(192,192,192,0.5)", lineHeight: 1.9 }}
           >
-            Ce projet constitue une création originale indépendante. L'ensemble du code, de l'architecture logicielle,
-            du design et des contenus techniques est protégé par le droit d'auteur. Toute reproduction ou exploitation
-            commerciale sans autorisation écrite préalable est formellement interdite. Les éventuelles références à des
-            univers de fiction sont utilisées dans un contexte descriptif et non officiel.
+            {t("story.legal.text")}
           </p>
         </div>
       </div>
@@ -991,6 +982,7 @@ function StorySection() {
 function ServicesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useIntersection(ref);
+  const { t } = useLanguage();
 
   return (
     <section
@@ -1018,14 +1010,14 @@ function ServicesSection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_02 — CAPACITÉS SYSTÈME</div>
+          <div className="section-label mb-3 text-center md:text-left">{t("services.label")}</div>
           <h2
             className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
-            MODULES &amp;
+            {t("services.title1")}
             <br />
-            <span style={{ color: "#ff2222" }}>SERVICES</span>
+            <span style={{ color: "#ff2222" }}>{t("services.title2")}</span>
           </h2>
           <div className="mt-4 max-w-lg">
             <KittScanner height={4} />
@@ -1085,20 +1077,20 @@ function ServicesSection() {
                 className="text-base font-bold text-white mb-1"
                 style={{ fontFamily: "Orbitron, monospace", fontSize: "0.85rem", lineHeight: 1.4 }}
               >
-                {service.title}
+                {t(`services.${i}.title`)}
               </h3>
               <div
                 className="mb-3"
                 style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.7)" }}
               >
-                {service.subtitle}
+                {t(`services.${i}.subtitle`)}
               </div>
 
               {/* Description */}
               <p
                 style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.95rem", color: "rgba(192,192,192,0.7)", lineHeight: 1.7 }}
               >
-                {service.description}
+                {t(`services.${i}.desc`)}
               </p>
 
                 {/* Bottom accent line */}
@@ -1118,6 +1110,7 @@ function ServicesSection() {
 function SocialProofSection() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useIntersection(ref);
+  const { t } = useLanguage();
 
   return (
     <section
@@ -1147,14 +1140,14 @@ function SocialProofSection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_03 — RETOURS COMMUNAUTÉ</div>
+          <div className="section-label mb-3 text-center md:text-left">{t("community.label")}</div>
           <h2
             className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
-            CE QUE DIT
+            {t("community.title1")}
             <br />
-            <span style={{ color: "#ff2222" }}>LA COMMUNAUTÉ</span>
+            <span style={{ color: "#ff2222" }}>{t("community.title2")}</span>
           </h2>
         </div>
 
@@ -1167,10 +1160,10 @@ function SocialProofSection() {
           }}
         >
           {[
-            { value: "5 000+", label: "MEMBRES FACEBOOK" },
-            { value: "38+", label: "RÉACTIONS / POST" },
-            { value: "16+", label: "COMMENTAIRES" },
-            { value: "100%", label: "PASSION" },
+            { value: "5 000+", label: t("community.stat1") },
+            { value: "38+", label: t("community.stat2") },
+            { value: "16+", label: t("community.stat3") },
+            { value: "100%", label: t("community.stat4") },
           ].map(({ value, label }) => (
             <div
               key={label}
@@ -1215,7 +1208,7 @@ function SocialProofSection() {
                 className="mb-5"
                 style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.05rem", color: "rgba(220,220,220,0.85)", lineHeight: 1.8 }}
               >
-                {review.text}
+                {t(`reviews.${i}.text`)}
               </p>
 
               {/* Author */}
@@ -1238,7 +1231,7 @@ function SocialProofSection() {
                   <span
                     style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(192,192,192,0.4)" }}
                   >
-                    {review.date}
+                    {t(`reviews.${i}.date`)}
                   </span>
                 </div>
               </div>
@@ -1265,7 +1258,7 @@ function SocialProofSection() {
             }}
           >
             <span style={{ fontSize: "1.2rem" }}>👥</span>
-            VOIR LE GROUPE
+            {t("community.cta1")}
           </a>
           <a
             href="https://www.facebook.com/groups/757797724622219/join_request/"
@@ -1283,7 +1276,7 @@ function SocialProofSection() {
             }}
           >
             <span style={{ fontSize: "1rem" }}>+</span>
-            REJOINDRE LE GROUPE
+            {t("community.cta2")}
           </a>
         </div>
       </div>
@@ -1305,6 +1298,7 @@ function ProgressionSection() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useIntersection(ref);
   const [animated, setAnimated] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (visible) setTimeout(() => setAnimated(true), 200);
@@ -1328,9 +1322,9 @@ function ProgressionSection() {
           className="mb-12"
           style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}
         >
-          <div className="section-label mb-3 text-center md:text-left">// DIAGNOSTIC — ÉTAT DU PROJET</div>
+          <div className="section-label mb-3 text-center md:text-left">{t("progression.label")}</div>
           <h2 className="text-3xl md:text-4xl font-bold text-white text-center md:text-left" style={{ fontFamily: "Orbitron, monospace" }}>
-            PROGRESSION<br /><span style={{ color: "#ff2222" }}>DU SYSTÈME</span>
+            {t("progression.title1")}<br /><span style={{ color: "#ff2222" }}>{t("progression.title2")}</span>
           </h2>
         </div>
         <div className="space-y-6 max-w-3xl">
@@ -1341,11 +1335,11 @@ function ProgressionSection() {
             >
               <div className="flex items-center justify-between mb-2">
                 <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.65rem", color: "rgba(192,192,192,0.8)", letterSpacing: "0.1em" }}>
-                  {item.label}
+                  {t(`progression.${i}.label`)}
                 </span>
                 <div className="flex items-center gap-3">
                   <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.1em" }}>
-                    {item.tag}
+                    {t(`progression.${i}.tag`)}
                   </span>
                   <span className="stat-number" style={{ fontSize: "0.85rem" }}>{item.value}%</span>
                 </div>
@@ -1409,6 +1403,7 @@ function VideosSection() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useIntersection(ref);
   const { play } = useSoundEffects();
+  const { t } = useLanguage();
   const [active, setActive] = useState<string | null>(null);
 
   return (
@@ -1440,14 +1435,14 @@ function VideosSection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_03 — ARCHIVES VIDÉO</div>
+          <div className="section-label mb-3 text-center md:text-left">{t("videossec.label")}</div>
           <h2
             className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
-            CHAÎNE YOUTUBE
+            {t("videossec.title1")}
             <br />
-            <span style={{ color: "#ff2222" }}>KITT FRANCO-BELGE</span>
+            <span style={{ color: "#ff2222" }}>{t("videossec.title2")}</span>
           </h2>
         </div>
 
@@ -1527,12 +1522,12 @@ function VideosSection() {
                   className="font-bold text-white mb-1 truncate"
                   style={{ fontFamily: "Orbitron, monospace", fontSize: "0.7rem", letterSpacing: "0.05em" }}
                 >
-                  {v.title}
+                  {t(`videos.${i}.title`)}
                 </div>
                 <p
                   style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(192,192,192,0.6)", lineHeight: 1.5 }}
                 >
-                  {v.desc}
+                  {t(`videos.${i}.desc`)}
                 </p>
               </div>
 
@@ -1562,7 +1557,7 @@ function VideosSection() {
             onMouseEnter={() => play("hover")}
           >
             <span style={{ fontSize: "1.2rem" }}>▶</span>
-            VOIR TOUTES LES VIDÉOS
+            {t("videossec.cta1")}
           </a>
           <a
             href="https://www.youtube.com/@KITTK2000?sub_confirmation=1"
@@ -1581,7 +1576,7 @@ function VideosSection() {
             onMouseEnter={() => play("hover")}
           >
             <span style={{ fontSize: "1rem" }}>+</span>
-            S'ABONNER À LA CHAÎNE
+            {t("videossec.cta2")}
           </a>
         </div>
       </div>
@@ -1595,12 +1590,13 @@ function ContactSection() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
   const { play } = useSoundEffects();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
       play("glitch");
-      toast.error("Veuillez remplir tous les champs obligatoires.");
+      toast.error(t("contact.required"));
       return;
     }
     play("notification");
@@ -1623,13 +1619,13 @@ function ContactSection() {
         }
       );
       play("scanner");
-      toast.success("Message transmis au système KITT. Réponse en cours de traitement...", {
+      toast.success(t("contact.success"), {
         duration: 5000,
       });
       setForm({ name: "", email: "", subject: "", message: "" });
     } catch {
       play("glitch");
-      toast.error("Erreur de transmission. Réessaie dans un instant.");
+      toast.error(t("contact.error"));
     } finally {
       setSending(false);
     }
@@ -1655,14 +1651,14 @@ function ContactSection() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3 text-center md:text-left">// DOSSIER_04 — COMMUNICATION</div>
+          <div className="section-label mb-3 text-center md:text-left">{t("contact.label")}</div>
           <h2
             className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
-            TRANSMETTRE UN
+            {t("contact.title1")}
             <br />
-            <span style={{ color: "#ff2222" }}>MESSAGE</span>
+            <span style={{ color: "#ff2222" }}>{t("contact.title2")}</span>
           </h2>
         </div>
 
@@ -1679,8 +1675,7 @@ function ContactSection() {
               className="mb-8 leading-relaxed"
               style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.05rem", color: "rgba(192,192,192,0.75)", lineHeight: 1.9 }}
             >
-              Pour toute demande de collaboration, question technique, ou souhait d'accès à l'interface
-              KITT, contactez directement Emmanuel Gelinne (Manix) via ce formulaire ou les réseaux sociaux.
+              {t("contact.desc")}
             </p>
 
             {/* Contact cards */}
@@ -1701,7 +1696,7 @@ function ContactSection() {
                 {
                   icon: "🔑",
                   label: "ACCÈS SYSTÈME",
-                  value: "Code d'accès sur demande (MP Facebook)",
+                  value: t("contact.access"),
                   href: null,
                 },
               ].map(({ icon, label, value, href }) => (
@@ -1753,20 +1748,20 @@ function ContactSection() {
                 fontSize: "0.65rem",
               }}
             >
-              <div style={{ color: "#ff2222", marginBottom: "0.5rem" }}>// ÉTAT DU SYSTÈME</div>
+              <div style={{ color: "#ff2222", marginBottom: "0.5rem" }}>{t("contact.system")}</div>
               <div className="flex items-center gap-2 mb-1">
                 <span
                   className="w-2 h-2 rounded-full pulse-red"
                   style={{ background: "#ff2222", display: "inline-block" }}
                 />
-                <span style={{ color: "rgba(192,192,192,0.7)" }}>KYRONEX : EN CONSTRUCTION</span>
+                <span style={{ color: "rgba(192,192,192,0.7)" }}>{t("contact.kyronex")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span
                   className="w-2 h-2 rounded-full"
                   style={{ background: "#22ff44", display: "inline-block", boxShadow: "0 0 5px #22ff44" }}
                 />
-                <span style={{ color: "rgba(192,192,192,0.7)" }}>FACEBOOK : ACTIF — 5K+ MEMBRES</span>
+                <span style={{ color: "rgba(192,192,192,0.7)" }}>{t("contact.facebook")}</span>
               </div>
             </div>
           </div>
@@ -1787,7 +1782,7 @@ function ContactSection() {
                   border: "1px solid rgba(255,34,34,0.2)",
                 }}
               >
-                <div className="section-label mb-4">// FORMULAIRE DE TRANSMISSION</div>
+                <div className="section-label mb-4">{t("contact.form")}</div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
@@ -1795,12 +1790,12 @@ function ContactSection() {
                       className="block mb-1"
                       style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.7)", letterSpacing: "0.15em" }}
                     >
-                      NOM *
+                      {t("contact.name")}
                     </label>
                     <input
                       type="text"
                       className="kitt-input w-full"
-                      placeholder="Votre nom"
+                      placeholder={t("contact.name.ph")}
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
@@ -1810,7 +1805,7 @@ function ContactSection() {
                       className="block mb-1"
                       style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.7)", letterSpacing: "0.15em" }}
                     >
-                      EMAIL *
+                      {t("contact.email")}
                     </label>
                     <input
                       type="email"
@@ -1827,12 +1822,12 @@ function ContactSection() {
                     className="block mb-1"
                     style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.7)", letterSpacing: "0.15em" }}
                   >
-                    SUJET
+                    {t("contact.subject")}
                   </label>
                   <input
                     type="text"
                     className="kitt-input w-full"
-                    placeholder="Objet du message"
+                    placeholder={t("contact.subject.ph")}
                     value={form.subject}
                     onChange={(e) => setForm({ ...form, subject: e.target.value })}
                   />
@@ -1843,12 +1838,12 @@ function ContactSection() {
                     className="block mb-1"
                     style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(255,34,34,0.7)", letterSpacing: "0.15em" }}
                   >
-                    MESSAGE *
+                    {t("contact.message")}
                   </label>
                   <textarea
                     className="kitt-input w-full resize-none"
                     rows={5}
-                    placeholder="Votre message..."
+                    placeholder={t("contact.message.ph")}
                     value={form.message}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                   />
@@ -1860,7 +1855,7 @@ function ContactSection() {
                   disabled={sending}
                   onMouseEnter={() => !sending && play("hover")}
                 >
-                  {sending ? "TRANSMISSION EN COURS..." : "TRANSMETTRE LE MESSAGE"}
+                  {sending ? t("contact.sending") : t("contact.send")}
                 </button>
               </div>
             </form>
@@ -1898,19 +1893,19 @@ function Footer() {
             <p
               style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.9rem", color: "rgba(192,192,192,0.5)", lineHeight: 1.7 }}
             >
-              Intelligence artificielle locale expérimentale. Projet passionnel non commercial par Emmanuel Gelinne (Manix).
+              {t("footer.brand")}
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <div className="section-label mb-4">NAVIGATION</div>
+            <div className="section-label mb-4">{t("footer.nav")}</div>
             <div className="space-y-2">
               {[
-                { label: "Histoire du projet", id: "histoire" },
-                { label: "Modules & Services", id: "services" },
-                { label: "Communauté", id: "avis" },
-                { label: "Contact", id: "contact" },
+                { label: t("footer.nav.1"), id: "histoire" },
+                { label: t("footer.nav.2"), id: "services" },
+                { label: t("footer.nav.3"), id: "avis" },
+                { label: t("footer.nav.4"), id: "contact" },
               ].map(({ label, id }) => {
                 const { play: playSound } = useSoundEffects();
                 return (
@@ -1933,12 +1928,12 @@ function Footer() {
 
           {/* External links */}
           <div>
-            <div className="section-label mb-4">LIENS EXTERNES</div>
+            <div className="section-label mb-4">{t("footer.external")}</div>
             <div className="space-y-2">
               {[
-                { label: "Interface KITT (KYRONEX)", href: "https://on3egs.github.io/Kitt-franco-belge/kyronex/" },
-                { label: "Groupe Facebook", href: "https://www.facebook.com/groups/757797724622219/" },
-                { label: "Chaine YouTube KITT K2000", href: "https://www.youtube.com/@KITTK2000" },
+                { label: t("footer.ext.1"), href: "https://on3egs.github.io/Kitt-franco-belge/kyronex/" },
+                { label: t("footer.ext.2"), href: "https://www.facebook.com/groups/757797724622219/" },
+                { label: t("footer.ext.3"), href: "https://www.youtube.com/@KITTK2000" },
               ].map(({ label, href }) => (
                 <a
                   key={href}
@@ -1963,7 +1958,7 @@ function Footer() {
           <div
             style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "rgba(192,192,192,0.3)", letterSpacing: "0.1em" }}
           >
-            © 2026 KITT FRANCO-BELGE — Emmanuel Gelinne (Manix) — Tous droits réservés
+            {t("footer.copy")}
             {" "}<Link href="/admin" style={{ color: "rgba(255,34,34,0.35)", textDecoration: "none", padding: "0 4px", fontSize: "0.9rem" }} title="⚙">·</Link>
           </div>
           <div
@@ -1998,6 +1993,7 @@ function VisitorCounter() {
   const [count, setCount]       = useState(0);
   const [displayed, setDisplayed] = useState(0);
   const [isNew, setIsNew]       = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const SESSION_KEY = "kitt_counted";
@@ -2064,10 +2060,10 @@ function VisitorCounter() {
         {/* Label gauche */}
         <div style={{ fontFamily: "Space Mono, monospace" }}>
           <div style={{ fontSize: "0.55rem", letterSpacing: "0.25em", color: "rgba(255,34,34,0.5)", marginBottom: "4px" }}>
-            // SYSTÈME KYRONEX — ACCÈS ENREGISTRÉS
+            {t("counter.label")}
           </div>
           <div style={{ fontSize: "0.65rem", letterSpacing: "0.15em", color: "rgba(192,192,192,0.4)" }}>
-            COMPTEUR GLOBAL · VISITEURS UNIQUES
+            {t("counter.sub")}
           </div>
         </div>
 
@@ -2100,10 +2096,10 @@ function VisitorCounter() {
         {/* Statut droit */}
         <div className="text-right" style={{ fontFamily: "Space Mono, monospace" }}>
           <div style={{ fontSize: "0.55rem", letterSpacing: "0.2em", color: "#ff2222", marginBottom: "4px" }}>
-            ● SYSTÈME EN LIGNE
+            {t("counter.online")}
           </div>
           <div style={{ fontSize: "0.55rem", letterSpacing: "0.15em", color: "rgba(192,192,192,0.4)" }}>
-            {isNew ? "BIENVENUE — ACCÈS AUTORISÉ" : "ACCÈS RECONNU"}
+            {isNew ? t("counter.new") : t("counter.known")}
           </div>
         </div>
 
@@ -2117,6 +2113,7 @@ function SubscribePopup() {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const { play } = useSoundEffects();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (sessionStorage.getItem("kitt_sub_popup")) return;
@@ -2149,14 +2146,14 @@ function SubscribePopup() {
         >✕</button>
 
         <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "#ff2222", letterSpacing: "0.2em", marginBottom: "8px" }}>
-          // SYSTÈME KYRONEX — NOTIFICATION
+          {t("popup.label")}
         </div>
         <p style={{ fontFamily: "Orbitron, monospace", fontSize: "0.75rem", color: "white", marginBottom: "12px", lineHeight: 1.5 }}>
-          Tu suis le projet KITT ?<br />
-          <span style={{ color: "#ff2222" }}>Abonne-toi à la chaîne !</span>
+          {t("popup.title")}<br />
+          <span style={{ color: "#ff2222" }}>{t("popup.highlight")}</span>
         </p>
         <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(192,192,192,0.6)", marginBottom: "14px" }}>
-          Nouvelles vidéos chaque semaine — construction, électronique, KARR...
+          {t("popup.desc")}
         </p>
         <a
           href="https://www.youtube.com/@KITTK2000?sub_confirmation=1"
@@ -2174,7 +2171,7 @@ function SubscribePopup() {
             color: "#ff2222",
           }}
         >
-          ▶ S'ABONNER MAINTENANT
+          {t("popup.cta")}
         </a>
       </div>
     </div>
