@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-23T09:50:23.347387+00:00",
+  "status": "online",
+  "url": "https://thread-monitor-comments-sitting.trycloudflare.com",
+  "last_update": "2026-03-23T09:50:29.735645+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
