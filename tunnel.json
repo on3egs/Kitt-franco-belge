@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://pierre-wonder-adsl-discrete.trycloudflare.com",
-  "last_update": "2026-03-23T10:03:08.074638+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-23T10:03:09.958474+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
