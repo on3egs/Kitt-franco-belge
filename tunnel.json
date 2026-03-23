@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://fat-matrix-civic-page.trycloudflare.com",
-  "last_update": "2026-03-23T10:00:21.799234+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-23T10:00:24.291756+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
