@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://struct-brick-secrets-planned.trycloudflare.com",
-  "last_update": "2026-03-23T09:57:15.119963+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-23T09:57:21.543332+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
