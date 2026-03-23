@@ -17,6 +17,7 @@ import AdminMusique from "./pages/AdminMusique";
 import Pdfs from "./pages/Pdfs";
 import SoumettrePdf from "./pages/SoumettrePdf";
 import AdminPdfs from "./pages/AdminPdfs";
+import Admin from "./pages/Admin";
 
 function AppRouter() {
   return (
@@ -35,6 +36,7 @@ function AppRouter() {
         <Route path={"/documents"} component={Pdfs} />
         <Route path={"/soumettre-pdf"} component={SoumettrePdf} />
         <Route path={"/admin-pdfs"} component={AdminPdfs} />
+        <Route path={"/admin"} component={Admin} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
