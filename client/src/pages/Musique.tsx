@@ -63,6 +63,7 @@ export default function Musique() {
   const peaksRef = useRef<Float32Array | null>(null);
   const peakVelsRef = useRef<Float32Array | null>(null);
   const currentIdxRef = useRef<number | null>(null);
+  const playGenRef = useRef(0); // Annule les lancements concurrents
 
   // Fetch approved tracks
   useEffect(() => {
@@ -234,10 +235,14 @@ export default function Musique() {
   async function playTrack(idx: number) {
     if (!apiBase) return;
     const track = tracks[idx];
+
+    // Incrémenter la génération — tout playTrack précédent encore en await sera ignoré
+    const gen = ++playGenRef.current;
+
     setCurrentIdx(idx);
     currentIdxRef.current = idx;
 
-    // Arrêter l'audio précédent sans perdre la ref
+    // Arrêter et déconnecter l'audio précédent
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.onended = null;
@@ -267,18 +272,19 @@ export default function Musique() {
       try { await audioCtxRef.current.resume(); } catch {}
     }
 
+    // Un clic plus récent a pris la main → abandonner silencieusement
+    if (gen !== playGenRef.current) { audio.pause(); return; }
+
     try {
       await audio.play();
+      if (gen !== playGenRef.current) { audio.pause(); return; }
       setIsPlaying(true);
       sourceRef.current ? startRealVisualizer() : startFakeVisualizer();
     } catch {
+      if (gen !== playGenRef.current) return;
       // Fallback : proxy hors ligne → URL directe sans CORS
-      // Fermer l'AudioContext lié en mode CORS pour ne pas bloquer la lecture
-      if (audioCtxRef.current) {
-        try { audioCtxRef.current.close(); } catch {}
-        audioCtxRef.current = null;
-        analyserRef.current = null;
-        gainNodeRef.current = null;
+      if (sourceRef.current) {
+        try { sourceRef.current.disconnect(); } catch {}
         sourceRef.current = null;
       }
       const audio2 = new Audio();
@@ -292,7 +298,12 @@ export default function Musique() {
       };
       audioRef.current = audio2;
       audio2.load();
-      try { await audio2.play(); setIsPlaying(true); startFakeVisualizer(); } catch {}
+      try {
+        await audio2.play();
+        if (gen !== playGenRef.current) { audio2.pause(); return; }
+        setIsPlaying(true);
+        startFakeVisualizer();
+      } catch {}
     }
 
     fetch(`${apiBase}/api/music/play/${track.id}`, { method: "POST" }).catch(() => {});
