@@ -205,6 +205,106 @@
       max-width: 360px;
     }
     #offline-box.visible { display: block; }
+
+    /* ── MESSAGE DE BIENVENUE ───────────────────────────────── */
+    #welcome-block {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 32px;
+      padding: 0 16px;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      text-align: center;
+    }
+    #welcome-block.visible { opacity: 1; }
+
+    #welcome-text {
+      font-size: clamp(0.7em, 2.2vw, 0.88em);
+      line-height: 2.0;
+      color: #7a4444;
+      letter-spacing: 2px;
+      min-height: 4em;
+    }
+    #welcome-text .w-hi { color: #cc4444; }
+    #welcome-text .w-key {
+      color: #ff3333;
+      letter-spacing: 4px;
+      font-weight: bold;
+    }
+
+    #welcome-audio-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    #welcome-replay-btn {
+      font-family: 'Courier New', monospace;
+      font-size: 0.56em;
+      letter-spacing: 3px;
+      color: #551111;
+      background: transparent;
+      border: 1px solid #330000;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+    }
+    #welcome-replay-btn:hover {
+      color: #ff3333;
+      border-color: #aa1111;
+      box-shadow: 0 0 10px rgba(180,0,0,0.3);
+    }
+    #welcome-replay-btn.show { display: inline-block; }
+    #welcome-play-prompt {
+      font-size: 0.54em;
+      letter-spacing: 3px;
+      color: #441111;
+      animation: btn-pulse 2s ease-in-out infinite;
+      display: none;
+      cursor: pointer;
+      border: 1px solid #330000;
+      padding: 8px 20px;
+      background: transparent;
+      font-family: 'Courier New', monospace;
+      transition: all 0.2s;
+    }
+    #welcome-play-prompt:hover { color: #ff2222; border-color: #880000; }
+    #welcome-play-prompt.show { display: inline-block; }
+
+    /* Equalizer animé pendant la lecture */
+    #welcome-eq {
+      display: none;
+      align-items: flex-end;
+      gap: 3px;
+      height: 18px;
+    }
+    #welcome-eq.active { display: flex; }
+    #welcome-eq span {
+      display: inline-block;
+      width: 3px;
+      background: #aa2222;
+      border-radius: 1px;
+      animation: eq-bar 0.6s ease-in-out infinite alternate;
+    }
+    #welcome-eq span:nth-child(1) { animation-delay: 0.00s; height: 4px; }
+    #welcome-eq span:nth-child(2) { animation-delay: 0.10s; height: 10px; }
+    #welcome-eq span:nth-child(3) { animation-delay: 0.20s; height: 16px; }
+    #welcome-eq span:nth-child(4) { animation-delay: 0.05s; height: 12px; }
+    #welcome-eq span:nth-child(5) { animation-delay: 0.15s; height: 8px;  }
+    #welcome-eq span:nth-child(6) { animation-delay: 0.25s; height: 14px; }
+    @keyframes eq-bar {
+      from { transform: scaleY(0.25); opacity: 0.4; }
+      to   { transform: scaleY(1);    opacity: 1;   }
+    }
+
+    /* Séparateur discret */
+    .p-divider {
+      width: 120px; height: 1px;
+      background: linear-gradient(90deg, transparent, #330000, transparent);
+      margin: 0 auto 32px;
+    }
   </style>
 </head>
 <body>
@@ -225,6 +325,21 @@
 
 <!-- ── PORTAIL D'ACCÈS ── -->
 <div id="portal">
+
+  <!-- ── MESSAGE DE BIENVENUE ── -->
+  <div id="welcome-block">
+    <div id="welcome-text"></div>
+    <div id="welcome-audio-bar">
+      <div id="welcome-eq">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+      <button id="welcome-play-prompt" onclick="welcomePlay()">[ ▶ &nbsp;ÉCOUTER LE MESSAGE ]</button>
+      <button id="welcome-replay-btn" onclick="welcomePlay()">[ ↺ &nbsp;RÉÉCOUTER ]</button>
+    </div>
+  </div>
+  <div class="p-divider"></div>
+
   <div class="p-scanner"><div class="p-scanner-head"></div></div>
   <div class="p-logo">KYRONEX</div>
   <div class="p-sub">KNIGHT INDUSTRIES TWO THOUSAND</div>
@@ -339,6 +454,7 @@
       intro.classList.add('gone');
       document.getElementById('portal').classList.add('visible');
       _checkTunnel();
+      if (typeof window.welcomeInit === 'function') window.welcomeInit();
     }, 2500);
   }
 
@@ -364,6 +480,7 @@
       intro.classList.add('gone');
       document.getElementById('portal').classList.add('visible');
       _checkTunnel();
+      if (typeof window.welcomeInit === 'function') window.welcomeInit();
     }, 400);
   };
 
@@ -794,6 +911,208 @@
   }
 
   document.addEventListener('DOMContentLoaded', _run);
+})();
+</script>
+
+<!-- ── MESSAGE DE BIENVENUE — AUTOPLAY + FALLBACK ──────────────── -->
+<script>
+(function () {
+  'use strict';
+
+  var EL_KEY  = '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3';
+  var VOICE   = 'AWQ8RBL5o63CDJoS98F9'; // Manix clone
+  var AUDIO_DURATION_MS = 16500;         // duree estimee (ajuste si besoin)
+
+  // Texte audio (optimise intonation ElevenLabs)
+  var AUDIO_TEXT =
+    "Ce que vous explorez ici, est en construction. " +
+    "Non pas par manque de vision... " +
+    "mais parce que les choses qui durent, " +
+    "prennent le temps qu'il leur faut. " +
+    "Kyronex s'améliore à chaque mise à jour — " +
+    "et votre présence, dès maintenant, en fait partie.";
+
+  // Texte écran : segments avec classes CSS (normal | hi | key)
+  // Format : [texte, classe]
+  var SCREEN_SEGMENTS = [
+    ["CE QUE VOUS EXPLOREZ ICI\n", "w-key"],
+    ["est en construction.\n\n", "w-hi"],
+    ["Non pas par manque de vision —\n", ""],
+    ["mais parce que les choses qui durent\n", ""],
+    ["prennent le temps qu'il leur faut.\n\n", ""],
+    ["KYRONEX S'AMÉLIORE\n", "w-key"],
+    ["À CHAQUE MISE À JOUR.\n\n", "w-hi"],
+    ["Votre présence,\ndès maintenant,\n", ""],
+    ["en fait partie.", "w-hi"]
+  ];
+
+  var _played    = false;
+  var _playing   = false;
+  var _audio     = null;
+  var _typeTimer = null;
+
+  /* ── Typewriter synchronisé à la durée audio ── */
+  function _typeSync(segments, durationMs) {
+    var el = document.getElementById('welcome-text');
+    if (!el) return;
+    el.innerHTML = '';
+
+    // Calcule le nb total de caracteres
+    var totalChars = segments.reduce(function (s, seg) { return s + seg[0].length; }, 0);
+    var msPerChar  = durationMs / Math.max(totalChars, 1);
+
+    var si = 0, ci = 0, elapsed = 0;
+
+    function tick() {
+      if (si >= segments.length) return;
+      var seg  = segments[si];
+      var text = seg[0];
+      var cls  = seg[1];
+
+      if (ci < text.length) {
+        // Reconstruit le HTML complet à chaque tick
+        var html = '';
+        for (var i = 0; i < si; i++) {
+          var t = segments[i][0].replace(/\n/g, '<br>');
+          html += segments[i][1]
+            ? '<span class="' + segments[i][1] + '">' + t + '</span>'
+            : t;
+        }
+        var partial = text.slice(0, ci + 1).replace(/\n/g, '<br>');
+        html += cls
+          ? '<span class="' + cls + '">' + partial + '</span>'
+          : partial;
+        html += '<span style="opacity:0.3">_</span>';
+        el.innerHTML = html;
+        ci++;
+      } else {
+        si++;
+        ci = 0;
+        if (si >= segments.length) {
+          // Retire le curseur, affiche le texte complet proprement
+          var finalHtml = '';
+          for (var j = 0; j < segments.length; j++) {
+            var ft = segments[j][0].replace(/\n/g, '<br>');
+            finalHtml += segments[j][1]
+              ? '<span class="' + segments[j][1] + '">' + ft + '</span>'
+              : ft;
+          }
+          el.innerHTML = finalHtml;
+          return;
+        }
+      }
+      elapsed += msPerChar;
+      _typeTimer = setTimeout(tick, msPerChar);
+    }
+    tick();
+  }
+
+  /* ── Fetch ElevenLabs + lecture ── */
+  function _fetchAndPlay(onStart, onEnd, onError) {
+    fetch('https://api.elevenlabs.io/v1/text-to-speech/' + VOICE, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': EL_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text: AUDIO_TEXT,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.48,
+          similarity_boost: 0.88,
+          style: 0.22,
+          use_speaker_boost: true
+        }
+      })
+    })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    })
+    .then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      if (_audio) { _audio.pause(); try { URL.revokeObjectURL(_audio.src); } catch(e){} }
+      _audio = new Audio(url);
+      _audio.onplay   = onStart;
+      _audio.onended  = onEnd;
+      _audio.onerror  = onError;
+      _audio.play().catch(onError);
+    })
+    .catch(onError);
+  }
+
+  /* ── API publique ── */
+  window.welcomeInit = function () {
+    var block     = document.getElementById('welcome-block');
+    var eq        = document.getElementById('welcome-eq');
+    var replayBtn = document.getElementById('welcome-replay-btn');
+    var playPrompt= document.getElementById('welcome-play-prompt');
+
+    if (!block) return;
+
+    // Rend le bloc visible
+    setTimeout(function () { block.classList.add('visible'); }, 400);
+
+    // Tente l'autoplay (fonctionne si l'utilisateur a cliqué sur l'intro)
+    _playing = true;
+    _fetchAndPlay(
+      // onStart
+      function () {
+        _played = true;
+        eq.classList.add('active');
+        playPrompt.classList.remove('show');
+        _typeSync(SCREEN_SEGMENTS, AUDIO_DURATION_MS);
+      },
+      // onEnd
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+      },
+      // onError (autoplay bloqué ou erreur réseau)
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        // Affiche le texte directement + bouton "écouter"
+        _typeSync(SCREEN_SEGMENTS, 4000);
+        setTimeout(function () { playPrompt.classList.add('show'); }, 4200);
+      }
+    );
+  };
+
+  window.welcomePlay = function () {
+    if (_playing) return;
+    var eq        = document.getElementById('welcome-eq');
+    var replayBtn = document.getElementById('welcome-replay-btn');
+    var playPrompt= document.getElementById('welcome-play-prompt');
+    if (!eq) return;
+
+    _playing = true;
+    replayBtn.classList.remove('show');
+    playPrompt.classList.remove('show');
+    if (_typeTimer) { clearTimeout(_typeTimer); _typeTimer = null; }
+    document.getElementById('welcome-text').innerHTML = '';
+
+    _fetchAndPlay(
+      function () {
+        eq.classList.add('active');
+        _typeSync(SCREEN_SEGMENTS, AUDIO_DURATION_MS);
+      },
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+      },
+      function (e) {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+        console.warn('[WELCOME]', e);
+      }
+    );
+  };
 })();
 </script>
 
