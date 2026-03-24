@@ -91,7 +91,7 @@ export default function LangSelector() {
 
       {open && (
         <div style={{
-          position: "absolute", top: "calc(100% + 4px)", right: 0,
+          position: "absolute", top: "calc(100% + 4px)", left: "50%", transform: "translateX(-50%)",
           background: "rgba(10,0,0,0.97)",
           border: "1px solid rgba(255,34,34,0.3)",
           boxShadow: "0 8px 24px rgba(0,0,0,0.8)",
