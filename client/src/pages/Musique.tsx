@@ -212,27 +212,35 @@ export default function Musique() {
     const track = tracks[idx];
     setCurrentIdx(idx);
 
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
     const proxied = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
     audioRef.current.src = proxied;
-    audioRef.current.crossOrigin = "anonymous";
+    if (!isMobile) audioRef.current.crossOrigin = "anonymous";
     audioRef.current.load();
 
-    initAudioCtx();
-    if (audioCtxRef.current?.state === "suspended") {
-      await audioCtxRef.current.resume();
+    // Sur mobile : pas d'AudioContext (casse la permission iOS), lecture directe
+    if (!isMobile) {
+      initAudioCtx();
+      if (audioCtxRef.current?.state === "suspended") {
+        await audioCtxRef.current.resume();
+      }
     }
 
     try {
       await audioRef.current.play();
       setIsPlaying(true);
-      startRealVisualizer();
+      (!isMobile && analyserRef.current) ? startRealVisualizer() : startFakeVisualizer();
     } catch {
+      // Fallback : URL directe sans proxy
       audioRef.current.src = track.url;
       audioRef.current.removeAttribute("crossorigin");
       audioRef.current.load();
-      await audioRef.current.play();
-      setIsPlaying(true);
-      startFakeVisualizer();
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+        startFakeVisualizer();
+      } catch { /* lecture impossible */ }
     }
     fetch(`${apiBase}/api/music/play/${track.id}`, { method: "POST" }).catch(() => {});
     setTracks(ts => ts.map((t, i) => i === idx ? { ...t, plays: (t.plays || 0) + 1 } : t));
