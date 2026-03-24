@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-24T14:00:08.648648+00:00",
+  "status": "online",
+  "url": "https://nose-macintosh-movement-data.trycloudflare.com",
+  "last_update": "2026-03-24T14:00:40.043097+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
