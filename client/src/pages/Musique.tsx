@@ -227,6 +227,10 @@ export default function Musique() {
 
     try {
       await audioRef.current.play();
+      // Attendre que le contexte soit vraiment actif (Android reste suspendu sinon)
+      if (audioCtxRef.current?.state === 'suspended') {
+        await audioCtxRef.current.resume();
+      }
       setIsPlaying(true);
       startRealVisualizer();
     } catch {
