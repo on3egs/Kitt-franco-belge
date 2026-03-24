@@ -1478,7 +1478,14 @@ function VideosSection() {
                 <div
                   className="relative cursor-pointer"
                   style={{ aspectRatio: "16/9" }}
-                  onClick={() => { play("click"); setActive(v.id); }}
+                  onClick={() => {
+                    play("click");
+                    if (window.innerWidth < 768) {
+                      window.open(`https://www.youtube.com/watch?v=${v.id}`, '_blank');
+                    } else {
+                      setActive(v.id);
+                    }
+                  }}
                   onMouseEnter={() => play("hover")}
                 >
                   <img
