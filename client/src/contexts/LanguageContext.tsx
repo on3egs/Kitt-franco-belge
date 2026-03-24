@@ -46,6 +46,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.subtitle": "Projet passionnel & non commercial — par",
     "hero.cta1": "ACCÉDER À L'INTERFACE",
     "hero.cta2": "DÉCOUVRIR LE PROJET",
+    "hero.propose": "PROPOSE TA VIDÉO",
     "hero.members": "MEMBRES",
     "hero.status": "ONLINE",
 
@@ -364,6 +365,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.subtitle": "Passion project & non-commercial — by",
     "hero.cta1": "ACCESS THE INTERFACE",
     "hero.cta2": "DISCOVER THE PROJECT",
+    "hero.propose": "SUBMIT YOUR VIDEO",
     "hero.members": "MEMBERS",
     "hero.status": "ONLINE",
 

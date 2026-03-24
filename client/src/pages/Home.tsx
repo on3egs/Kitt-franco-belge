@@ -772,6 +772,29 @@ function HeroSection() {
           >
             {t("hero.cta2")}
           </button>
+          <Link
+            href="/soumettre"
+            style={{
+              fontFamily: "Orbitron, monospace",
+              fontSize: "0.65rem",
+              letterSpacing: "0.12em",
+              color: "#ff2222",
+              border: "1px solid #ff2222",
+              padding: "14px 22px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              textDecoration: "none",
+              background: "rgba(255,34,34,0.08)",
+              boxShadow: "0 0 12px rgba(255,34,34,0.25)",
+              transition: "background 0.2s ease, box-shadow 0.2s ease",
+              animation: "hero-cta-pulse 3s ease-in-out infinite",
+            }}
+            onMouseEnter={e => { play("hover"); (e.currentTarget as HTMLElement).style.background = "rgba(255,34,34,0.2)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 24px rgba(255,34,34,0.6)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,34,34,0.08)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 12px rgba(255,34,34,0.25)"; }}
+          >
+            🚗 {t("hero.propose")}
+          </Link>
         </div>
       </div>
 
@@ -1589,6 +1612,81 @@ function VideosSection() {
             <span style={{ fontSize: "1rem" }}>+</span>
             {t("videossec.cta2")}
           </a>
+        </div>
+
+        {/* ── CTA COMMUNAUTAIRE "Propose ta vidéo" ── */}
+        <div
+          style={{
+            marginTop: "48px",
+            opacity: visible ? 1 : 0,
+            transition: "opacity 0.8s ease 0.8s",
+            position: "relative",
+            overflow: "hidden",
+            background: "linear-gradient(135deg, rgba(255,34,34,0.08) 0%, rgba(10,0,0,0.9) 60%)",
+            border: "1px solid rgba(255,34,34,0.35)",
+            padding: "28px 32px",
+            display: "flex",
+            flexDirection: "column" as const,
+            alignItems: "flex-start",
+            gap: "16px",
+          }}
+        >
+          {/* Accent ligne gauche */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, width: "3px", height: "100%",
+            background: "linear-gradient(180deg, #ff2222, rgba(255,34,34,0.1))",
+          }} />
+          {/* Coins HUD */}
+          <div style={{ position: "absolute", top: 0, right: 0, width: "12px", height: "12px", borderTop: "2px solid #ff2222", borderRight: "2px solid #ff2222" }} />
+          <div style={{ position: "absolute", bottom: 0, left: "16px", width: "12px", height: "12px", borderBottom: "2px solid rgba(255,34,34,0.4)", borderLeft: "2px solid rgba(255,34,34,0.4)" }} />
+
+          <div style={{ paddingLeft: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+              <span style={{
+                display: "inline-block", width: "8px", height: "8px", borderRadius: "50%",
+                background: "#ff2222", animation: "pulse 2s ease-in-out infinite",
+              }} />
+              <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.25em" }}>
+                // VOUS AVEZ UNE VIDÉO ?
+              </span>
+            </div>
+            <h3 style={{ fontFamily: "Orbitron, monospace", fontSize: "1.1rem", color: "white", marginBottom: "10px", fontWeight: 700 }}>
+              🔥 REJOIGNEZ LA GALERIE OFFICIELLE
+            </h3>
+            <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "rgba(192,192,192,0.7)", lineHeight: 1.8, marginBottom: "20px", maxWidth: "560px" }}>
+              Partagez vos vidéos liées au projet KITT avec toute la communauté.
+              YouTube, Facebook — tout est accepté. Soumission en 30 secondes.
+            </p>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" as const }}>
+              <Link
+                href="/soumettre"
+                style={{
+                  fontFamily: "Orbitron, monospace", fontSize: "0.65rem", letterSpacing: "0.15em",
+                  color: "white", background: "#ff2222",
+                  padding: "12px 28px", display: "inline-block", textDecoration: "none",
+                  boxShadow: "0 0 18px rgba(255,34,34,0.5)",
+                  transition: "background 0.2s ease, box-shadow 0.2s ease",
+                }}
+                onMouseEnter={e => { play("hover"); (e.currentTarget as HTMLElement).style.background = "#cc1111"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 28px rgba(255,34,34,0.8)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#ff2222"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 18px rgba(255,34,34,0.5)"; }}
+              >
+                🚗 PROPOSER MA VIDÉO
+              </Link>
+              <Link
+                href="/videos"
+                style={{
+                  fontFamily: "Orbitron, monospace", fontSize: "0.65rem", letterSpacing: "0.15em",
+                  color: "rgba(192,192,192,0.6)", border: "1px solid rgba(255,34,34,0.2)",
+                  padding: "12px 28px", display: "inline-block", textDecoration: "none",
+                  transition: "border-color 0.2s ease, color 0.2s ease",
+                }}
+                onMouseEnter={e => { play("hover"); (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,34,34,0.6)"; (e.currentTarget as HTMLElement).style.color = "rgba(255,34,34,0.8)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,34,34,0.2)"; (e.currentTarget as HTMLElement).style.color = "rgba(192,192,192,0.6)"; }}
+              >
+                VOIR LA GALERIE →
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>

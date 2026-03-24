@@ -253,6 +253,11 @@
     50% { opacity: 0.5; box-shadow: 0 0 20px #ff2222, 0 0 40px #ff2222; }
   }
 
+  @keyframes hero-cta-pulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,34,34,0.25); border-color: rgba(255,34,34,0.6); }
+    50% { box-shadow: 0 0 22px rgba(255,34,34,0.55), 0 0 40px rgba(255,34,34,0.2); border-color: #ff2222; }
+  }
+
   /* Number counter display */
   .stat-number {
     font-family: 'Orbitron', monospace;
