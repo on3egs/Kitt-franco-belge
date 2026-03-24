@@ -293,14 +293,14 @@ function NavBar() {
           className="md:hidden py-4 px-6 flex flex-col gap-4"
           style={{ background: "rgba(10, 0, 0, 0.98)", borderTop: "1px solid rgba(255,34,34,0.2)" }}
         >
-          {["histoire", "services", "videos", "avis", "contact"].map((id) => (
+          {(["histoire", "services", "videos", "avis", "contact"] as const).map((id) => (
             <button
               key={id}
               onClick={() => { scrollTo(id); setMenuOpen(false); }}
               className="text-left text-xs tracking-widest uppercase"
               style={{ fontFamily: "Space Mono, monospace", color: "#c0c0c0" }}
             >
-              {id}
+              {t(`nav.${id}`)}
             </button>
           ))}
           <Link
@@ -309,7 +309,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onClick={() => setMenuOpen(false)}
           >
-            KARR
+            {t("nav.karr")}
           </Link>
           <Link
             href="/soumettre"
@@ -317,7 +317,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onClick={() => setMenuOpen(false)}
           >
-            SOUMETTRE
+            {t("nav.soumettre")}
           </Link>
           <Link
             href="/videos"
@@ -325,7 +325,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onClick={() => setMenuOpen(false)}
           >
-            GALERIE
+            {t("nav.galerie")}
           </Link>
           <Link
             href="/musique"
@@ -333,7 +333,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onClick={() => setMenuOpen(false)}
           >
-            MUSIQUE
+            {t("nav.musique")}
           </Link>
           <Link
             href="/documents"
@@ -341,7 +341,7 @@ function NavBar() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
             onClick={() => setMenuOpen(false)}
           >
-            DOCS
+            {t("nav.docs")}
           </Link>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
@@ -351,7 +351,7 @@ function NavBar() {
             style={{ fontSize: "0.6rem" }}
             onMouseEnter={() => play("hover")}
           >
-            ACCÉDER À KITT
+            {t("nav.access")}
           </a>
         </div>
       )}
