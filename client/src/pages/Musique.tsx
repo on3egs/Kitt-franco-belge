@@ -212,27 +212,21 @@ export default function Musique() {
     const track = tracks[idx];
     setCurrentIdx(idx);
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-
     const proxied = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
     audioRef.current.src = proxied;
-    if (!isMobile) audioRef.current.crossOrigin = "anonymous";
+    audioRef.current.crossOrigin = "anonymous";
     audioRef.current.load();
 
-    // Sur mobile : pas d'AudioContext (casse la permission iOS), lecture directe
-    if (!isMobile) {
-      initAudioCtx();
-      if (audioCtxRef.current?.state === "suspended") {
-        await audioCtxRef.current.resume();
-      }
-    }
+    // Init AudioContext synchrone (avant tout await) — compatible iOS
+    initAudioCtx();
+    audioCtxRef.current?.resume(); // sans await : évite de casser la permission iOS
 
     try {
       await audioRef.current.play();
       setIsPlaying(true);
-      (!isMobile && analyserRef.current) ? startRealVisualizer() : startFakeVisualizer();
+      startRealVisualizer();
     } catch {
-      // Fallback : URL directe sans proxy
+      // Fallback : URL directe sans proxy ni CORS
       audioRef.current.src = track.url;
       audioRef.current.removeAttribute("crossorigin");
       audioRef.current.load();
