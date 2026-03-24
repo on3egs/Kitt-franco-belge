@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-24T10:34:11.029605+00:00",
+  "status": "online",
+  "url": "https://fixtures-benchmark-res-effective.trycloudflare.com",
+  "last_update": "2026-03-24T10:34:39.489575+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
