@@ -185,20 +185,20 @@ export default function Musique() {
     if (!ctx) return;
     const W = canvas.width, H = canvas.height;
     let t = 0;
-    const barData = Array.from({ length: 64 }, (_, i) => ({
+    const barData = Array.from({ length: 64 }, () => ({
       phase: Math.random() * Math.PI * 2,
-      freq: 0.5 + Math.random() * 2,
-      amp: 0.3 + Math.random() * 0.7,
+      freq: 0.8 + Math.random() * 3,
+      amp: 0.5 + Math.random() * 0.5,
     }));
 
     const draw = () => {
       animRef.current = requestAnimationFrame(draw);
-      t += 0.04;
+      t += 0.07;
       ctx.fillStyle = "#030000";
       ctx.fillRect(0, 0, W, H);
       const bw = W / barData.length;
       barData.forEach((b, i) => {
-        const h = (Math.sin(t * b.freq + b.phase) * 0.5 + 0.5) * H * b.amp * 0.85 + 2;
+        const h = (Math.sin(t * b.freq + b.phase) * 0.5 + 0.5) * H * b.amp + 3;
         const grd = ctx.createLinearGradient(0, H, 0, H - h);
         grd.addColorStop(0, "#cc2200");
         grd.addColorStop(1, "#ff8800");
@@ -216,32 +216,47 @@ export default function Musique() {
     const track = tracks[idx];
     setCurrentIdx(idx);
 
-    const proxied = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
-    audioRef.current.crossOrigin = "anonymous"; // AVANT src — sinon mobile charge sans CORS
-    audioRef.current.src = proxied;
-    audioRef.current.load();
+    // Sur mobile : bypass total AudioContext — createMediaElementSource lie l'élément
+    // en mode CORS et bloque silencieusement toute piste suivante sans les bons headers
+    const onMobile = navigator.maxTouchPoints > 1 || /Android|iPhone|iPad/i.test(navigator.userAgent);
 
-    initAudioCtx();
-    // Resume avant play() — try/catch obligatoire sinon rejet = silence total
-    if (audioCtxRef.current?.state === 'suspended') {
-      try { await audioCtxRef.current.resume(); } catch {}
-    }
-
-    try {
-      await audioRef.current.play();
-      setIsPlaying(true);
-      sourceRef.current ? startRealVisualizer() : startFakeVisualizer();
-    } catch {
-      // Fallback : URL directe sans proxy ni CORS
+    if (onMobile) {
       audioRef.current.removeAttribute("crossorigin");
-      audioRef.current.src = track.url;
+      audioRef.current.src = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
       audioRef.current.load();
       try {
         await audioRef.current.play();
         setIsPlaying(true);
         startFakeVisualizer();
-      } catch { /* lecture impossible */ }
+      } catch {
+        audioRef.current.src = track.url;
+        audioRef.current.load();
+        try { await audioRef.current.play(); setIsPlaying(true); startFakeVisualizer(); } catch {}
+      }
+    } else {
+      audioRef.current.crossOrigin = "anonymous";
+      audioRef.current.src = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
+      audioRef.current.load();
+      initAudioCtx();
+      if (audioCtxRef.current?.state === 'suspended') {
+        try { await audioCtxRef.current.resume(); } catch {}
+      }
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+        sourceRef.current ? startRealVisualizer() : startFakeVisualizer();
+      } catch {
+        audioRef.current.removeAttribute("crossorigin");
+        audioRef.current.src = track.url;
+        audioRef.current.load();
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+          startFakeVisualizer();
+        } catch {}
+      }
     }
+
     fetch(`${apiBase}/api/music/play/${track.id}`, { method: "POST" }).catch(() => {});
     setTracks(ts => ts.map((t, i) => i === idx ? { ...t, plays: (t.plays || 0) + 1 } : t));
   }
