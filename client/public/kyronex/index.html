@@ -236,6 +236,32 @@
     POUR LE MOMENT<br><br>
     REESSAYEZ PLUS TARD
   </div>
+
+  <!-- ── DEMO VOIX KITT — TEMPORAIRE ── -->
+  <div style="margin-top:36px;text-align:center;">
+    <button id="kitt-voice-btn" onclick="kittParle()" style="
+      padding:12px 32px;
+      font-family:'Courier New',monospace;
+      font-size:0.72em;
+      letter-spacing:4px;
+      color:#ff2222;
+      background:transparent;
+      border:1px solid #440000;
+      cursor:pointer;
+      transition:all 0.2s;
+      animation:btn-pulse 2.5s ease-in-out infinite;
+    "
+    onmouseover="this.style.background='#110000';this.style.borderColor='#cc0000';this.style.boxShadow='0 0 18px rgba(200,0,0,0.4)'"
+    onmouseout="this.style.background='transparent';this.style.borderColor='#440000';this.style.boxShadow='none'"
+    >
+      [ KITT — ACTIVATION VOCALE ]
+    </button>
+    <div id="kitt-voice-status" style="
+      margin-top:10px;font-size:0.55em;letter-spacing:3px;
+      color:#441111;min-height:1.2em;text-align:center;
+    "></div>
+  </div>
+  <!-- ── FIN DEMO ── -->
 </div>
 
 <script>
@@ -754,5 +780,91 @@
   document.addEventListener('DOMContentLoaded', _run);
 })();
 </script>
+
+<!-- ── KITT VOICE DEMO — TEMPORAIRE ────────────────────────────── -->
+<script>
+var _kittAudio = null;
+var _kittPlaying = false;
+
+var KITT_PHRASES = [
+  "Bonjour. Je suis K.I.T.T., le Knight Industries Two Thousand, version Franco-Belge. Systeme en ligne. Intelligence artificielle locale activee. Pret a l action, Manix.",
+  "Attention. Anomalie detectee dans le secteur nord. Je recommande la plus grande prudence. Mes capteurs sont operationnels.",
+  "Manix, toutes mes fonctions sont au maximum. Le turbo boost est pret. Donnez moi vos coordonnees et je calcule l itineraire optimal.",
+  "Systeme de navigation active. Vitesse de croisiere : deux cent quarante kilometres heure. Carrosserie renforcee en mode combat. K.I.T.T. est pret.",
+  "Je suis K.I.T.T. Mon intelligence artificielle traite mille deux cents operations par seconde. Ensemble, nous sommes invincibles."
+];
+var _phraseIdx = 0;
+
+function kittParle() {
+  if (_kittPlaying) return;
+
+  var btn = document.getElementById('kitt-voice-btn');
+  var status = document.getElementById('kitt-voice-status');
+  var texte = KITT_PHRASES[_phraseIdx % KITT_PHRASES.length];
+  _phraseIdx++;
+
+  _kittPlaying = true;
+  btn.textContent = '[ TRANSMISSION EN COURS... ]';
+  btn.style.opacity = '0.5';
+  btn.style.cursor = 'wait';
+  status.style.color = '#664422';
+  status.textContent = 'CONNEXION ELEVENLABS...';
+
+  fetch('https://api.elevenlabs.io/v1/text-to-speech/AWQ8RBL5o63CDJoS98F9', {
+    method: 'POST',
+    headers: {
+      'xi-api-key': '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3',
+      'Content-Type': 'application/json',
+      'Accept': 'audio/mpeg'
+    },
+    body: JSON.stringify({
+      text: texte,
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: { stability: 0.45, similarity_boost: 0.90, style: 0.30, use_speaker_boost: true }
+    })
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    status.textContent = 'DECODAGE AUDIO...';
+    return r.blob();
+  })
+  .then(function(blob) {
+    var url = URL.createObjectURL(blob);
+    if (_kittAudio) { _kittAudio.pause(); URL.revokeObjectURL(_kittAudio.src); }
+    _kittAudio = new Audio(url);
+    _kittAudio.onplay = function() {
+      status.style.color = '#446622';
+      status.textContent = 'KITT PARLE...';
+      btn.textContent = '[ KITT EN LIGNE ]';
+    };
+    _kittAudio.onended = function() {
+      _kittPlaying = false;
+      btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      status.style.color = '#446622';
+      status.textContent = 'TRANSMISSION TERMINEE — CLIQUER POUR REJOUER';
+    };
+    _kittAudio.onerror = function() {
+      _kittPlaying = false;
+      btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      status.style.color = '#661111';
+      status.textContent = 'ERREUR AUDIO';
+    };
+    _kittAudio.play();
+  })
+  .catch(function(e) {
+    _kittPlaying = false;
+    btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    status.style.color = '#661111';
+    status.textContent = 'ERREUR : ' + e.message;
+  });
+}
+</script>
+<!-- ── FIN KITT VOICE DEMO ── -->
 </body>
 </html>
