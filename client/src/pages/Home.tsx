@@ -339,6 +339,9 @@ function NavBar() {
           >
             DOCS
           </Link>
+          <div style={{ paddingTop: "4px", borderTop: "1px solid rgba(255,34,34,0.15)" }}>
+            <LangSelector />
+          </div>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
