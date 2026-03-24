@@ -62,6 +62,7 @@ export default function Musique() {
   const animRef = useRef<number>(0);
   const peaksRef = useRef<Float32Array | null>(null);
   const peakVelsRef = useRef<Float32Array | null>(null);
+  const currentIdxRef = useRef<number | null>(null);
 
   // Fetch approved tracks
   useEffect(() => {
@@ -110,22 +111,34 @@ export default function Musique() {
     return () => cancelAnimationFrame(animRef.current);
   }, [isPlaying]);
 
-  function initAudioCtx() {
-    if (audioCtxRef.current || !audioRef.current) return;
+  function initAudioCtxForElement(audio: HTMLAudioElement) {
+    // Fermer l'ancien contexte — createMediaElementSource ne peut être appelé
+    // qu'une fois par élément audio, donc on recrée à chaque piste
+    if (audioCtxRef.current) {
+      try { audioCtxRef.current.close(); } catch {}
+      audioCtxRef.current = null;
+      analyserRef.current = null;
+      gainNodeRef.current = null;
+      sourceRef.current = null;
+    }
     try {
-      audioCtxRef.current = new AudioContext();
-      analyserRef.current = audioCtxRef.current.createAnalyser();
-      analyserRef.current.fftSize = 256;
-      analyserRef.current.smoothingTimeConstant = 0.75;
-      gainNodeRef.current = audioCtxRef.current.createGain();
-      gainNodeRef.current.gain.value = isMuted ? 0 : volume;
-      sourceRef.current = audioCtxRef.current.createMediaElementSource(audioRef.current);
-      sourceRef.current.connect(analyserRef.current);
-      analyserRef.current.connect(gainNodeRef.current);
-      gainNodeRef.current.connect(audioCtxRef.current.destination);
-      const bufLen = analyserRef.current.frequencyBinCount;
+      const ctx = new AudioContext();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.75;
+      const gain = ctx.createGain();
+      gain.gain.value = isMuted ? 0 : volume;
+      const source = ctx.createMediaElementSource(audio);
+      source.connect(analyser);
+      analyser.connect(gain);
+      gain.connect(ctx.destination);
+      const bufLen = analyser.frequencyBinCount;
       peaksRef.current = new Float32Array(bufLen).fill(0);
       peakVelsRef.current = new Float32Array(bufLen).fill(0);
+      audioCtxRef.current = ctx;
+      analyserRef.current = analyser;
+      gainNodeRef.current = gain;
+      sourceRef.current = source;
     } catch { /* CORS ou non supporté → startFakeVisualizer sera appelé */ }
   }
 
@@ -212,49 +225,67 @@ export default function Musique() {
   }
 
   async function playTrack(idx: number) {
-    if (!audioRef.current || !apiBase) return;
+    if (!apiBase) return;
     const track = tracks[idx];
     setCurrentIdx(idx);
+    currentIdxRef.current = idx;
 
-    // Sur mobile : bypass total AudioContext — createMediaElementSource lie l'élément
-    // en mode CORS et bloque silencieusement toute piste suivante sans les bons headers
-    const onMobile = navigator.maxTouchPoints > 1 || /Android|iPhone|iPad/i.test(navigator.userAgent);
+    // Arrêter l'audio précédent sans perdre la ref
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.onended = null;
+      audioRef.current.ontimeupdate = null;
+      audioRef.current.onloadedmetadata = null;
+    }
 
-    if (onMobile) {
-      audioRef.current.removeAttribute("crossorigin");
-      audioRef.current.src = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
-      audioRef.current.load();
-      try {
-        await audioRef.current.play();
-        setIsPlaying(true);
-        startFakeVisualizer();
-      } catch {
-        audioRef.current.src = track.url;
-        audioRef.current.load();
-        try { await audioRef.current.play(); setIsPlaying(true); startFakeVisualizer(); } catch {}
+    // Créer un nouvel Audio synchroniquement (iOS exige que AudioContext
+    // et createMediaElementSource soient créés avant tout await)
+    const audio = new Audio();
+    audio.crossOrigin = "anonymous";
+    audio.src = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
+    audio.ontimeupdate = () => setCurrentTime(audio.currentTime || 0);
+    audio.onloadedmetadata = () => setDuration(audio.duration || 0);
+    audio.onended = () => {
+      if (audioRef.current !== audio) return;
+      const ci = currentIdxRef.current;
+      if (tracks.length) playTrack(ci === null ? 0 : (ci + 1) % tracks.length);
+    };
+    audioRef.current = audio;
+
+    // AudioContext créé synchroniquement sur le nouvel élément (avant tout await)
+    initAudioCtxForElement(audio);
+    audio.load();
+
+    if (audioCtxRef.current?.state === 'suspended') {
+      try { await audioCtxRef.current.resume(); } catch {}
+    }
+
+    try {
+      await audio.play();
+      setIsPlaying(true);
+      sourceRef.current ? startRealVisualizer() : startFakeVisualizer();
+    } catch {
+      // Fallback : proxy hors ligne → URL directe sans CORS
+      // Fermer l'AudioContext lié en mode CORS pour ne pas bloquer la lecture
+      if (audioCtxRef.current) {
+        try { audioCtxRef.current.close(); } catch {}
+        audioCtxRef.current = null;
+        analyserRef.current = null;
+        gainNodeRef.current = null;
+        sourceRef.current = null;
       }
-    } else {
-      audioRef.current.crossOrigin = "anonymous";
-      audioRef.current.src = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
-      audioRef.current.load();
-      initAudioCtx();
-      if (audioCtxRef.current?.state === 'suspended') {
-        try { await audioCtxRef.current.resume(); } catch {}
-      }
-      try {
-        await audioRef.current.play();
-        setIsPlaying(true);
-        sourceRef.current ? startRealVisualizer() : startFakeVisualizer();
-      } catch {
-        audioRef.current.removeAttribute("crossorigin");
-        audioRef.current.src = track.url;
-        audioRef.current.load();
-        try {
-          await audioRef.current.play();
-          setIsPlaying(true);
-          startFakeVisualizer();
-        } catch {}
-      }
+      const audio2 = new Audio();
+      audio2.src = track.url;
+      audio2.ontimeupdate = () => setCurrentTime(audio2.currentTime || 0);
+      audio2.onloadedmetadata = () => setDuration(audio2.duration || 0);
+      audio2.onended = () => {
+        if (audioRef.current !== audio2) return;
+        const ci = currentIdxRef.current;
+        if (tracks.length) playTrack(ci === null ? 0 : (ci + 1) % tracks.length);
+      };
+      audioRef.current = audio2;
+      audio2.load();
+      try { await audio2.play(); setIsPlaying(true); startFakeVisualizer(); } catch {}
     }
 
     fetch(`${apiBase}/api/music/play/${track.id}`, { method: "POST" }).catch(() => {});
@@ -280,11 +311,11 @@ export default function Musique() {
 
   function next() {
     if (!tracks.length) return;
-    playTrack(currentIdx === null ? 0 : (currentIdx + 1) % tracks.length);
+    playTrack(currentIdxRef.current === null ? 0 : (currentIdxRef.current + 1) % tracks.length);
   }
   function prev() {
-    if (!tracks.length || currentIdx === null) return;
-    playTrack((currentIdx - 1 + tracks.length) % tracks.length);
+    if (!tracks.length || currentIdxRef.current === null) return;
+    playTrack((currentIdxRef.current - 1 + tracks.length) % tracks.length);
   }
 
   const currentTrack = currentIdx !== null ? tracks[currentIdx] : null;
@@ -292,12 +323,6 @@ export default function Musique() {
 
   return (
     <div className="min-h-screen" style={{ background: "#0a0000" }}>
-      <audio
-        ref={audioRef}
-        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
-        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
-        onEnded={next}
-      />
 
       <div className="fixed inset-0 pointer-events-none" style={{
         backgroundImage: "linear-gradient(rgba(255,34,34,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,34,34,0.03) 1px, transparent 1px)",
