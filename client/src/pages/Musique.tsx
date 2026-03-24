@@ -119,53 +119,37 @@ export default function Musique() {
       analyserRef.current.smoothingTimeConstant = 0.75;
       gainNodeRef.current = audioCtxRef.current.createGain();
       gainNodeRef.current.gain.value = isMuted ? 0 : volume;
-
-      const el = audioRef.current as any;
-      const captureFn = el.captureStream || el.mozCaptureStream;
-
-      if (captureFn) {
-        // Mobile : captureStream() — analyse sans CORS, audio joue via l'élément HTML
-        try {
-          const stream = captureFn.call(el);
-          const streamSrc = audioCtxRef.current.createMediaStreamSource(stream);
-          streamSrc.connect(analyserRef.current);
-          sourceRef.current = streamSrc as any;
-          // Pas de gainNode routing : l'audio passe déjà par l'élément HTML
-        } catch {
-          sourceRef.current = null;
-        }
-      } else {
-        // Desktop : createMediaElementSource avec CORS
-        try {
-          sourceRef.current = audioCtxRef.current.createMediaElementSource(audioRef.current);
-          sourceRef.current.connect(analyserRef.current);
-          analyserRef.current.connect(gainNodeRef.current);
-          gainNodeRef.current.connect(audioCtxRef.current.destination);
-        } catch {
-          sourceRef.current = null;
-        }
-      }
-
+      sourceRef.current = audioCtxRef.current.createMediaElementSource(audioRef.current);
+      sourceRef.current.connect(analyserRef.current);
+      analyserRef.current.connect(gainNodeRef.current);
+      gainNodeRef.current.connect(audioCtxRef.current.destination);
       const bufLen = analyserRef.current.frequencyBinCount;
       peaksRef.current = new Float32Array(bufLen).fill(0);
       peakVelsRef.current = new Float32Array(bufLen).fill(0);
-    } catch { /* AudioContext non supporté */ }
+    } catch { /* CORS ou non supporté → startFakeVisualizer sera appelé */ }
   }
 
   function startRealVisualizer() {
     cancelAnimationFrame(animRef.current);
     const canvas = canvasRef.current;
     const analyser = analyserRef.current;
-    if (!canvas || !analyser) { startFakeVisualizer(); return; }
+    // Si le contexte n'a pas pu se connecter, on va directement en fake
+    if (!canvas || !analyser || !sourceRef.current) { startFakeVisualizer(); return; }
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const W = canvas.width, H = canvas.height;
     const bufLen = analyser.frequencyBinCount;
     const data = new Uint8Array(bufLen);
+    let zeroFrames = 0;
 
     const draw = () => {
       animRef.current = requestAnimationFrame(draw);
       analyser.getByteFrequencyData(data);
+      // Si on reçoit que des zéros pendant 2s → CORS échoué → fake
+      const total = data.reduce((s, v) => s + v, 0);
+      if (total === 0) {
+        if (++zeroFrames > 120) { startFakeVisualizer(); return; }
+      } else { zeroFrames = 0; }
       ctx.fillStyle = "#030000";
       ctx.fillRect(0, 0, W, H);
 
