@@ -148,7 +148,7 @@ export default function Musique() {
       // Si on reçoit que des zéros pendant 2s → CORS échoué → fake
       const total = data.reduce((s, v) => s + v, 0);
       if (total === 0) {
-        if (++zeroFrames > 120) { startFakeVisualizer(); return; }
+        if (++zeroFrames > 300) { startFakeVisualizer(); return; }
       } else { zeroFrames = 0; }
       ctx.fillStyle = "#030000";
       ctx.fillRect(0, 0, W, H);
@@ -221,11 +221,10 @@ export default function Musique() {
     audioRef.current.src = proxied;
     audioRef.current.load();
 
-    // Init AudioContext dans le geste utilisateur (synchrone)
     initAudioCtx();
-    // Resume AVANT play() — iOS démarre en "running", Android en "suspended"
+    // Resume avant play() — try/catch obligatoire sinon rejet = silence total
     if (audioCtxRef.current?.state === 'suspended') {
-      await audioCtxRef.current.resume();
+      try { await audioCtxRef.current.resume(); } catch {}
     }
 
     try {
@@ -255,7 +254,7 @@ export default function Musique() {
       cancelAnimationFrame(animRef.current);
     } else {
       const resume = audioCtxRef.current?.state === 'suspended'
-        ? audioCtxRef.current.resume()
+        ? audioCtxRef.current.resume().catch(() => {})
         : Promise.resolve();
       resume.then(() => audioRef.current!.play()).then(() => {
         setIsPlaying(true);
