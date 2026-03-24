@@ -221,22 +221,21 @@ export default function Musique() {
     audioRef.current.src = proxied;
     audioRef.current.load();
 
-    // Init AudioContext synchrone (avant tout await) — compatible iOS
+    // Init AudioContext dans le geste utilisateur (synchrone)
     initAudioCtx();
-    audioCtxRef.current?.resume(); // sans await : évite de casser la permission iOS
+    // Resume AVANT play() — iOS démarre en "running", Android en "suspended"
+    if (audioCtxRef.current?.state === 'suspended') {
+      await audioCtxRef.current.resume();
+    }
 
     try {
       await audioRef.current.play();
-      // Attendre que le contexte soit vraiment actif (Android reste suspendu sinon)
-      if (audioCtxRef.current?.state === 'suspended') {
-        await audioCtxRef.current.resume();
-      }
       setIsPlaying(true);
-      startRealVisualizer();
+      sourceRef.current ? startRealVisualizer() : startFakeVisualizer();
     } catch {
       // Fallback : URL directe sans proxy ni CORS
-      audioRef.current.src = track.url;
       audioRef.current.removeAttribute("crossorigin");
+      audioRef.current.src = track.url;
       audioRef.current.load();
       try {
         await audioRef.current.play();
@@ -255,10 +254,12 @@ export default function Musique() {
       setIsPlaying(false);
       cancelAnimationFrame(animRef.current);
     } else {
-      if (audioCtxRef.current?.state === "suspended") audioCtxRef.current.resume();
-      audioRef.current.play().then(() => {
+      const resume = audioCtxRef.current?.state === 'suspended'
+        ? audioCtxRef.current.resume()
+        : Promise.resolve();
+      resume.then(() => audioRef.current!.play()).then(() => {
         setIsPlaying(true);
-        analyserRef.current ? startRealVisualizer() : startFakeVisualizer();
+        sourceRef.current ? startRealVisualizer() : startFakeVisualizer();
       }).catch(() => {});
     }
   }
