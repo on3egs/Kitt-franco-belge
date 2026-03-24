@@ -217,8 +217,8 @@ export default function Musique() {
     setCurrentIdx(idx);
 
     const proxied = `${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`;
+    audioRef.current.crossOrigin = "anonymous"; // AVANT src — sinon mobile charge sans CORS
     audioRef.current.src = proxied;
-    audioRef.current.crossOrigin = "anonymous";
     audioRef.current.load();
 
     // Init AudioContext synchrone (avant tout await) — compatible iOS
