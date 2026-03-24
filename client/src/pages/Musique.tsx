@@ -111,35 +111,42 @@ export default function Musique() {
     return () => cancelAnimationFrame(animRef.current);
   }, [isPlaying]);
 
+  // iOS Safari : getByteFrequencyData retourne toujours 0 (bug WebKit connu)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
   function initAudioCtxForElement(audio: HTMLAudioElement) {
-    // Fermer l'ancien contexte — createMediaElementSource ne peut être appelé
-    // qu'une fois par élément audio, donc on recrée à chaque piste
-    if (audioCtxRef.current) {
-      try { audioCtxRef.current.close(); } catch {}
-      audioCtxRef.current = null;
-      analyserRef.current = null;
-      gainNodeRef.current = null;
+    if (isIOS) return; // iOS Safari : visualiseur réel impossible (WebKit bug)
+
+    // Déconnecter uniquement le source node précédent — NE PAS fermer le contexte.
+    // Safari iOS limite à 4 AudioContext par page ; Chrome limite à 6.
+    if (sourceRef.current) {
+      try { sourceRef.current.disconnect(); } catch {}
       sourceRef.current = null;
     }
+
+    // Créer l'AudioContext une seule fois pour toute la page
+    if (!audioCtxRef.current) {
+      try {
+        audioCtxRef.current = new AudioContext();
+        analyserRef.current = audioCtxRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+        analyserRef.current.smoothingTimeConstant = 0.75;
+        gainNodeRef.current = audioCtxRef.current.createGain();
+        gainNodeRef.current.gain.value = isMuted ? 0 : volume;
+        analyserRef.current.connect(gainNodeRef.current);
+        gainNodeRef.current.connect(audioCtxRef.current.destination);
+        const bufLen = analyserRef.current.frequencyBinCount;
+        peaksRef.current = new Float32Array(bufLen).fill(0);
+        peakVelsRef.current = new Float32Array(bufLen).fill(0);
+      } catch { return; }
+    }
+
+    // Nouveau source node pour le nouvel élément audio (un seul par élément)
     try {
-      const ctx = new AudioContext();
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.75;
-      const gain = ctx.createGain();
-      gain.gain.value = isMuted ? 0 : volume;
-      const source = ctx.createMediaElementSource(audio);
-      source.connect(analyser);
-      analyser.connect(gain);
-      gain.connect(ctx.destination);
-      const bufLen = analyser.frequencyBinCount;
-      peaksRef.current = new Float32Array(bufLen).fill(0);
-      peakVelsRef.current = new Float32Array(bufLen).fill(0);
-      audioCtxRef.current = ctx;
-      analyserRef.current = analyser;
-      gainNodeRef.current = gain;
-      sourceRef.current = source;
-    } catch { /* CORS ou non supporté → startFakeVisualizer sera appelé */ }
+      sourceRef.current = audioCtxRef.current.createMediaElementSource(audio);
+      sourceRef.current.connect(analyserRef.current!);
+    } catch { sourceRef.current = null; }
   }
 
   function startRealVisualizer() {
