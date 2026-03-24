@@ -157,7 +157,11 @@ function NavBar() {
         borderBottom: scrolled ? "1px solid rgba(255, 34, 34, 0.2)" : "none",
       }}
     >
-      <div className="container flex items-center justify-between py-4">
+      <div className="container flex items-center justify-between py-4" style={{ position: "relative" }}>
+        {/* LangSelector mobile — centré en haut */}
+        <div className="md:hidden" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", zIndex: 40 }}>
+          <LangSelector />
+        </div>
         {/* Logo */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 relative flex-shrink-0">
@@ -339,9 +343,6 @@ function NavBar() {
           >
             DOCS
           </Link>
-          <div style={{ paddingTop: "4px", borderTop: "1px solid rgba(255,34,34,0.15)" }}>
-            <LangSelector />
-          </div>
           <a
             href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
             target="_blank"
