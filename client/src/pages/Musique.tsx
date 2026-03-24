@@ -117,19 +117,39 @@ export default function Musique() {
       analyserRef.current = audioCtxRef.current.createAnalyser();
       analyserRef.current.fftSize = 256;
       analyserRef.current.smoothingTimeConstant = 0.75;
-      
       gainNodeRef.current = audioCtxRef.current.createGain();
       gainNodeRef.current.gain.value = isMuted ? 0 : volume;
 
-      sourceRef.current = audioCtxRef.current.createMediaElementSource(audioRef.current);
-      sourceRef.current.connect(analyserRef.current);
-      analyserRef.current.connect(gainNodeRef.current);
-      gainNodeRef.current.connect(audioCtxRef.current.destination);
+      const el = audioRef.current as any;
+      const captureFn = el.captureStream || el.mozCaptureStream;
+
+      if (captureFn) {
+        // Mobile : captureStream() — analyse sans CORS, audio joue via l'élément HTML
+        try {
+          const stream = captureFn.call(el);
+          const streamSrc = audioCtxRef.current.createMediaStreamSource(stream);
+          streamSrc.connect(analyserRef.current);
+          sourceRef.current = streamSrc as any;
+          // Pas de gainNode routing : l'audio passe déjà par l'élément HTML
+        } catch {
+          sourceRef.current = null;
+        }
+      } else {
+        // Desktop : createMediaElementSource avec CORS
+        try {
+          sourceRef.current = audioCtxRef.current.createMediaElementSource(audioRef.current);
+          sourceRef.current.connect(analyserRef.current);
+          analyserRef.current.connect(gainNodeRef.current);
+          gainNodeRef.current.connect(audioCtxRef.current.destination);
+        } catch {
+          sourceRef.current = null;
+        }
+      }
 
       const bufLen = analyserRef.current.frequencyBinCount;
       peaksRef.current = new Float32Array(bufLen).fill(0);
       peakVelsRef.current = new Float32Array(bufLen).fill(0);
-    } catch { /* CORS or unsupported */ }
+    } catch { /* AudioContext non supporté */ }
   }
 
   function startRealVisualizer() {
