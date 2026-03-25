@@ -2288,7 +2288,33 @@ function SubscribePopup() {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Welcome Voice KITT (Guy Chapelier) ───────────────────────────────────────
+const WELCOME_AUDIO: Record<string, string> = {
+  fr: "/assets/welcome_fr.wav",
+  en: "/assets/welcome_en.wav",
+  nl: "/assets/welcome_nl.wav",
+  de: "/assets/welcome_de.wav",
+};
+
+function useWelcomeVoice() {
+  useEffect(() => {
+    // Une seule fois par session
+    if (sessionStorage.getItem("kitt_welcomed")) return;
+    const lang = (navigator.language || "fr").toLowerCase().slice(0, 2);
+    const src = WELCOME_AUDIO[lang] || WELCOME_AUDIO["fr"];
+    // Délai 1.2s pour laisser la page charger
+    const tid = setTimeout(() => {
+      const audio = new Audio(src);
+      audio.volume = 0.82;
+      audio.play().catch(() => {});
+      sessionStorage.setItem("kitt_welcomed", "1");
+    }, 1200);
+    return () => clearTimeout(tid);
+  }, []);
+}
+
 export default function Home() {
+  useWelcomeVoice();
   return (
     <div className="min-h-screen" style={{ background: "#0a0000" }}>
       <NavBar />
