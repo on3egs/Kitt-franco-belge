@@ -2,6 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useUser } from "@/contexts/UserContext";
+import { useTrophies } from "@/contexts/TrophyContext";
+import { useFolders } from "@/contexts/FolderContext";
+import UserLoginModal from "@/components/UserLoginModal";
+import FolderPanel from "@/components/FolderPanel";
+import TrophyPanel from "@/components/TrophyPanel";
 
 const TUNNEL_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
 
@@ -362,6 +368,13 @@ function StatChip({ icon, value, label }: { icon: string; value: string | number
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function Videos() {
   const { t } = useLanguage();
+  const { pseudo, isLoggedIn } = useUser();
+  const { trophies, totalPoints, level, incrementView } = useTrophies();
+  const { folders, createFolder, deleteFolder, renameFolder, addVideoToFolder, removeVideoFromFolder, toggleFolderPublic, isVideoInFolder } = useFolders();
+  const [showLogin, setShowLogin] = useState(false);
+  const [showFolders, setShowFolders] = useState(false);
+  const [showTrophies, setShowTrophies] = useState(false);
+  const [folderTargetVideo, setFolderTargetVideo] = useState<string | null>(null);
   const [videos, setVideos] = useState<VideoEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
@@ -386,6 +399,7 @@ export default function Videos() {
     if (!apiBase) return;
     fetch(`${apiBase}/api/videos/view/${id}`, { method: "POST" }).catch(() => {});
     setVideos(vs => vs.map(v => v.id === id ? { ...v, views: (v.views || 0) + 1 } : v));
+    incrementView(id); // trophées + compteur perso
   }
 
   const label = { fontFamily: "Space Mono, monospace", fontSize: "0.5rem", letterSpacing: "0.2em" };
@@ -412,8 +426,39 @@ export default function Videos() {
     ? videos
     : videos.filter(v => detectLang(v.message + " " + v.pseudo) === langFilter);
 
+  const btnStyle: React.CSSProperties = {
+    fontFamily: "Courier New, monospace", fontSize: "0.7em", letterSpacing: "3px",
+    padding: "9px 20px", background: "transparent", border: "1px solid #440000",
+    color: "#cc3300", cursor: "pointer", transition: "all 0.2s",
+  };
+
   return (
     <div className="min-h-screen" style={{ background: "#0a0000" }}>
+      {/* Modales */}
+      {showLogin && <UserLoginModal onClose={() => setShowLogin(false)} />}
+      {showFolders && (
+        <FolderPanel
+          pseudo={pseudo ?? ""}
+          folders={folders}
+          currentVideoId={folderTargetVideo ?? undefined}
+          onCreateFolder={(name) => { createFolder(name); }}
+          onDeleteFolder={deleteFolder}
+          onRenameFolder={renameFolder}
+          onAddVideo={(fid, vid) => addVideoToFolder(fid, vid)}
+          onRemoveVideo={(fid, vid) => removeVideoFromFolder(fid, vid)}
+          onTogglePublic={toggleFolderPublic}
+          onClose={() => { setShowFolders(false); setFolderTargetVideo(null); }}
+        />
+      )}
+      {showTrophies && (
+        <TrophyPanel
+          pseudo={pseudo ?? ""}
+          trophies={trophies}
+          totalPoints={totalPoints}
+          level={level}
+          onClose={() => setShowTrophies(false)}
+        />
+      )}
       <style>{`
         @keyframes blink-red {
           0%, 100% { opacity: 0.3; }
@@ -506,6 +551,31 @@ export default function Videos() {
 
         <div className="mb-6">
           <KittScanner height={6} />
+        </div>
+
+        {/* ── Barre utilisateur KITT ── */}
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginBottom: "24px" }}>
+          {!isLoggedIn ? (
+            <button style={btnStyle} onClick={() => setShowLogin(true)}>[ CONNEXION ]</button>
+          ) : (
+            <>
+              <span style={{ ...btnStyle, cursor: "default", color: "#886644", borderColor: "#332200" }}>
+                ● {pseudo}  {totalPoints}pts  Niv.{level}
+              </span>
+              <button style={{ ...btnStyle, color: "#884400", borderColor: "#441100" }}
+                onClick={() => setShowLogin(true)}>[ COMPTE ]</button>
+            </>
+          )}
+          {isLoggedIn && (
+            <button style={{ ...btnStyle, color: "#cc5500", borderColor: "#441100" }}
+              onClick={() => { setFolderTargetVideo(null); setShowFolders(true); }}>
+              [ 📁 MES DOSSIERS ({folders.length}) ]
+            </button>
+          )}
+          <button style={{ ...btnStyle, color: "#cc8800", borderColor: "#553300" }}
+            onClick={() => setShowTrophies(true)}>
+            [ 🏆 TROPHÉES{isLoggedIn ? ` (${trophies.filter(t => t.unlocked).length})` : ""} ]
+          </button>
         </div>
 
         {/* Bandeau éducatif */}

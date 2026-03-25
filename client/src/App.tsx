@@ -5,6 +5,10 @@ import { Route, Router, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { UserProvider, useUser } from "./contexts/UserContext";
+import { TrophyProvider, useTrophies } from "./contexts/TrophyContext";
+import { FolderProvider } from "./contexts/FolderContext";
+import TrophyNotification from "./components/TrophyNotification";
 import Home from "./pages/Home";
 import Privacy from "./pages/Privacy";
 import DataDeletion from "./pages/DataDeletion";
@@ -45,14 +49,37 @@ function AppRouter() {
   );
 }
 
+// Connecte TrophyNotification au TrophyContext
+function TrophyNotificationConnected() {
+  const { newTrophyNotification, dismissNotification } = useTrophies();
+  return <TrophyNotification trophy={newTrophyNotification} onDismiss={dismissNotification} />;
+}
+
+// Bridge : lit pseudo depuis UserContext pour passer aux providers enfants
+function KittSystemBridge({ children }: { children: React.ReactNode }) {
+  const { pseudo } = useUser();
+  return (
+    <TrophyProvider pseudo={pseudo}>
+      <FolderProvider pseudo={pseudo}>
+        <TrophyNotificationConnected />
+        {children}
+      </FolderProvider>
+    </TrophyProvider>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <LanguageProvider>
         <ThemeProvider defaultTheme="dark">
           <TooltipProvider>
-            <Toaster />
-            <AppRouter />
+            <UserProvider>
+              <KittSystemBridge>
+                <Toaster />
+                <AppRouter />
+              </KittSystemBridge>
+            </UserProvider>
           </TooltipProvider>
         </ThemeProvider>
       </LanguageProvider>
