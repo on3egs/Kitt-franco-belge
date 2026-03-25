@@ -2312,18 +2312,12 @@ function useWelcomeVoice() {
       audio.play().catch(() => {});
       sessionStorage.setItem("kitt_welcomed", "1");
       document.removeEventListener("click", playOnce);
-      document.removeEventListener("touchstart", playOnce);
-      document.removeEventListener("keydown", playOnce);
     }
 
     document.addEventListener("click", playOnce, { once: true });
-    document.addEventListener("touchstart", playOnce, { once: true });
-    document.addEventListener("keydown", playOnce, { once: true });
 
     return () => {
       document.removeEventListener("click", playOnce);
-      document.removeEventListener("touchstart", playOnce);
-      document.removeEventListener("keydown", playOnce);
     };
   }, []);
 }
