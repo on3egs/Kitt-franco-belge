@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://sees-campus-recipe-nissan.trycloudflare.com",
-  "last_update": "2026-03-25T07:07:32.083155+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-25T07:08:13.417141+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
