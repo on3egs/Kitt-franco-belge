@@ -2298,18 +2298,33 @@ const WELCOME_AUDIO: Record<string, string> = {
 
 function useWelcomeVoice() {
   useEffect(() => {
-    // Une seule fois par session
     if (sessionStorage.getItem("kitt_welcomed")) return;
     const lang = (navigator.language || "fr").toLowerCase().slice(0, 2);
     const src = WELCOME_AUDIO[lang] || WELCOME_AUDIO["fr"];
-    // Délai 1.2s pour laisser la page charger
-    const tid = setTimeout(() => {
-      const audio = new Audio(src);
-      audio.volume = 0.82;
+
+    // Pré-charger le fichier audio immédiatement
+    const audio = new Audio(src);
+    audio.volume = 0.82;
+    audio.preload = "auto";
+
+    // Déclencher au premier clic/toucher utilisateur (contourne l'autoplay policy)
+    function playOnce() {
       audio.play().catch(() => {});
       sessionStorage.setItem("kitt_welcomed", "1");
-    }, 1200);
-    return () => clearTimeout(tid);
+      document.removeEventListener("click", playOnce);
+      document.removeEventListener("touchstart", playOnce);
+      document.removeEventListener("keydown", playOnce);
+    }
+
+    document.addEventListener("click", playOnce, { once: true });
+    document.addEventListener("touchstart", playOnce, { once: true });
+    document.addEventListener("keydown", playOnce, { once: true });
+
+    return () => {
+      document.removeEventListener("click", playOnce);
+      document.removeEventListener("touchstart", playOnce);
+      document.removeEventListener("keydown", playOnce);
+    };
   }, []);
 }
 
