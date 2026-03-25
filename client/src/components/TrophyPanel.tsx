@@ -10,7 +10,7 @@ interface TrophyStatus {
   description: string;
   points: number;
   unlocked: boolean;
-  progress: number;
+  progressValue: number;
   max: number;
 }
 
@@ -248,7 +248,7 @@ export default function TrophyPanel({
             <div style={trophyDesc}>{trophy.description}</div>
 
             {!trophy.unlocked && trophy.max > 0 && (
-              <ProgressBar progress={trophy.progress} max={trophy.max} />
+              <ProgressBar progress={trophy.progressValue} max={trophy.max} />
             )}
           </div>
         ))}

@@ -13,7 +13,8 @@ export interface UserStats {
 
 export interface TrophyDef {
   id: string;
-  label: string;
+  name: string;
+  emoji: string;
   description: string;
   points: number;
   check: (stats: UserStats) => boolean;
@@ -23,6 +24,7 @@ export interface TrophyDef {
 
 export interface TrophyStatus extends TrophyDef {
   unlocked: boolean;
+  progressValue: number;
 }
 
 // ─── Trophée definitions ──────────────────────────────────────────────────────
@@ -30,7 +32,8 @@ export interface TrophyStatus extends TrophyDef {
 export const TROPHIES: TrophyDef[] = [
   {
     id: 'PREMIER_PAS',
-    label: 'Premier Pas',
+    name: 'Premier Pas',
+    emoji: '🚀',
     description: 'Soumettre 1 vidéo',
     points: 50,
     check: (s) => s.videosSubmitted >= 1,
@@ -39,7 +42,8 @@ export const TROPHIES: TrophyDef[] = [
   },
   {
     id: 'CENT_VUES',
-    label: 'Cent Vues',
+    name: 'Cent Vues',
+    emoji: '👁',
     description: '100 vues totales',
     points: 100,
     check: (s) => s.totalViews >= 100,
@@ -48,7 +52,8 @@ export const TROPHIES: TrophyDef[] = [
   },
   {
     id: 'ARCHIVISTE',
-    label: 'Archiviste',
+    name: 'Archiviste',
+    emoji: '📁',
     description: 'Créer 1 dossier',
     points: 30,
     check: (s) => s.foldersCreated >= 1,
@@ -57,7 +62,8 @@ export const TROPHIES: TrophyDef[] = [
   },
   {
     id: 'VIRAL',
-    label: 'Viral',
+    name: 'Viral',
+    emoji: '🔥',
     description: '1000 vues sur une seule vidéo',
     points: 200,
     check: (s) => Object.values(s.viewsByVideo).some((v) => v >= 1000),
@@ -66,7 +72,8 @@ export const TROPHIES: TrophyDef[] = [
   },
   {
     id: 'COMMUNICATEUR',
-    label: 'Communicateur',
+    name: 'Communicateur',
+    emoji: '💬',
     description: '10 commentaires postés',
     points: 50,
     check: (s) => s.commentsCount >= 10,
@@ -75,7 +82,8 @@ export const TROPHIES: TrophyDef[] = [
   },
   {
     id: 'LEGENDE',
-    label: 'Légende',
+    name: 'Légende',
+    emoji: '⭐',
     description: '10 000 vues totales',
     points: 500,
     check: (s) => s.totalViews >= 10000,
@@ -84,7 +92,8 @@ export const TROPHIES: TrophyDef[] = [
   },
   {
     id: 'COLLECTIONNEUR',
-    label: 'Collectionneur',
+    name: 'Collectionneur',
+    emoji: '🗂️',
     description: '5 dossiers créés',
     points: 80,
     check: (s) => s.foldersCreated >= 5,
@@ -93,7 +102,8 @@ export const TROPHIES: TrophyDef[] = [
   },
   {
     id: 'ASSIDU',
-    label: 'Assidu',
+    name: 'Assidu',
+    emoji: '🏆',
     description: '500 vues totales',
     points: 150,
     check: (s) => s.totalViews >= 500,
@@ -262,6 +272,7 @@ export function TrophyProvider({ children, pseudo }: { children: ReactNode; pseu
   const trophies: TrophyStatus[] = TROPHIES.map((t) => ({
     ...t,
     unlocked: unlocked.has(t.id),
+    progressValue: t.progress(stats),
   }));
 
   const totalPoints = computePoints(unlocked);
