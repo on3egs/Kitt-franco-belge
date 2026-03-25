@@ -258,6 +258,11 @@
     50% { box-shadow: 0 0 22px rgba(255,34,34,0.55), 0 0 40px rgba(255,34,34,0.2); border-color: #ff2222; }
   }
 
+  @keyframes kitt-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
   /* Number counter display */
   .stat-number {
     font-family: 'Orbitron', monospace;
