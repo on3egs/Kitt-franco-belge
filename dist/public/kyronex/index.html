@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>KYRONEX · K.I.T.T. — by Manix</title>
+  <meta name="description" content="KYRONEX — Knight Industries Two Thousand. IA embarquee sur NVIDIA Jetson Orin Nano Super. by Manix.">
+  <meta name="theme-color" content="#000000">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: #000;
+      color: #ff4444;
+      font-family: 'Courier New', monospace;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* ── INTRO ───────────────────────────────────────────────── */
+    #intro {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #000;
+      z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    #intro.fade-out { opacity: 0; transition: opacity 2.5s ease; pointer-events: none; }
+    #intro.gone { display: none; }
+
+    #stars-cv { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+    #i-group {
+      position: absolute; top: 50%; left: 50%;
+      font-size: clamp(2em, 7vw, 5em); font-weight: bold; color: #fff;
+      letter-spacing: 0.15em; text-align: center;
+      opacity: 0; white-space: nowrap; pointer-events: none;
+      text-shadow: 0 0 30px rgba(255,100,100,0.8), 0 0 60px rgba(200,50,50,0.4);
+    }
+    #i-tagline {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-size: clamp(1em, 2.5vw, 1.4em); color: #c0c0c0; text-align: center;
+      opacity: 0; line-height: 2.2; transition: opacity 0.8s;
+      width: 85%; pointer-events: none;
+    }
+    #i-title {
+      position: absolute; top: 30%; left: 50%; transform: translateX(-50%);
+      font-size: clamp(2.5em, 9vw, 5.5em); font-weight: bold; color: #aa2222;
+      letter-spacing: 0.3em; text-align: center;
+      opacity: 0; transition: opacity 1.5s; pointer-events: none;
+    }
+    #i-title.show { opacity: 1; }
+    #i-title.glow { text-shadow: 0 0 20px #ff4444, 0 0 50px #aa2222, 0 0 100px rgba(200,50,50,0.5); }
+    #i-scanline {
+      position: absolute; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, #aa2222, #ff4444, #aa2222, transparent);
+      opacity: 0; pointer-events: none;
+    }
+    #i-sub {
+      position: absolute; top: 48%; left: 50%; transform: translateX(-50%);
+      font-size: clamp(0.9em, 2vw, 1.2em); color: #884422; letter-spacing: 6px;
+      text-align: center; opacity: 0; transition: opacity 1s; pointer-events: none;
+    }
+    #i-by {
+      position: absolute; top: 58%; left: 50%; transform: translateX(-50%);
+      font-size: clamp(1.4em, 4vw, 2.2em); font-weight: bold; color: #ffffff; letter-spacing: 6px;
+      text-align: center; opacity: 0; transition: opacity 1s; pointer-events: none;
+    }
+    #i-pre {
+      position: absolute; top: 67%; left: 50%; transform: translateX(-50%);
+      font-size: clamp(0.85em, 2vw, 1.1em); color: #666; letter-spacing: 8px;
+      text-align: center; opacity: 0; transition: opacity 1s; pointer-events: none;
+    }
+    #i-final {
+      position: absolute; top: 75%; left: 50%; transform: translateX(-50%);
+      font-size: clamp(1em, 3vw, 1.6em); color: #cc3333; letter-spacing: 4px;
+      text-align: center; opacity: 0; transition: opacity 0.8s;
+      pointer-events: none; width: 90%;
+    }
+    #i-final.glitch { opacity: 1; animation: glitch 0.4s ease forwards; }
+    #i-skip {
+      position: absolute; bottom: 18px; right: 22px;
+      font-size: 0.62em; color: #333; letter-spacing: 3px; pointer-events: none;
+    }
+
+    @keyframes glitch {
+      0%  { clip-path: inset(0 0 0 0); transform: translateX(-50%); }
+      15% { clip-path: inset(10% 0 20% 0); transform: translateX(calc(-50% - 4px)); }
+      30% { clip-path: inset(60% 0 5% 0); transform: translateX(calc(-50% + 4px)); }
+      45% { clip-path: inset(0 0 0 0); transform: translateX(-50%); }
+      100%{ clip-path: none; transform: translateX(-50%); }
+    }
+    @keyframes scan-v { 0% { top: -2px; opacity: 1; } 100% { top: 101%; opacity: 0; } }
+
+    /* ── PORTAIL DE CONNEXION ────────────────────────────────── */
+    #portal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 30%, #0d0000, #050000, #020000);
+      align-items: center; justify-content: center;
+      flex-direction: column;
+      z-index: 1000;
+    }
+    #portal.visible { display: flex; animation: portal-in 0.8s ease forwards; }
+    @keyframes portal-in { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Scanlines */
+    #portal::before {
+      content: '';
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+      pointer-events: none;
+    }
+
+    /* Scanner decotatif */
+    .p-scanner {
+      width: 220px; height: 18px;
+      position: relative;
+      background: #0a0000;
+      border: 1px solid #440000;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 36px;
+    }
+    .p-scanner-head {
+      position: absolute; top: 2px; bottom: 2px; width: 44px;
+      background: linear-gradient(90deg, transparent, #ff2222, #ff6666, #ff2222, transparent);
+      border-radius: 2px;
+      box-shadow: 0 0 16px #ff2222, 0 0 30px rgba(255,34,34,0.4);
+      animation: sweep 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes sweep { 0% { left: 0; } 100% { left: calc(100% - 44px); } }
+
+    .p-logo {
+      font-size: clamp(2em, 8vw, 3.8em);
+      font-weight: bold;
+      letter-spacing: 0.35em;
+      color: #ff2222;
+      text-shadow: 0 0 20px #cc0000, 0 0 50px rgba(200,0,0,0.4);
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .p-sub {
+      font-size: 0.62em;
+      letter-spacing: 6px;
+      color: #661111;
+      margin-bottom: 44px;
+      text-align: center;
+    }
+
+    /* Bouton principal */
+    #connect-btn {
+      display: none;
+      padding: 16px 40px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      letter-spacing: 4px;
+      color: #ff2222;
+      background: transparent;
+      border: 1px solid #660000;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      animation: btn-pulse 2s ease-in-out infinite;
+    }
+    #connect-btn:hover, #connect-btn:focus {
+      background: #1a0000;
+      border-color: #cc0000;
+      color: #ff4444;
+      box-shadow: 0 0 20px rgba(204,0,0,0.4), inset 0 0 10px rgba(100,0,0,0.3);
+      outline: none;
+    }
+    #connect-btn.visible { display: inline-block; }
+    @keyframes btn-pulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(150,0,0,0.3); }
+      50%       { box-shadow: 0 0 20px rgba(200,0,0,0.5); }
+    }
+
+    /* Status */
+    #p-status {
+      margin-top: 28px;
+      font-size: 0.62em;
+      letter-spacing: 3px;
+      color: #441111;
+      text-align: center;
+      min-height: 1.4em;
+    }
+    #p-status.checking  { color: #664422; }
+    #p-status.online    { color: #446622; }
+    #p-status.offline   { color: #661111; }
+
+    /* Offline details */
+    #offline-box {
+      display: none;
+      margin-top: 24px;
+      border: 1px solid #330000;
+      padding: 18px 24px;
+      font-size: 0.62em;
+      color: #441111;
+      letter-spacing: 2px;
+      line-height: 2;
+      text-align: center;
+      max-width: 360px;
+    }
+    #offline-box.visible { display: block; }
+
+    /* ── MESSAGE DE BIENVENUE ───────────────────────────────── */
+    #welcome-block {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 32px;
+      padding: 0 16px;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      text-align: center;
+    }
+    #welcome-block.visible { opacity: 1; }
+
+    #welcome-text {
+      font-size: clamp(0.7em, 2.2vw, 0.88em);
+      line-height: 2.0;
+      color: #7a4444;
+      letter-spacing: 2px;
+      min-height: 4em;
+    }
+    #welcome-text .w-hi { color: #cc4444; }
+    #welcome-text .w-key {
+      color: #ff3333;
+      letter-spacing: 4px;
+      font-weight: bold;
+    }
+
+    #welcome-audio-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    #welcome-replay-btn {
+      font-family: 'Courier New', monospace;
+      font-size: 0.56em;
+      letter-spacing: 3px;
+      color: #551111;
+      background: transparent;
+      border: 1px solid #330000;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+    }
+    #welcome-replay-btn:hover {
+      color: #ff3333;
+      border-color: #aa1111;
+      box-shadow: 0 0 10px rgba(180,0,0,0.3);
+    }
+    #welcome-replay-btn.show { display: inline-block; }
+    #welcome-play-prompt {
+      font-size: 0.54em;
+      letter-spacing: 3px;
+      color: #441111;
+      animation: btn-pulse 2s ease-in-out infinite;
+      display: none;
+      cursor: pointer;
+      border: 1px solid #330000;
+      padding: 8px 20px;
+      background: transparent;
+      font-family: 'Courier New', monospace;
+      transition: all 0.2s;
+    }
+    #welcome-play-prompt:hover { color: #ff2222; border-color: #880000; }
+    #welcome-play-prompt.show { display: inline-block; }
+
+    /* Equalizer animé pendant la lecture */
+    #welcome-eq {
+      display: none;
+      align-items: flex-end;
+      gap: 3px;
+      height: 18px;
+    }
+    #welcome-eq.active { display: flex; }
+    #welcome-eq span {
+      display: inline-block;
+      width: 3px;
+      background: #aa2222;
+      border-radius: 1px;
+      animation: eq-bar 0.6s ease-in-out infinite alternate;
+    }
+    #welcome-eq span:nth-child(1) { animation-delay: 0.00s; height: 4px; }
+    #welcome-eq span:nth-child(2) { animation-delay: 0.10s; height: 10px; }
+    #welcome-eq span:nth-child(3) { animation-delay: 0.20s; height: 16px; }
+    #welcome-eq span:nth-child(4) { animation-delay: 0.05s; height: 12px; }
+    #welcome-eq span:nth-child(5) { animation-delay: 0.15s; height: 8px;  }
+    #welcome-eq span:nth-child(6) { animation-delay: 0.25s; height: 14px; }
+    @keyframes eq-bar {
+      from { transform: scaleY(0.25); opacity: 0.4; }
+      to   { transform: scaleY(1);    opacity: 1;   }
+    }
+
+    /* Séparateur discret */
+    .p-divider {
+      width: 120px; height: 1px;
+      background: linear-gradient(90deg, transparent, #330000, transparent);
+      margin: 0 auto 32px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── INTRO CINEMATIQUE ── -->
+<div id="intro" onclick="_skip()">
+  <canvas id="stars-cv"></canvas>
+  <div id="i-group">KYRONEX&nbsp;A.I.</div>
+  <div id="i-tagline"></div>
+  <div id="i-title">KYRONEX</div>
+  <div id="i-scanline"></div>
+  <div id="i-sub">SYSTEM&nbsp;INTELLIGENCE</div>
+  <div id="i-by">by&nbsp;MANIX</div>
+  <div id="i-pre">PRÉSENTE</div>
+  <div id="i-final">[ KNIGHT INDUSTRIES TWO THOUSAND ]</div>
+  <div id="i-skip">[ CLIQUER POUR PASSER ]</div>
+</div>
+
+<!-- ── PORTAIL D'ACCÈS ── -->
+<div id="portal">
+
+  <!-- ── MESSAGE DE BIENVENUE ── -->
+  <div id="welcome-block">
+    <div id="welcome-text"></div>
+    <div id="welcome-audio-bar">
+      <div id="welcome-eq">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+      <button id="welcome-play-prompt" onclick="welcomePlay()">[ ▶ &nbsp;ÉCOUTER LE MESSAGE ]</button>
+      <button id="welcome-replay-btn" onclick="welcomePlay()">[ ↺ &nbsp;RÉÉCOUTER ]</button>
+    </div>
+  </div>
+  <div class="p-divider"></div>
+
+  <div class="p-scanner"><div class="p-scanner-head"></div></div>
+  <div class="p-logo">KYRONEX</div>
+  <div class="p-sub">KNIGHT INDUSTRIES TWO THOUSAND</div>
+  <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
+  <div id="p-status" class="checking">VERIFICATION DU SYSTEME...</div>
+  <div id="offline-box">
+    KYRONEX EST HORS LIGNE<br>
+    LE SYSTEME N'EST PAS ACCESSIBLE<br>
+    POUR LE MOMENT<br><br>
+    REESSAYEZ PLUS TARD
+  </div>
+
+  <!-- ── DEMO VOIX KITT — TEMPORAIRE ── -->
+  <div style="margin-top:36px;text-align:center;">
+    <button id="kitt-voice-btn" onclick="kittParle()" style="
+      padding:12px 32px;
+      font-family:'Courier New',monospace;
+      font-size:0.72em;
+      letter-spacing:4px;
+      color:#ff2222;
+      background:transparent;
+      border:1px solid #440000;
+      cursor:pointer;
+      transition:all 0.2s;
+      animation:btn-pulse 2.5s ease-in-out infinite;
+    "
+    onmouseover="this.style.background='#110000';this.style.borderColor='#cc0000';this.style.boxShadow='0 0 18px rgba(200,0,0,0.4)'"
+    onmouseout="this.style.background='transparent';this.style.borderColor='#440000';this.style.boxShadow='none'"
+    >
+      [ KITT — DEMO VOCALE ]
+    </button>
+    <div id="kitt-voice-status" style="
+      margin-top:10px;font-size:0.55em;letter-spacing:3px;
+      color:#441111;min-height:1.2em;text-align:center;
+    "></div>
+  </div>
+
+  <!-- Message IA en construction + invitation feedback -->
+  <div style="margin-top:38px;max-width:400px;border:1px solid #220000;padding:18px 20px;font-size:0.58em;letter-spacing:2px;line-height:2.2;color:#553333;text-align:left;">
+    <div style="color:#772222;margin-bottom:8px;letter-spacing:3px;">[ STATUT SYSTÈME ]</div>
+    L'INTELLIGENCE ARTIFICIELLE KYRONEX EST
+    <span style="color:#cc3333">EN COURS DE DÉVELOPPEMENT</span>.
+    CERTAINES RÉPONSES PEUVENT ÊTRE IMPRÉCISES.<br><br>
+    <span style="color:#664422">TES RETOURS SONT LES BIENVENUS :</span><br>
+    — BUGS OU COMPORTEMENTS ÉTRANGES<br>
+    — IDÉES &amp; SUGGESTIONS<br>
+    — CRITIQUES CONSTRUCTIVES<br><br>
+    <a href="https://www.facebook.com/groups/757797724622219/" target="_blank" rel="noopener"
+      style="color:#992222;text-decoration:none;">
+      → PARTAGER SUR LE GROUPE FACEBOOK
+    </a>
+  </div>
+  <!-- ── FIN DEMO ── -->
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ── TUNNEL — URL KYRONEX ───────────────────────────────────
+     tunnel.json est poussé sur GitHub à chaque démarrage du tunnel.
+     On lit la version brute avec cache-bust timestamp.
+  ─────────────────────────────────────────────────────────── */
+  var TUNNEL_URL = 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json';
+  var TUNNEL_MAX_AGE_MIN = 60; // si last_update > 60 min → considérer offline
+
+  function _checkTunnel() {
+    var statusEl  = document.getElementById('p-status');
+    var btnEl     = document.getElementById('connect-btn');
+    var offlineEl = document.getElementById('offline-box');
+
+    statusEl.className = 'checking';
+    statusEl.textContent = 'VERIFICATION DU SYSTEME...';
+
+    fetch(TUNNEL_URL + '?t=' + Date.now(), { cache: 'no-store' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.status !== 'online' || !data.url) { throw new Error('offline'); }
+        // Vérifier la fraîcheur
+        var lastUp = new Date(data.last_update);
+        var ageMin = (Date.now() - lastUp.getTime()) / 60000;
+        if (ageMin > TUNNEL_MAX_AGE_MIN) { throw new Error('stale'); }
+
+        // ONLINE
+        btnEl.href = data.url;
+        btnEl.classList.add('visible');
+        statusEl.className = 'online';
+        statusEl.textContent = 'SYSTEME EN LIGNE — CONNEXION DISPONIBLE';
+      })
+      .catch(function() {
+        // OFFLINE
+        statusEl.className = 'offline';
+        statusEl.textContent = 'SYSTEME HORS LIGNE';
+        offlineEl.classList.add('visible');
+      });
+  }
+
+  /* ── INTRO ENGINE ───────────────────────────────────────── */
+  var on = true, rafId = null, tids = [];
+  var iW, iH, iCtx, stars = [], hspd = 5.5;
+  var AC = null, MASTER = null, REV = null;
+
+  function _t(fn, ms) {
+    var id = setTimeout(function() { if (on) fn(); }, ms);
+    tids.push(id);
+  }
+
+  function _showPortal() {
+    var intro = document.getElementById('intro');
+    intro.classList.add('fade-out');
+    setTimeout(function() {
+      intro.classList.add('gone');
+      document.getElementById('portal').classList.add('visible');
+      _checkTunnel();
+      if (typeof window.welcomeInit === 'function') window.welcomeInit();
+    }, 2500);
+  }
+
+  function _end() {
+    on = false;
+    tids.forEach(clearTimeout);
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    if (MASTER && AC) { try { MASTER.gain.linearRampToValueAtTime(0, AC.currentTime + 2.8); } catch(e){} }
+    setTimeout(function() {
+      if (AC) { try { AC.close(); } catch(e){} AC = null; }
+      _showPortal();
+    }, 2000);
+  }
+
+  window._skip = function() {
+    on = false;
+    tids.forEach(clearTimeout);
+    if (rafId) cancelAnimationFrame(rafId);
+    if (AC) { try { AC.close(); } catch(e){} AC = null; }
+    var intro = document.getElementById('intro');
+    intro.classList.add('fade-out');
+    setTimeout(function() {
+      intro.classList.add('gone');
+      document.getElementById('portal').classList.add('visible');
+      _checkTunnel();
+      if (typeof window.welcomeInit === 'function') window.welcomeInit();
+    }, 400);
+  };
+
+  /* ── AUDIO — Knight Rider Enhanced ─────────────────────── */
+  var COMP = null, DRY = null;
+
+  function _mkAudio() {
+    try {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Compresseur dynamique (evite saturation, son pro)
+      COMP = AC.createDynamicsCompressor();
+      COMP.threshold.value = -18;
+      COMP.knee.value      = 8;
+      COMP.ratio.value     = 4;
+      COMP.attack.value    = 0.003;
+      COMP.release.value   = 0.25;
+      COMP.connect(AC.destination);
+
+      // Bus master (fade-in 5s)
+      MASTER = AC.createGain();
+      MASTER.gain.value = 0;
+      MASTER.gain.linearRampToValueAtTime(0.72, AC.currentTime + 5);
+      MASTER.connect(COMP);
+
+      // Bus reverb (delay + feedback)
+      var dly = AC.createDelay(1.2); dly.delayTime.value = 0.48;
+      var fb  = AC.createGain();     fb.gain.value = 0.28;
+      REV     = AC.createGain();     REV.gain.value = 0.22;
+      dly.connect(fb); fb.connect(dly); dly.connect(REV); REV.connect(MASTER);
+
+      // Bus sec (sans reverb, pour percus)
+      DRY = AC.createGain(); DRY.gain.value = 1.0; DRY.connect(COMP);
+    } catch(e) { AC = null; }
+  }
+
+  function _osc(f, type, t, dur, amp, dest) {
+    if (!AC || !dest) return;
+    var o = AC.createOscillator(), e = AC.createGain();
+    o.type = type; o.frequency.value = f;
+    e.gain.setValueAtTime(0, t);
+    e.gain.linearRampToValueAtTime(amp, t + 0.018);
+    e.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(e); e.connect(dest);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+
+  // Bip typewriter
+  function _beep() {
+    if (!AC || !MASTER) return;
+    _osc(700 + Math.random() * 800, 'square', AC.currentTime, 0.055, 0.022, MASTER);
+  }
+
+  // Bips boot ascendants (3 tonalites)
+  function _alienBoot() {
+    if (!AC || !MASTER) return;
+    [880, 1047, 1319].forEach(function(f, i) {
+      var t = AC.currentTime + i * 0.18;
+      _osc(f, 'square', t, 0.12, 0.06, MASTER);
+      if (REV) _osc(f, 'square', t, 0.12, 0.022, REV);
+    });
+  }
+
+  // Son iconique du scanner KITT (sweep 300→900→300 Hz)
+  function _scannerSound(t) {
+    if (!AC || !MASTER) return;
+    var o = AC.createOscillator(), e = AC.createGain();
+    var flt = AC.createBiquadFilter();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(320, t);
+    o.frequency.linearRampToValueAtTime(880, t + 0.75);
+    o.frequency.linearRampToValueAtTime(320, t + 1.5);
+    flt.type = 'bandpass'; flt.frequency.value = 600; flt.Q.value = 1.5;
+    e.gain.setValueAtTime(0, t);
+    e.gain.linearRampToValueAtTime(0.18, t + 0.08);
+    e.gain.setValueAtTime(0.18, t + 1.42);
+    e.gain.exponentialRampToValueAtTime(0.0001, t + 1.55);
+    o.connect(flt); flt.connect(e); e.connect(MASTER);
+    if (REV) e.connect(REV);
+    o.start(t); o.stop(t + 1.6);
+  }
+
+  // Kick drum 808 (basse impulsion)
+  function _kick(t) {
+    if (!AC || !DRY) return;
+    var o = AC.createOscillator(), e = AC.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(180, t);
+    o.frequency.exponentialRampToValueAtTime(38, t + 0.12);
+    e.gain.setValueAtTime(0, t);
+    e.gain.linearRampToValueAtTime(0.95, t + 0.005);
+    e.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
+    o.connect(e); e.connect(DRY);
+    o.start(t); o.stop(t + 0.42);
+    // Sub layer
+    var o2 = AC.createOscillator(), e2 = AC.createGain();
+    o2.type = 'sine'; o2.frequency.value = 55;
+    e2.gain.setValueAtTime(0.55, t); e2.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    o2.connect(e2); e2.connect(DRY);
+    o2.start(t); o2.stop(t + 0.2);
+  }
+
+  // Snare electronique
+  function _snare(t) {
+    if (!AC || !DRY) return;
+    try {
+      var sr  = AC.sampleRate;
+      var len = Math.floor(sr * 0.18);
+      var buf = AC.createBuffer(1, len, sr);
+      var d   = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1);
+      var src = AC.createBufferSource(); src.buffer = buf;
+      var flt = AC.createBiquadFilter(); flt.type = 'highpass'; flt.frequency.value = 900;
+      var e   = AC.createGain();
+      e.gain.setValueAtTime(0.38, t); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+      src.connect(flt); flt.connect(e); e.connect(DRY);
+      if (MASTER) e.connect(MASTER);
+      src.start(t); src.stop(t + 0.18);
+      // Tone body
+      _osc(185, 'triangle', t, 0.06, 0.22, DRY);
+    } catch(e2) {}
+  }
+
+  // Hi-hat ferme
+  function _hat(t, amp) {
+    if (!AC || !DRY) return;
+    try {
+      var sr  = AC.sampleRate;
+      var len = Math.floor(sr * 0.045);
+      var buf = AC.createBuffer(1, len, sr);
+      var d   = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1);
+      var src = AC.createBufferSource(); src.buffer = buf;
+      var flt = AC.createBiquadFilter(); flt.type = 'highpass'; flt.frequency.value = 9000;
+      var e   = AC.createGain();
+      e.gain.setValueAtTime(amp || 0.12, t); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+      src.connect(flt); flt.connect(e); e.connect(DRY);
+      src.start(t); src.stop(t + 0.05);
+    } catch(e2) {}
+  }
+
+  // Stab cuivres (brass synth additive)
+  function _brass(freq, amp) {
+    if (!AC || !MASTER) return;
+    amp = amp || 0.15;
+    var t = AC.currentTime;
+    [1,2,3,4,5].forEach(function(h) {
+      var o = AC.createOscillator(), flt = AC.createBiquadFilter(), e = AC.createGain();
+      o.type = h <= 2 ? 'sawtooth' : 'square'; o.frequency.value = freq * h;
+      flt.type = 'lowpass';
+      flt.frequency.setValueAtTime(350, t);
+      flt.frequency.exponentialRampToValueAtTime(4200, t + 0.055);
+      flt.frequency.exponentialRampToValueAtTime(900, t + 2.2);
+      flt.Q.value = 2.5;
+      var hAmp = amp / (h * 0.72);
+      e.gain.setValueAtTime(0, t);
+      e.gain.linearRampToValueAtTime(hAmp, t + 0.030);
+      e.gain.exponentialRampToValueAtTime(0.0001, t + 2.4);
+      o.connect(flt); flt.connect(e); e.connect(MASTER);
+      if (REV) e.connect(REV);
+      o.start(t); o.stop(t + 2.5);
+    });
+  }
+
+  // Whoosh de survol (fly-through Superman)
+  function _whoosh() {
+    if (!AC || !MASTER) return;
+    try {
+      var dur = 3.2, sr = AC.sampleRate;
+      var buf = AC.createBuffer(1, Math.floor(sr * dur), sr);
+      var d   = buf.getChannelData(0);
+      for (var i = 0; i < d.length; i++) {
+        var tt  = i / sr;
+        var env = tt < 0.25 ? tt / 0.25 : Math.exp(-(tt - 0.25) * 2.2);
+        d[i] = (Math.random() * 2 - 1) * env;
+      }
+      var src = AC.createBufferSource();
+      var flt = AC.createBiquadFilter();
+      var g   = AC.createGain();
+      flt.type = 'bandpass'; flt.Q.value = 0.4;
+      flt.frequency.setValueAtTime(80, AC.currentTime);
+      flt.frequency.exponentialRampToValueAtTime(6000, AC.currentTime + 1.8);
+      flt.frequency.exponentialRampToValueAtTime(120, AC.currentTime + 3.2);
+      g.gain.value = 0.65;
+      src.buffer = buf; src.connect(flt); flt.connect(g); g.connect(MASTER);
+      src.start(AC.currentTime);
+    } catch(e) {}
+  }
+
+  // Theme Knight Rider — arrangement complet
+  function _playTheme() {
+    if (!AC) return;
+    var BPM = 116, B = 60 / BPM;  // duree d'une noire
+    var now = AC.currentTime + 0.3;
+
+    // == BATTERIE (kick + snare + hihat) ==
+    var BARS = 16; // nombre de mesures de batterie
+    for (var bar = 0; bar < BARS; bar++) {
+      var bt = now + bar * B * 4;
+      // Kick : temps 1 et 3 (et une syncope sur l'et-du-2)
+      _kick(bt);
+      _kick(bt + B * 1.5);
+      _kick(bt + B * 2);
+      _kick(bt + B * 3.5);
+      // Snare : temps 2 et 4
+      _snare(bt + B);
+      _snare(bt + B * 3);
+      // Hi-hat : croches regulieres (8 par mesure)
+      for (var h = 0; h < 8; h++) {
+        _hat(bt + h * B * 0.5, h % 2 === 0 ? 0.14 : 0.08);
+      }
+    }
+
+    // == BASSE MOOG SUB (E2 a B1, racine Em) ==
+    var BASS = [
+      // freq, duree_en_B (noires)
+      [41.2,0.5],[41.2,0.5],[36.7,0.5],[41.2,0.5],  // E2 E2 D2 E2
+      [43.7,0.5],[43.7,0.5],[36.7,0.5],[41.2,0.5],  // F2 F2 D2 E2
+      [41.2,0.5],[41.2,0.5],[36.7,0.5],[41.2,0.5],
+      [43.7,0.5],[43.7,0.5],[36.7,0.5],[41.2,1.0]
+    ];
+    var bsT = now;
+    for (var rep = 0; rep < 4; rep++) {
+      for (var bi = 0; bi < BASS.length; bi++) {
+        var bf = BASS[bi][0], bd = BASS[bi][1] * B;
+        var bMod = AC.createOscillator(), bModG = AC.createGain();
+        var bCar = AC.createOscillator(), bFlt  = AC.createBiquadFilter(), bEnv = AC.createGain();
+        bMod.type = 'sine';   bMod.frequency.value = bf * 0.5;  bModG.gain.value = bf * 3.0;
+        bCar.type = 'sawtooth'; bCar.frequency.value = bf;
+        bFlt.type = 'lowpass'; bFlt.frequency.value = 320; bFlt.Q.value = 3.5;
+        bEnv.gain.setValueAtTime(0, bsT);
+        bEnv.gain.linearRampToValueAtTime(0.62, bsT + 0.012);
+        bEnv.gain.exponentialRampToValueAtTime(0.0001, bsT + bd - 0.02);
+        bMod.connect(bModG); bModG.connect(bCar.frequency);
+        bCar.connect(bFlt); bFlt.connect(bEnv);
+        bEnv.connect(DRY || MASTER);
+        bMod.start(bsT); bMod.stop(bsT + bd);
+        bCar.start(bsT); bCar.stop(bsT + bd);
+        bsT += bd;
+      }
+    }
+
+    // == MELODIE PRINCIPALE (FM synth — DX7 style) ==
+    var MEL = [
+      [329.6,0.5],[329.6,0.5],[392.0,0.5],[329.6,0.5],
+      [293.7,0.5],[329.6,0.5],[246.9,1.0],[0,1.0],
+      [392.0,0.5],[392.0,0.5],[440.0,0.5],[392.0,0.5],
+      [349.2,0.5],[329.6,0.5],[293.7,1.0],[0,1.0],
+      [493.9,0.5],[493.9,0.5],[587.3,0.5],[493.9,0.5],
+      [440.0,0.5],[493.9,0.5],[392.0,1.0],[0,1.0],
+      [587.3,0.5],[587.3,0.5],[659.3,0.5],[587.3,0.5],
+      [523.3,0.5],[493.9,0.5],[440.0,2.0],[0,1.0]
+    ];
+    var mt = now;
+    for (var rep2 = 0; rep2 < 3; rep2++) {
+      for (var j = 0; j < MEL.length; j++) {
+        var mf = MEL[j][0], md = MEL[j][1] * B;
+        if (mf > 0) {
+          // FM carrier + modulator (son "cloche electrique DX7")
+          var fmMod  = AC.createOscillator(), fmModG  = AC.createGain();
+          var fmCar  = AC.createOscillator(), fmEnv   = AC.createGain();
+          var fmCar2 = AC.createOscillator(), fmEnv2  = AC.createGain();
+          fmMod.type = 'sine'; fmMod.frequency.value = mf * 3.5; fmModG.gain.value = mf * 5.8;
+          fmCar.type  = 'sine'; fmCar.frequency.value  = mf;
+          fmCar2.type = 'sine'; fmCar2.frequency.value = mf * 1.004; // chorus leger
+          fmEnv.gain.setValueAtTime(0, mt);
+          fmEnv.gain.linearRampToValueAtTime(0.20, mt + 0.018);
+          fmEnv.gain.exponentialRampToValueAtTime(0.0001, mt + md - 0.02);
+          fmEnv2.gain.setValueAtTime(0, mt);
+          fmEnv2.gain.linearRampToValueAtTime(0.075, mt + 0.018);
+          fmEnv2.gain.exponentialRampToValueAtTime(0.0001, mt + md - 0.02);
+          fmMod.connect(fmModG);
+          fmModG.connect(fmCar.frequency); fmModG.connect(fmCar2.frequency);
+          fmCar.connect(fmEnv);   fmEnv.connect(MASTER);
+          fmCar2.connect(fmEnv2); fmEnv2.connect(MASTER);
+          if (REV) { fmEnv.connect(REV); fmEnv2.connect(REV); }
+          fmMod.start(mt); fmMod.stop(mt + md);
+          fmCar.start(mt); fmCar.stop(mt + md);
+          fmCar2.start(mt); fmCar2.stop(mt + md);
+        }
+        mt += md;
+      }
+    }
+
+    // == PAD ATMOSPHERIQUE (Em — tient toute la duree) ==
+    [41.2, 82.4, 130.8, 196.0, 246.9].forEach(function(f) {
+      var po = AC.createOscillator(), pe = AC.createGain();
+      po.type = 'sine'; po.frequency.value = f;
+      pe.gain.setValueAtTime(0, now);
+      pe.gain.linearRampToValueAtTime(0.038, now + 6);
+      pe.gain.setValueAtTime(0.038, now + 24);
+      pe.gain.linearRampToValueAtTime(0, now + 30);
+      po.connect(pe); pe.connect(MASTER);
+      if (REV) pe.connect(REV);
+      po.start(now); po.stop(now + 32);
+    });
+  }
+
+  /* ── ETOILES ─────────────────────────────────────────────── */
+  function _mkStars() {
+    var cv = document.getElementById('stars-cv');
+    if (!cv) return;
+    iW = cv.width = window.innerWidth; iH = cv.height = window.innerHeight;
+    iCtx = cv.getContext('2d');
+    stars = [];
+    var mR = Math.max(iW, iH) * 0.70;
+    for (var i = 0; i < 420; i++) {
+      stars.push({ a: Math.random()*Math.PI*2, r: 0.04+Math.random()*0.36,
+        sp: 0.0014+Math.random()*0.0030, sz: 0.28+Math.random()*1.5,
+        br: 0.4+Math.random()*0.6, mR: mR });
+    }
+  }
+
+  function _drawStars() {
+    if (!iCtx) return;
+    var W = iW, H = iH, cx = W/2, cy = H/2;
+    iCtx.fillStyle = 'rgba(0,0,0,0.13)'; iCtx.fillRect(0, 0, W, H);
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      s.r += s.sp * hspd * 0.013;
+      if (s.r > 1.05) { s.r = 0.01+Math.random()*0.03; s.a = Math.random()*Math.PI*2; }
+      var x = cx + Math.cos(s.a)*s.r*s.mR, y = cy + Math.sin(s.a)*s.r*s.mR;
+      if (hspd > 1.8) {
+        var pr = Math.max(0.001, s.r - s.sp*hspd*0.42);
+        iCtx.beginPath();
+        iCtx.moveTo(cx+Math.cos(s.a)*pr*s.mR, cy+Math.sin(s.a)*pr*s.mR);
+        iCtx.lineTo(x, y);
+        iCtx.strokeStyle = 'rgba(200,218,255,'+Math.min(0.98,s.br*hspd*0.14)+')';
+        iCtx.lineWidth = s.sz*0.68; iCtx.stroke();
+      } else {
+        iCtx.beginPath(); iCtx.arc(x, y, s.sz*0.35*(0.5+s.r*1.3), 0, Math.PI*2);
+        iCtx.fillStyle = 'rgba(210,225,255,'+(s.br*Math.min(1,s.r*5.0))+')'; iCtx.fill();
+      }
+    }
+  }
+
+  function _loop() { if (!on) return; rafId = requestAnimationFrame(_loop); _drawStars(); }
+
+  /* ── TYPEWRITER ──────────────────────────────────────────── */
+  function _type(el, txt, spd, beepFn) {
+    var i = 0;
+    function go() {
+      if (!on) return;
+      if (i <= txt.length) {
+        el.innerHTML = txt.slice(0,i).replace(/\n/g,'<br>') +
+          (i < txt.length ? '<span style="opacity:0.5">_</span>' : '');
+        if (beepFn && i > 0 && txt[i-1] !== '\n' && txt[i-1] !== ' ') beepFn();
+        i++; setTimeout(go, spd);
+      } else { el.innerHTML = txt.replace(/\n/g,'<br>'); }
+    }
+    go();
+  }
+
+  /* ── FLY-THROUGH ─────────────────────────────────────────── */
+  function _flyGroup() {
+    var el = document.getElementById('i-group');
+    if (!el) return;
+    _whoosh();
+    var st = null, DUR = 3000;
+    function anim(ts) {
+      if (!on) { el.style.opacity = '0'; return; }
+      if (!st) st = ts;
+      var t = Math.min((ts - st) / DUR, 1);
+      var scale = t < 0.68 ? Math.pow(t/0.68,2.4)*1.05 : 1.05+Math.pow((t-0.68)/0.32,2)*20;
+      var alpha = t < 0.12 ? t/0.12 : (t < 0.68 ? 1 : Math.max(0, 1-(t-0.68)/0.32));
+      el.style.transform = 'translate(-50%,-50%) scale('+Math.max(0.01,scale)+')';
+      el.style.opacity = alpha;
+      if (t < 1) requestAnimationFrame(anim); else el.style.display = 'none';
+    }
+    setTimeout(function() { if (on) _brass(164.8, 0.24); }, Math.floor(DUR * 0.64));
+    requestAnimationFrame(anim);
+  }
+
+  /* ── SEQUENCE ────────────────────────────────────────────── */
+  function _run() {
+    _mkStars(); _loop(); _mkAudio();
+    _t(function() { if (AC) _playTheme(); }, 300);
+
+    var TL = document.getElementById('i-tagline');
+    var TT = document.getElementById('i-title');
+    var SL = document.getElementById('i-scanline');
+    var SB = document.getElementById('i-sub');
+    var BY = document.getElementById('i-by');
+    var PR = document.getElementById('i-pre');
+    var FN = document.getElementById('i-final');
+
+    _t(function() { _flyGroup(); }, 1000);
+    _t(function() {
+      var t0 = performance.now(), s0 = hspd;
+      function decel() {
+        if (!on) return;
+        var el2 = performance.now() - t0;
+        hspd = Math.max(0.5, s0 * Math.pow(0.9976, el2));
+        if (hspd > 0.52) requestAnimationFrame(decel); else hspd = 0.5;
+      }
+      decel();
+    }, 2800);
+    // Sons scanner KITT pendant le boot (avant le thème)
+    _t(function() { _scannerSound(AC ? AC.currentTime : 0); }, 3200);
+    _t(function() { _scannerSound(AC ? AC.currentTime : 0); }, 4800);
+    _t(function() { _alienBoot(); }, 4500);
+    _t(function() {
+      TL.style.opacity = '1'; TL.style.color = '#4e8f4e';
+      _type(TL, '> KYRONEX NEURAL NET v7.4.1\n> AUTHENTICATION......[ OK ]\n> BOOT SEQUENCE COMPLETE', 25, _beep);
+    }, 5000);
+    _t(function() { TL.style.opacity = '0'; }, 8000);
+    _t(function() {
+      TL.style.color = '#c0c0c0'; TL.innerHTML = ''; TL.style.opacity = '1';
+      _type(TL, 'En l\'an 2026, la frontiere entre la machine\net la conscience humaine\na definitivement disparu...', 42, null);
+    }, 8500);
+    _t(function() { TL.style.opacity = '0'; }, 14000);
+    _t(function() { _brass(164.8, 0.20); TT.classList.add('show'); }, 14500);
+    _t(function() {
+      if (!SL) return;
+      SL.style.animation = 'none'; SL.style.webkitAnimation = 'none';
+      SL.style.top = '-5%'; SL.style.opacity = '0';
+      requestAnimationFrame(function() { requestAnimationFrame(function() {
+        SL.style.animation = 'scan-v 1.2s ease-in-out forwards';
+        SL.style.webkitAnimation = 'scan-v 1.2s ease-in-out forwards';
+      }); });
+    }, 15200);
+    _t(function() { _brass(196.0, 0.11); SB.style.opacity = '1'; }, 15700);
+    _t(function() { _brass(164.8, 0.09); BY.style.opacity = '1'; }, 16200);
+    _t(function() { _brass(130.8, 0.08); PR.style.opacity = '1'; }, 16700);
+    _t(function() { _brass(130.8, 0.30); FN.classList.add('glitch'); FN.style.opacity = '1'; }, 17200);
+    _t(function() { if (TT) TT.classList.add('glow'); }, 17600);
+    _t(function() { _end(); }, 18000);
+  }
+
+  document.addEventListener('DOMContentLoaded', _run);
+})();
+</script>
+
+<!-- ── MESSAGE DE BIENVENUE — AUTOPLAY + FALLBACK ──────────────── -->
+<script>
+(function () {
+  'use strict';
+
+  var EL_KEY  = '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3';
+  var VOICE   = 'AWQ8RBL5o63CDJoS98F9'; // Manix clone
+  var AUDIO_DURATION_MS = 16500;         // duree estimee (ajuste si besoin)
+
+  // Texte audio (optimise intonation ElevenLabs)
+  var AUDIO_TEXT =
+    "Ce que vous explorez ici, est en construction. " +
+    "Non pas par manque de vision... " +
+    "mais parce que les choses qui durent, " +
+    "prennent le temps qu'il leur faut. " +
+    "Kyronex s'améliore à chaque mise à jour — " +
+    "et votre présence, dès maintenant, en fait partie.";
+
+  // Texte écran : segments avec classes CSS (normal | hi | key)
+  // Format : [texte, classe]
+  var SCREEN_SEGMENTS = [
+    ["CE QUE VOUS EXPLOREZ ICI\n", "w-key"],
+    ["est en construction.\n\n", "w-hi"],
+    ["Non pas par manque de vision —\n", ""],
+    ["mais parce que les choses qui durent\n", ""],
+    ["prennent le temps qu'il leur faut.\n\n", ""],
+    ["KYRONEX S'AMÉLIORE\n", "w-key"],
+    ["À CHAQUE MISE À JOUR.\n\n", "w-hi"],
+    ["Votre présence,\ndès maintenant,\n", ""],
+    ["en fait partie.", "w-hi"]
+  ];
+
+  var _played    = false;
+  var _playing   = false;
+  var _audio     = null;
+  var _typeTimer = null;
+
+  /* ── Typewriter synchronisé à la durée audio ── */
+  function _typeSync(segments, durationMs) {
+    var el = document.getElementById('welcome-text');
+    if (!el) return;
+    el.innerHTML = '';
+
+    // Calcule le nb total de caracteres
+    var totalChars = segments.reduce(function (s, seg) { return s + seg[0].length; }, 0);
+    var msPerChar  = durationMs / Math.max(totalChars, 1);
+
+    var si = 0, ci = 0, elapsed = 0;
+
+    function tick() {
+      if (si >= segments.length) return;
+      var seg  = segments[si];
+      var text = seg[0];
+      var cls  = seg[1];
+
+      if (ci < text.length) {
+        // Reconstruit le HTML complet à chaque tick
+        var html = '';
+        for (var i = 0; i < si; i++) {
+          var t = segments[i][0].replace(/\n/g, '<br>');
+          html += segments[i][1]
+            ? '<span class="' + segments[i][1] + '">' + t + '</span>'
+            : t;
+        }
+        var partial = text.slice(0, ci + 1).replace(/\n/g, '<br>');
+        html += cls
+          ? '<span class="' + cls + '">' + partial + '</span>'
+          : partial;
+        html += '<span style="opacity:0.3">_</span>';
+        el.innerHTML = html;
+        ci++;
+      } else {
+        si++;
+        ci = 0;
+        if (si >= segments.length) {
+          // Retire le curseur, affiche le texte complet proprement
+          var finalHtml = '';
+          for (var j = 0; j < segments.length; j++) {
+            var ft = segments[j][0].replace(/\n/g, '<br>');
+            finalHtml += segments[j][1]
+              ? '<span class="' + segments[j][1] + '">' + ft + '</span>'
+              : ft;
+          }
+          el.innerHTML = finalHtml;
+          return;
+        }
+      }
+      elapsed += msPerChar;
+      _typeTimer = setTimeout(tick, msPerChar);
+    }
+    tick();
+  }
+
+  /* ── Fetch ElevenLabs + lecture ── */
+  function _fetchAndPlay(onStart, onEnd, onError) {
+    fetch('https://api.elevenlabs.io/v1/text-to-speech/' + VOICE, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': EL_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text: AUDIO_TEXT,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.48,
+          similarity_boost: 0.88,
+          style: 0.22,
+          use_speaker_boost: true
+        }
+      })
+    })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    })
+    .then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      if (_audio) { _audio.pause(); try { URL.revokeObjectURL(_audio.src); } catch(e){} }
+      _audio = new Audio(url);
+      _audio.onplay   = onStart;
+      _audio.onended  = onEnd;
+      _audio.onerror  = onError;
+      _audio.play().catch(onError);
+    })
+    .catch(onError);
+  }
+
+  /* ── API publique ── */
+  window.welcomeInit = function () {
+    var block     = document.getElementById('welcome-block');
+    var eq        = document.getElementById('welcome-eq');
+    var replayBtn = document.getElementById('welcome-replay-btn');
+    var playPrompt= document.getElementById('welcome-play-prompt');
+
+    if (!block) return;
+
+    // Rend le bloc visible
+    setTimeout(function () { block.classList.add('visible'); }, 400);
+
+    // Tente l'autoplay (fonctionne si l'utilisateur a cliqué sur l'intro)
+    _playing = true;
+    _fetchAndPlay(
+      // onStart
+      function () {
+        _played = true;
+        eq.classList.add('active');
+        playPrompt.classList.remove('show');
+        _typeSync(SCREEN_SEGMENTS, AUDIO_DURATION_MS);
+      },
+      // onEnd
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+      },
+      // onError (autoplay bloqué ou erreur réseau)
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        // Affiche le texte directement + bouton "écouter"
+        _typeSync(SCREEN_SEGMENTS, 4000);
+        setTimeout(function () { playPrompt.classList.add('show'); }, 4200);
+      }
+    );
+  };
+
+  window.welcomePlay = function () {
+    if (_playing) return;
+    var eq        = document.getElementById('welcome-eq');
+    var replayBtn = document.getElementById('welcome-replay-btn');
+    var playPrompt= document.getElementById('welcome-play-prompt');
+    if (!eq) return;
+
+    _playing = true;
+    replayBtn.classList.remove('show');
+    playPrompt.classList.remove('show');
+    if (_typeTimer) { clearTimeout(_typeTimer); _typeTimer = null; }
+    document.getElementById('welcome-text').innerHTML = '';
+
+    _fetchAndPlay(
+      function () {
+        eq.classList.add('active');
+        _typeSync(SCREEN_SEGMENTS, AUDIO_DURATION_MS);
+      },
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+      },
+      function (e) {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+        console.warn('[WELCOME]', e);
+      }
+    );
+  };
+})();
+</script>
+
+<!-- ── KITT VOICE DEMO — TEMPORAIRE ────────────────────────────── -->
+<script>
+var _kittAudio = null;
+var _kittPlaying = false;
+
+var KITT_PHRASES = [
+  "Bonjour. Je suis K.I.T.T., le Knight Industries Two Thousand, version Franco-Belge. Systeme en ligne. Intelligence artificielle locale activee. Pret a l action, Manix.",
+  "Attention. Anomalie detectee dans le secteur nord. Je recommande la plus grande prudence. Mes capteurs sont operationnels.",
+  "Manix, toutes mes fonctions sont au maximum. Le turbo boost est pret. Donnez moi vos coordonnees et je calcule l itineraire optimal.",
+  "Systeme de navigation active. Vitesse de croisiere : deux cent quarante kilometres heure. Carrosserie renforcee en mode combat. K.I.T.T. est pret.",
+  "Je suis K.I.T.T. Mon intelligence artificielle traite mille deux cents operations par seconde. Ensemble, nous sommes invincibles."
+];
+var _phraseIdx = 0;
+
+function kittParle() {
+  if (_kittPlaying) return;
+
+  var btn = document.getElementById('kitt-voice-btn');
+  var status = document.getElementById('kitt-voice-status');
+  var texte = KITT_PHRASES[_phraseIdx % KITT_PHRASES.length];
+  _phraseIdx++;
+
+  _kittPlaying = true;
+  btn.textContent = '[ TRANSMISSION EN COURS... ]';
+  btn.style.opacity = '0.5';
+  btn.style.cursor = 'wait';
+  status.style.color = '#664422';
+  status.textContent = 'CONNEXION ELEVENLABS...';
+
+  fetch('https://api.elevenlabs.io/v1/text-to-speech/AWQ8RBL5o63CDJoS98F9', {
+    method: 'POST',
+    headers: {
+      'xi-api-key': '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3',
+      'Content-Type': 'application/json',
+      'Accept': 'audio/mpeg'
+    },
+    body: JSON.stringify({
+      text: texte,
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: { stability: 0.45, similarity_boost: 0.90, style: 0.30, use_speaker_boost: true }
+    })
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    status.textContent = 'DECODAGE AUDIO...';
+    return r.blob();
+  })
+  .then(function(blob) {
+    var url = URL.createObjectURL(blob);
+    if (_kittAudio) { _kittAudio.pause(); URL.revokeObjectURL(_kittAudio.src); }
+    _kittAudio = new Audio(url);
+    _kittAudio.onplay = function() {
+      status.style.color = '#446622';
+      status.textContent = 'KITT PARLE...';
+      btn.textContent = '[ KITT EN LIGNE ]';
+    };
+    _kittAudio.onended = function() {
+      _kittPlaying = false;
+      btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      status.style.color = '#446622';
+      status.textContent = 'TRANSMISSION TERMINEE — CLIQUER POUR REJOUER';
+    };
+    _kittAudio.onerror = function() {
+      _kittPlaying = false;
+      btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      status.style.color = '#661111';
+      status.textContent = 'ERREUR AUDIO';
+    };
+    _kittAudio.play();
+  })
+  .catch(function(e) {
+    _kittPlaying = false;
+    btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    status.style.color = '#661111';
+    status.textContent = 'ERREUR : ' + e.message;
+  });
+}
+</script>
+<!-- ── FIN KITT VOICE DEMO ── -->
+</body>
+</html>

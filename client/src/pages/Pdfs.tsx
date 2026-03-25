@@ -114,8 +114,15 @@ export default function Pdfs() {
           </div>
         )}
         {!loading && offline && (
-          <div className="p-6 text-center" style={{ background: "rgba(255,34,34,0.06)", border: "1px solid rgba(255,34,34,0.2)" }}>
-            <div style={{ ...label, color: "#ff4444" }}>{t("pdfs.offline")}</div>
+          <div className="p-8 text-center" style={{ background: "rgba(20,4,0,0.85)", border: "1px solid rgba(220,60,0,0.5)", boxShadow: "0 0 32px rgba(180,40,0,0.15), inset 0 0 20px rgba(80,0,0,0.25)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", marginBottom: "14px" }}>
+              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#ff4422", boxShadow: "0 0 10px #ff4422", animation: "kitt-blink 1.2s ease-in-out infinite" }} />
+              <div style={{ ...label, color: "#ff5533", fontSize: "0.75rem", letterSpacing: "4px" }}>SYSTEME EN MAINTENANCE</div>
+            </div>
+            <div style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "#ddaa88", lineHeight: 2, letterSpacing: "1px" }}>
+              KYRONEX EST TEMPORAIREMENT HORS LIGNE<br />
+              <span style={{ color: "rgba(200,160,100,0.75)", fontSize: "0.9rem" }}>Retour prévu dans quelques minutes à quelques heures.<br />Rechargez la page pour vérifier l'état du système.</span>
+            </div>
           </div>
         )}
         {!loading && !offline && filtered.length === 0 && (
