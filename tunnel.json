@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-25T09:36:29.708704+00:00",
+  "status": "online",
+  "url": "https://princess-controls-downloads-cigarette.trycloudflare.com",
+  "last_update": "2026-03-25T09:36:57.024139+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
