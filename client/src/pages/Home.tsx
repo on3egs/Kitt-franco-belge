@@ -1426,12 +1426,44 @@ const YOUTUBE_VIDEOS = [
   },
 ];
 
+interface CommunityVideo {
+  id: string;
+  url: string;
+  pseudo: string;
+  message: string;
+  ts: number;
+  views?: number;
+}
+
+function getYtIdHome(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
 function VideosSection() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useIntersection(ref);
   const { play } = useSoundEffects();
   const { t } = useLanguage();
   const [active, setActive] = useState<string | null>(null);
+  const [communityVideos, setCommunityVideos] = useState<CommunityVideo[]>([]);
+  const [communityCount, setCommunityCount] = useState(0);
+
+  useEffect(() => {
+    fetch("https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json", { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => d.url ? fetch(`${d.url}/api/videos/approved`) : Promise.reject())
+      .then(r => r.json())
+      .then(d => {
+        const approved: CommunityVideo[] = d.approved || [];
+        setCommunityCount(approved.length);
+        // 3 dernières soumises
+        setCommunityVideos([...approved].reverse().slice(0, 3));
+      })
+      .catch(() => {});
+  }, []);
+
+  const label = { fontFamily: "Space Mono, monospace", fontSize: "0.5rem", letterSpacing: "0.2em" };
 
   return (
     <section
@@ -1453,241 +1485,343 @@ function VideosSection() {
       <KittScanner height={3} />
 
       <div className="relative container pt-12">
-        {/* Header */}
+
+        {/* ══════════════════════════════════════════
+            SECTION 1 — COMMUNAUTÉ
+        ══════════════════════════════════════════ */}
         <div
-          className="mb-16"
+          className="mb-20"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(30px)",
             transition: "all 0.8s ease",
           }}
         >
-          <div className="section-label mb-3 text-center md:text-left">{t("videossec.label")}</div>
+          {/* Header communauté */}
+          <div style={{ ...label, color: "rgba(100,200,100,0.6)", marginBottom: "12px" }}>
+            // DOSSIER_COMMUNAUTÉ — GALERIE PARTAGÉE
+          </div>
           <h2
-            className="text-3xl md:text-5xl font-bold text-white text-center md:text-left"
+            className="text-3xl md:text-5xl font-bold text-white text-center md:text-left mb-4"
+            style={{ fontFamily: "Orbitron, monospace" }}
+          >
+            GALERIE
+            <br />
+            <span style={{ color: "#44cc44" }}>COMMUNAUTÉ</span>
+          </h2>
+
+          {/* Accroche */}
+          <p
+            className="mb-8 text-center md:text-left"
+            style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.1rem", color: "rgba(192,192,192,0.7)", lineHeight: 1.85, maxWidth: "600px" }}
+          >
+            Tu as filmé ta réplique, trouvé une vidéo K2000, ou tu veux partager un moment du projet ?
+            {" "}<strong style={{ color: "#44cc44" }}>Rejoins la galerie officielle.</strong>
+          </p>
+
+          {/* CTA PRINCIPAL — Publier ma vidéo */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-10">
+            <Link
+              href="/soumettre"
+              className="inline-flex items-center justify-center gap-3 px-8 py-4 transition-all"
+              style={{
+                background: "linear-gradient(135deg, rgba(68,204,68,0.25), rgba(68,204,68,0.1))",
+                border: "1px solid #44cc44",
+                fontFamily: "Orbitron, monospace",
+                fontSize: "0.75rem",
+                letterSpacing: "0.15em",
+                color: "#44cc44",
+                boxShadow: "0 0 20px rgba(68,204,68,0.2)",
+                textDecoration: "none",
+              }}
+              onMouseEnter={() => play("hover")}
+            >
+              <span style={{ fontSize: "1.1rem" }}>▶</span>
+              PUBLIER MA VIDÉO
+            </Link>
+            <Link
+              href="/videos"
+              className="inline-flex items-center justify-center gap-3 px-8 py-4 transition-all"
+              style={{
+                border: "1px solid rgba(68,204,68,0.3)",
+                fontFamily: "Orbitron, monospace",
+                fontSize: "0.7rem",
+                letterSpacing: "0.12em",
+                color: "rgba(68,204,68,0.7)",
+                textDecoration: "none",
+              }}
+              onMouseEnter={() => play("hover")}
+            >
+              VOIR LES VIDÉOS DE LA COMMUNAUTÉ
+              {communityCount > 0 && (
+                <span style={{
+                  background: "#44cc44",
+                  color: "#000",
+                  borderRadius: "999px",
+                  padding: "1px 8px",
+                  fontSize: "0.6rem",
+                  fontWeight: 700,
+                }}>
+                  {communityCount}
+                </span>
+              )}
+            </Link>
+          </div>
+
+          {/* Aperçu des 3 dernières vidéos communauté */}
+          {communityVideos.length > 0 && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {communityVideos.map((v, i) => {
+                const ytId = getYtIdHome(v.url) || v.id;
+                const isYt = !v.url.includes("facebook.com") && !v.url.includes("fb.watch");
+                return (
+                  <div
+                    key={v.id}
+                    className="group relative overflow-hidden"
+                    style={{
+                      border: "1px solid rgba(68,204,68,0.25)",
+                      background: "rgba(0,20,0,0.6)",
+                      opacity: visible ? 1 : 0,
+                      transform: visible ? "translateY(0)" : "translateY(30px)",
+                      transition: `all 0.6s ease ${i * 0.12}s`,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      play("click");
+                      if (window.innerWidth < 768) {
+                        window.open(v.url, "_blank");
+                      } else {
+                        window.open(v.url, "_blank");
+                      }
+                    }}
+                    onMouseEnter={() => play("hover")}
+                  >
+                    {/* Badge COMMUNAUTÉ */}
+                    <div style={{
+                      position: "absolute", top: "8px", left: "8px", zIndex: 2,
+                      background: "#44cc44", color: "#000",
+                      fontFamily: "Orbitron, monospace", fontSize: "0.45rem",
+                      fontWeight: 700, letterSpacing: "0.1em",
+                      padding: "3px 8px",
+                    }}>
+                      COMMUNAUTÉ
+                    </div>
+
+                    {/* Thumbnail */}
+                    <div style={{ position: "relative", aspectRatio: "16/9", overflow: "hidden" }}>
+                      {isYt ? (
+                        <img
+                          src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
+                          alt={v.message}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div style={{
+                          width: "100%", height: "100%",
+                          background: "linear-gradient(135deg, #0d1b3e 0%, #1a3a6e 100%)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <span style={{ ...label, color: "rgba(100,150,255,0.8)" }}>FACEBOOK VIDEO</span>
+                        </div>
+                      )}
+                      {/* Play overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center"
+                        style={{ background: "rgba(0,0,0,0.3)" }}>
+                        <div style={{
+                          width: 44, height: 44, borderRadius: "50%",
+                          background: "rgba(68,204,68,0.85)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <span style={{ color: "#000", fontSize: "1.1rem", marginLeft: "3px" }}>▶</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ padding: "10px 12px" }}>
+                      {v.message && (
+                        <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(192,192,192,0.75)", fontStyle: "italic", marginBottom: "4px" }}>
+                          "{v.message}"
+                        </p>
+                      )}
+                      <div style={{ ...label, color: "rgba(68,204,68,0.5)", fontSize: "0.42rem" }}>
+                        {v.pseudo} — {new Date(v.ts * 1000).toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                      </div>
+                    </div>
+
+                    {/* Bottom accent vert */}
+                    <div style={{ height: "2px", background: "linear-gradient(90deg, #44cc44, transparent)" }} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ══════════════════════════════════════════
+            SECTION 2 — MES VIDÉOS YOUTUBE
+        ══════════════════════════════════════════ */}
+        <div
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(30px)",
+            transition: "all 0.8s ease 0.2s",
+            borderTop: "1px solid rgba(255,34,34,0.15)",
+            paddingTop: "48px",
+          }}
+        >
+          <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "12px" }}>
+            {t("videossec.label")}
+          </div>
+          <h2
+            className="text-3xl md:text-5xl font-bold text-white text-center md:text-left mb-12"
             style={{ fontFamily: "Orbitron, monospace" }}
           >
             {t("videossec.title1")}
             <br />
             <span style={{ color: "#ff2222" }}>{t("videossec.title2")}</span>
           </h2>
-        </div>
 
-        {/* Video grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {YOUTUBE_VIDEOS.map((v, i) => (
-            <div
-              key={v.id}
-              className="group relative overflow-hidden"
-              style={{
-                border: "1px solid rgba(255,34,34,0.2)",
-                background: "rgba(10,0,0,0.8)",
-                opacity: visible ? 1 : 0,
-                transform: visible ? "translateY(0)" : "translateY(30px)",
-                transition: `all 0.6s ease ${i * 0.1}s`,
-              }}
-            >
-              {/* Video player */}
-              {active === v.id ? (
-                <iframe
-                  src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
-                  title={v.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full"
-                  style={{ aspectRatio: "16/9", border: "none" }}
-                />
-              ) : (
-                <div
-                  className="relative cursor-pointer"
-                  style={{ aspectRatio: "16/9" }}
-                  onClick={() => {
-                    play("click");
-                    if (window.innerWidth < 768) {
-                      window.open(`https://www.youtube.com/watch?v=${v.id}`, '_blank');
-                    } else {
-                      setActive(v.id);
-                    }
-                  }}
-                  onMouseEnter={() => play("hover")}
-                >
-                  <img
-                    src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
-                    alt={v.title}
-                    className="w-full h-full object-cover"
+          {/* Video grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {YOUTUBE_VIDEOS.map((v, i) => (
+              <div
+                key={v.id}
+                className="group relative overflow-hidden"
+                style={{
+                  border: "1px solid rgba(255,34,34,0.2)",
+                  background: "rgba(10,0,0,0.8)",
+                  opacity: visible ? 1 : 0,
+                  transform: visible ? "translateY(0)" : "translateY(30px)",
+                  transition: `all 0.6s ease ${i * 0.1}s`,
+                }}
+              >
+                {/* Badge MANIX */}
+                <div style={{
+                  position: "absolute", top: "8px", left: "8px", zIndex: 2,
+                  background: "#ff2222", color: "white",
+                  fontFamily: "Orbitron, monospace", fontSize: "0.45rem",
+                  fontWeight: 700, letterSpacing: "0.1em",
+                  padding: "3px 8px",
+                }}>
+                  MANIX
+                </div>
+
+                {/* Video player */}
+                {active === v.id ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
+                    title={v.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full"
+                    style={{ aspectRatio: "16/9", border: "none" }}
                   />
-                  {/* Red overlay on hover */}
+                ) : (
                   <div
-                    className="absolute inset-0 transition-opacity duration-300"
-                    style={{ background: "rgba(255,34,34,0.15)", opacity: 0 }}
-                  />
-                  {/* Play button */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div
-                      className="w-14 h-14 flex items-center justify-center transition-transform group-hover:scale-110"
-                      style={{
-                        background: "rgba(255,34,34,0.9)",
-                        clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                      }}
-                    >
+                    className="relative cursor-pointer"
+                    style={{ aspectRatio: "16/9" }}
+                    onClick={() => {
+                      play("click");
+                      if (window.innerWidth < 768) {
+                        window.open(`https://www.youtube.com/watch?v=${v.id}`, "_blank");
+                      } else {
+                        setActive(v.id);
+                      }
+                    }}
+                    onMouseEnter={() => play("hover")}
+                  >
+                    <img
+                      src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
+                      alt={v.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
                       <div
-                        className="ml-1"
+                        className="w-14 h-14 flex items-center justify-center transition-transform group-hover:scale-110"
                         style={{
-                          width: 0,
-                          height: 0,
-                          borderTop: "8px solid transparent",
-                          borderBottom: "8px solid transparent",
-                          borderLeft: "14px solid white",
+                          background: "rgba(255,34,34,0.9)",
+                          clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
                         }}
-                      />
+                      >
+                        <div
+                          className="ml-1"
+                          style={{
+                            width: 0, height: 0,
+                            borderTop: "8px solid transparent",
+                            borderBottom: "8px solid transparent",
+                            borderLeft: "14px solid white",
+                          }}
+                        />
+                      </div>
                     </div>
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-0.5 transition-transform duration-300 origin-left scale-x-0 group-hover:scale-x-100"
+                      style={{ background: "linear-gradient(90deg, #ff2222, transparent)" }}
+                    />
                   </div>
-                  {/* Scanner line on hover */}
+                )}
+
+                {/* Info */}
+                <div className="p-4">
                   <div
-                    className="absolute bottom-0 left-0 right-0 h-0.5 transition-transform duration-300 origin-left scale-x-0 group-hover:scale-x-100"
-                    style={{ background: "linear-gradient(90deg, #ff2222, transparent)" }}
-                  />
+                    className="font-bold text-white mb-1 truncate"
+                    style={{ fontFamily: "Orbitron, monospace", fontSize: "0.7rem", letterSpacing: "0.05em" }}
+                  >
+                    {t(`videos.${i}.title`)}
+                  </div>
+                  <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(192,192,192,0.6)", lineHeight: 1.5 }}>
+                    {t(`videos.${i}.desc`)}
+                  </p>
                 </div>
-              )}
 
-              {/* Info */}
-              <div className="p-4">
-                <div
-                  className="font-bold text-white mb-1 truncate"
-                  style={{ fontFamily: "Orbitron, monospace", fontSize: "0.7rem", letterSpacing: "0.05em" }}
-                >
-                  {t(`videos.${i}.title`)}
-                </div>
-                <p
-                  style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(192,192,192,0.6)", lineHeight: 1.5 }}
-                >
-                  {t(`videos.${i}.desc`)}
-                </p>
+                <div style={{ height: "2px", background: "linear-gradient(90deg, #ff2222, transparent)" }} />
               </div>
+            ))}
+          </div>
 
-              {/* Bottom accent */}
-              <div style={{ height: "2px", background: "linear-gradient(90deg, #ff2222, transparent)" }} />
-            </div>
-          ))}
-        </div>
-
-        {/* CTAs YouTube */}
-        <div
-          className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
-          style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease 0.6s" }}
-        >
-          <a
-            href="https://www.youtube.com/@KITTK2000"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-8 py-4 transition-all hover:border-red-500"
-            style={{
-              border: "1px solid rgba(255,34,34,0.3)",
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.7rem",
-              letterSpacing: "0.15em",
-              color: "rgba(192,192,192,0.8)",
-            }}
-            onMouseEnter={() => play("hover")}
-          >
-            <span style={{ fontSize: "1.2rem" }}>▶</span>
-            {t("videossec.cta1")}
-          </a>
-          <a
-            href="https://www.youtube.com/@KITTK2000?sub_confirmation=1"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-8 py-4 transition-all"
-            style={{
-              background: "rgba(255,34,34,0.15)",
-              border: "1px solid #ff2222",
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.7rem",
-              letterSpacing: "0.15em",
-              color: "#ff2222",
-              boxShadow: "0 0 15px rgba(255,34,34,0.2)",
-            }}
-            onMouseEnter={() => play("hover")}
-          >
-            <span style={{ fontSize: "1rem" }}>+</span>
-            {t("videossec.cta2")}
-          </a>
-        </div>
-
-        {/* ── CTA COMMUNAUTAIRE "Propose ta vidéo" ── */}
-        <div
-          style={{
-            marginTop: "48px",
-            opacity: visible ? 1 : 0,
-            transition: "opacity 0.8s ease 0.8s",
-            position: "relative",
-            overflow: "hidden",
-            background: "linear-gradient(135deg, rgba(255,34,34,0.08) 0%, rgba(10,0,0,0.9) 60%)",
-            border: "1px solid rgba(255,34,34,0.35)",
-            padding: "28px 32px",
-            display: "flex",
-            flexDirection: "column" as const,
-            alignItems: "flex-start",
-            gap: "16px",
-          }}
-        >
-          {/* Accent ligne gauche */}
-          <div style={{
-            position: "absolute", top: 0, left: 0, width: "3px", height: "100%",
-            background: "linear-gradient(180deg, #ff2222, rgba(255,34,34,0.1))",
-          }} />
-          {/* Coins HUD */}
-          <div style={{ position: "absolute", top: 0, right: 0, width: "12px", height: "12px", borderTop: "2px solid #ff2222", borderRight: "2px solid #ff2222" }} />
-          <div style={{ position: "absolute", bottom: 0, left: "16px", width: "12px", height: "12px", borderBottom: "2px solid rgba(255,34,34,0.4)", borderLeft: "2px solid rgba(255,34,34,0.4)" }} />
-
-          <div style={{ paddingLeft: "12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-              <span style={{
-                display: "inline-block", width: "8px", height: "8px", borderRadius: "50%",
-                background: "#ff2222", animation: "pulse 2s ease-in-out infinite",
-              }} />
-              <span style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,34,34,0.6)", letterSpacing: "0.25em" }}>
-                // VOUS AVEZ UNE VIDÉO ?
-              </span>
-            </div>
-            <h3 style={{ fontFamily: "Orbitron, monospace", fontSize: "1.1rem", color: "white", marginBottom: "10px", fontWeight: 700 }}>
-              🔥 REJOIGNEZ LA GALERIE OFFICIELLE
-            </h3>
-            <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "rgba(192,192,192,0.7)", lineHeight: 1.8, marginBottom: "20px", maxWidth: "560px" }}>
-              Partagez vos vidéos liées au projet KITT avec toute la communauté.
-              YouTube, Facebook — tout est accepté. Soumission en 30 secondes.
-            </p>
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" as const }}>
-              <Link
-                href="/soumettre"
-                style={{
-                  fontFamily: "Orbitron, monospace", fontSize: "0.65rem", letterSpacing: "0.15em",
-                  color: "white", background: "#ff2222",
-                  padding: "12px 28px", display: "inline-block", textDecoration: "none",
-                  boxShadow: "0 0 18px rgba(255,34,34,0.5)",
-                  transition: "background 0.2s ease, box-shadow 0.2s ease",
-                }}
-                onMouseEnter={e => { play("hover"); (e.currentTarget as HTMLElement).style.background = "#cc1111"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 28px rgba(255,34,34,0.8)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#ff2222"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 18px rgba(255,34,34,0.5)"; }}
-              >
-                🚗 PROPOSER MA VIDÉO
-              </Link>
-              <Link
-                href="/videos"
-                style={{
-                  fontFamily: "Orbitron, monospace", fontSize: "0.65rem", letterSpacing: "0.15em",
-                  color: "rgba(192,192,192,0.6)", border: "1px solid rgba(255,34,34,0.2)",
-                  padding: "12px 28px", display: "inline-block", textDecoration: "none",
-                  transition: "border-color 0.2s ease, color 0.2s ease",
-                }}
-                onMouseEnter={e => { play("hover"); (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,34,34,0.6)"; (e.currentTarget as HTMLElement).style.color = "rgba(255,34,34,0.8)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,34,34,0.2)"; (e.currentTarget as HTMLElement).style.color = "rgba(192,192,192,0.6)"; }}
-              >
-                VOIR LA GALERIE →
-              </Link>
-            </div>
+          {/* CTAs YouTube */}
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="https://www.youtube.com/@KITTK2000"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 transition-all hover:border-red-500"
+              style={{
+                border: "1px solid rgba(255,34,34,0.3)",
+                fontFamily: "Orbitron, monospace",
+                fontSize: "0.7rem",
+                letterSpacing: "0.15em",
+                color: "rgba(192,192,192,0.8)",
+              }}
+              onMouseEnter={() => play("hover")}
+            >
+              <span style={{ fontSize: "1.2rem" }}>▶</span>
+              VOIR MA CHAÎNE YOUTUBE
+            </a>
+            <a
+              href="https://www.youtube.com/@KITTK2000?sub_confirmation=1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 transition-all"
+              style={{
+                background: "rgba(255,34,34,0.15)",
+                border: "1px solid #ff2222",
+                fontFamily: "Orbitron, monospace",
+                fontSize: "0.7rem",
+                letterSpacing: "0.15em",
+                color: "#ff2222",
+                boxShadow: "0 0 15px rgba(255,34,34,0.2)",
+              }}
+              onMouseEnter={() => play("hover")}
+            >
+              <span style={{ fontSize: "1rem" }}>+</span>
+              {t("videossec.cta2")}
+            </a>
           </div>
         </div>
+
+
       </div>
     </section>
   );
