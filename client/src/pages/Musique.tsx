@@ -55,6 +55,8 @@ export default function Musique() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const kittBgRef = useRef<HTMLCanvasElement | null>(null);
+  const kittAnimRef = useRef<number>(0);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
@@ -110,6 +112,186 @@ export default function Musique() {
     };
     idle();
     return () => cancelAnimationFrame(animRef.current);
+  }, [isPlaying]);
+
+  // KITT animated background
+  useEffect(() => {
+    const canvas = kittBgRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    if (!isPlaying) {
+      cancelAnimationFrame(kittAnimRef.current);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      window.removeEventListener("resize", resize);
+      return;
+    }
+
+    let t = 0;
+    let scannerX = 0;
+    let scannerDir = 1;
+
+    const draw = () => {
+      kittAnimRef.current = requestAnimationFrame(draw);
+      t += 0.03;
+      const W = canvas.width;
+      const H = canvas.height;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Frequency data
+      const analyser = analyserRef.current;
+      let freqData: Uint8Array | null = null;
+      if (analyser) {
+        freqData = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(freqData);
+      }
+
+      // Bass energy
+      let bassEnergy = 0;
+      if (freqData) {
+        for (let i = 0; i < 8; i++) bassEnergy += freqData[i];
+        bassEnergy = bassEnergy / (8 * 255);
+      } else {
+        bassEnergy = Math.sin(t * 1.5) * 0.5 + 0.5;
+      }
+
+      // Giant KITT watermark
+      ctx.save();
+      ctx.globalAlpha = 0.04 + bassEnergy * 0.05;
+      const fontSize = Math.min(W * 0.38, 280);
+      ctx.font = `900 ${fontSize}px Orbitron, monospace`;
+      ctx.fillStyle = "#ff2200";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("K.I.T.T.", W / 2, H / 2);
+      ctx.restore();
+
+      // Car dimensions
+      const carCenterX = W / 2;
+      const carBottomY = H * 0.82;
+      const carW = Math.min(W * 0.72, 640);
+      const carH = carW * 0.32;
+
+      // Body silhouette
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.beginPath();
+      ctx.moveTo(carCenterX - carW / 2, carBottomY);
+      ctx.lineTo(carCenterX - carW * 0.44, carBottomY - carH * 0.35);
+      ctx.lineTo(carCenterX - carW * 0.30, carBottomY - carH * 0.72);
+      ctx.lineTo(carCenterX - carW * 0.14, carBottomY - carH);
+      ctx.lineTo(carCenterX + carW * 0.14, carBottomY - carH);
+      ctx.lineTo(carCenterX + carW * 0.30, carBottomY - carH * 0.72);
+      ctx.lineTo(carCenterX + carW * 0.44, carBottomY - carH * 0.35);
+      ctx.lineTo(carCenterX + carW / 2, carBottomY);
+      ctx.closePath();
+      ctx.fillStyle = "#880000";
+      ctx.fill();
+      ctx.restore();
+
+      // Front grille strip
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = "#550000";
+      ctx.fillRect(carCenterX - carW * 0.38, carBottomY - carH * 0.55, carW * 0.76, carH * 0.16);
+      ctx.restore();
+
+      // Headlights pulsing
+      const hlPulse = 0.4 + bassEnergy * 0.6;
+      const hlY = carBottomY - carH * 0.52;
+      const hlR = carW * 0.08;
+      [carCenterX - carW * 0.37, carCenterX + carW * 0.37].forEach(hlX => {
+        ctx.save();
+        ctx.globalAlpha = 0.12 + hlPulse * 0.28;
+        const g = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, hlR * 2.5);
+        g.addColorStop(0, "rgba(255,210,160,1)");
+        g.addColorStop(0.3, "rgba(255,100,0,0.6)");
+        g.addColorStop(1, "transparent");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(hlX, hlY, hlR * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Voice modulator bars (8 bars in front grille area)
+      const numBars = 8;
+      const barAreaW = carW * 0.52;
+      const barSpacing = barAreaW / numBars;
+      const barW = barSpacing * 0.55;
+      const barMaxH = carH * 0.55;
+      const barBaseY = carBottomY - carH * 0.27;
+      const barStartX = carCenterX - barAreaW / 2 + barSpacing / 2;
+
+      for (let i = 0; i < numBars; i++) {
+        let bH: number;
+        if (freqData) {
+          const binIdx = Math.floor((i / numBars) * (freqData.length / 3));
+          bH = (freqData[binIdx] / 255) * barMaxH;
+        } else {
+          bH = (Math.sin(t * 3.5 + i * 0.9) * 0.5 + 0.5) * barMaxH * 0.7;
+        }
+        bH = Math.max(bH, 4);
+
+        const bx = barStartX + i * barSpacing;
+        ctx.save();
+        ctx.globalAlpha = 0.75;
+        const grd = ctx.createLinearGradient(0, barBaseY, 0, barBaseY - bH);
+        grd.addColorStop(0, "#aa0000");
+        grd.addColorStop(1, "#ff5500");
+        ctx.fillStyle = grd;
+        ctx.fillRect(bx - barW / 2, barBaseY - bH, barW, bH);
+        ctx.globalAlpha = 0.2;
+        ctx.shadowColor = "#ff2200";
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = "#ff3300";
+        ctx.fillRect(bx - barW / 2, barBaseY - bH, barW, bH);
+        ctx.restore();
+      }
+
+      // Scanner bar
+      const scanBarW = carW * 0.62;
+      const scanStartX = carCenterX - scanBarW / 2;
+      const scanY = carBottomY - carH * 0.63;
+      const scanSpeed = 2.5 + bassEnergy * 4;
+      scannerX += scannerDir * scanSpeed;
+      if (scannerX > scanBarW) { scannerX = scanBarW; scannerDir = -1; }
+      if (scannerX < 0) { scannerX = 0; scannerDir = 1; }
+
+      const sx = scanStartX + scannerX;
+      const sw = carW * 0.07;
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      const sg = ctx.createLinearGradient(sx - sw, scanY, sx + sw, scanY);
+      sg.addColorStop(0, "transparent");
+      sg.addColorStop(0.35, "rgba(255,20,0,0.35)");
+      sg.addColorStop(0.5, "rgba(255,60,0,1)");
+      sg.addColorStop(0.65, "rgba(255,20,0,0.35)");
+      sg.addColorStop(1, "transparent");
+      ctx.fillStyle = sg;
+      ctx.fillRect(sx - sw, scanY - 5, sw * 2, 10);
+      ctx.shadowColor = "#ff2200";
+      ctx.shadowBlur = 18;
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = "rgba(255,50,0,0.7)";
+      ctx.fillRect(sx - sw * 0.4, scanY - 3, sw * 0.8, 6);
+      ctx.restore();
+    };
+
+    draw();
+    return () => {
+      cancelAnimationFrame(kittAnimRef.current);
+      window.removeEventListener("resize", resize);
+    };
   }, [isPlaying]);
 
   // iOS Safari : getByteFrequencyData retourne toujours 0 (bug WebKit connu)
@@ -340,14 +522,30 @@ export default function Musique() {
   const label: React.CSSProperties = { fontFamily: "Space Mono, monospace", fontSize: "0.5rem", letterSpacing: "0.2em" };
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0000" }}>
+    <div className="min-h-screen" style={{ background: "#0a0000", position: "relative" }}>
+
+      {/* KITT animated background — visible quand la musique joue */}
+      <canvas
+        ref={kittBgRef}
+        style={{
+          position: "fixed",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 0,
+          pointerEvents: "none",
+          opacity: isPlaying ? 1 : 0,
+          transition: "opacity 1.8s ease",
+        }}
+      />
 
       <div className="fixed inset-0 pointer-events-none" style={{
+        zIndex: 1,
         backgroundImage: "linear-gradient(rgba(255,34,34,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,34,34,0.03) 1px, transparent 1px)",
         backgroundSize: "60px 60px",
       }} />
 
-      <div className="relative container py-16 max-w-5xl mx-auto px-4">
+      <div className="relative container py-16 max-w-5xl mx-auto px-4" style={{ zIndex: 2 }}>
         <div className="mb-2 text-center">
           <div style={{ ...label, color: "rgba(255,34,34,0.5)", marginBottom: "12px" }}>
             // SYSTÈME KITT FRANCO-BELGE — LECTEUR AUDIO
