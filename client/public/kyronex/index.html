@@ -1145,7 +1145,7 @@ function kittParle() {
   status.style.color = '#664422';
   status.textContent = 'CONNEXION ELEVENLABS...';
 
-  fetch('https://api.elevenlabs.io/v1/text-to-speech/AWQ8RBL5o63CDJoS98F9', {
+  fetch('https://api.elevenlabs.io/v1/text-to-speech/M2Xs2gEdangnlb92hK6y', {
     method: 'POST',
     headers: {
       'xi-api-key': '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3',
@@ -1155,7 +1155,7 @@ function kittParle() {
     body: JSON.stringify({
       text: texte,
       model_id: 'eleven_multilingual_v2',
-      voice_settings: { stability: 0.45, similarity_boost: 0.90, style: 0.30, use_speaker_boost: true }
+      voice_settings: { stability: 0.55, similarity_boost: 0.78, style: 0.25, use_speaker_boost: true }
     })
   })
   .then(function(r) {
