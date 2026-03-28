@@ -454,7 +454,7 @@
     });
   })();
 
-  function _playHover(id) {
+  window._playHover = function(id) {
     if (_hoverPlaying) return;
     var a = _hoverAudio[id];
     if (!a) return;
@@ -462,9 +462,9 @@
     a.currentTime = 0;
     a.play().catch(function(){});
     a.onended = function() { _hoverPlaying = false; };
-  }
+  };
 
-  function _selectAI(which) {
+  window._selectAI = function(which) {
     _activeAI = which;
     document.querySelectorAll('.ai-sel-btn').forEach(function(b) {
       b.classList.toggle('active', b.getAttribute('data-ai') === which);
@@ -475,7 +475,7 @@
     btnEl.classList.remove('visible');
     document.getElementById('offline-box').classList.remove('visible');
     _checkTunnel();
-  }
+  };
 
   function _checkTunnel() {
     var statusEl  = document.getElementById('p-status');
