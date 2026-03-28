@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-28T18:35:06.317608+00:00",
+  "status": "online",
+  "url": "https://phoenix-discovery-rev-engage.trycloudflare.com",
+  "last_update": "2026-03-28T18:35:43.822086+00:00",
   "host": "kitt-nx-16gb",
   "version": "1.0"
 }
