@@ -484,8 +484,10 @@
         var age = (Date.now() - new Date(d.last_update).getTime()) / 60000;
         if (age > TUNNEL_MAX_AGE_MIN) throw new Error('stale');
         statusEl.className = 'online';
-        statusEl.textContent = label + ' EN LIGNE — OUVERTURE...';
-        window.open(d.url, '_blank');
+        statusEl.textContent = label + ' EN LIGNE — CLIQUEZ POUR ACCÉDER';
+        btnEl.href = d.url;
+        btnEl.textContent = '[ ACCÉDER À ' + label + ' ]';
+        btnEl.classList.add('visible');
       })
       .catch(function(){
         statusEl.className = 'offline';
