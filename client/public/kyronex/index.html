@@ -433,11 +433,11 @@
 
   /* ── TUNNEL — URL KYRONEX ───────────────────────────────────
      tunnel.json est poussé sur GitHub à chaque démarrage du tunnel.
-     On lit la version brute avec cache-bust timestamp.
+     On lit via l'API GitHub (pas de cache CDN 5min comme raw.githubusercontent.com).
   ─────────────────────────────────────────────────────────── */
   var TUNNEL_URLS = {
-    kitt: 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel_kitt.json',
-    karr: 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel_karr.json'
+    kitt: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_kitt.json',
+    karr: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_karr.json'
   };
   var TUNNEL_MAX_AGE_MIN = 120;
   var _activeAI = 'kitt';
@@ -477,7 +477,7 @@
     offlineEl.classList.remove('visible');
     statusEl.className = 'checking';
     statusEl.textContent = 'CONNEXION EN COURS...';
-    fetch(TUNNEL_URLS[which] + '?t=' + Date.now(), {cache:'no-store'})
+    fetch(TUNNEL_URLS[which] + '?t=' + Date.now(), {cache:'no-store', headers:{'Accept':'application/vnd.github.v3.raw'}})
       .then(function(r){ return r.json(); })
       .then(function(d){
         if (d.status !== 'online' || !d.url) throw new Error('offline');
@@ -505,7 +505,7 @@
     statusEl.className = 'checking';
     statusEl.textContent = 'VERIFICATION DU SYSTEME...';
 
-    fetch(url + '?t=' + Date.now(), { cache: 'no-store' })
+    fetch(url + '?t=' + Date.now(), { cache: 'no-store', headers: {'Accept': 'application/vnd.github.v3.raw'} })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.status !== 'online' || !data.url) { throw new Error('offline'); }
