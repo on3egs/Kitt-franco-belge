@@ -61,6 +61,24 @@ export default function Manix() {
   const storyRef = useRef<HTMLDivElement>(null);
   const visibleStory = useIntersection(storyRef);
   const [photoLoaded, setPhotoLoaded] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [played, setPlayed] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  function toggleStory() {
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/manix_story.mp3");
+      audioRef.current.onended = () => { setPlaying(false); setPlayed(true); };
+    }
+    if (playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+    } else {
+      audioRef.current.play();
+      setPlaying(true);
+      setPlayed(true);
+    }
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "#050000" }}>
@@ -153,7 +171,7 @@ export default function Manix() {
             jusqu'à une intelligence artificielle qui parle et écoute — l'histoire d'une vie guidée par la curiosité.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
             <Link
               href="/"
               className="inline-flex items-center gap-3 px-8 py-4 transition-all hover:border-red-500"
@@ -166,12 +184,26 @@ export default function Manix() {
               ← RETOUR ACCUEIL
             </Link>
             <button
+              onClick={toggleStory}
+              className="inline-flex items-center gap-3 px-8 py-4 transition-all"
+              style={{
+                background: playing ? "rgba(255,34,34,0.2)" : "rgba(255,34,34,0.05)",
+                border: `1px solid ${playing ? "#ff2222" : "rgba(255,34,34,0.5)"}`,
+                fontFamily: "Orbitron, monospace", fontSize: "0.65rem",
+                letterSpacing: "0.15em", color: "#ff2222", cursor: "pointer",
+                boxShadow: playing ? "0 0 20px rgba(255,34,34,0.3)" : "none",
+                transition: "all 0.3s"
+              }}
+            >
+              {playing ? "⏸ EN COURS..." : played ? "↺ RÉÉCOUTER" : "▶ ÉCOUTER MON HISTOIRE"}
+            </button>
+            <button
               onClick={() => document.getElementById("histoire")?.scrollIntoView({ behavior: "smooth" })}
               className="inline-flex items-center gap-3 px-8 py-4 transition-all"
               style={{
-                background: "rgba(255,34,34,0.1)", border: "1px solid #ff2222",
+                border: "1px solid rgba(255,34,34,0.2)",
                 fontFamily: "Orbitron, monospace", fontSize: "0.65rem",
-                letterSpacing: "0.15em", color: "#ff2222", cursor: "pointer"
+                letterSpacing: "0.15em", color: "rgba(192,192,192,0.5)", cursor: "pointer"
               }}
             >
               LIRE L'HISTOIRE →
