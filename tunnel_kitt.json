@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-28T16:13:36.420078+00:00",
+  "status": "online",
+  "url": "https://rrp-plugin-website-spray.trycloudflare.com",
+  "last_update": "2026-03-28T16:14:02.930902+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
