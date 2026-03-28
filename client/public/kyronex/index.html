@@ -371,9 +371,9 @@
   <div class="p-logo">KYRONEX</div>
   <div class="p-sub">KNIGHT INDUSTRIES TWO THOUSAND</div>
   <div id="ai-selector">
-    <button class="ai-sel-btn active" data-ai="kitt" onclick="_selectAI('kitt')">K.I.T.T.</button>
+    <button class="ai-sel-btn active" data-ai="kitt" onclick="_selectAI('kitt')" onmouseenter="_playHover('kitt')">K.I.T.T.</button>
     <div class="sep"></div>
-    <button class="ai-sel-btn" data-ai="karr" onclick="_selectAI('karr')">K.A.R.R.</button>
+    <button class="ai-sel-btn" data-ai="karr" onclick="_selectAI('karr')" onmouseenter="_playHover('karr')">K.A.R.R.</button>
   </div>
   <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
   <div id="p-status" class="checking">VERIFICATION DU SYSTEME...</div>
@@ -441,6 +441,28 @@
   };
   var TUNNEL_MAX_AGE_MIN = 60;
   var _activeAI = 'kitt';
+
+  /* ── HOVER AUDIO KITT / KARR ─────────────────────────────── */
+  var _hoverAudio = {};
+  var _hoverPlaying = false;
+  (function() {
+    var base = 'https://on3egs.github.io/Kitt-franco-belge/kyronex/';
+    ['kitt','karr'].forEach(function(id) {
+      var a = new Audio(base + 'hover_' + id + '.mp3');
+      a.preload = 'auto';
+      _hoverAudio[id] = a;
+    });
+  })();
+
+  function _playHover(id) {
+    if (_hoverPlaying) return;
+    var a = _hoverAudio[id];
+    if (!a) return;
+    _hoverPlaying = true;
+    a.currentTime = 0;
+    a.play().catch(function(){});
+    a.onended = function() { _hoverPlaying = false; };
+  }
 
   function _selectAI(which) {
     _activeAI = which;
