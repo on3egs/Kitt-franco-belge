@@ -469,12 +469,29 @@
     document.querySelectorAll('.ai-sel-btn').forEach(function(b) {
       b.classList.toggle('active', b.getAttribute('data-ai') === which);
     });
-    var btnEl = document.getElementById('connect-btn');
-    var label = which === 'karr' ? 'K.A.R.R.' : 'KITT';
-    btnEl.textContent = '[ ACCEDER A ' + label + ' ]';
+    var statusEl = document.getElementById('p-status');
+    var btnEl    = document.getElementById('connect-btn');
+    var offlineEl = document.getElementById('offline-box');
+    var label    = which === 'karr' ? 'K.A.R.R.' : 'K.I.T.T.';
     btnEl.classList.remove('visible');
-    document.getElementById('offline-box').classList.remove('visible');
-    _checkTunnel();
+    offlineEl.classList.remove('visible');
+    statusEl.className = 'checking';
+    statusEl.textContent = 'CONNEXION EN COURS...';
+    fetch(TUNNEL_URLS[which] + '?t=' + Date.now(), {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.status !== 'online' || !d.url) throw new Error('offline');
+        var age = (Date.now() - new Date(d.last_update).getTime()) / 60000;
+        if (age > TUNNEL_MAX_AGE_MIN) throw new Error('stale');
+        statusEl.className = 'online';
+        statusEl.textContent = label + ' EN LIGNE — OUVERTURE...';
+        window.open(d.url, '_blank');
+      })
+      .catch(function(){
+        statusEl.className = 'offline';
+        statusEl.textContent = label + ' HORS LIGNE';
+        offlineEl.classList.add('visible');
+      });
   };
 
   function _checkTunnel() {
