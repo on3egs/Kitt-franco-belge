@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 import Privacy from "./pages/Privacy";
 import DataDeletion from "./pages/DataDeletion";
 import Karr from "./pages/Karr";
+import Manix from "./pages/Manix";
 import Soumettre from "./pages/Soumettre";
 import AdminVideos from "./pages/AdminVideos";
 import Videos from "./pages/Videos";
@@ -32,6 +33,7 @@ function AppRouter() {
         <Route path={"/privacy"} component={Privacy} />
         <Route path={"/data-deletion"} component={DataDeletion} />
         <Route path={"/karr"} component={Karr} />
+        <Route path={"/manix"} component={Manix} />
         <Route path={"/soumettre"} component={Soumettre} />
         <Route path={"/videos"} component={Videos} />
         <Route path={"/admin-videos"} component={AdminVideos} />
