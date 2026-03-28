@@ -150,6 +150,33 @@
       text-align: center;
     }
 
+    /* Sélecteur KITT / KARR */
+    #ai-selector {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      border: 1px solid #440000;
+    }
+    .ai-sel-btn {
+      flex: 1;
+      padding: 10px 28px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.72em;
+      letter-spacing: 5px;
+      color: #661111;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ai-sel-btn.active {
+      color: #ff2222;
+      background: #1a0000;
+      text-shadow: 0 0 10px #cc0000;
+    }
+    .ai-sel-btn:not(.active):hover { color: #aa2222; background: #0d0000; }
+    #ai-selector .sep { width: 1px; background: #440000; }
+
     /* Bouton principal */
     #connect-btn {
       display: none;
@@ -343,6 +370,11 @@
   <div class="p-scanner"><div class="p-scanner-head"></div></div>
   <div class="p-logo">KYRONEX</div>
   <div class="p-sub">KNIGHT INDUSTRIES TWO THOUSAND</div>
+  <div id="ai-selector">
+    <button class="ai-sel-btn active" onclick="_selectAI('kitt')">K.I.T.T.</button>
+    <div class="sep"></div>
+    <button class="ai-sel-btn" onclick="_selectAI('karr')">K.A.R.R.</button>
+  </div>
   <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
   <div id="p-status" class="checking">VERIFICATION DU SYSTEME...</div>
   <div id="offline-box">
@@ -403,34 +435,48 @@
      tunnel.json est poussé sur GitHub à chaque démarrage du tunnel.
      On lit la version brute avec cache-bust timestamp.
   ─────────────────────────────────────────────────────────── */
-  var TUNNEL_URL = 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json';
-  var TUNNEL_MAX_AGE_MIN = 60; // si last_update > 60 min → considérer offline
+  var TUNNEL_URLS = {
+    kitt: 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel_kitt.json',
+    karr: 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel_karr.json'
+  };
+  var TUNNEL_MAX_AGE_MIN = 60;
+  var _activeAI = 'kitt';
+
+  function _selectAI(which) {
+    _activeAI = which;
+    document.querySelectorAll('.ai-sel-btn').forEach(function(b) {
+      b.classList.toggle('active', b.textContent.toLowerCase().indexOf(which) !== -1);
+    });
+    var btnEl = document.getElementById('connect-btn');
+    var label = which === 'karr' ? 'K.A.R.R.' : 'KITT';
+    btnEl.textContent = '[ ACCEDER A ' + label + ' ]';
+    btnEl.classList.remove('visible');
+    document.getElementById('offline-box').classList.remove('visible');
+    _checkTunnel();
+  }
 
   function _checkTunnel() {
     var statusEl  = document.getElementById('p-status');
     var btnEl     = document.getElementById('connect-btn');
     var offlineEl = document.getElementById('offline-box');
+    var url       = TUNNEL_URLS[_activeAI];
 
     statusEl.className = 'checking';
     statusEl.textContent = 'VERIFICATION DU SYSTEME...';
 
-    fetch(TUNNEL_URL + '?t=' + Date.now(), { cache: 'no-store' })
+    fetch(url + '?t=' + Date.now(), { cache: 'no-store' })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.status !== 'online' || !data.url) { throw new Error('offline'); }
-        // Vérifier la fraîcheur
         var lastUp = new Date(data.last_update);
         var ageMin = (Date.now() - lastUp.getTime()) / 60000;
         if (ageMin > TUNNEL_MAX_AGE_MIN) { throw new Error('stale'); }
-
-        // ONLINE
         btnEl.href = data.url;
         btnEl.classList.add('visible');
         statusEl.className = 'online';
         statusEl.textContent = 'SYSTEME EN LIGNE — CONNEXION DISPONIBLE';
       })
       .catch(function() {
-        // OFFLINE
         statusEl.className = 'offline';
         statusEl.textContent = 'SYSTEME HORS LIGNE';
         offlineEl.classList.add('visible');
