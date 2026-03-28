@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-28T21:30:28.050004+00:00",
+  "status": "online",
+  "url": "https://oasis-fresh-stability-careful.trycloudflare.com",
+  "last_update": "2026-03-28T21:31:28.506188+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
