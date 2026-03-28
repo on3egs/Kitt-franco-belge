@@ -371,9 +371,9 @@
   <div class="p-logo">KYRONEX</div>
   <div class="p-sub">KNIGHT INDUSTRIES TWO THOUSAND</div>
   <div id="ai-selector">
-    <button class="ai-sel-btn active" onclick="_selectAI('kitt')">K.I.T.T.</button>
+    <button class="ai-sel-btn active" data-ai="kitt" onclick="_selectAI('kitt')">K.I.T.T.</button>
     <div class="sep"></div>
-    <button class="ai-sel-btn" onclick="_selectAI('karr')">K.A.R.R.</button>
+    <button class="ai-sel-btn" data-ai="karr" onclick="_selectAI('karr')">K.A.R.R.</button>
   </div>
   <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
   <div id="p-status" class="checking">VERIFICATION DU SYSTEME...</div>
@@ -445,7 +445,7 @@
   function _selectAI(which) {
     _activeAI = which;
     document.querySelectorAll('.ai-sel-btn').forEach(function(b) {
-      b.classList.toggle('active', b.textContent.toLowerCase().indexOf(which) !== -1);
+      b.classList.toggle('active', b.getAttribute('data-ai') === which);
     });
     var btnEl = document.getElementById('connect-btn');
     var label = which === 'karr' ? 'K.A.R.R.' : 'KITT';
