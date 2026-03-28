@@ -48,8 +48,8 @@ NEW_BLOCK = """<!-- ══ VOICE SWITCH v3 ════════════�
 (function(){
   var API_KEY = "%%APIKEY%%";
   var MANIX_ID = "AWQ8RBL5o63CDJoS98F9";
-  var MANIX_PHRASE = "Bonjour. Je suis Manix, le cr\u00e9ateur de KITT. Bienvenue dans le projet Knight Franco-Belge.";
-  var GUY_PHRASE = "Bonjour Michael. Tous les syst\u00e8mes sont op\u00e9rationnels. Je suis pr\u00eat \u00e0 vous assister.";
+  var MANIX_PHRASE = "Bonjour. Je suis Manix, le cr\\u00e9ateur de KITT. Bienvenue dans le projet Knight Franco-Belge.";
+  var GUY_PHRASE = "Bonjour Michael. Tous les syst\\u00e8mes sont op\\u00e9rationnels. Je suis pr\\u00eat \\u00e0 vous assister.";
   var ACTIVE_KEY = "kitt_voice_v3_active"; // 'guy' | 'manix'
 
   var _ctx = null;
@@ -59,7 +59,44 @@ NEW_BLOCK = """<!-- ══ VOICE SWITCH v3 ════════════�
     return _ctx;
   }
 
+  // ── File séquentielle MANIX (évite le double audio) ──
+  var _manixQueue = [];
+  var _manixPlaying = false;
+  var _manixGen = 0;
+
+  function _playManixNext(gen){
+    if(gen !== _manixGen){ _manixPlaying = false; return; }
+    if(_manixQueue.length === 0){ _manixPlaying = false; return; }
+    _manixPlaying = true;
+    var text = _manixQueue.shift();
+    fetch("https://api.elevenlabs.io/v1/text-to-speech/"+MANIX_ID+"/stream",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","xi-api-key":API_KEY},
+      body:JSON.stringify({
+        text:text,
+        model_id:"eleven_v3",
+        voice_settings:{stability:0.55,similarity_boost:0.85,style:0.1,use_speaker_boost:true}
+      })
+    }).then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      return r.arrayBuffer();
+    }).then(function(buf){
+      getCtx().decodeAudioData(buf, function(decoded){
+        if(gen !== _manixGen){ _manixPlaying = false; return; } // génération changée — abandon
+        var src = getCtx().createBufferSource();
+        src.buffer = decoded;
+        src.connect(getCtx().destination);
+        src.onended = function(){ _playManixNext(gen); };
+        src.start(0);
+      });
+    }).catch(function(e){
+      console.warn("[MANIX TTS]", e.message);
+      _playManixNext(gen);
+    });
+  }
+
   function fetchAndPlay(text, onDone){
+    // Lecture directe (test / demo) — sans file
     fetch("https://api.elevenlabs.io/v1/text-to-speech/"+MANIX_ID+"/stream",{
       method:"POST",
       headers:{"Content-Type":"application/json","xi-api-key":API_KEY},
@@ -91,7 +128,8 @@ NEW_BLOCK = """<!-- ══ VOICE SWITCH v3 ════════════�
     window.queueAudioChunk = function(url, chunkText){
       if(window._voxActive==="manix"){
         if(chunkText && chunkText.trim()){
-          fetchAndPlay(chunkText, null);
+          _manixQueue.push(chunkText);
+          if(!_manixPlaying){ _manixGen++; _playManixNext(_manixGen); }
         }
         return; // supprime le son local
       }
@@ -121,10 +159,15 @@ NEW_BLOCK = """<!-- ══ VOICE SWITCH v3 ════════════�
   }
   window._switchVoice = switchVoice;
 
+  // Expose reset pour resetAudioQueue() qui est hors de cette closure
+  window._resetManixQueue = function(){
+    _manixGen++;
+    _manixQueue = [];
+    _manixPlaying = false;
+  };
+
   // ── Inject les boutons dans la toolbar ctrl-btn ──
   function injectButtons(){
-    var toolbar = document.querySelector(".ctrl-btns") || document.querySelector("[class*='ctrl']") || null;
-    // Fallback: chercher le bouton RST comme ancre
     var rstBtn = document.getElementById("resetbtn");
     if(!rstBtn) return;
     var parent = rstBtn.parentNode;
@@ -136,7 +179,7 @@ NEW_BLOCK = """<!-- ══ VOICE SWITCH v3 ════════════�
     var guyBtn = document.createElement("button");
     guyBtn.className = "voice-sw-btn" + (window._voxActive==="guy" ? " vox-active" : "");
     guyBtn.setAttribute("data-vox","guy");
-    guyBtn.title = "Voix Guy Chapelier (locale — Piper GPU)";
+    guyBtn.title = "Voix Guy Chapelier (locale \\u2014 Piper GPU)";
     guyBtn.textContent = "GUY";
     guyBtn.addEventListener("click", function(){ getCtx(); switchVoice("guy"); });
     guyBtn.addEventListener("dblclick", function(){
@@ -154,7 +197,7 @@ NEW_BLOCK = """<!-- ══ VOICE SWITCH v3 ════════════�
     var manixBtn = document.createElement("button");
     manixBtn.className = "voice-sw-btn" + (window._voxActive==="manix" ? " vox-active" : "");
     manixBtn.setAttribute("data-vox","manix");
-    manixBtn.title = "Voix Manix (ElevenLabs cloud — double-clic pour tester)";
+    manixBtn.title = "Voix Manix (ElevenLabs cloud \\u2014 double-clic pour tester)";
     manixBtn.textContent = "MANIX";
     manixBtn.addEventListener("click", function(){ getCtx(); switchVoice("manix"); });
     manixBtn.addEventListener("dblclick", function(){
@@ -165,7 +208,6 @@ NEW_BLOCK = """<!-- ══ VOICE SWITCH v3 ════════════�
     wrap.appendChild(guyBtn);
     wrap.appendChild(manixBtn);
 
-    // Insérer après le bouton RST
     if(rstBtn.nextSibling){
       parent.insertBefore(wrap, rstBtn.nextSibling);
     } else {
