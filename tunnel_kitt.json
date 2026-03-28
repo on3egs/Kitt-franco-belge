@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://projector-chapel-paso-venues.trycloudflare.com",
-  "last_update": "2026-03-28T23:25:48.696319+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-28T23:28:16.986009+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
