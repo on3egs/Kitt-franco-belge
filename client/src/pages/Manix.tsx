@@ -67,7 +67,7 @@ export default function Manix() {
 
   function toggleStory() {
     if (!audioRef.current) {
-      audioRef.current = new Audio("/manix_story.mp3");
+      audioRef.current = new Audio(`${import.meta.env.BASE_URL}manix_story.mp3`);
       audioRef.current.onended = () => { setPlaying(false); setPlayed(true); };
     }
     if (playing) {
@@ -118,7 +118,7 @@ export default function Manix() {
               borderRadius: 4, overflow: "hidden", background: "#0a0000"
             }}>
               <img
-                src="/manix.png"
+                src={`${import.meta.env.BASE_URL}manix.png`}
                 alt="Le Maître Manix"
                 onLoad={() => setPhotoLoaded(true)}
                 style={{
