@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-28T20:05:02.672961+00:00",
+  "status": "online",
+  "url": "https://learning-surfaces-dave-kingdom.trycloudflare.com",
+  "last_update": "2026-03-28T20:05:29.957150+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
