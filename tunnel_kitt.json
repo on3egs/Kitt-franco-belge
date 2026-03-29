@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://consumers-ribbon-terrain-courses.trycloudflare.com",
-  "last_update": "2026-03-29T11:18:34.544071+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-29T11:22:02.431503+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
