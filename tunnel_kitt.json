@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://hazardous-officially-adams-reports.trycloudflare.com",
-  "last_update": "2026-03-29T11:38:35.774644+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-03-29T11:42:15.464769+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
