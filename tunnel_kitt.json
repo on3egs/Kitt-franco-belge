@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-03-31T23:38:44.268570+00:00",
+  "status": "online",
+  "url": "https://somewhere-status-spin-ferrari.trycloudflare.com",
+  "last_update": "2026-04-01T07:40:45.757841+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
