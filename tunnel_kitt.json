@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://terminal-lease-gets-lectures.trycloudflare.com",
-  "last_update": "2026-04-01T08:59:41.039546+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-01T09:02:18.000898+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
