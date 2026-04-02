@@ -14,6 +14,7 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { toast } from "sonner";
 import LangSelector from "@/components/LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getApiBase } from "@/lib/tunnel";
 
 // ─── Image Assets (CDN) ───────────────────────────────────────────────────────
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_hero_bg-VWv6QwEucPEXJkzKqNiyZu.webp";
@@ -1450,17 +1451,18 @@ function VideosSection() {
   const [communityCount, setCommunityCount] = useState(0);
 
   useEffect(() => {
-    fetch("https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json", { cache: "no-store" })
-      .then(r => r.json())
-      .then(d => d.url ? fetch(`${d.url}/api/videos/approved`) : Promise.reject())
-      .then(r => r.json())
-      .then(d => {
-        const approved: CommunityVideo[] = d.approved || [];
-        setCommunityCount(approved.length);
-        // 3 dernières soumises
-        setCommunityVideos([...approved].reverse().slice(0, 3));
-      })
-      .catch(() => {});
+    getApiBase().then(base => {
+      if (!base) return;
+      fetch(`${base}/api/videos/approved`)
+        .then(r => r.json())
+        .then(d => {
+          const approved: CommunityVideo[] = d.approved || [];
+          setCommunityCount(approved.length);
+          // 3 dernières soumises
+          setCommunityVideos([...approved].reverse().slice(0, 3));
+        })
+        .catch(() => {});
+    });
   }, []);
 
   const label = { fontFamily: "Space Mono, monospace", fontSize: "0.5rem", letterSpacing: "0.2em" };
@@ -2218,19 +2220,7 @@ function Footer() {
 // ─── Visitor Counter ──────────────────────────────────────────────────────────
 const FALLBACK_COUNT = 3387; // Affiché si le Jetson est hors ligne
 
-async function fetchTunnelUrl(): Promise<string | null> {
-  try {
-    const r = await fetch(
-      "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json",
-      { cache: "no-store" }
-    );
-    if (!r.ok) return null;
-    const j = await r.json();
-    return (j.url as string) ?? null;
-  } catch {
-    return null;
-  }
-}
+const fetchTunnelUrl = getApiBase;
 
 function VisitorCounter() {
   const [count, setCount]       = useState(0);

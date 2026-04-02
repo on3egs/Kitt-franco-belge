@@ -1,17 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
+import { getApiBase } from "@/lib/tunnel";
 
-const TUNNEL_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
 const ADMIN_TOKEN = "8c03437292a68baec2fd5374c6adb4d0ddcfc2aade2407fdee2d4f024e423ef3";
 const EXPECTED_PWD = "Microsoft198@";
-
-async function getApiBase(): Promise<string | null> {
-  try {
-    const r = await fetch(TUNNEL_URL, { cache: "no-store" });
-    const d = await r.json();
-    return d.url || null;
-  } catch { return null; }
-}
 
 interface VideoEntry { id: string; url: string; pseudo: string; message: string; ts: number; views?: number; }
 interface MusicEntry { id: string; url: string; titre: string; artiste: string; pseudo: string; message: string; ts: number; plays?: number; }
