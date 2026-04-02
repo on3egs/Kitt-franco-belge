@@ -2,18 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import KittScanner from "@/components/KittScanner";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-const JETSON_URL = "https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel.json";
-
-async function getApiBase(): Promise<string | null> {
-  try {
-    const r = await fetch(JETSON_URL, { cache: "no-store" });
-    const d = await r.json();
-    return d.url || null;
-  } catch {
-    return null;
-  }
-}
+import { getApiBase } from "@/lib/tunnel";
 
 export default function Soumettre() {
   const { t } = useLanguage();
