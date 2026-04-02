@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://insights-pets-sen-always.trycloudflare.com",
-  "last_update": "2026-04-02T08:14:02.252866+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-02T08:14:21.018962+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
