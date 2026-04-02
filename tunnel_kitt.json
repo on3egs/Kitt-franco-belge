@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-02T14:51:24.518276+00:00",
+  "status": "online",
+  "url": "https://drew-joyce-might-presentation.trycloudflare.com",
+  "last_update": "2026-04-02T14:51:54.263126+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
