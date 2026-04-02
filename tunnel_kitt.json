@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-02T08:29:55.375433+00:00",
+  "status": "online",
+  "url": "https://tucson-assign-muscle-participant.trycloudflare.com",
+  "last_update": "2026-04-02T08:30:22.770004+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
