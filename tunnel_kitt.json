@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://orders-sys-investigator-enemies.trycloudflare.com",
-  "last_update": "2026-04-02T14:49:34.200217+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-02T14:51:22.134713+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
