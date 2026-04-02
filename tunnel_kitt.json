@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://edition-refresh-proc-achieved.trycloudflare.com",
-  "last_update": "2026-04-02T08:19:49.972596+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-02T08:20:07.776972+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
