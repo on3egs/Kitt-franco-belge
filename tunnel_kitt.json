@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://location-findarticles-offices-project.trycloudflare.com",
-  "last_update": "2026-04-02T08:10:22.341600+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-02T08:10:40.519531+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
