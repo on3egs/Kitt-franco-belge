@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-04T08:50:56.109943+00:00",
+  "status": "online",
+  "url": "https://pose-south-paragraphs-agents.trycloudflare.com",
+  "last_update": "2026-04-04T08:51:23.668030+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
