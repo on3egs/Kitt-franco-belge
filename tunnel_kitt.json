@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-04T12:05:47.288599+00:00",
+  "status": "online",
+  "url": "https://discounts-processor-primary-corps.trycloudflare.com",
+  "last_update": "2026-04-04T12:07:23.937803+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
