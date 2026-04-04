@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://surrounded-eleven-telescope-backup.trycloudflare.com",
-  "last_update": "2026-04-04T14:31:43.157984+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-04T14:32:14.858941+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
