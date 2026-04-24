@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-24T18:43:47.347607+00:00",
+  "status": "online",
+  "url": "https://concentration-using-evaluated-goals.trycloudflare.com",
+  "last_update": "2026-04-24T18:44:15.421327+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
