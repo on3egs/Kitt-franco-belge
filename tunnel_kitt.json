@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-24T12:58:35.037159+00:00",
+  "status": "online",
+  "url": "https://fits-aims-conversations-ecological.trycloudflare.com",
+  "last_update": "2026-04-24T12:58:57.536091+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
