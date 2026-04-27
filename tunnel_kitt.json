@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-27T20:52:51.321372+00:00",
+  "status": "online",
+  "url": "https://preceding-dark-original-router.trycloudflare.com",
+  "last_update": "2026-04-27T20:54:18.016139+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
