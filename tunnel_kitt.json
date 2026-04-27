@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-27T15:01:47.500824+00:00",
+  "status": "online",
+  "url": "https://voted-atmosphere-plaza-gis.trycloudflare.com",
+  "last_update": "2026-04-27T15:02:14.237784+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
