@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://cruises-vitamin-vat-alt.trycloudflare.com",
-  "last_update": "2026-04-27T14:55:50.778298+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-27T14:57:12.025805+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
