@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-27T17:12:25.769721+00:00",
+  "status": "online",
+  "url": "https://metabolism-reservation-fred-sentence.trycloudflare.com",
+  "last_update": "2026-04-27T17:12:54.088931+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
