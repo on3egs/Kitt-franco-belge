@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-27T22:37:36.735876+00:00",
+  "status": "online",
+  "url": "https://sites-binding-visiting-ciao.trycloudflare.com",
+  "last_update": "2026-04-27T22:40:49.565915+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
