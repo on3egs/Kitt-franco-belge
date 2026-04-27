@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-27T18:43:41.781111+00:00",
+  "status": "online",
+  "url": "https://assistance-chess-raises-router.trycloudflare.com",
+  "last_update": "2026-04-27T18:44:10.597624+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
