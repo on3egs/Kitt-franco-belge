@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://leonard-fixed-sessions-arrival.trycloudflare.com",
-  "last_update": "2026-04-28T20:56:18.124245+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-28T20:58:07.216028+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
