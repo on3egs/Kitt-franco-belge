@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-28T21:43:25.628980+00:00",
+  "status": "online",
+  "url": "https://schedules-exec-mention-vat.trycloudflare.com",
+  "last_update": "2026-04-28T21:46:02.913249+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
