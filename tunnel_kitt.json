@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-28T21:36:06.181647+00:00",
+  "status": "online",
+  "url": "https://transmission-usual-beast-command.trycloudflare.com",
+  "last_update": "2026-04-28T21:36:34.177944+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
