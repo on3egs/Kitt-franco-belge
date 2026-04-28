@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://turning-anywhere-device-providers.trycloudflare.com",
-  "last_update": "2026-04-28T20:46:36.056246+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-28T20:47:43.071273+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
