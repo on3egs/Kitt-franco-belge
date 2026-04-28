@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://healthcare-ellen-blonde-request.trycloudflare.com",
-  "last_update": "2026-04-28T11:09:22.613759+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-28T11:09:37.039515+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
