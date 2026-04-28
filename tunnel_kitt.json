@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-28T16:44:56.611527+00:00",
+  "status": "online",
+  "url": "https://fog-dosage-richards-utils.trycloudflare.com",
+  "last_update": "2026-04-28T16:46:03.900208+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
