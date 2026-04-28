@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://due-gmbh-discuss-distribution.trycloudflare.com",
-  "last_update": "2026-04-28T19:57:22.890600+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-28T19:57:41.629503+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
