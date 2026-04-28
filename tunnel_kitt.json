@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-28T11:36:49.959835+00:00",
+  "status": "online",
+  "url": "https://bailey-main-performer-geographical.trycloudflare.com",
+  "last_update": "2026-04-28T11:37:17.583866+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
