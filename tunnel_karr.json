@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://fdc52c8a456045.lhr.life",
-  "last_update": "2026-04-29T12:34:40.607548+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-29T12:34:43.940876+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
