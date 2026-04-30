@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-30T23:46:24.256066+00:00",
+  "status": "online",
+  "url": "https://features-kyle-receiver-catalyst.trycloudflare.com",
+  "last_update": "2026-04-30T23:47:05.333388+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
