@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://planned-guardian-carriers-tim.trycloudflare.com",
-  "last_update": "2026-04-30T01:47:12.326612+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-30T01:47:45.951994+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
