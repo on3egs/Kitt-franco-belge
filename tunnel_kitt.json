@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-30T11:23:32.214136+00:00",
+  "status": "online",
+  "url": "https://physician-arrangement-tender-astronomy.trycloudflare.com",
+  "last_update": "2026-04-30T11:23:59.382482+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
