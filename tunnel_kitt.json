@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://receptor-reader-polymer-directly.trycloudflare.com",
-  "last_update": "2026-04-30T14:12:27.512340+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-30T14:13:00.088513+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
