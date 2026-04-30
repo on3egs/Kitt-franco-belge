@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-30T14:19:52.842993+00:00",
+  "status": "online",
+  "url": "https://orchestra-image-associated-install.trycloudflare.com",
+  "last_update": "2026-04-30T14:20:20.164692+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
