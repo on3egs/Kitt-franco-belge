@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://mathematics-ips-recognition-holly.trycloudflare.com",
-  "last_update": "2026-04-30T11:15:09.009943+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-30T11:15:41.225654+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
