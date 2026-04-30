@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://full-seattle-ray-paul.trycloudflare.com",
-  "last_update": "2026-04-30T09:40:34.483742+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-30T09:41:13.450636+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
