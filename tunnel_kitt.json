@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-30T01:14:51.540173+00:00",
+  "status": "online",
+  "url": "https://here-steering-alternate-regional.trycloudflare.com",
+  "last_update": "2026-04-30T01:15:19.373898+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
