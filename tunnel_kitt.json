@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://outcome-pump-tap-consortium.trycloudflare.com",
-  "last_update": "2026-04-30T09:33:36.941015+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-30T09:34:16.209606+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
