@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-30T09:36:34.682952+00:00",
+  "status": "online",
+  "url": "https://mpg-networking-packard-billy.trycloudflare.com",
+  "last_update": "2026-04-30T09:37:01.910828+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
