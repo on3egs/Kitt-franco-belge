@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://dim-previous-treated-hundred.trycloudflare.com",
-  "last_update": "2026-04-30T09:44:00.244383+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-30T09:44:36.654782+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
