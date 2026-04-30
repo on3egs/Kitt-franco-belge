@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-30T15:50:48.023140+00:00",
+  "status": "online",
+  "url": "https://smile-geological-oven-james.trycloudflare.com",
+  "last_update": "2026-04-30T15:51:15.275084+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
