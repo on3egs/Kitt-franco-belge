@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-04-30T14:25:28.162793+00:00",
+  "status": "online",
+  "url": "https://operator-pit-louisiana-enquiry.trycloudflare.com",
+  "last_update": "2026-04-30T14:26:00.525433+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
