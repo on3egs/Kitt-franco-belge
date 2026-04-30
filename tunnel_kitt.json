@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://western-laptops-consumer-ctrl.trycloudflare.com",
-  "last_update": "2026-04-30T11:26:16.313460+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-30T11:26:50.939798+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
