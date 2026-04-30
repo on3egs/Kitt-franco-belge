@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://semiconductor-portraits-recognize-poem.trycloudflare.com",
-  "last_update": "2026-04-30T11:20:42.263314+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-04-30T11:21:15.261271+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
