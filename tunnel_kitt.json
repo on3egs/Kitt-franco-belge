@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://occupied-canal-plc-button.trycloudflare.com",
-  "last_update": "2026-05-01T08:05:36.612656+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-01T08:05:53.610992+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
