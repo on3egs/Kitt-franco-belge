@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://knit-timing-wizard-begun.trycloudflare.com",
-  "last_update": "2026-05-01T10:16:16.311536+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-01T10:16:36.298300+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
