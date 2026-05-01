@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T08:02:40.642096+00:00",
+  "status": "online",
+  "url": "https://appendix-linux-clusters-desirable.trycloudflare.com",
+  "last_update": "2026-05-01T08:03:08.238765+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
