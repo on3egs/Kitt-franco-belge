@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T08:18:34.163702+00:00",
+  "status": "online",
+  "url": "https://tariff-thermal-those-productive.trycloudflare.com",
+  "last_update": "2026-05-01T08:19:03.065957+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
