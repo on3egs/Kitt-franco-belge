@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T00:41:23.146292+00:00",
+  "status": "online",
+  "url": "https://trio-admission-pumps-arctic.trycloudflare.com",
+  "last_update": "2026-05-01T00:41:50.853233+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
