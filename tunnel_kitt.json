@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://gras-comparison-maps-fuji.trycloudflare.com",
-  "last_update": "2026-05-01T11:03:26.327593+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-01T11:03:49.528961+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
