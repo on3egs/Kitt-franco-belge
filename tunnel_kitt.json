@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T10:32:49.572987+00:00",
+  "status": "online",
+  "url": "https://somehow-identifying-looking-shipping.trycloudflare.com",
+  "last_update": "2026-05-01T10:33:17.520289+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
