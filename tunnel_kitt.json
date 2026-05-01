@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://boating-diagnosis-runtime-eng.trycloudflare.com",
-  "last_update": "2026-05-01T08:21:46.466698+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-01T08:22:05.612797+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
