@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://courage-enables-lecture-detect.trycloudflare.com",
-  "last_update": "2026-05-01T08:14:52.794698+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-01T08:15:11.780775+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
