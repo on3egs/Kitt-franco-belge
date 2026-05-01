@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T01:43:22.936118+00:00",
+  "status": "online",
+  "url": "https://dvd-tuning-occupied-could.trycloudflare.com",
+  "last_update": "2026-05-01T01:43:50.974133+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
