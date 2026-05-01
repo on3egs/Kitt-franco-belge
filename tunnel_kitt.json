@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T11:04:53.566234+00:00",
+  "status": "online",
+  "url": "https://bush-spencer-atlanta-worldcat.trycloudflare.com",
+  "last_update": "2026-05-01T11:05:20.279592+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
