@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T11:01:04.066319+00:00",
+  "status": "online",
+  "url": "https://raid-consultancy-chen-metric.trycloudflare.com",
+  "last_update": "2026-05-01T11:01:30.723401+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
