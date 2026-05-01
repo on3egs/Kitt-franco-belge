@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T08:13:34.000536+00:00",
+  "status": "online",
+  "url": "https://beast-parks-expansion-sig.trycloudflare.com",
+  "last_update": "2026-05-01T08:14:01.601862+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
