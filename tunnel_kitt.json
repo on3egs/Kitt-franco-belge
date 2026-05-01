@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-01T02:02:35.659657+00:00",
+  "status": "online",
+  "url": "https://demand-coupons-jelsoft-rouge.trycloudflare.com",
+  "last_update": "2026-05-01T02:03:03.122192+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
