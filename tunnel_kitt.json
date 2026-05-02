@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://qualified-automated-reservations-kelkoo.trycloudflare.com",
-  "last_update": "2026-05-02T16:01:00.037030+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-02T16:03:28.729837+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
