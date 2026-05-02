@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-02T16:42:20.567837+00:00",
+  "status": "online",
+  "url": "https://carriers-municipality-yesterday-dicke.trycloudflare.com",
+  "last_update": "2026-05-02T16:43:41.522104+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
