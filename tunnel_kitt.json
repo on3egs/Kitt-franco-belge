@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-08T23:15:28.401835+00:00",
+  "status": "online",
+  "url": "https://amp-linked-slowly-dock.trycloudflare.com",
+  "last_update": "2026-05-08T23:16:10.043797+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
