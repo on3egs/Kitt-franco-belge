@@ -35,6 +35,11 @@ class DashboardScreen(BaseScreen):
         self._llm_stream = ""    # buffer streaming
         self._lock       = threading.Lock()
 
+        # ── Cache services (TTL 5s, rafraîchi en background) ─────────────
+        self._svc_cache      = {}    # {name: bool}
+        self._svc_cache_ts   = 0.0
+        self._svc_refreshing = False
+
         # Message de bienvenue
         self._history.append({
             "role": "karr",
@@ -235,11 +240,23 @@ class DashboardScreen(BaseScreen):
             name   = svc[:max(1, w-8)]
             safe_addstr(self.stdscr, row, x+2, f"{dot} {name}", col)
 
-    @staticmethod
-    def _check_service(name: str) -> bool:
+    def _check_service(self, name: str) -> bool:
+        now = time.monotonic()
+        if now - self._svc_cache_ts > 5.0 and not self._svc_refreshing:
+            self._svc_refreshing = True
+            threading.Thread(target=self._refresh_svc_cache, daemon=True).start()
+        return self._svc_cache.get(name, False)
+
+    def _refresh_svc_cache(self):
         from core.sysrun import run_out
-        out = run_out(["systemctl", "is-active", name], timeout=1)
-        return out.strip() == "active"
+        from config import SERVICES
+        cache = {
+            svc: run_out(["systemctl", "is-active", svc], timeout=1).strip() == "active"
+            for svc, _ in SERVICES
+        }
+        self._svc_cache    = cache
+        self._svc_cache_ts = time.monotonic()
+        self._svc_refreshing = False
 
     # ── Barre de navigation F-Keys ────────────────────────────────────────
 
@@ -312,10 +329,14 @@ class DashboardScreen(BaseScreen):
                 safe_addstr(s, render_y, x+2, f"KARR  › {ltext}", cp(C_AI))
             elif ltype == "karr_cont":
                 safe_addstr(s, render_y, x+10, ltext, cp(C_AI))
+            elif ltype == "user_cont":
+                safe_addstr(s, render_y, x+10, ltext, cp(C_USER) | curses.A_BOLD)
             elif ltype == "status":
                 safe_addstr(s, render_y, x+2, ltext, cp(C_DIM))
             elif ltype == "error":
                 safe_addstr(s, render_y, x+2, ltext, cp(C_ERROR))
+            elif ltype == "error_cont":
+                safe_addstr(s, render_y, x+10, ltext, cp(C_ERROR))
 
         # Séparateur avant input
         try:
