@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://watershed-fiber-oldest-likely.trycloudflare.com",
-  "last_update": "2026-05-08T23:10:51.207525+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-08T23:12:31.207911+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
