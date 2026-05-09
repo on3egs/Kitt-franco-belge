@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-09T15:12:37.883914+00:00",
+  "status": "online",
+  "url": "https://loans-vista-firmware-supplied.trycloudflare.com",
+  "last_update": "2026-05-09T15:13:18.839365+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
