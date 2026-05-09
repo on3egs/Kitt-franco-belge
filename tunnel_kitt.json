@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-09T14:46:23.080440+00:00",
+  "status": "online",
+  "url": "https://forecast-adopt-tvs-catalogs.trycloudflare.com",
+  "last_update": "2026-05-09T14:47:06.850720+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
