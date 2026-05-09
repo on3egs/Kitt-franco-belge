@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-09T01:51:06.221951+00:00",
+  "status": "online",
+  "url": "https://revolution-identifies-bizrate-segments.trycloudflare.com",
+  "last_update": "2026-05-09T01:51:48.068822+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
