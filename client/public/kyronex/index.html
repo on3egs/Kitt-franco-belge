@@ -378,6 +378,10 @@
     <button class="ai-sel-btn" data-ai="kitt" onclick="_selectAI('kitt')" onmouseenter="_playHover('kitt')">
       K.I.T.T.<br><span style="font-size:0.7em;letter-spacing:2px;opacity:0.65">ORIN NANO 8GB · QWEN 3B</span>
     </button>
+    <div class="sep"></div>
+    <button class="ai-sel-btn" data-ai="skv3" onclick="_selectAI('skv3')" onmouseenter="_playHover('skv3')">
+      SUPER K.I.T.T. V3<br><span style="font-size:0.7em;letter-spacing:2px;opacity:0.65">AJX ORIN</span>
+    </button>
   </div>
   <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
   <div id="p-status" class="checking">VERIFICATION DU SYSTEME...</div>
@@ -441,7 +445,8 @@
   ─────────────────────────────────────────────────────────── */
   var TUNNEL_URLS = {
     kitt: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_kitt.json',
-    karr: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_karr.json'
+    karr: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_karr.json',
+    skv3: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_skv3.json'
   };
   var TUNNEL_MAX_AGE_MIN = 120;
   var _activeAI = 'karr';
@@ -451,7 +456,7 @@
   var _hoverPlaying = false;
   (function() {
     var base = 'https://on3egs.github.io/Kitt-franco-belge/kyronex/';
-    ['kitt','karr'].forEach(function(id) {
+    ['kitt','karr','skv3'].forEach(function(id) {
       var a = new Audio(base + 'hover_' + id + '.mp3');
       a.preload = 'auto';
       _hoverAudio[id] = a;
@@ -476,7 +481,7 @@
     var statusEl = document.getElementById('p-status');
     var btnEl    = document.getElementById('connect-btn');
     var offlineEl = document.getElementById('offline-box');
-    var label    = which === 'karr' ? 'K.A.R.R.' : 'K.I.T.T.';
+    var label    = which === 'karr' ? 'K.A.R.R.' : which === 'skv3' ? 'SUPER K.I.T.T. V3' : 'K.I.T.T.';
     btnEl.classList.remove('visible');
     offlineEl.classList.remove('visible');
     statusEl.className = 'checking';
