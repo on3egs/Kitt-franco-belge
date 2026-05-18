@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://valid-tulsa-dealtime-cms.trycloudflare.com",
-  "last_update": "2026-05-18T18:45:23.614057+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-18T18:47:42.999031+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
