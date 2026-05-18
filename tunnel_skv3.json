@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://asked-packaging-mayor-payment.trycloudflare.com",
-  "last_update": "2026-05-18T19:25:15.440263+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-18T19:29:05.587043+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
