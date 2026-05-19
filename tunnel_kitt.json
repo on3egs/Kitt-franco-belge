@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-19T16:18:43.097769+00:00",
+  "status": "online",
+  "url": "https://cohen-tomatoes-sufficient-provinces.trycloudflare.com",
+  "last_update": "2026-05-19T16:20:08.149350+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
