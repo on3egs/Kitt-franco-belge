@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-19T19:07:02.443984+00:00",
+  "status": "online",
+  "url": "https://adds-sic-receivers-livestock.trycloudflare.com",
+  "last_update": "2026-05-19T19:08:27.888922+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
