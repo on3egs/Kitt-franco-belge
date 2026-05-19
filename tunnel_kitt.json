@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-19T15:42:13.056596+00:00",
+  "status": "online",
+  "url": "https://capital-garcia-enclosure-entry.trycloudflare.com",
+  "last_update": "2026-05-19T15:44:51.338212+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
