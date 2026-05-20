@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-20T15:54:42.757043+00:00",
+  "status": "online",
+  "url": "https://beginner-ridge-ages-provider.trycloudflare.com",
+  "last_update": "2026-05-20T16:45:52.368624+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
