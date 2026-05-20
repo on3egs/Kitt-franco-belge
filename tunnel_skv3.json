@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://believes-narrative-debian-implementation.trycloudflare.com",
-  "last_update": "2026-05-20T22:39:21.267824+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-20T22:39:53.086731+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
