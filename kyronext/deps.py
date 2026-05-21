@@ -1,6 +1,6 @@
 """Verification des dependances externes et aide a leur installation.
 
-Kironext Studio s'appuie sur trois outils en ligne de commande :
+Kyronext-Studio s'appuie sur trois outils en ligne de commande :
   - yt-dlp  : telechargement YouTube (installable sans droits admin via pip) ;
   - ffmpeg  : conversion audio/video et lecture (paquet systeme) ;
   - node    : runtime JavaScript ameliorant la compatibilite YouTube (optionnel).

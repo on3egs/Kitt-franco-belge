@@ -94,7 +94,7 @@ class Downloader(QObject):
         self.busyChanged.emit()
         self.statsChanged.emit()
         self._set_status("TRANSFER ONLINE")
-        self.logLine.emit("--- KIRONEXT TRANSFER INIT ---")
+        self.logLine.emit("--- KYRONEXT TRANSFER INIT ---")
         if self._history is not None:
             self._history.add(url)
         threading.Thread(

@@ -1,4 +1,4 @@
-# Kironext Studio - dependances Python
+# Kyronext-Studio - dependances Python
 # Installation : pip install --user -r requirements.txt
 #
 # IMPORTANT (Jetson / Ubuntu) : PyQt5 et les modules QML s'installent de

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Kironext Studio - telechargement YouTube en ligne de commande.
+# Kyronext-Studio - telechargement YouTube en ligne de commande.
 #
 # Usage :
-#   ./scripts/kironext_media.sh "https://www.youtube.com/watch?v=..."
-#   ./scripts/kironext_media.sh "URL" "nom_de_sortie"
+#   ./scripts/kyronext_media.sh "https://www.youtube.com/watch?v=..."
+#   ./scripts/kyronext_media.sh "URL" "nom_de_sortie"
 #
 # Telecharge la video MP4 (meilleure qualite) et en extrait un MP3, dans media/.
 # N'utilisez que des contenus pour lesquels vous avez les droits.

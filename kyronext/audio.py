@@ -19,7 +19,7 @@ import numpy as np
 
 SAMPLE_RATE = 44100
 CHANNELS = 2
-CHUNK_FRAMES = 1024                       # ~43 analyses par seconde
+CHUNK_FRAMES = 512                        # ~86 analyses par seconde
 _BYTES_PER_CHUNK = CHUNK_FRAMES * CHANNELS * 4  # float32 = 4 octets
 
 # Fenetre de Hann et masques de frequences pre-calcules une seule fois.

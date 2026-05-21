@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-# Racine du projet = dossier parent du paquet "kironext".
+# Racine du projet = dossier parent du paquet "kyronext".
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 
 MEDIA_DIR = PROJECT_DIR / "media"      # videos et MP3 telecharges

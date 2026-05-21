@@ -1,4 +1,4 @@
-# Kironext Studio
+# Kyronext-Studio
 
 Application Linux de téléchargement et de gestion de contenus YouTube, avec
 une interface futuriste inspirée de KITT / KARR.
@@ -29,10 +29,10 @@ Collaboration : Manix + IA.
 Interface **Qt5 / QML** (rendu accéléré GPU) pilotée par une logique Python.
 
 ```text
-KironextStudio/
+KyronextStudio/
   run.py                  Lanceur de l'application
   requirements.txt        Dépendances Python
-  kironext/               Logique applicative (Python)
+  kyronext/               Logique applicative (Python)
     app.py                Assemblage QApplication + moteur QML
     config.py             Paramètres utilisateur persistants
     history.py            Historique des URL
@@ -46,7 +46,7 @@ KironextStudio/
     main.qml              Fenêtre principale
     NeonButton, Panel, ChipToggle, VuMeter, Gauge, Background
   scripts/
-    kironext_media.sh     Téléchargement en ligne de commande
+    kyronext_media.sh     Téléchargement en ligne de commande
   assets/  media/  state/
 ```
 
@@ -69,15 +69,15 @@ pip install --user --upgrade yt-dlp numpy psutil
 Interface graphique :
 
 ```bash
-kironext-studio
+kyronext-studio
 ```
 
-Un raccourci **Kironext Studio** est aussi disponible sur le Bureau.
+Un raccourci **Kyronext-Studio** est aussi disponible sur le Bureau.
 
 Ligne de commande :
 
 ```bash
-./scripts/kironext_media.sh "https://www.youtube.com/watch?v=VIDEO_ID"
+./scripts/kyronext_media.sh "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
 ## Notes d'exploitation

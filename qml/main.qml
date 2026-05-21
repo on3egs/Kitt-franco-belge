@@ -1,4 +1,4 @@
-// main.qml - fenetre principale de Kironext Studio.
+// main.qml - fenetre principale de Kyronext-Studio.
 //
 // L'interface est purement declarative : elle se "branche" sur les objets
 // Python (Downloader, Player, Metrics...) exposes par app.py. Les animations
@@ -6,7 +6,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import Kironext 1.0
+import Kyronext 1.0
 
 ApplicationWindow {
     id: win
@@ -15,7 +15,7 @@ ApplicationWindow {
     height: 900
     minimumWidth: 980
     minimumHeight: 640
-    title: "Kironext Studio"
+    title: "Kyronext-Studio"
     color: "#040506"
 
     // --- palette KARR partagee -----------------------------------------
@@ -79,22 +79,22 @@ ApplicationWindow {
         Column {
             id: col
             width: scroller.availableWidth
-            spacing: 14
-            topPadding: 18
-            bottomPadding: 26
+            spacing: 8
+            topPadding: 12
+            bottomPadding: 16
 
             // ---------- EN-TETE ----------
             Item {
-                x: 28
-                width: col.width - 56
-                height: 92
+                x: 14
+                width: col.width - 28
+                height: 78
 
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 4
+                    spacing: 2
                     Row {
                         Text {
-                            text: "KIRONEXT"
+                            text: "KYRONEXT"
                             color: win.cAccent
                             font.family: win.mono; font.pixelSize: 31; font.bold: true
                         }
@@ -115,7 +115,7 @@ ApplicationWindow {
                 Row {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 12
+                    spacing: 8
                     ChipToggle {
                         anchors.verticalCenter: parent.verticalCenter
                         label: "AUTO-UPDATE"
@@ -145,8 +145,8 @@ ApplicationWindow {
             // ---------- SCANNER KARR ----------
             Rectangle {
                 id: scannerBar
-                x: 28
-                width: col.width - 56
+                x: 14
+                width: col.width - 28
                 height: 7
                 radius: 3.5
                 color: "#0a0305"
@@ -180,14 +180,14 @@ ApplicationWindow {
 
             // ---------- CIBLE YOUTUBE ----------
             Panel {
-                x: 28
-                width: col.width - 56
+                x: 14
+                width: col.width - 28
                 title: "YOUTUBE TARGET"
                 accent: win.cAccentSoft
 
                 Column {
                     width: parent.width
-                    spacing: 12
+                    spacing: 8
 
                     // Banniere d'aide aux dependances manquantes.
                     Rectangle {
@@ -230,7 +230,7 @@ ApplicationWindow {
                     // Ligne de saisie d'URL.
                     Row {
                         width: parent.width
-                        spacing: 10
+                        spacing: 8
                         TextField {
                             id: urlField
                             width: parent.width - 130
@@ -262,7 +262,7 @@ ApplicationWindow {
                     // Options de telechargement.
                     Row {
                         width: parent.width
-                        spacing: 10
+                        spacing: 8
                         ChipToggle {
                             label: "VIDEO MP4"
                             accent: win.cAccent
@@ -289,7 +289,7 @@ ApplicationWindow {
                         height: 44
                         Row {
                             anchors.left: parent.left
-                            spacing: 10
+                            spacing: 8
                             NeonButton {
                                 id: dlButton
                                 width: 170; height: 44
@@ -313,7 +313,7 @@ ApplicationWindow {
                         }
                         Row {
                             anchors.right: parent.right
-                            spacing: 10
+                            spacing: 8
                             NeonButton {
                                 width: 128; height: 44
                                 label: "MEDIA DIR"
@@ -333,14 +333,14 @@ ApplicationWindow {
 
             // ---------- TRANSFERT ----------
             Panel {
-                x: 28
-                width: col.width - 56
+                x: 14
+                width: col.width - 28
                 title: "TRANSFER"
                 accent: win.cAccentSoft
 
                 Column {
                     width: parent.width
-                    spacing: 11
+                    spacing: 8
 
                     Text {
                         text: Downloader.status
@@ -426,14 +426,14 @@ ApplicationWindow {
 
             // ---------- CORE MONITOR : 4 JAUGES + 2 VUMETRES ----------
             Panel {
-                x: 28
-                width: col.width - 56
+                x: 14
+                width: col.width - 28
                 title: "CORE MONITOR"
                 accent: win.cCyan
 
                 Column {
                     width: parent.width
-                    spacing: 12
+                    spacing: 8
 
                     Text {
                         text: "TELEMETRIE SYSTEME TEMPS REEL"
@@ -445,7 +445,7 @@ ApplicationWindow {
                     RowLayout {
                         width: parent.width
                         height: 158
-                        spacing: 12
+                        spacing: 8
                         Gauge {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 158
@@ -532,14 +532,14 @@ ApplicationWindow {
 
             // ---------- LECTEUR AUDIO ----------
             Panel {
-                x: 28
-                width: col.width - 56
+                x: 14
+                width: col.width - 28
                 title: "AUDIO PLAYER"
                 accent: win.cAmber
 
                 Column {
                     width: parent.width
-                    spacing: 10
+                    spacing: 8
 
                     Item {
                         width: parent.width
@@ -630,7 +630,7 @@ ApplicationWindow {
                     // Transport.
                     Row {
                         width: parent.width
-                        spacing: 10
+                        spacing: 8
                         NeonButton {
                             width: 104; height: 40
                             label: "|< PREV"
@@ -723,14 +723,14 @@ ApplicationWindow {
 
             // ---------- JOURNAL ----------
             Panel {
-                x: 28
-                width: col.width - 56
+                x: 14
+                width: col.width - 28
                 title: "SYSTEM LOG"
                 accent: win.cAccentSoft
 
                 Column {
                     width: parent.width
-                    spacing: 10
+                    spacing: 8
 
                     Rectangle {
                         width: parent.width

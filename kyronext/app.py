@@ -101,7 +101,7 @@ def main() -> int:
     metrics = SystemMetrics()
     shell = Shell()
 
-    # Exposition a QML : un singleton par objet, dans le module "Kironext".
+    # Exposition a QML : un singleton par objet, dans le module "Kyronext".
     singletons = {
         "Config": config,
         "History": history,
@@ -113,7 +113,7 @@ def main() -> int:
     }
     for type_name, instance in singletons.items():
         qmlRegisterSingletonType(
-            type(instance), "Kironext", 1, 0, type_name,
+            type(instance), "Kyronext", 1, 0, type_name,
             _singleton_factory(instance),
         )
 
@@ -134,7 +134,7 @@ def main() -> int:
         QTimer.singleShot(1200, deps.autoUpdate)
 
     # Mode test : quitte automatiquement (verification sans interface visible).
-    if os.environ.get("KIRONEXT_SMOKETEST"):
+    if os.environ.get("KYRONEXT_SMOKETEST"):
         QTimer.singleShot(3000, app.quit)
 
     return app.exec_()

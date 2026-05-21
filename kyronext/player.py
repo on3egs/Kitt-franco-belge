@@ -227,7 +227,7 @@ class Player(QObject):
             ffmpeg, "-hide_banner", "-nostdin", "-loglevel", "error",
             "-ss", f"{max(0.0, offset):.2f}", "-i", str(track),
             # Sortie 1 : son audible via PulseAudio.
-            "-vn", "-f", "pulse", "Kironext Studio",
+            "-vn", "-f", "pulse", "Kyronext-Studio",
             # Sortie 2 : PCM brut sur stdout, lu par l'analyseur VU.
             "-vn", "-ac", "2", "-ar", str(SAMPLE_RATE), "-f", "f32le", "pipe:1",
         ]
