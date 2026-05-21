@@ -8,7 +8,7 @@ ApplicationWindow {
     id: win
     visible: true
     width: 1200
-    height: 1120
+    height: 1010
     minimumWidth: 980
     minimumHeight: 780
     title: "Kyronext-Studio"
@@ -231,7 +231,7 @@ ApplicationWindow {
 
         // TRANSFER & CORE MONITOR
         RowLayout {
-            Layout.fillWidth: true; Layout.preferredHeight: 290; spacing: 4
+            Layout.fillWidth: true; Layout.preferredHeight: 420; spacing: 4
             Panel {
                 Layout.preferredWidth: 280; Layout.fillHeight: true; title: "TRANSFER"; accent: win.cAccentSoft
                 Column {
@@ -260,7 +260,7 @@ ApplicationWindow {
 
                     // Rangee 1 : jauges systeme.
                     RowLayout {
-                        Layout.fillWidth: true; Layout.fillHeight: true; spacing: 4
+                        Layout.fillWidth: true; Layout.preferredHeight: 120; spacing: 4
                         Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "CPU"; unit: "%"; value: Metrics.cpu; accent: win.cCyan }
                         Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "GPU"; unit: "%"; value: Metrics.gpu; accent: win.cGreen }
                         Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "RAM"; unit: "%"; value: Metrics.ram; accent: win.cAccentSoft }
@@ -273,9 +273,16 @@ ApplicationWindow {
                     // Filet de separation.
                     Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#241016" }
 
+                    // Reacteur a plasma Tokamak.
+                    PlasmaCore {
+                        Layout.preferredHeight: 140
+                        Layout.alignment: Qt.AlignHCenter
+                        energy: Player.bass
+                    }
+
                     // Rangee 2 : banc de vumetres analogiques.
                     RowLayout {
-                        Layout.fillWidth: true; Layout.fillHeight: true; spacing: 4
+                        Layout.fillWidth: true; Layout.preferredHeight: 130; spacing: 4
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "L"; level: Player.vuLeft; accent: win.cAccent }
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "R"; level: Player.vuRight; accent: win.cCyan }
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "BASS"; level: Player.bass; accent: win.cAmber }
