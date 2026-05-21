@@ -364,17 +364,25 @@ ApplicationWindow {
                     }
                 }
 
-                // --- TONE + TAPE DECK + RADIO FM ---
+                // --- TONE + SCOPE + TAPE + SPECTRE + SCOPE ---
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 140
                     spacing: 4
                     ToneControls {
-                        Layout.preferredWidth: 140
+                        Layout.preferredWidth: 100
                         Layout.fillHeight: true
                         bassValue: Player.bass
                         midValue: Player.mid
                         trebleValue: Player.treble
+                    }
+                    Oscilloscope {
+                        Layout.preferredWidth: 120
+                        Layout.fillHeight: true
+                        vuLeft: Player.vuLeft
+                        vuRight: Player.vuRight
+                        bass: Player.bass
+                        mid: Player.mid
                     }
                     TapeDeck {
                         Layout.fillWidth: true
@@ -386,13 +394,22 @@ ApplicationWindow {
                         title: Player.currentTitle
                         position: Player.position
                     }
-                    RadioFM {
-                        Layout.preferredWidth: 340
+                    SpectreAnalyzer {
+                        Layout.preferredWidth: 170
                         Layout.fillHeight: true
                         vuLeft: Player.vuLeft
                         vuRight: Player.vuRight
-                        stereo: Player.vuLeft > 0.1 || Player.vuRight > 0.1
-                        signalStrength: (Player.vuLeft + Player.vuRight) / 2 + 0.3
+                        bass: Player.bass
+                        mid: Player.mid
+                        treble: Player.treble
+                    }
+                    Oscilloscope {
+                        Layout.preferredWidth: 170
+                        Layout.fillHeight: true
+                        vuLeft: Player.vuLeft
+                        vuRight: Player.vuRight
+                        bass: Player.bass
+                        mid: Player.mid
                     }
                 }
 

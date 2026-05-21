@@ -1,245 +1,154 @@
-// Oscilloscope.qml - visualiseur style oscilloscope analogique Pioneer / CRT.
+// Oscilloscope.qml - Oscilloscope double trace style Tektronix 465B.
 //
-// Deux traces (L / R) dessinees sur ecran CRT avec grille, phosphore persistant
-// et modulation par les niveaux audio (basses, mediums, aigus, vu-meters).
-// Entierement procedurale, acceleree GPU via Canvas.
+// Grille réticule ambre, phosphore persistant, deux traces L/R,
+// declenchement simule, verre bombe, aucun neon.
 import QtQuick 2.15
 
 Item {
     id: root
+    implicitWidth: 170
+    implicitHeight: 140
 
-    // Niveaux audio branches depuis le Player.
     property real vuLeft: 0.0
     property real vuRight: 0.0
     property real bass: 0.0
     property real mid: 0.0
-    property real treble: 0.0
 
-    property color traceL: "#35e6ff"   // cyan pour L
-    property color traceR: "#ff5b69"   // rouge soft pour R
-    property color gridColor: "#1a3a2a"
-    property color phosphor: "#54e36b" // vert phosphore
+    // Buffer circulaire d'echantillons simules
+    property var bufL: []
+    property var bufR: []
+    property int bufSize: 128
+    property int writePos: 0
+    property real timeAcc: 0.0
 
-    implicitHeight: 90
-
-    // Temps interne pour l'animation des ondes.
-    property real t: 0.0
-    Timer {
-        interval: 16; running: true; repeat: true
-        onTriggered: root.t += 0.016
+    Component.onCompleted: {
+        for (var i = 0; i < bufSize; i++) { bufL.push(0); bufR.push(0); }
     }
 
-    // --- Ecran CRT avec grille ---
+    // === CHASSIS ===
     Rectangle {
-        anchors.fill: parent
-        color: "#020304"
-        border.color: "#1a1e24"
-        border.width: 1
-        radius: 6
-
-        // Grille oscilloscope
-        Canvas {
-            id: gridCanvas
-            anchors.fill: parent
-            anchors.margins: 1
-            onPaint: {
-                var ctx = getContext("2d");
-                ctx.reset();
-                ctx.lineWidth = 0.8;
-                ctx.strokeStyle = root.gridColor;
-                var stepX = width / 12;
-                var stepY = height / 6;
-                for (var x = stepX; x < width; x += stepX) {
-                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
-                }
-                for (var y = stepY; y < height; y += stepY) {
-                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
-                }
-                // Ligne centrale plus visible
-                ctx.strokeStyle = "#2a5a3a";
-                ctx.lineWidth = 1.2;
-                ctx.beginPath();
-                ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2);
-                ctx.stroke();
-            }
+        anchors.fill: parent; radius: 6
+        color: "#090a0c"; border.color: "#1a1c22"; border.width: 1
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#0e1014" }
+            GradientStop { position: 0.5; color: "#090a0c" }
+            GradientStop { position: 1.0; color: "#040508" }
         }
-
-        // Scanlines CRT
-        Canvas {
-            anchors.fill: parent
-            opacity: 0.06
-            onPaint: {
-                var ctx = getContext("2d");
-                ctx.reset();
-                for (var y = 0; y < height; y += 2) {
-                    ctx.fillStyle = "#000000";
-                    ctx.fillRect(0, y, width, 1);
-                }
-            }
-        }
-
-        // Reflet courbe ecran CRT
         Rectangle {
-            anchors.fill: parent
-            radius: parent.radius
-            color: "transparent"
-            border.color: Qt.rgba(1, 1, 1, 0.03)
-            border.width: 1
+            anchors.fill: parent; anchors.margins: 1; radius: 5
+            color: "transparent"; border.color: Qt.rgba(1,1,1,0.03); border.width: 1
         }
     }
 
-    // --- Traces oscilloscope ---
+    // === ECRAN NOIR PROFOND ===
+    Rectangle {
+        anchors.fill: parent; anchors.margins: 14
+        color: "#020304"
+        border.color: "#0d0f14"; border.width: 1; radius: 2
+    }
+
+    // === GRILLE RETICULE ===
     Canvas {
-        id: scopeCanvas
-        anchors.fill: parent
-        anchors.margins: 2
-
-        Timer {
-            interval: 16; running: true; repeat: true
-            onTriggered: parent.requestPaint()
-        }
-
+        anchors.fill: parent; anchors.margins: 14
         onPaint: {
-            var ctx = getContext("2d");
+            var ctx = getContext("2d"); ctx.reset();
+            var w = width, h = height;
+            ctx.strokeStyle = "#2a2518"; ctx.lineWidth = 0.5;
+            // Lignes verticales (10 divisions)
+            for (var i = 1; i < 10; i++) {
+                var x = w * i / 10;
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+            }
+            // Lignes horizontales (8 divisions)
+            for (var j = 1; j < 8; j++) {
+                var y = h * j / 8;
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+            // Croix centrale
+            ctx.strokeStyle = "#3a3020"; ctx.lineWidth = 0.8;
+            var cx = w/2, cy = h/2;
+            ctx.beginPath(); ctx.moveTo(cx-4, cy); ctx.lineTo(cx+4, cy); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy-4); ctx.lineTo(cx, cy+4); ctx.stroke();
+        }
+    }
+
+    // === TRACES L/R ===
+    Canvas {
+        id: traceCanvas
+        anchors.fill: parent; anchors.margins: 14
+        Timer {
+            interval: 33; running: true; repeat: true
+            onTriggered: {
+                // Generer echantillons simules
+                var mix = (root.vuLeft + root.vuRight) * 0.5;
+                var ampL = root.vuLeft * 0.85;
+                var ampR = root.vuRight * 0.85;
+                var freq = 2 + root.bass * 6 + root.mid * 3;
+                root.timeAcc += 0.15 + mix * 0.3;
+                var sL = Math.sin(root.timeAcc * freq + 0.0) * ampL + Math.sin(root.timeAcc * freq * 2.3) * ampL * 0.3;
+                var sR = Math.sin(root.timeAcc * freq + 0.8) * ampR + Math.sin(root.timeAcc * freq * 1.7) * ampR * 0.3;
+                root.bufL[root.writePos] = Math.max(-1, Math.min(1, sL));
+                root.bufR[root.writePos] = Math.max(-1, Math.min(1, sR));
+                root.writePos = (root.writePos + 1) % root.bufSize;
+                traceCanvas.requestPaint();
+            }
+        }
+        onPaint: {
+            var ctx = getContext("2d"); ctx.reset();
             var w = width, h = height;
             var cy = h / 2;
-            var dt = root.t * 8.0;  // vitesse de balayage
+            var scaleY = h * 0.38;
 
-            // Amplitudes modules par les niveaux audio
-            var aBass = 0.15 + root.bass * 0.55;
-            var aMid = 0.08 + root.mid * 0.35;
-            var aTreble = 0.04 + root.treble * 0.20;
-            var aL = 0.1 + root.vuLeft * 0.5;
-            var aR = 0.1 + root.vuRight * 0.5;
-
-            // Bruit subtil quand pas de son
-            var noiseL = (root.vuLeft < 0.02) ? 0.3 : 0.05;
-            var noiseR = (root.vuRight < 0.02) ? 0.3 : 0.05;
-
-            // --- Fonction d'onde pour un canal ---
-            function wave(x, channel, amp) {
-                var phase = channel === 0 ? 0 : 2.1;
-                var px = x / w * 12.0;  // echelle horizontale
-                var y = 0.0;
-
-                // Basses : onde lente large
-                y += Math.sin(px * 0.7 + dt * 0.6 + phase) * aBass;
-                y += Math.sin(px * 1.3 + dt * 0.4 + phase * 1.5) * aBass * 0.5;
-
-                // Mediums : onde moyenne
-                y += Math.sin(px * 2.5 + dt * 1.2 + phase * 0.7) * aMid;
-                y += Math.sin(px * 3.8 + dt * 0.9 + phase * 1.2) * aMid * 0.4;
-
-                // Aigus : onde rapide fine
-                y += Math.sin(px * 6.0 + dt * 2.5 + phase * 0.3) * aTreble;
-                y += Math.sin(px * 9.5 + dt * 3.0 + phase * 1.8) * aTreble * 0.3;
-
-                // Enveloppe VU (forme globale de l'onde)
-                var env = Math.sin(px * 0.25 + dt * 0.15) * amp;
-                y += env * 0.4;
-
-                // Petites oscillations rapides style Lissajous quand le son est fort
-                if (root.bass > 0.3) {
-                    y += Math.sin(px * 4.0 + dt * 1.8) * Math.cos(dt * 0.3) * 0.12 * root.bass;
-                }
-
-                // Bruit analogique
-                var n = channel === 0 ? noiseL : noiseR;
-                y += (Math.random() - 0.5) * n * 0.15;
-
-                return y * h * 0.38;
+            // Trace L (vert phosphore)
+            ctx.strokeStyle = "#54e36b"; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.85;
+            ctx.beginPath();
+            for (var i = 0; i < root.bufSize; i++) {
+                var idx = (root.writePos + i) % root.bufSize;
+                var x = w * i / (root.bufSize - 1);
+                var y = cy - root.bufL[idx] * scaleY;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             }
+            ctx.stroke();
 
-            // --- Dessin d'une trace avec glow phosphore ---
-            function drawTrace(channel, color, amp) {
-                // Glow externe
-                ctx.lineWidth = 5;
-                ctx.strokeStyle = color;
-                ctx.globalAlpha = 0.08;
-                ctx.beginPath();
-                for (var x = 0; x <= w; x += 1.5) {
-                    var yy = cy + wave(x, channel, amp);
-                    if (x === 0) ctx.moveTo(x, yy);
-                    else ctx.lineTo(x, yy);
-                }
-                ctx.stroke();
-
-                // Glow interne
-                ctx.lineWidth = 3;
-                ctx.globalAlpha = 0.18;
-                ctx.beginPath();
-                for (x = 0; x <= w; x += 1.5) {
-                    yy = cy + wave(x, channel, amp);
-                    if (x === 0) ctx.moveTo(x, yy);
-                    else ctx.lineTo(x, yy);
-                }
-                ctx.stroke();
-
-                // Trace principale
-                ctx.lineWidth = 1.5;
-                ctx.globalAlpha = 0.85;
-                ctx.beginPath();
-                for (x = 0; x <= w; x += 1.0) {
-                    yy = cy + wave(x, channel, amp);
-                    if (x === 0) ctx.moveTo(x, yy);
-                    else ctx.lineTo(x, yy);
-                }
-                ctx.stroke();
-
-                // Point lumineux au debut (style balayage CRT)
-                var startY = cy + wave(0, channel, amp);
-                ctx.globalAlpha = 0.6;
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                ctx.arc(2, startY, 3, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.globalAlpha = 1.0;
+            // Trace R (ambre phosphore)
+            ctx.strokeStyle = "#cc8820"; ctx.lineWidth = 1.0; ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            for (var i2 = 0; i2 < root.bufSize; i2++) {
+                var idx2 = (root.writePos + i2) % root.bufSize;
+                var x2 = w * i2 / (root.bufSize - 1);
+                var y2 = cy - root.bufR[idx2] * scaleY;
+                if (i2 === 0) ctx.moveTo(x2, y2); else ctx.lineTo(x2, y2);
             }
+            ctx.stroke();
 
-            ctx.clearRect(0, 0, w, h);
-
-            // Trace L (canal gauche)
-            drawTrace(0, root.traceL, aL);
-
-            // Trace R (canal droit) - decalage de phase
-            drawTrace(1, root.traceR, aR);
+            ctx.globalAlpha = 1.0;
         }
     }
 
-    // --- Point lumineux de balayage (tete de lecture CRT) ---
+    // === LABEL ===
+    Text {
+        anchors.top: parent.top; anchors.topMargin: 4
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: "OSCILLOSCOPE"
+        color: "#3a4050"; font.family: "DejaVu Sans Mono"
+        font.pixelSize: 5; font.bold: true; opacity: 0.6
+    }
+
+    // === VERRE BOMBE ===
     Rectangle {
-        id: sweepDot
-        width: 6; height: 6; radius: 3
-        color: root.phosphor
-        opacity: 0.7 + (root.vuLeft + root.vuRight) * 0.3
-        y: parent.height / 2 - 3
-
-        SequentialAnimation on x {
-            loops: Animation.Infinite
-            NumberAnimation { from: 2; to: root.width - 8; duration: 1200; easing.type: Easing.Linear }
-            NumberAnimation { from: 2; to: 2; duration: 80 }
-        }
-        SequentialAnimation on opacity {
-            loops: Animation.Infinite
-            NumberAnimation { to: 0.3; duration: 600 }
-            NumberAnimation { to: 0.9; duration: 600 }
+        anchors.fill: parent; anchors.margins: 3; radius: 4
+        color: "transparent"
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(1,1,1,0.02) }
+            GradientStop { position: 0.08; color: Qt.rgba(1,1,1,0.005) }
+            GradientStop { position: 0.4; color: "transparent" }
+            GradientStop { position: 1.0; color: "transparent" }
         }
     }
 
-    // --- Etiquettes ---
-    Text {
-        x: 8; y: 4
-        text: "OSC L"
-        color: root.traceL
-        font.family: "DejaVu Sans Mono"; font.pixelSize: 8; font.bold: true
-        opacity: 0.7
-    }
-    Text {
-        anchors.right: parent.right; anchors.rightMargin: 8; y: 4
-        text: "OSC R"
-        color: root.traceR
-        font.family: "DejaVu Sans Mono"; font.pixelSize: 8; font.bold: true
-        opacity: 0.7
+    // AO peripherique
+    Rectangle {
+        anchors.fill: parent; radius: 6
+        color: "transparent"; border.color: "#000000"; border.width: 5; opacity: 0.2
     }
 }
