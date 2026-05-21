@@ -251,7 +251,7 @@ ApplicationWindow {
         RowLayout {
             Layout.fillWidth: true; Layout.preferredHeight: 290; spacing: 4
             Panel {
-                Layout.preferredWidth: 280; Layout.fillHeight: true; title: "TRANSFER"; accent: win.cAccentSoft
+                Layout.preferredWidth: 240; Layout.fillHeight: true; title: "TRANSFER"; accent: win.cAccentSoft
                 Column {
                     anchors.fill: parent; anchors.margins: 6; spacing: 6
                     Text { text: Downloader.status; color: win.cAccent; font.pixelSize: 10; font.bold: true }
@@ -301,7 +301,7 @@ ApplicationWindow {
 
                     // Rangee 2 : banc de vumetres analogiques.
                     RowLayout {
-                        Layout.fillWidth: true; Layout.fillHeight: true; spacing: 4
+                        Layout.fillWidth: true; Layout.preferredHeight: 105; spacing: 4
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "L"; level: Player.vuLeft; accent: win.cAccent }
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "R"; level: Player.vuRight; accent: win.cCyan }
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "BASS"; level: Player.bass; accent: win.cAmber }
@@ -407,7 +407,7 @@ ApplicationWindow {
                         trebleValue: Player.treble
                     }
                     Oscilloscope {
-                        Layout.preferredWidth: 120
+                        Layout.preferredWidth: 140
                         Layout.fillHeight: true
                         vuLeft: Player.vuLeft
                         vuRight: Player.vuRight
@@ -425,7 +425,7 @@ ApplicationWindow {
                         position: Player.position
                     }
                     SpectreAnalyzer {
-                        Layout.preferredWidth: 170
+                        Layout.preferredWidth: 200
                         Layout.fillHeight: true
                         vuLeft: Player.vuLeft
                         vuRight: Player.vuRight
@@ -434,7 +434,7 @@ ApplicationWindow {
                         treble: Player.treble
                     }
                     Oscilloscope {
-                        Layout.preferredWidth: 170
+                        Layout.preferredWidth: 200
                         Layout.fillHeight: true
                         vuLeft: Player.vuLeft
                         vuRight: Player.vuRight

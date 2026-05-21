@@ -29,7 +29,7 @@ Item {
 
     property real frac: 0.0
     Behavior on frac {
-        SpringAnimation { spring: 4.5; damping: 0.5; mass: 0.4; epsilon: 0.002 }
+        NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
     }
 
     readonly property real arcStart: 130
@@ -172,13 +172,13 @@ Item {
         }
     }
 
-    // === AIGUILLE (style Smiths fine rouge) ===
-    // Ombre (decalee de 0.5 px pour rester subtile mais plus precise)
+    // === AIGUILLE UNIQUE (style Smiths fine rouge) ===
+    // Ombre tres subtile sous l'aiguille
     Rectangle {
         id: needleShadow
-        width: 2; height: root.rv * 0.7
-        x: root.cxv - width / 2 + 0.5; y: root.cyv - height + 0.5
-        radius: 1; color: "#000000"; opacity: 0.35; antialiasing: true
+        width: 1.5; height: root.rv * 0.72
+        x: root.cxv - width / 2 + 0.8; y: root.cyv - height + 0.8
+        radius: 0.75; color: "#000000"; opacity: 0.2; antialiasing: true
         transform: Rotation {
             origin.x: needleShadow.width / 2; origin.y: needleShadow.height
             angle: root.arcStart + root.frac * root.arcSpan
@@ -187,20 +187,13 @@ Item {
     // Aiguille rouge
     Rectangle {
         id: needle
-        width: 1.5; height: root.rv * 0.72
+        width: 1.8; height: root.rv * 0.75
         x: root.cxv - width / 2; y: root.cyv - height
-        radius: 0.75; color: "#cc2020"; antialiasing: true
+        radius: 0.9; color: "#cc2020"; antialiasing: true
         transform: Rotation {
             origin.x: needle.width / 2; origin.y: needle.height
             angle: root.arcStart + root.frac * root.arcSpan
         }
-    }
-    // Point lumineux (balancier) a la pointe
-    Rectangle {
-        width: 2.5; height: 2.5; radius: 1.25
-        x: root.cxv + Math.cos((root.arcStart + root.frac * root.arcSpan) * Math.PI/180) * root.rv * 0.72 - width / 2
-        y: root.cyv + Math.sin((root.arcStart + root.frac * root.arcSpan) * Math.PI/180) * root.rv * 0.72 - height / 2
-        color: "#ff5555"; opacity: 0.7
     }
 
     // === MOYEU CENTRAL METAL ===
