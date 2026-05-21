@@ -1,0 +1,18 @@
+# Kironext Studio - fichiers non versionnes
+
+# Caches Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Caches QML compiles
+*.qmlc
+*.jsc
+
+# Donnees locales et medias (regeneres / specifiques a la machine)
+media/
+state/
+*.part
+
+# Sauvegardes
+*.tar.gz
