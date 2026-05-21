@@ -180,10 +180,10 @@ ApplicationWindow {
                 // Museau KITT (scanner + plaque) entre titre et boutons
                 Image {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 32
+                    Layout.preferredHeight: 36
                     source: "../assets/kitt_nose.png"
                     fillMode: Image.PreserveAspectCrop
-                    opacity: 0.55
+                    opacity: 0.80
                 }
                 Row {
                     spacing: 10
