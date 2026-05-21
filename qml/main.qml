@@ -261,7 +261,7 @@ ApplicationWindow {
                         width: parent.width * 0.92
                         fillMode: Image.PreserveAspectFit
                         source: "../assets/kitt.png"
-                        opacity: 0.28
+                        opacity: 0.45
                     }
                 }
             }
@@ -311,7 +311,7 @@ ApplicationWindow {
                             anchors.fill: parent; anchors.margins: 8
                             fillMode: Image.PreserveAspectFit
                             source: "../assets/kitt.png"
-                            opacity: 0.06
+                            opacity: 0.14
                         }
                         ListView {
                             id: playlistView
@@ -371,9 +371,9 @@ ApplicationWindow {
                         Item { width: 1; height: 2 }
                         Row {
                             spacing: 6
-                            NeonButton { width: 48; height: 32; label: "<<"; accent: win.cAmber; onClicked: Player.previous() }
-                            NeonButton { width: 58; height: 32; label: Player.state === "playing" ? "||" : ">"; accent: win.cGreen; onClicked: Player.toggle() }
-                            NeonButton { width: 48; height: 32; label: ">>"; accent: win.cAmber; onClicked: Player.next() }
+                            NeonButton { width: 44; height: 30; label: "<<"; accent: win.cAmber; onClicked: Player.previous() }
+                            NeonButton { width: 52; height: 30; label: Player.state === "playing" ? "||" : ">"; accent: win.cGreen; onClicked: Player.toggle() }
+                            NeonButton { width: 44; height: 30; label: ">>"; accent: win.cAmber; onClicked: Player.next() }
                         }
                         Item { width: 1; height: 2 }
                         VolumeControl { width: parent.width; accent: win.cAmber }

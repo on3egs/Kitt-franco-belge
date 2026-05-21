@@ -114,14 +114,14 @@ Item {
         }
     }
 
-    // Glow subtil
+    // Glow tres subtil (annee 80, pas neon)
     Rectangle {
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -2
         width: parent.width + 2; height: width; radius: width / 2
         color: "transparent"
-        border.color: root.accent; border.width: 1
-        opacity: 0.06 + root.value * 0.1
+        border.color: root.accent; border.width: 0.5
+        opacity: 0.03 + root.value * 0.05
     }
 
     // Label
