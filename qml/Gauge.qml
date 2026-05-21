@@ -1,7 +1,7 @@
 // Gauge.qml - compteur circulaire style Smiths / VDO annees 80.
 //
 // Fond noir mat profond, graduations encre grise, aiguille fine rouge,
-// chiffres blanc cassé vintage, moyeu métal, verre bombé, aucun néon.
+// chiffres blanc casse vintage, moyeu metal, verre bombe, aucun neon.
 import QtQuick 2.15
 
 Item {
@@ -34,6 +34,8 @@ Item {
 
     readonly property real arcStart: 130
     readonly property real arcSpan: 280
+
+    // --- Centre et rayon unifies pour tous les elements circulaires ---
     readonly property real cxv: width / 2
     readonly property real cyv: height / 2
     readonly property real rv: Math.min(width, height) / 2 - 14
@@ -56,10 +58,10 @@ Item {
         }
     }
 
-    // === CADRAN NOIR MAT ===
+    // === CADRAN NOIR MAT (concentrique parfait avec les graduations) ===
     Rectangle {
         anchors.centerIn: parent
-        width: root.rv * 2 + 4; height: width; radius: width / 2
+        width: root.rv * 2 + 12; height: width; radius: width / 2
         color: "#050607"
         border.color: "#0c0e12"; border.width: 1
         // AO interne
@@ -71,11 +73,16 @@ Item {
     }
 
     // === GRADUATIONS ET CHIFFRES (Canvas) ===
+    // Le Canvas remplit le parent SANS marges pour que width/2 et height/2
+    // correspondent exactement au centre du gauge.
     Canvas {
-        anchors.fill: parent; anchors.margins: 10
+        id: tickCanvas
+        anchors.fill: parent
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
         onPaint: {
             var ctx = getContext("2d"); ctx.reset();
-            var cx = root.cxv, cy = root.cyv, r = root.rv + 6;
+            var cx = width / 2, cy = height / 2, r = root.rv + 6;
             var start = root.arcStart, span = root.arcSpan;
 
             // Piste fond gris mat
@@ -139,14 +146,14 @@ Item {
     // === ARC DE VALEUR (rouge mat) ===
     Canvas {
         id: arcCanvas
-        anchors.fill: parent; anchors.margins: 10
+        anchors.fill: parent
         Timer {
             interval: 16; running: true; repeat: true
             onTriggered: arcCanvas.requestPaint()
         }
         onPaint: {
             var ctx = getContext("2d"); ctx.reset();
-            var cx = root.cxv, cy = root.cyv, r = root.rv + 6;
+            var cx = width / 2, cy = height / 2, r = root.rv + 6;
             var start = root.arcStart;
 
             ctx.lineWidth = 3; ctx.strokeStyle = "#cc2020";
@@ -166,11 +173,11 @@ Item {
     }
 
     // === AIGUILLE (style Smiths fine rouge) ===
-    // Ombre
+    // Ombre (decalee de 0.5 px pour rester subtile mais plus precise)
     Rectangle {
         id: needleShadow
         width: 2; height: root.rv * 0.7
-        x: root.cxv - width / 2 + 1; y: root.cyv - height + 1
+        x: root.cxv - width / 2 + 0.5; y: root.cyv - height + 0.5
         radius: 1; color: "#000000"; opacity: 0.35; antialiasing: true
         transform: Rotation {
             origin.x: needleShadow.width / 2; origin.y: needleShadow.height
@@ -191,8 +198,8 @@ Item {
     // Point lumineux (balancier) a la pointe
     Rectangle {
         width: 2.5; height: 2.5; radius: 1.25
-        x: root.cxv + Math.cos((root.arcStart + root.frac * root.arcSpan) * Math.PI/180) * root.rv * 0.72 - 1.25
-        y: root.cyv + Math.sin((root.arcStart + root.frac * root.arcSpan) * Math.PI/180) * root.rv * 0.72 - 1.25
+        x: root.cxv + Math.cos((root.arcStart + root.frac * root.arcSpan) * Math.PI/180) * root.rv * 0.72 - width / 2
+        y: root.cyv + Math.sin((root.arcStart + root.frac * root.arcSpan) * Math.PI/180) * root.rv * 0.72 - height / 2
         color: "#ff5555"; opacity: 0.7
     }
 
@@ -217,7 +224,8 @@ Item {
 
     // === VALEUR NUMERIQUE CENTRE ===
     Column {
-        anchors.centerIn: parent
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: 10
         spacing: 0
         Text {
