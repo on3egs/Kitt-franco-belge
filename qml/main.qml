@@ -183,8 +183,10 @@ ApplicationWindow {
                     ChipToggle { label: "UPDATE"; active: Config.autoUpdate; onToggled: Config.autoUpdate = !Config.autoUpdate }
                     ChipToggle { label: "LITE"; active: Config.liteMode; onToggled: Config.liteMode = !Config.liteMode }
                     Image {
-                        source: Shell.phoenixSource; visible: Shell.phoenixSource !== ""
-                        fillMode: Image.PreserveAspectFit; height: 36; opacity: 0.8
+                        source: "../assets/kitt.png"
+                        fillMode: Image.PreserveAspectFit; height: 32
+                        anchors.verticalCenter: parent.verticalCenter
+                        opacity: 0.9
                     }
                 }
             }
