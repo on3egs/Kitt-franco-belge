@@ -79,6 +79,7 @@ class Downloader(QObject):
     def start(self, url: str, mode: str, playlist: bool) -> None:
         """Demarre un telechargement (ignore si une tache est deja en cours)."""
         url = (url or "").strip()
+        self.logLine.emit(f"--- KYRONEXT TRANSFER INIT (mode={mode}, playlist={playlist}) ---")
         if self._busy or not url:
             return
         missing = [c for c in ("yt-dlp", "ffmpeg") if shutil.which(c) is None]
@@ -94,7 +95,6 @@ class Downloader(QObject):
         self.busyChanged.emit()
         self.statsChanged.emit()
         self._set_status("TRANSFER ONLINE")
-        self.logLine.emit("--- KYRONEXT TRANSFER INIT ---")
         if self._history is not None:
             self._history.add(url)
         threading.Thread(
@@ -118,6 +118,8 @@ class Downloader(QObject):
         yt = shutil.which("yt-dlp") or "yt-dlp"
         cmd = [
             yt,
+            "--ignore-config",               # evite les interferences exterieures
+            "--ignore-errors",               # continue malgre les videos bloquees
             "--restrict-filenames",          # noms de fichiers compatibles CLI
             "--paths", str(paths.MEDIA_DIR),
             "--output", "%(title).120s-%(id)s.%(ext)s",
@@ -131,7 +133,15 @@ class Downloader(QObject):
             "--retry-sleep", "fragment:exp=1:30",
             "--socket-timeout", "30",
         ]
-        cmd += ["--yes-playlist"] if playlist else ["--no-playlist"]
+        
+        if playlist:
+            cmd.append("--yes-playlist")
+            cmd.append("--playlist-items")
+            cmd.append("1-")
+        else:
+            cmd.append("--no-playlist")
+
+        cmd.append("--no-warnings")
 
         # node ameliore la compatibilite YouTube mais reste optionnel.
         node = shutil.which("node")
@@ -150,6 +160,7 @@ class Downloader(QObject):
     def _run(self, url: str, mode: str, playlist: bool) -> None:
         """Execute yt-dlp et relaie sa sortie (thread dedie)."""
         cmd = self._build_cmd(url, mode, playlist)
+        self.logLine.emit(f"DEBUG: cmd = {' '.join(cmd)}")
         try:
             self._proc = subprocess.Popen(
                 cmd,
