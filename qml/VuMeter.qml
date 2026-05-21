@@ -29,7 +29,6 @@ Item {
     // bien trop lent pour un rythme musical, l'aiguille flottait au lieu de
     // pulser.
     property real needle: 0.0
-    property real microJitter: 0.0
     Timer {
         interval: 16; running: true; repeat: true   // ~60 images/s
         onTriggered: {
@@ -39,8 +38,6 @@ Item {
             } else {
                 root.needle += diff * (diff > 0 ? 0.50 : 0.16);
             }
-            root.microJitter = root.needle > 0.01
-                ? (Math.random() - 0.5) * 0.006 * root.needle : 0.0;
         }
     }
 
@@ -52,7 +49,7 @@ Item {
         onTriggered: if (root.peak > root.needle) root.peak = root.needle
     }
 
-    readonly property real needleAngle: -52 + (root.needle + root.microJitter) * 104
+    readonly property real needleAngle: -52 + root.needle * 104
     readonly property real peakAngle: -52 + root.peak * 104
 
     // --- CHASSIS PROFONDEUR (biseaute) ---
@@ -243,33 +240,15 @@ Item {
         }
     }
 
-    // --- GLOW AIGUILLE ---
+    // --- MOYEU CENTRAL (sobre, petit) ---
     Rectangle {
-        width: 4; height: root.rad * 0.95
-        x: root.cx - width / 2; y: root.cy - height
-        radius: 2; color: root.accent
-        opacity: 0.08 + root.needle * 0.15; antialiasing: true
-        transform: Rotation {
-            origin.x: width / 2; origin.y: height
-            angle: root.needleAngle
-        }
-        Behavior on opacity { NumberAnimation { duration: 80 } }
-    }
-
-    // --- MOYEU CENTRAL ---
-    Rectangle {
-        width: 18; height: 18; radius: 9
-        x: root.cx - 9; y: root.cy - 9
-        color: "#0a0b0d"; border.color: "#3a3a3a"; border.width: 1.5
+        width: 10; height: 10; radius: 5
+        x: root.cx - 5; y: root.cy - 5
+        color: "#0a0b0d"; border.color: "#3a3a3a"; border.width: 1
         Rectangle {
-            anchors.centerIn: parent; width: 12; height: 12; radius: 6
-            color: "#050607"; border.color: root.accent; border.width: 1
+            anchors.centerIn: parent; width: 6; height: 6; radius: 3
+            color: "#050607"; border.color: root.accent; border.width: 0.8
             opacity: 0.6 + root.needle * 0.4
-        }
-        Rectangle {
-            anchors.centerIn: parent; width: parent.width + 16; height: width; radius: width / 2
-            color: "transparent"; border.color: root.accent; border.width: 2
-            opacity: root.needle * 0.35
         }
     }
 

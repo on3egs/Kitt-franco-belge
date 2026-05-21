@@ -184,9 +184,9 @@ ApplicationWindow {
                     ChipToggle { label: "LITE"; active: Config.liteMode; onToggled: Config.liteMode = !Config.liteMode }
                     Image {
                         source: "../assets/kitt.png"
-                        fillMode: Image.PreserveAspectFit; height: 38
+                        fillMode: Image.PreserveAspectFit; height: 42
                         anchors.verticalCenter: parent.verticalCenter
-                        opacity: 0.95
+                        opacity: 1.0
                     }
                 }
             }
@@ -258,10 +258,10 @@ ApplicationWindow {
                     // KITT dans le fond du panel TRANSFER
                     Image {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: parent.width * 0.82
+                        width: parent.width * 0.92
                         fillMode: Image.PreserveAspectFit
                         source: "../assets/kitt.png"
-                        opacity: 0.18
+                        opacity: 0.28
                     }
                 }
             }
