@@ -8,11 +8,14 @@ ApplicationWindow {
     id: win
     visible: true
     width: 1200
-    height: 800
+    height: 1120
     minimumWidth: 980
-    minimumHeight: 600
+    minimumHeight: 780
     title: "Kyronext-Studio"
     color: "#040506"
+
+    // Pas de barre de titre systeme
+    flags: Qt.FramelessWindowHint | Qt.Window
 
     readonly property color cAccent: "#ff2a3a"
     readonly property color cAccentSoft: "#ff5b69"
@@ -36,6 +39,14 @@ ApplicationWindow {
         logView.positionViewAtEnd();
     }
 
+    function fmtTime(seconds) {
+        if (!seconds || seconds < 0 || isNaN(seconds)) return "0:00";
+        var total = Math.floor(seconds);
+        var m = Math.floor(total / 60);
+        var s = total % 60;
+        return m + ":" + (s < 10 ? "0" + s : s);
+    }
+
     Connections {
         target: Downloader
         function onLogLine(line) { win.logAppend(line); }
@@ -45,31 +56,82 @@ ApplicationWindow {
         }
     }
 
+    // --- Barre de titre custom (drag + close) ---
+    Rectangle {
+        id: titleBar
+        anchors { left: parent.left; right: parent.right; top: parent.top }
+        height: 28
+        color: "#0c0e12"
+        border.color: "#1a1c22"
+        border.width: 1
+        z: 100
+
+        // Zone draggable
+        MouseArea {
+            anchors.fill: parent
+            anchors.rightMargin: 40
+            onPressed: win.startSystemMove()
+        }
+
+        Text {
+            anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
+            text: "KYRONEXT STUDIO"
+            color: win.cAccent
+            font.family: win.mono; font.pixelSize: 10; font.bold: true
+            opacity: 0.8
+        }
+
+        // Bouton X
+        Rectangle {
+            anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
+            width: 36
+            color: closeMouse.containsMouse ? "#ff2a3a" : "transparent"
+            Behavior on color { ColorAnimation { duration: 120 } }
+
+            Text {
+                anchors.centerIn: parent
+                text: "×"
+                color: closeMouse.containsMouse ? "#ffffff" : win.cTextDim
+                font.pixelSize: 16
+                font.bold: true
+            }
+            MouseArea {
+                id: closeMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: Qt.quit()
+            }
+        }
+    }
+
     // --- Equalizers Perimetriques ---
     BorderEqualizer {
         id: eqLeft
-        anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
-        width: 15; orientation: "vertical"; value: Player.vuLeft; barCount: 40
+        anchors.left: parent.left; anchors.top: titleBar.bottom; anchors.bottom: parent.bottom
+        anchors.topMargin: 0; anchors.bottomMargin: 0
+        width: 14; orientation: "vertical"; value: Player.vuLeft; barCount: 40
     }
     BorderEqualizer {
         id: eqRight
-        anchors.right: parent.right; anchors.top: parent.top; anchors.bottom: parent.bottom
-        width: 15; orientation: "vertical"; value: Player.vuRight; barCount: 40
+        anchors.right: parent.right; anchors.top: titleBar.bottom; anchors.bottom: parent.bottom
+        anchors.topMargin: 0; anchors.bottomMargin: 0
+        width: 14; orientation: "vertical"; value: Player.vuRight; barCount: 40
     }
-    
+
     // Top EQ (centre vers exterieur)
     Item {
-        anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right
+        anchors.top: titleBar.bottom; anchors.left: parent.left; anchors.right: parent.right
         anchors.leftMargin: 20; anchors.rightMargin: 20
-        height: 15
+        height: 14
         BorderEqualizer {
             anchors.left: parent.left; anchors.right: parent.horizontalCenter
-            height: 15; orientation: "horizontal"; value: Player.bass; barCount: 20
-            colorStart: "#ff0000"; colorEnd: "#00ff00" // Inverse pour aller du centre
+            height: 14; orientation: "horizontal"; value: Player.bass; barCount: 24
+            colorStart: "#ff0000"; colorEnd: "#00ff00"
         }
         BorderEqualizer {
             anchors.right: parent.right; anchors.left: parent.horizontalCenter
-            height: 15; orientation: "horizontal"; value: Player.bass; barCount: 20
+            height: 14; orientation: "horizontal"; value: Player.bass; barCount: 24
         }
     }
 
@@ -77,39 +139,40 @@ ApplicationWindow {
     Item {
         anchors.bottom: parent.bottom; anchors.left: parent.left; anchors.right: parent.right
         anchors.leftMargin: 20; anchors.rightMargin: 20
-        height: 15
+        height: 14
         BorderEqualizer {
             anchors.left: parent.left; anchors.right: parent.horizontalCenter
-            height: 15; orientation: "horizontal"; value: Player.treble; barCount: 20
+            height: 14; orientation: "horizontal"; value: Player.treble; barCount: 24
             colorStart: "#ff0000"; colorEnd: "#00ff00"
         }
         BorderEqualizer {
             anchors.right: parent.right; anchors.left: parent.horizontalCenter
-            height: 15; orientation: "horizontal"; value: Player.treble; barCount: 20
+            height: 14; orientation: "horizontal"; value: Player.treble; barCount: 24
         }
     }
 
-    // --- Layout Principal (Compact & Responsive) ---
+    // --- Layout Principal ---
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 25
-        spacing: 4
+        anchors.margins: 18
+        anchors.topMargin: 32  // sous la barre de titre
+        spacing: 3
 
         // EN-TETE
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: 45
+            Layout.preferredHeight: 38
             RowLayout {
                 anchors.fill: parent
                 Column {
                     spacing: 0
                     Text {
                         text: "KYRONEXT STUDIO"; color: win.cAccent
-                        font.family: win.mono; font.pixelSize: 22; font.bold: true
+                        font.family: win.mono; font.pixelSize: 20; font.bold: true
                     }
                     Text {
                         text: "KNIGHT INDUSTRIES MEDIA CENTER v2.0"; color: win.cTextDim
-                        font.family: win.mono; font.pixelSize: 9; font.bold: true
+                        font.family: win.mono; font.pixelSize: 8; font.bold: true
                     }
                 }
                 Item { Layout.fillWidth: true }
@@ -119,7 +182,7 @@ ApplicationWindow {
                     ChipToggle { label: "LITE"; active: Config.liteMode; onToggled: Config.liteMode = !Config.liteMode }
                     Image {
                         source: Shell.phoenixSource; visible: Shell.phoenixSource !== ""
-                        fillMode: Image.PreserveAspectFit; height: 40; opacity: 0.8
+                        fillMode: Image.PreserveAspectFit; height: 36; opacity: 0.8
                     }
                 }
             }
@@ -127,54 +190,55 @@ ApplicationWindow {
 
         // SCANNER
         Rectangle {
-            Layout.fillWidth: true; Layout.preferredHeight: 3; radius: 1.5; color: "#0a0305"; clip: true
+            id: scanTrack
+            Layout.fillWidth: true; Layout.preferredHeight: 2; radius: 1; color: "#0a0305"; clip: true
             Rectangle {
-                width: 100; height: 3; x: -100
+                width: 80; height: 2; x: -80
                 gradient: Gradient { orientation: Gradient.Horizontal; GradientStop { position: 0.5; color: win.cAccent } }
-                PropertyAnimation on x { from: -100; to: parent.width; duration: 1500; loops: Animation.Infinite }
+                PropertyAnimation on x { from: -80; to: scanTrack.width; duration: 1500; loops: Animation.Infinite }
             }
         }
 
         // YOUTUBE TARGET
         Panel {
-            Layout.fillWidth: true; Layout.preferredHeight: 75; title: "YOUTUBE TARGET"; accent: win.cAccentSoft
+            Layout.fillWidth: true; Layout.preferredHeight: 110; title: "YOUTUBE TARGET"; accent: win.cAccentSoft
             ColumnLayout {
                 anchors.fill: parent; anchors.margins: 4; spacing: 4
                 RowLayout {
-                    spacing: 6
+                    Layout.fillWidth: true; spacing: 6
                     TextField {
-                        id: urlField; Layout.fillWidth: true; height: 30
+                        id: urlField; Layout.fillWidth: true; Layout.preferredHeight: 28
                         placeholderText: "PASTE YOUTUBE URL..."; color: "#fff"; font.pixelSize: 11
                         background: Rectangle { color: "#06070a"; border.color: "#3d1117" }
                     }
-                    NeonButton { width: 80; height: 30; label: "PASTE"; accent: win.cCyan; onClicked: urlField.text = Shell.clipboard() }
+                    NeonButton { Layout.preferredWidth: 76; Layout.preferredHeight: 28; label: "PASTE"; accent: win.cCyan; onClicked: urlField.text = Shell.clipboard() }
                 }
                 RowLayout {
-                    spacing: 8
+                    Layout.fillWidth: true; spacing: 8
                     ChipToggle { label: "VIDEO"; active: Config.mode === "video"; onToggled: Config.mode = "video" }
                     ChipToggle { label: "MP3"; active: Config.mode === "mp3"; onToggled: Config.mode = "mp3" }
                     ChipToggle { label: "PLAYLIST"; active: Config.playlist; onToggled: Config.playlist = !Config.playlist }
                     Item { Layout.fillWidth: true }
                     NeonButton {
-                        id: dlButton; width: 120; height: 30
+                        id: dlButton; Layout.preferredWidth: 110; Layout.preferredHeight: 28
                         label: Downloader.busy ? "CANCEL" : "DOWNLOAD"; accent: Downloader.busy ? win.cAccent : win.cGreen
                         onClicked: Downloader.busy ? Downloader.cancel() : Downloader.start(urlField.text, Config.mode, Config.playlist)
                     }
-                    NeonButton { width: 90; height: 30; label: "FILES"; accent: win.cCyan; onClicked: Shell.openMediaDir() }
+                    NeonButton { Layout.preferredWidth: 80; Layout.preferredHeight: 28; label: "FILES"; accent: win.cCyan; onClicked: Shell.openMediaDir() }
                 }
             }
         }
 
         // TRANSFER & CORE MONITOR
         RowLayout {
-            Layout.fillWidth: true; Layout.preferredHeight: 140; spacing: 4
+            Layout.fillWidth: true; Layout.preferredHeight: 290; spacing: 4
             Panel {
-                Layout.preferredWidth: 300; Layout.fillHeight: true; title: "TRANSFER"; accent: win.cAccentSoft
+                Layout.preferredWidth: 280; Layout.fillHeight: true; title: "TRANSFER"; accent: win.cAccentSoft
                 Column {
                     anchors.fill: parent; anchors.margins: 6; spacing: 6
                     Text { text: Downloader.status; color: win.cAccent; font.pixelSize: 10; font.bold: true }
                     Rectangle {
-                        width: parent.width; height: 16; color: "#050608"
+                        width: parent.width; height: 14; color: "#050608"
                         Rectangle { width: parent.width * (Downloader.percent / 100); height: parent.height; color: win.cAccent }
                     }
                     Grid {
@@ -191,30 +255,40 @@ ApplicationWindow {
             }
             Panel {
                 Layout.fillWidth: true; Layout.fillHeight: true; title: "CORE MONITOR"; accent: win.cCyan
-                RowLayout {
-                    anchors.fill: parent; anchors.margins: 4; spacing: 4
-                    Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "UPLOAD"; unit: "Mo/s"; value: Metrics.netUp; accent: win.cCyan }
-                    Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "DOWNLOAD"; unit: "Mo/s"; value: Metrics.netDown; accent: win.cAccent }
-                    
-                    // REAL VU (Vumètres à aiguille)
-                    VuMeter { 
-                        Layout.preferredWidth: 160; Layout.fillHeight: true
-                        label: "L"; level: Player.vuLeft; accent: win.cAccent 
-                    }
-                    VuMeter { 
-                        Layout.preferredWidth: 160; Layout.fillHeight: true
-                        label: "R"; level: Player.vuRight; accent: win.cCyan 
+                ColumnLayout {
+                    anchors.fill: parent; spacing: 5
+
+                    // Rangee 1 : jauges systeme.
+                    RowLayout {
+                        Layout.fillWidth: true; Layout.fillHeight: true; spacing: 4
+                        Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "CPU"; unit: "%"; value: Metrics.cpu; accent: win.cCyan }
+                        Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "GPU"; unit: "%"; value: Metrics.gpu; accent: win.cGreen }
+                        Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "RAM"; unit: "%"; value: Metrics.ram; accent: win.cAccentSoft }
+                        Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "TEMP"; unit: "°C"; maxValue: 100; value: Metrics.temp; accent: win.cAmber }
+                        Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "PWR"; unit: "W"; maxValue: 40; value: Metrics.power; accent: win.cAccent }
+                        Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "↓"; unit: "Mo/s"; autoScale: true; value: Metrics.netDown; accent: win.cCyan }
+                        Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "↑"; unit: "Mo/s"; autoScale: true; value: Metrics.netUp; accent: win.cGreen }
                     }
 
-                    Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "PWR"; unit: "W"; value: Metrics.power; accent: win.cAmber }
-                    Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "GPU"; unit: "%"; value: Metrics.gpu; accent: win.cGreen }
+                    // Filet de separation.
+                    Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#241016" }
+
+                    // Rangee 2 : banc de vumetres analogiques.
+                    RowLayout {
+                        Layout.fillWidth: true; Layout.fillHeight: true; spacing: 4
+                        VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "L"; level: Player.vuLeft; accent: win.cAccent }
+                        VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "R"; level: Player.vuRight; accent: win.cCyan }
+                        VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "BASS"; level: Player.bass; accent: win.cAmber }
+                        VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "MID"; level: Player.mid; accent: win.cGreen }
+                        VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "TREBLE"; level: Player.treble; accent: win.cAccentSoft }
+                    }
                 }
             }
         }
 
         // AUDIO PLAYER
         Panel {
-            Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 180; title: "AUDIO PLAYER"; accent: win.cAmber
+            Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 380; title: "AUDIO PLAYER"; accent: win.cAmber
             ColumnLayout {
                 anchors.fill: parent; anchors.margins: 6; spacing: 4
                 RowLayout {
@@ -222,30 +296,125 @@ ApplicationWindow {
                     Rectangle {
                         Layout.fillWidth: true; Layout.fillHeight: true; color: "#06070a"; border.color: "#352026"
                         ListView {
-                            id: playlistView; anchors.fill: parent; anchors.margins: 4; clip: true; model: Player.tracks
+                            id: playlistView
+                            anchors.fill: parent; anchors.margins: 4; clip: true
+                            model: Player.tracks; spacing: 1
                             delegate: Rectangle {
-                                width: playlistView.width; height: 20; color: index === Player.index ? "#2a0b10" : "transparent"
-                                Text { anchors.centerIn: parent; text: modelData; color: index === Player.index ? "#fff" : "#888"; font.pixelSize: 9; elide: Text.ElideRight; width: parent.width-10 }
-                                MouseArea { anchors.fill: parent; onClicked: Player.play(index) }
+                                id: trackRow
+                                width: playlistView.width; height: 22
+                                readonly property bool current: index === Player.index
+                                color: current ? "#2a0b10"
+                                     : rowMouse.containsMouse ? "#17151b" : "transparent"
+                                Behavior on color { ColorAnimation { duration: 120 } }
+                                Rectangle {
+                                    width: 2; height: parent.height
+                                    color: trackRow.current ? win.cAmber : "transparent"
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    x: 9; width: parent.width - 16
+                                    text: modelData
+                                    color: trackRow.current ? "#ffffff"
+                                         : rowMouse.containsMouse ? "#c2c8ce" : "#8b929a"
+                                    font.family: win.mono; font.pixelSize: 9
+                                    elide: Text.ElideRight
+                                }
+                                MouseArea {
+                                    id: rowMouse
+                                    anchors.fill: parent; hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: Player.play(index)
+                                }
                             }
                         }
                     }
                     Column {
-                        Layout.preferredWidth: 200; spacing: 4
-                        Text { text: Player.currentTitle; color: "#fff"; font.pixelSize: 11; font.bold: true; width: 200; elide: Text.ElideRight }
-                        Text { text: fmtTime(Player.position) + " / " + fmtTime(Player.duration); color: win.cAmber; font.pixelSize: 10 }
-                        Row {
-                            spacing: 4
-                            NeonButton { width: 45; height: 30; label: "<<"; accent: win.cAmber; onClicked: Player.previous() }
-                            NeonButton { width: 55; height: 30; label: Player.state === "playing" ? "||" : ">"; accent: win.cGreen; onClicked: Player.toggle() }
-                            NeonButton { width: 45; height: 30; label: ">>"; accent: win.cAmber; onClicked: Player.next() }
+                        Layout.preferredWidth: 212
+                        Layout.fillHeight: true
+                        spacing: 6
+
+                        Text {
+                            text: "NOW PLAYING"
+                            color: win.cTextDim
+                            font.family: win.mono; font.pixelSize: 8; font.bold: true
                         }
+                        Text {
+                            width: parent.width
+                            text: Player.currentTitle
+                            color: "#ffffff"
+                            font.family: win.mono; font.pixelSize: 12; font.bold: true
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            text: fmtTime(Player.position) + "  /  " + fmtTime(Player.duration)
+                            color: win.cAmber
+                            font.family: win.mono; font.pixelSize: 10; font.bold: true
+                        }
+                        Item { width: 1; height: 2 }
+                        Row {
+                            spacing: 6
+                            NeonButton { width: 48; height: 32; label: "<<"; accent: win.cAmber; onClicked: Player.previous() }
+                            NeonButton { width: 58; height: 32; label: Player.state === "playing" ? "||" : ">"; accent: win.cGreen; onClicked: Player.toggle() }
+                            NeonButton { width: 48; height: 32; label: ">>"; accent: win.cAmber; onClicked: Player.next() }
+                        }
+                        Item { width: 1; height: 2 }
+                        VolumeControl { width: parent.width; accent: win.cAmber }
                     }
                 }
+
+                // --- TONE + TAPE DECK + RADIO FM ---
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 140
+                    spacing: 4
+                    ToneControls {
+                        Layout.preferredWidth: 140
+                        Layout.fillHeight: true
+                        bassValue: Player.bass
+                        midValue: Player.mid
+                        trebleValue: Player.treble
+                    }
+                    TapeDeck {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        vuLeft: Player.vuLeft
+                        vuRight: Player.vuRight
+                        bass: Player.bass
+                        state: Player.state
+                        title: Player.currentTitle
+                        position: Player.position
+                    }
+                    RadioFM {
+                        Layout.preferredWidth: 340
+                        Layout.fillHeight: true
+                        vuLeft: Player.vuLeft
+                        vuRight: Player.vuRight
+                        stereo: Player.vuLeft > 0.1 || Player.vuRight > 0.1
+                        signalStrength: (Player.vuLeft + Player.vuRight) / 2 + 0.3
+                    }
+                }
+
                 Rectangle {
-                    Layout.fillWidth: true; Layout.preferredHeight: 6; color: "#111"
-                    Rectangle { width: parent.width * (Player.duration > 0 ? Player.position / Player.duration : 0); height: parent.height; color: win.cAmber }
-                    MouseArea { anchors.fill: parent; onClicked: Player.seek(mouse.x / width) }
+                    Layout.fillWidth: true; Layout.preferredHeight: 7
+                    radius: 3.5
+                    color: "#141318"
+                    border.color: "#2c2a33"; border.width: 1
+                    Rectangle {
+                        x: 1; y: 1
+                        width: Math.max(0, (parent.width - 2) * (Player.duration > 0 ? Player.position / Player.duration : 0))
+                        height: parent.height - 2
+                        radius: 2.5
+                        gradient: Gradient {
+                            orientation: Gradient.Horizontal
+                            GradientStop { position: 0.0; color: Qt.darker(win.cAmber, 1.7) }
+                            GradientStop { position: 1.0; color: win.cAmber }
+                        }
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: Player.seek(mouse.x / width)
+                    }
                 }
             }
         }
@@ -257,15 +426,15 @@ ApplicationWindow {
                 Layout.fillWidth: true; Layout.fillHeight: true; title: "SYSTEM LOG"; accent: win.cAccentSoft
                 ListView {
                     id: logView; anchors.fill: parent; anchors.margins: 4; model: logModel; clip: true
-                    delegate: Text { text: "> " + model.line; color: "#5c6c7c"; font.pixelSize: 8; width: parent.width; wrapMode: Text.Wrap }
+                    delegate: Text { text: "> " + model.line; color: "#5c6c7c"; font.pixelSize: 8; width: logView.width; wrapMode: Text.Wrap }
                 }
             }
             Panel {
-                Layout.preferredWidth: 300; Layout.fillHeight: true; title: "HISTORY"; accent: win.cCyan
+                Layout.preferredWidth: 280; Layout.fillHeight: true; title: "HISTORY"; accent: win.cCyan
                 ListView {
                     id: histView; anchors.fill: parent; anchors.margins: 4; model: History.items; clip: true
                     delegate: Rectangle {
-                        width: parent.width; height: 16; color: "transparent"
+                        width: histView.width; height: 16; color: "transparent"
                         Text { anchors.fill: parent; text: modelData; color: "#888"; font.pixelSize: 8; elide: Text.ElideRight }
                         MouseArea { anchors.fill: parent; onClicked: urlField.text = modelData }
                     }

@@ -1,5 +1,6 @@
 // ChipToggle.qml - petit interrupteur a puce (mode video/mp3, playlist, lite...).
 import QtQuick 2.15
+import Kyronext 1.0
 
 Item {
     id: root
@@ -46,6 +47,6 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.toggled()
+        onClicked: { SoundFx.click(); root.toggled(); }
     }
 }

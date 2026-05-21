@@ -18,6 +18,7 @@ DEFAULTS = {
     "playlist": False,     # telecharger la playlist entiere plutot qu'une video
     "liteMode": False,     # mode allege : moins d'effets visuels (Jetson Nano)
     "autoUpdate": True,    # mise a jour automatique de yt-dlp au demarrage
+    "volume": 1.0,         # volume de lecture audio (0.0 .. 1.0)
 }
 
 
@@ -88,3 +89,11 @@ class Config(QObject):
     @autoUpdate.setter
     def autoUpdate(self, value: bool) -> None:
         self._set("autoUpdate", bool(value))
+
+    @pyqtProperty(float, notify=changed)
+    def volume(self) -> float:
+        return self._data["volume"]
+
+    @volume.setter
+    def volume(self, value: float) -> None:
+        self._set("volume", max(0.0, min(1.0, float(value))))

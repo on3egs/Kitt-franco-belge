@@ -1,5 +1,6 @@
 // NeonButton.qml - bouton neon sobre, style tableau de bord KARR.
 import QtQuick 2.15
+import Kyronext 1.0
 
 Item {
     id: root
@@ -70,6 +71,6 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
+        onClicked: { SoundFx.click(); root.clicked(); }
     }
 }

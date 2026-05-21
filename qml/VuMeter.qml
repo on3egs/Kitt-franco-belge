@@ -1,151 +1,286 @@
-// VuMeter.qml - vumetre analogique a aiguille.
+// VuMeter.qml - vumetre analogique premium style hi-fi annees 80.
 //
-// L'aiguille est pilotee par une SpringAnimation : elle possede une vraie
-// inertie physique (masse + amortissement), ce qui donne un mouvement vivant
-// et realiste, interpole automatiquement a la frequence de l'ecran (GPU).
+// Cadran avec 100 micro-graduations, eclairage incandescent ambre,
+// biseaute profondeur, aiguille avec ombre et glow chaud.
 import QtQuick 2.15
 
 Item {
     id: root
 
-    property real level: 0.0          // cible 0..1, branchee sur l'audio
+    property real level: 0.0
     property string label: "L"
     property color accent: "#ff3348"
 
-    implicitWidth: 240
-    implicitHeight: 210
+    implicitWidth: 260
+    implicitHeight: 230
 
-    // Geometrie du cadran, partagee entre le dessin et l'aiguille.
     readonly property real cx: width / 2
-    readonly property real cy: height * 0.84
-    readonly property real rad: Math.min(width * 0.40, height * 0.60)
+    readonly property real cy: height * 0.86
+    readonly property real rad: Math.min(width * 0.38, height * 0.56)
 
-    // Valeur animee de l'aiguille : inertie ressort.
     property real needle: 0.0
     onLevelChanged: needle = Math.max(0, Math.min(1, level))
     Behavior on needle {
-        SpringAnimation { spring: 4.2; damping: 0.26; mass: 0.5; epsilon: 0.001 }
+        SpringAnimation { spring: 5.0; damping: 0.22; mass: 0.45; epsilon: 0.0005 }
     }
 
-    // Maintien de crete : saute vers le haut, redescend lentement.
-    property real peak: 0.0
-    onNeedleChanged: if (needle > peak) peak = needle
-    Behavior on peak { NumberAnimation { duration: 1100; easing.type: Easing.InCubic } }
+    property real microJitter: 0.0
     Timer {
-        interval: 110; running: true; repeat: true
-        onTriggered: if (root.peak > root.needle) root.peak = root.needle
-    }
-
-    // Fond du cadran.
-    Rectangle {
-        anchors.fill: parent
-        radius: 6
-        color: "#070809"
-        border.color: "#341017"
-        border.width: 1
-    }
-
-    // Arc et graduations : dessines une seule fois, mis en cache par le GPU.
-    Canvas {
-        anchors.fill: parent
-        onWidthChanged: requestPaint()
-        onHeightChanged: requestPaint()
-        onPaint: {
-            var ctx = getContext("2d");
-            ctx.reset();
-            var cx = root.cx, cy = root.cy, r = root.rad;
-            var a0 = -142 * Math.PI / 180;
-            var a1 = -38 * Math.PI / 180;
-
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "#46505d";
-            ctx.beginPath(); ctx.arc(cx, cy, r, a0, a1, false); ctx.stroke();
-
-            // Zone rouge sur les derniers ~22 %.
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = root.accent;
-            var ar = (-142 + 0.78 * 104) * Math.PI / 180;
-            ctx.beginPath(); ctx.arc(cx, cy, r, ar, a1, false); ctx.stroke();
-
-            for (var i = 0; i <= 10; i++) {
-                var a = (-142 + i * 10.4) * Math.PI / 180;
-                var inner = r - (i % 5 === 0 ? 13 : 7);
-                ctx.lineWidth = i % 5 === 0 ? 2.5 : 1.5;
-                ctx.strokeStyle = i >= 8 ? root.accent : "#6b7682";
-                ctx.beginPath();
-                ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
-                ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-                ctx.stroke();
+        interval: 12; running: true; repeat: true
+        onTriggered: {
+            if (root.needle > 0.01) {
+                root.microJitter = (Math.random() - 0.5) * 0.008 * root.needle;
+            } else {
+                root.microJitter = 0.0;
             }
         }
     }
 
-    // Marqueur de crete, glisse le long de l'arc.
+    property real peak: 0.0
+    onNeedleChanged: if (needle > peak) peak = needle
+    Behavior on peak { NumberAnimation { duration: 900; easing.type: Easing.InCubic } }
+    Timer {
+        interval: 90; running: true; repeat: true
+        onTriggered: if (root.peak > root.needle) root.peak = root.needle
+    }
+
+    readonly property real needleAngle: -52 + (root.needle + root.microJitter) * 104
+    readonly property real peakAngle: -52 + root.peak * 104
+
+    // --- CHASSIS PROFONDEUR (biseaute) ---
     Rectangle {
-        width: 7; height: 7; radius: 3.5
-        color: "#ffffff"
-        opacity: 0.9
+        anchors.fill: parent; radius: 10
+        color: "#08090b"; border.color: "#1a1c20"; border.width: 1
+        Rectangle {
+            anchors.fill: parent; anchors.margins: 2; radius: 8
+            color: "transparent"; border.color: "#0f1012"; border.width: 2
+        }
+    }
+
+    // --- ECLAIRAGE INCANDESCENT ---
+    Rectangle {
+        anchors.centerIn: parent
+        width: root.rad * 2.8; height: width * 0.55; radius: width / 2
+        y: root.cy - height * 0.65
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#2a1a0a" }
+            GradientStop { position: 0.4; color: "#1a0f05" }
+            GradientStop { position: 1.0; color: "transparent" }
+        }
+        opacity: 0.45 + root.needle * 0.25
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+    }
+
+    // --- CADRAN NOIR MAT ---
+    Rectangle {
+        anchors.fill: parent; anchors.margins: 6; radius: 7
+        color: "#050607"; border.color: "#111215"; border.width: 1
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#0a0b0d" }
+            GradientStop { position: 0.55; color: "#050607" }
+            GradientStop { position: 1.0; color: "#030304" }
+        }
+    }
+
+    // --- BORDURE BISEAUTEE (effet profondeur) ---
+    Canvas {
+        anchors.fill: parent; anchors.margins: 6
+        onPaint: {
+            var ctx = getContext("2d"); ctx.reset();
+            var w = width, h = height;
+            // Bordure externe claire (haut/gauche)
+            ctx.strokeStyle = "#1a1e24";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, h); ctx.lineTo(0, 0); ctx.lineTo(w, 0);
+            ctx.stroke();
+            // Bordure interne sombre (bas/droite)
+            ctx.strokeStyle = "#000000";
+            ctx.beginPath();
+            ctx.moveTo(w, 0); ctx.lineTo(w, h); ctx.lineTo(0, h);
+            ctx.stroke();
+        }
+    }
+
+    // --- GRADUATIONS 100 MICRO-TICKS ---
+    Canvas {
+        anchors.fill: parent; anchors.margins: 6
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        onPaint: {
+            var ctx = getContext("2d"); ctx.reset();
+            var cx = root.cx, cy = root.cy, r = root.rad;
+            var a0 = -142 * Math.PI / 180;
+            var a1 = -38 * Math.PI / 180;
+            var span = 104;
+
+            // Arc fond
+            ctx.lineWidth = 2.5; ctx.strokeStyle = "#2a2f35";
+            ctx.beginPath(); ctx.arc(cx, cy, r, a0, a1, false); ctx.stroke();
+
+            // Zone rouge (derniers 18%)
+            ctx.lineWidth = 4; ctx.strokeStyle = "#5a1518";
+            var ar = (-142 + 0.82 * span) * Math.PI / 180;
+            ctx.beginPath(); ctx.arc(cx, cy, r, ar, a1, false); ctx.stroke();
+
+            // Zone rouge allumee
+            if (root.needle > 0.82) {
+                ctx.lineWidth = 3; ctx.strokeStyle = root.accent;
+                ctx.globalAlpha = 0.3 + (root.needle - 0.82) * 2.5;
+                ctx.beginPath(); ctx.arc(cx, cy, r, ar, a1, false); ctx.stroke();
+                ctx.globalAlpha = 1.0;
+            }
+
+            // 100 micro-graduations
+            for (var i = 0; i <= 100; i++) {
+                var a = (-142 + i * (span / 100)) * Math.PI / 180;
+                var isMajor = i % 10 === 0;
+                var isMid = i % 5 === 0;
+                var inner, outer, lw;
+                if (isMajor) { inner = r - 16; outer = r; lw = 2.2; }
+                else if (isMid) { inner = r - 10; outer = r; lw = 1.4; }
+                else { inner = r - 6; outer = r; lw = 0.7; }
+
+                var col = i >= 82 ? root.accent : (isMajor ? "#7a8590" : (isMid ? "#4a5560" : "#2a3038"));
+                ctx.lineWidth = lw; ctx.strokeStyle = col;
+                ctx.beginPath();
+                ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+                ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
+                ctx.stroke();
+            }
+
+            // Chiffres
+            var labels = [
+                {v: "-48", i: 0}, {v: "-36", i: 10}, {v: "-24", i: 20},
+                {v: "-12", i: 30}, {v: "-6", i: 35}, {v: "-3", i: 40},
+                {v: "0", i: 45}, {v: "+3", i: 50}
+            ];
+            ctx.font = "bold 9px 'DejaVu Sans Mono'"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            for (var li = 0; li < labels.length; li++) {
+                var la = (-142 + labels[li].i * (span / 100)) * Math.PI / 180;
+                var lx = cx + Math.cos(la) * (r - 24);
+                var ly = cy + Math.sin(la) * (r - 24);
+                ctx.fillStyle = "#000000"; ctx.globalAlpha = 0.6;
+                ctx.fillText(labels[li].v, lx + 0.5, ly + 0.5);
+                ctx.globalAlpha = 1.0;
+                ctx.fillStyle = labels[li].i >= 82 ? root.accent : "#8a95a0";
+                ctx.fillText(labels[li].v, lx, ly);
+            }
+
+            // Label canal
+            ctx.font = "bold 10px 'DejaVu Sans Mono'";
+            ctx.fillStyle = "#6a7580";
+            ctx.fillText(root.label, cx, cy - r * 0.35);
+        }
+    }
+
+    // --- DEMI-CERCLE FOND ---
+    Canvas {
+        anchors.fill: parent; anchors.margins: 6; opacity: 0.5
+        onPaint: {
+            var ctx = getContext("2d"); ctx.reset();
+            var cx = root.cx, cy = root.cy, r = root.rad;
+            var g = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r * 0.9);
+            g.addColorStop(0.0, "rgba(15,12,8,0.8)");
+            g.addColorStop(1.0, "rgba(5,5,6,0.2)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 0.88, -142 * Math.PI/180, -38 * Math.PI/180, false);
+            ctx.lineTo(cx, cy); ctx.closePath(); ctx.fill();
+        }
+    }
+
+    // --- MARQUEUR CRETE ---
+    Rectangle {
+        width: 6; height: 6; radius: 3; color: "#ffcc88"; opacity: 0.85
         property real pa: (-142 + root.peak * 104) * Math.PI / 180
         x: root.cx + Math.cos(pa) * root.rad - width / 2
         y: root.cy + Math.sin(pa) * root.rad - height / 2
+        Rectangle {
+            anchors.centerIn: parent; width: 14; height: 14; radius: 7
+            color: "transparent"; border.color: "#ffcc88"; border.width: 1; opacity: 0.4
+        }
     }
 
-    // Aiguille.
+    // --- OMBRE AIGUILLE ---
+    Rectangle {
+        id: needleShadow
+        width: 3; height: root.rad * 0.92
+        x: root.cx - width / 2 + 2; y: root.cy - height + 2
+        radius: 1.5; color: "#000000"; opacity: 0.45; antialiasing: true
+        transform: Rotation {
+            origin.x: needleShadow.width / 2; origin.y: needleShadow.height
+            angle: root.needleAngle
+        }
+    }
+
+    // --- AIGUILLE ---
     Rectangle {
         id: needleRect
-        width: 3
-        height: root.rad * 0.94
-        x: root.cx - width / 2
-        y: root.cy - height
-        radius: 1.5
-        antialiasing: true
+        width: 2.5; height: root.rad * 0.94
+        x: root.cx - width / 2; y: root.cy - height
+        radius: 1.25; antialiasing: true
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#ffe96b" }
+            GradientStop { position: 0.0; color: "#ffe0a0" }
+            GradientStop { position: 0.6; color: "#ff8844" }
             GradientStop { position: 1.0; color: root.accent }
         }
         transform: Rotation {
-            origin.x: needleRect.width / 2
-            origin.y: needleRect.height
-            angle: -52 + root.needle * 104
+            origin.x: needleRect.width / 2; origin.y: needleRect.height
+            angle: root.needleAngle
         }
-    }
-
-    // Moyeu central avec lueur reactive au niveau.
-    Rectangle {
-        width: 14; height: 14; radius: 7
-        x: root.cx - 7; y: root.cy - 7
-        color: root.accent
-        border.color: "#1a0307"
-        border.width: 2
         Rectangle {
-            anchors.centerIn: parent
-            width: parent.width + 12; height: width; radius: width / 2
-            color: "transparent"
-            border.color: root.accent
-            border.width: 2
-            opacity: root.needle * 0.55
+            anchors.left: parent.left; width: 1; height: parent.height
+            color: "#ffffff"; opacity: 0.25; radius: parent.radius
         }
     }
 
-    // Etiquette du canal.
-    Text {
-        x: 13; y: 11
-        text: root.label
-        color: "#d8dde2"
-        font.family: "DejaVu Sans Mono"
-        font.pixelSize: 13
-        font.bold: true
-    }
-    // Lecture du niveau en decibels.
-    Text {
-        anchors {
-            right: parent.right; rightMargin: 13
-            top: parent.top; topMargin: 11
+    // --- GLOW AIGUILLE ---
+    Rectangle {
+        width: 4; height: root.rad * 0.95
+        x: root.cx - width / 2; y: root.cy - height
+        radius: 2; color: root.accent
+        opacity: 0.08 + root.needle * 0.15; antialiasing: true
+        transform: Rotation {
+            origin.x: width / 2; origin.y: height
+            angle: root.needleAngle
         }
+        Behavior on opacity { NumberAnimation { duration: 80 } }
+    }
+
+    // --- MOYEU CENTRAL ---
+    Rectangle {
+        width: 18; height: 18; radius: 9
+        x: root.cx - 9; y: root.cy - 9
+        color: "#0a0b0d"; border.color: "#3a3a3a"; border.width: 1.5
+        Rectangle {
+            anchors.centerIn: parent; width: 12; height: 12; radius: 6
+            color: "#050607"; border.color: root.accent; border.width: 1
+            opacity: 0.6 + root.needle * 0.4
+        }
+        Rectangle {
+            anchors.centerIn: parent; width: parent.width + 16; height: width; radius: width / 2
+            color: "transparent"; border.color: root.accent; border.width: 2
+            opacity: root.needle * 0.35
+        }
+    }
+
+    // --- LISERE VERRE TRES SUBTIL (pas de reflets diagonaux) ---
+    Rectangle {
+        anchors.fill: parent; anchors.margins: 6; radius: 7
+        color: "transparent"
+        // Juste un leger eclat sur le bord superieur
+        Rectangle {
+            anchors { left: parent.left; right: parent.right; top: parent.top }
+            height: 1; color: Qt.rgba(1,1,1,0.03)
+        }
+    }
+
+    // --- AFFICHAGE dB ---
+    Text {
+        anchors { right: parent.right; rightMargin: 14; top: parent.top; topMargin: 11 }
         text: Math.round(-48 + root.needle * 48) + " dB"
-        color: "#ffe96b"
-        font.family: "DejaVu Sans Mono"
-        font.pixelSize: 11
-        font.bold: true
+        color: "#ffcc88"; font.family: "DejaVu Sans Mono"
+        font.pixelSize: 10; font.bold: true; opacity: 0.7
     }
 }

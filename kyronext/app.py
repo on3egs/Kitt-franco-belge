@@ -23,6 +23,8 @@ from .downloader import Downloader
 from .history import History
 from .metrics import SystemMetrics
 from .player import Player
+from .sounds import SoundFx
+
 
 
 class Shell(QObject):
@@ -97,9 +99,10 @@ def main() -> int:
     config = Config()
     deps = DepsChecker()
     downloader = Downloader(history)
-    player = Player()
+    player = Player(config)
     metrics = SystemMetrics()
     shell = Shell()
+    sound_fx = SoundFx()
 
     # Exposition a QML : un singleton par objet, dans le module "Kyronext".
     singletons = {
@@ -110,6 +113,7 @@ def main() -> int:
         "Player": player,
         "Metrics": metrics,
         "Shell": shell,
+        "SoundFx": sound_fx,
     }
     for type_name, instance in singletons.items():
         qmlRegisterSingletonType(

@@ -25,6 +25,9 @@ from .audio import SAMPLE_RATE, PcmReader
 # Retire le suffixe "-<identifiant YouTube 11 caracteres>" du nom de fichier.
 _YT_ID = re.compile(r"-[A-Za-z0-9_-]{11}(?=\.[^.]+$)")
 
+# Nom du flux PulseAudio de lecture : sert a le retrouver pour regler le volume.
+_APP_TAG = "Kironext-Studio"
+
 
 class Player(QObject):
     """Gere la playlist locale, le transport et les niveaux VU temps reel."""
@@ -33,9 +36,11 @@ class Player(QObject):
     stateChanged = pyqtSignal()
     levelsChanged = pyqtSignal()
     positionChanged = pyqtSignal()
+    volumeChanged = pyqtSignal()
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, config, parent: QObject | None = None) -> None:
         super().__init__(parent)
+        self._config = config
         self._tracks: list[Path] = []
         self._index = 0
         self._state = "stopped"           # stopped | playing | paused
@@ -50,6 +55,19 @@ class Player(QObject):
         self._bass = 0.0
         self._mid = 0.0
         self._treble = 0.0
+
+        # Volume de lecture : niveau memorise (0..1), etat de sourdine, et
+        # gain applique aux niveaux publies pour que les vumetres suivent.
+        self._volume = config.volume
+        self._muted = False
+        self._level_gain = self._volume
+
+        # Anti-rebond : applique le volume PulseAudio peu apres le dernier
+        # reglage, pour ne pas relancer pactl a chaque pixel d'un glisser.
+        self._vol_timer = QTimer(self)
+        self._vol_timer.setSingleShot(True)
+        self._vol_timer.setInterval(140)
+        self._vol_timer.timeout.connect(self._apply_volume)
 
         # Timer de progression : avance la barre de lecture et detecte la
         # fin de piste pour enchainer automatiquement.
@@ -79,25 +97,27 @@ class Player(QObject):
             return self._label(self._tracks[self._index])
         return "AUCUNE PISTE"
 
+    # Les niveaux publies sont attenues par le volume (et coupes en sourdine) :
+    # vumetres et fond reactif suivent ainsi ce que l'on entend.
     @pyqtProperty(float, notify=levelsChanged)
     def vuLeft(self) -> float:
-        return self._vu_l
+        return self._vu_l * self._level_gain
 
     @pyqtProperty(float, notify=levelsChanged)
     def vuRight(self) -> float:
-        return self._vu_r
+        return self._vu_r * self._level_gain
 
     @pyqtProperty(float, notify=levelsChanged)
     def bass(self) -> float:
-        return self._bass
+        return self._bass * self._level_gain
 
     @pyqtProperty(float, notify=levelsChanged)
     def mid(self) -> float:
-        return self._mid
+        return self._mid * self._level_gain
 
     @pyqtProperty(float, notify=levelsChanged)
     def treble(self) -> float:
-        return self._treble
+        return self._treble * self._level_gain
 
     @pyqtProperty(float, notify=positionChanged)
     def position(self) -> float:
@@ -106,6 +126,38 @@ class Player(QObject):
     @pyqtProperty(float, notify=positionChanged)
     def duration(self) -> float:
         return self._duration
+
+    @pyqtProperty(float, notify=volumeChanged)
+    def volume(self) -> float:
+        return self._volume
+
+    @pyqtProperty(bool, notify=volumeChanged)
+    def muted(self) -> bool:
+        return self._muted
+
+    # --- volume ---------------------------------------------------------
+    @pyqtSlot(float)
+    def setVolume(self, value: float) -> None:
+        """Regle le volume de lecture (0..1) sans recreer le flux ffmpeg."""
+        value = max(0.0, min(1.0, value))
+        if value == self._volume and not self._muted:
+            return
+        self._volume = value
+        if value > 0.0:
+            self._muted = False
+        self._level_gain = self._volume
+        self.volumeChanged.emit()
+        self.levelsChanged.emit()         # vumetres et fond suivent le volume
+        self._vol_timer.start()           # application audio differee (anti-rebond)
+
+    @pyqtSlot()
+    def toggleMute(self) -> None:
+        """Coupe ou retablit le son ; le niveau regle reste memorise."""
+        self._muted = not self._muted
+        self._level_gain = 0.0 if self._muted else self._volume
+        self.volumeChanged.emit()
+        self.levelsChanged.emit()
+        self._apply_volume()              # immediat : c'est un clic, pas un glisser
 
     # --- helpers --------------------------------------------------------
     def _label(self, path: Path) -> str:
@@ -226,8 +278,9 @@ class Player(QObject):
         cmd = [
             ffmpeg, "-hide_banner", "-nostdin", "-loglevel", "error",
             "-ss", f"{max(0.0, offset):.2f}", "-i", str(track),
-            # Sortie 1 : son audible via PulseAudio.
-            "-vn", "-f", "pulse", "Kyronext-Studio",
+            # Sortie 1 : son audible via PulseAudio. Le flux est nomme pour
+            # pouvoir regler son volume a chaud (pactl), sans relancer ffmpeg.
+            "-vn", "-f", "pulse", "-name", _APP_TAG, "default",
             # Sortie 2 : PCM brut sur stdout, lu par l'analyseur VU.
             "-vn", "-ac", "2", "-ar", str(SAMPLE_RATE), "-f", "f32le", "pipe:1",
         ]
@@ -244,6 +297,9 @@ class Player(QObject):
         self._offset = offset
         self._state = "playing"
         self.stateChanged.emit()
+        # Le flux PulseAudio apparait avec un leger delai : on lui applique
+        # alors le volume memorise.
+        QTimer.singleShot(250, self._apply_volume)
 
     def _kill(self) -> None:
         """Arrete l'analyseur puis le processus ffmpeg en cours."""
@@ -304,3 +360,45 @@ class Player(QObject):
             return max(0.0, float(result.stdout.strip()))
         except (OSError, ValueError, subprocess.SubprocessError):
             return 0.0
+
+    # --- volume PulseAudio ----------------------------------------------
+    def _apply_volume(self, retry: int = 0) -> None:
+        """Applique le volume au flux PulseAudio en cours, sans recreer ffmpeg."""
+        if retry == 0:
+            self._config.volume = self._volume       # memorise le reglage
+        pactl = shutil.which("pactl")
+        if pactl is None:
+            return
+        index = self._sink_input_index(pactl)
+        if index is None:
+            # Le flux n'est pas encore enregistre aupres de PulseAudio :
+            # on reessaie quelques fois pendant qu'une piste demarre.
+            if retry < 4 and self._state == "playing":
+                QTimer.singleShot(300, lambda: self._apply_volume(retry + 1))
+            return
+        percent = 0 if self._muted else round(self._volume * 100)
+        try:
+            subprocess.run(
+                [pactl, "set-sink-input-volume", index, f"{percent}%"],
+                capture_output=True, timeout=3,
+            )
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    def _sink_input_index(self, pactl: str) -> str | None:
+        """Index PulseAudio du flux de lecture de l'application (None si absent)."""
+        try:
+            listing = subprocess.run(
+                [pactl, "list", "sink-inputs"],
+                capture_output=True, text=True, timeout=3,
+            ).stdout
+        except (OSError, subprocess.SubprocessError):
+            return None
+        index: str | None = None
+        for line in listing.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("Sink Input #"):
+                index = stripped[len("Sink Input #"):].strip()
+            elif index is not None and _APP_TAG in stripped:
+                return index
+        return None
