@@ -32,6 +32,17 @@ ApplicationWindow {
         lite: Config.liteMode
     }
 
+    // KITT en fond subtil (grand, centre, 6% opacite)
+    Image {
+        anchors.centerIn: parent
+        width: parent.width * 0.82
+        height: parent.height * 0.65
+        source: "../assets/kitt.png"
+        fillMode: Image.PreserveAspectFit
+        opacity: 0.10
+        visible: !Config.liteMode
+    }
+
     ListModel { id: logModel }
     function logAppend(line) {
         logModel.append({ "line": line });
