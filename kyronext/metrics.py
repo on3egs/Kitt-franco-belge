@@ -125,7 +125,7 @@ class SystemMetrics(QObject):
         if tegrastats:
             try:
                 proc = subprocess.Popen(
-                    [tegrastats, "--interval", "1000"],
+                    [tegrastats, "--interval", "500"],
                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
                 )
             except OSError:

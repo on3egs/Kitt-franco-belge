@@ -22,6 +22,17 @@ Item {
         }
     }
 
+    // KITT filigrane (visible entre les panneaux)
+    Image {
+        anchors.centerIn: parent
+        width: parent.width * 0.75
+        height: parent.height * 0.55
+        source: "../assets/kitt.png"
+        fillMode: Image.PreserveAspectFit
+        opacity: 0.12
+        visible: !bg.lite
+    }
+
     // Lueur radiale centrale ambree (eclairage studio)
     Canvas {
         id: radialGlow

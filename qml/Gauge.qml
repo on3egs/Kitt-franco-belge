@@ -29,7 +29,7 @@ Item {
 
     property real frac: 0.0
     Behavior on frac {
-        SpringAnimation { spring: 3.0; damping: 0.34; mass: 0.6; epsilon: 0.002 }
+        SpringAnimation { spring: 4.5; damping: 0.5; mass: 0.4; epsilon: 0.002 }
     }
 
     readonly property real arcStart: 130

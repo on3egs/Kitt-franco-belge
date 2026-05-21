@@ -18,21 +18,29 @@ Item {
     readonly property real cy: height * 0.86
     readonly property real rad: Math.min(width * 0.38, height * 0.56)
 
-    property real needle: 0.0
-    onLevelChanged: needle = Math.max(0, Math.min(1, level))
-    Behavior on needle {
-        SpringAnimation { spring: 5.0; damping: 0.22; mass: 0.45; epsilon: 0.0005 }
-    }
+    // Cible brute issue de l'analyse audio (0..1).
+    property real target: 0.0
+    onLevelChanged: target = Math.max(0, Math.min(1, level))
 
+    // Position animee de l'aiguille. Balistique ASYMETRIQUE, facon vumetre
+    // reel : attaque rapide (~70 ms : l'aiguille claque sur le beat), retombee
+    // plus douce (~270 ms : elle redescend entre deux beats) -> elle suit le
+    // tempo. L'ancien SpringAnimation avait une periode propre de ~1,9 s :
+    // bien trop lent pour un rythme musical, l'aiguille flottait au lieu de
+    // pulser.
+    property real needle: 0.0
     property real microJitter: 0.0
     Timer {
-        interval: 12; running: true; repeat: true
+        interval: 16; running: true; repeat: true   // ~60 images/s
         onTriggered: {
-            if (root.needle > 0.01) {
-                root.microJitter = (Math.random() - 0.5) * 0.008 * root.needle;
+            var diff = root.target - root.needle;
+            if (Math.abs(diff) < 0.0006) {
+                root.needle = root.target;
             } else {
-                root.microJitter = 0.0;
+                root.needle += diff * (diff > 0 ? 0.50 : 0.16);
             }
+            root.microJitter = root.needle > 0.01
+                ? (Math.random() - 0.5) * 0.006 * root.needle : 0.0;
         }
     }
 

@@ -32,17 +32,6 @@ ApplicationWindow {
         lite: Config.liteMode
     }
 
-    // KITT en fond subtil (grand, centre, 6% opacite)
-    Image {
-        anchors.centerIn: parent
-        width: parent.width * 0.82
-        height: parent.height * 0.65
-        source: "../assets/kitt.png"
-        fillMode: Image.PreserveAspectFit
-        opacity: 0.10
-        visible: !Config.liteMode
-    }
-
     ListModel { id: logModel }
     function logAppend(line) {
         logModel.append({ "line": line });
@@ -195,9 +184,9 @@ ApplicationWindow {
                     ChipToggle { label: "LITE"; active: Config.liteMode; onToggled: Config.liteMode = !Config.liteMode }
                     Image {
                         source: "../assets/kitt.png"
-                        fillMode: Image.PreserveAspectFit; height: 32
+                        fillMode: Image.PreserveAspectFit; height: 38
                         anchors.verticalCenter: parent.verticalCenter
-                        opacity: 0.9
+                        opacity: 0.95
                     }
                 }
             }
@@ -266,6 +255,14 @@ ApplicationWindow {
                             }
                         }
                     }
+                    // KITT dans le fond du panel TRANSFER
+                    Image {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: parent.width * 0.82
+                        fillMode: Image.PreserveAspectFit
+                        source: "../assets/kitt.png"
+                        opacity: 0.18
+                    }
                 }
             }
             Panel {
@@ -310,6 +307,12 @@ ApplicationWindow {
                     Layout.fillWidth: true; Layout.fillHeight: true
                     Rectangle {
                         Layout.fillWidth: true; Layout.fillHeight: true; color: "#06070a"; border.color: "#352026"
+                        Image {
+                            anchors.fill: parent; anchors.margins: 8
+                            fillMode: Image.PreserveAspectFit
+                            source: "../assets/kitt.png"
+                            opacity: 0.06
+                        }
                         ListView {
                             id: playlistView
                             anchors.fill: parent; anchors.margins: 4; clip: true
