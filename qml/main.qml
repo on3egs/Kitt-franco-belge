@@ -79,43 +79,43 @@ ApplicationWindow {
         Column {
             id: col
             width: scroller.availableWidth
-            spacing: 8
-            topPadding: 12
-            bottomPadding: 16
+            spacing: 6
+            topPadding: 10
+            bottomPadding: 10
 
             // ---------- EN-TETE ----------
             Item {
                 x: 14
                 width: col.width - 28
-                height: 78
+                height: 64
 
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 2
+                    spacing: 1
                     Row {
                         Text {
                             text: "KYRONEXT"
                             color: win.cAccent
-                            font.family: win.mono; font.pixelSize: 31; font.bold: true
+                            font.family: win.mono; font.pixelSize: 28; font.bold: true
                         }
                         Text {
                             text: " STUDIO"
                             color: "#ff8088"
-                            font.family: win.mono; font.pixelSize: 31; font.bold: true
+                            font.family: win.mono; font.pixelSize: 28; font.bold: true
                         }
                     }
-                    Rectangle { width: 318; height: 1; color: "#6e0a12" }
+                    Rectangle { width: 280; height: 1; color: "#6e0a12" }
                     Text {
                         text: "by Manix    -    KITT FRANCO-BELGE    -    SYSOP 1990"
                         color: win.cTextDim
-                        font.family: win.mono; font.pixelSize: 10; font.bold: true
+                        font.family: win.mono; font.pixelSize: 9; font.bold: true
                     }
                 }
 
                 Row {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 8
+                    spacing: 6
                     ChipToggle {
                         anchors.verticalCenter: parent.verticalCenter
                         label: "AUTO-UPDATE"
@@ -135,8 +135,8 @@ ApplicationWindow {
                         source: Shell.phoenixSource
                         visible: Shell.phoenixSource !== ""
                         fillMode: Image.PreserveAspectFit
-                        sourceSize.height: 76
-                        height: 76
+                        sourceSize.height: 64
+                        height: 64
                         opacity: 0.9
                     }
                 }
@@ -147,7 +147,7 @@ ApplicationWindow {
                 id: scannerBar
                 x: 14
                 width: col.width - 28
-                height: 7
+                height: 5
                 radius: 3.5
                 color: "#0a0305"
                 border.color: "#1c0609"
@@ -187,28 +187,28 @@ ApplicationWindow {
 
                 Column {
                     width: parent.width
-                    spacing: 8
+                    spacing: 6
 
                     // Banniere d'aide aux dependances manquantes.
                     Rectangle {
                         id: depBanner
                         visible: Deps.missing.length > 0
                         width: parent.width
-                        height: visible ? 42 : 0
-                        radius: 5
+                        height: visible ? 32 : 0
+                        radius: 4
                         color: "#1c0c0e"
                         border.color: win.cAccent
                         border.width: 1
 
                         Text {
                             anchors {
-                                left: parent.left; leftMargin: 12
+                                left: parent.left; leftMargin: 10
                                 right: instBtn.left; rightMargin: 10
                                 verticalCenter: parent.verticalCenter
                             }
                             text: Deps.hint
                             color: "#ffb3ba"
-                            font.family: win.mono; font.pixelSize: 9; font.bold: true
+                            font.family: win.mono; font.pixelSize: 8; font.bold: true
                             wrapMode: Text.WordWrap
                             maximumLineCount: 2
                             elide: Text.ElideRight
@@ -216,10 +216,10 @@ ApplicationWindow {
                         NeonButton {
                             id: instBtn
                             anchors {
-                                right: parent.right; rightMargin: 8
+                                right: parent.right; rightMargin: 6
                                 verticalCenter: parent.verticalCenter
                             }
-                            width: 112; height: 28
+                            width: 100; height: 24
                             label: "INSTALLER"
                             accent: win.cAccent
                             visible: Deps.missing.indexOf("yt-dlp") >= 0
@@ -230,18 +230,18 @@ ApplicationWindow {
                     // Ligne de saisie d'URL.
                     Row {
                         width: parent.width
-                        spacing: 8
+                        spacing: 6
                         TextField {
                             id: urlField
-                            width: parent.width - 130
-                            height: 44
+                            width: parent.width - 110
+                            height: 34
                             placeholderText: "https://www.youtube.com/watch?v=..."
                             placeholderTextColor: "#55606a"
                             color: "#ffffff"
-                            font.family: win.mono; font.pixelSize: 12
+                            font.family: win.mono; font.pixelSize: 11
                             selectByMouse: true
                             verticalAlignment: TextInput.AlignVCenter
-                            leftPadding: 12
+                            leftPadding: 10
                             background: Rectangle {
                                 color: "#06070a"
                                 radius: 4
@@ -252,17 +252,17 @@ ApplicationWindow {
                             Keys.onReturnPressed: dlButton.clicked()
                         }
                         NeonButton {
-                            width: 120; height: 44
+                            width: 104; height: 34
                             label: "COLLER"
                             accent: win.cCyan
                             onClicked: urlField.text = Shell.clipboard()
                         }
                     }
 
-                    // Options de telechargement.
+                    // Options et Actions.
                     Row {
                         width: parent.width
-                        spacing: 8
+                        spacing: 6
                         ChipToggle {
                             label: "VIDEO MP4"
                             accent: win.cAccent
@@ -276,58 +276,40 @@ ApplicationWindow {
                             onToggled: Config.mode = "mp3"
                         }
                         ChipToggle {
-                            label: "PLAYLIST COMPLETE"
+                            label: "PLAYLIST"
                             accent: win.cCyan
                             active: Config.playlist
                             onToggled: Config.playlist = !Config.playlist
                         }
-                    }
 
-                    // Boutons d'action.
-                    Item {
-                        width: parent.width
-                        height: 44
                         Row {
-                            anchors.left: parent.left
-                            spacing: 8
+                            anchors.right: parent.right
+                            spacing: 6
                             NeonButton {
                                 id: dlButton
-                                width: 170; height: 44
-                                label: "DOWNLOAD"
-                                accent: win.cAccent
-                                enabled: !Downloader.busy
+                                width: 140; height: 34
+                                label: Downloader.busy ? "ANNULER" : "START"
+                                accent: Downloader.busy ? win.cAccent : win.cGreen
                                 onClicked: {
-                                    var u = urlField.text.trim();
-                                    if (u.length > 0)
-                                        Downloader.start(u, Config.mode,
-                                                         Config.playlist);
+                                    if (Downloader.busy) {
+                                        Downloader.cancel()
+                                    } else {
+                                        var u = urlField.text.trim();
+                                        if (u.length > 0)
+                                            Downloader.start(u, Config.mode, Config.playlist);
+                                    }
                                 }
                             }
                             NeonButton {
-                                width: 120; height: 44
-                                label: "ABORT"
-                                accent: "#9a2530"
-                                enabled: Downloader.busy
-                                onClicked: Downloader.cancel()
-                            }
-                        }
-                        Row {
-                            anchors.right: parent.right
-                            spacing: 8
-                            NeonButton {
-                                width: 128; height: 44
-                                label: "MEDIA DIR"
+                                width: 110; height: 34
+                                label: "DOSSIER"
                                 accent: win.cCyan
                                 onClicked: Shell.openMediaDir()
                             }
-                            NeonButton {
-                                width: 150; height: 44
-                                label: "OPEN LAST"
-                                accent: win.cCyan
-                                onClicked: Shell.openLast()
-                            }
                         }
                     }
+                }
+            }
                 }
             }
 
@@ -340,18 +322,18 @@ ApplicationWindow {
 
                 Column {
                     width: parent.width
-                    spacing: 8
+                    spacing: 6
 
                     Text {
                         text: Downloader.status
                         color: win.cAccent
-                        font.family: win.mono; font.pixelSize: 12; font.bold: true
+                        font.family: win.mono; font.pixelSize: 11; font.bold: true
                     }
 
                     // Barre de progression du telechargement.
                     Rectangle {
                         width: parent.width
-                        height: 24
+                        height: 20
                         radius: 4
                         color: "#070809"
                         border.color: "#341017"
@@ -378,7 +360,7 @@ ApplicationWindow {
                             anchors.centerIn: parent
                             text: Downloader.percent.toFixed(1) + " %"
                             color: "#ffffff"
-                            font.family: win.mono; font.pixelSize: 11; font.bold: true
+                            font.family: win.mono; font.pixelSize: 10; font.bold: true
                         }
                     }
 
@@ -386,19 +368,19 @@ ApplicationWindow {
                     Row {
                         id: readoutRow
                         width: parent.width
-                        spacing: 8
+                        spacing: 6
                         Repeater {
                             model: 4
                             delegate: Rectangle {
-                                width: (readoutRow.width - 24) / 4
-                                height: 52
+                                width: (readoutRow.width - 18) / 4
+                                height: 42
                                 radius: 4
                                 color: "#07080a"
                                 border.color: "#352026"
                                 border.width: 1
                                 Column {
                                     anchors.centerIn: parent
-                                    spacing: 3
+                                    spacing: 2
                                     Text {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: ["PROGRESS", "SPEED", "ETA", "SIZE"][index]
@@ -415,7 +397,7 @@ ApplicationWindow {
                                               : Downloader.size
                                         color: win.cAccentSoft
                                         font.family: win.mono
-                                        font.pixelSize: 13; font.bold: true
+                                        font.pixelSize: 11; font.bold: true
                                     }
                                 }
                             }
@@ -433,22 +415,22 @@ ApplicationWindow {
 
                 Column {
                     width: parent.width
-                    spacing: 8
+                    spacing: 6
 
                     Text {
                         text: "TELEMETRIE SYSTEME TEMPS REEL"
                         color: win.cTextDim
-                        font.family: win.mono; font.pixelSize: 9; font.bold: true
+                        font.family: win.mono; font.pixelSize: 8; font.bold: true
                     }
 
                     // Les quatre compteurs independants.
                     RowLayout {
                         width: parent.width
-                        height: 158
-                        spacing: 8
+                        height: 130
+                        spacing: 6
                         Gauge {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 158
+                            Layout.preferredHeight: 130
                             label: "UPLOAD"
                             unit: "Mo/s"
                             value: Metrics.netUp
@@ -458,7 +440,7 @@ ApplicationWindow {
                         }
                         Gauge {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 158
+                            Layout.preferredHeight: 130
                             label: "DOWNLOAD"
                             unit: "Mo/s"
                             value: Metrics.netDown
@@ -468,7 +450,7 @@ ApplicationWindow {
                         }
                         Gauge {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 158
+                            Layout.preferredHeight: 130
                             label: "PUISSANCE"
                             unit: "WATTS"
                             value: Metrics.power
@@ -478,7 +460,7 @@ ApplicationWindow {
                         }
                         Gauge {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 158
+                            Layout.preferredHeight: 130
                             label: "GPU"
                             unit: "%"
                             value: Metrics.gpu
@@ -492,26 +474,16 @@ ApplicationWindow {
                     Text {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
-                        text: "GPU " + Metrics.temp.toFixed(0) + " C     "
-                              + "CPU " + Metrics.cpu.toFixed(0) + " %     "
-                              + "RAM " + Metrics.ram.toFixed(0) + " %"
+                        text: "GPU " + Metrics.temp.toFixed(0) + "°C   CPU " + Metrics.cpu.toFixed(0) + "%   RAM " + Metrics.ram.toFixed(0) + "%"
                         color: win.cTextDim
-                        font.family: win.mono; font.pixelSize: 9; font.bold: true
-                    }
-
-                    Rectangle { width: parent.width; height: 1; color: "#2a0c12" }
-
-                    Text {
-                        text: "VUMETRES AUDIO  -  CANAL L / R  (analyse PCM temps reel)"
-                        color: win.cTextDim
-                        font.family: win.mono; font.pixelSize: 9; font.bold: true
+                        font.family: win.mono; font.pixelSize: 8; font.bold: true
                     }
 
                     // Les deux vumetres analogiques.
                     RowLayout {
                         width: parent.width
-                        height: 212
-                        spacing: 14
+                        height: 140
+                        spacing: 10
                         VuMeter {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
@@ -567,7 +539,7 @@ ApplicationWindow {
                     // Liste des pistes du dossier media/.
                     Rectangle {
                         width: parent.width
-                        height: 150
+                        height: 120
                         radius: 4
                         color: "#06070a"
                         border.color: "#352026"
@@ -580,7 +552,7 @@ ApplicationWindow {
                             model: Player.tracks
                             delegate: Rectangle {
                                 width: playlistView.width
-                                height: 24
+                                height: 22
                                 color: index === Player.index ? "#2a0b10"
                                        : (pma.containsMouse ? "#15181d"
                                           : "transparent")
@@ -596,7 +568,7 @@ ApplicationWindow {
                                         color: index === Player.index
                                                ? win.cAccent : "#5f6770"
                                         font.family: win.mono
-                                        font.pixelSize: 9; font.bold: true
+                                        font.pixelSize: 8; font.bold: true
                                     }
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
@@ -604,7 +576,7 @@ ApplicationWindow {
                                         text: modelData
                                         color: index === Player.index
                                                ? "#ffffff" : "#aab0b7"
-                                        font.family: win.mono; font.pixelSize: 9
+                                        font.family: win.mono; font.pixelSize: 8
                                         elide: Text.ElideRight
                                     }
                                 }
@@ -623,40 +595,40 @@ ApplicationWindow {
                             visible: Player.tracks.length === 0
                             text: "AUCUN FICHIER AUDIO DANS media/"
                             color: "#5f6770"
-                            font.family: win.mono; font.pixelSize: 10; font.bold: true
+                            font.family: win.mono; font.pixelSize: 9; font.bold: true
                         }
                     }
 
                     // Transport.
                     Row {
                         width: parent.width
-                        spacing: 8
+                        spacing: 6
                         NeonButton {
-                            width: 104; height: 40
+                            width: 90; height: 34
                             label: "|< PREV"
                             accent: win.cAmber
                             onClicked: Player.previous()
                         }
                         NeonButton {
-                            width: 132; height: 40
+                            width: 110; height: 34
                             label: Player.state === "playing" ? "|| PAUSE" : "> PLAY"
                             accent: win.cGreen
                             onClicked: Player.toggle()
                         }
                         NeonButton {
-                            width: 104; height: 40
+                            width: 90; height: 34
                             label: "[ ] STOP"
                             accent: "#9a2530"
                             onClicked: Player.stop()
                         }
                         NeonButton {
-                            width: 104; height: 40
+                            width: 90; height: 34
                             label: "NEXT >|"
                             accent: win.cAmber
                             onClicked: Player.next()
                         }
                         NeonButton {
-                            width: 116; height: 40
+                            width: 100; height: 34
                             label: "REFRESH"
                             accent: win.cCyan
                             onClicked: Player.scan()
@@ -671,8 +643,8 @@ ApplicationWindow {
                             id: seekBar
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 140
-                            height: 20
+                            width: parent.width - 120
+                            height: 18
                             radius: 4
                             color: "#06070a"
                             border.color: "#341017"
@@ -730,11 +702,11 @@ ApplicationWindow {
 
                 Column {
                     width: parent.width
-                    spacing: 8
+                    spacing: 6
 
                     Rectangle {
                         width: parent.width
-                        height: 156
+                        height: 120
                         radius: 4
                         color: "#06070a"
                         border.color: "#352026"
@@ -742,7 +714,7 @@ ApplicationWindow {
                         ListView {
                             id: logView
                             anchors.fill: parent
-                            anchors.margins: 6
+                            anchors.margins: 4
                             clip: true
                             model: logModel
                             delegate: Text {
@@ -752,7 +724,7 @@ ApplicationWindow {
                                        ? "#ff6b76"
                                        : model.line.indexOf("[OK]") >= 0
                                          ? "#7fe39a" : "#c2c7cd"
-                                font.family: win.mono; font.pixelSize: 9
+                                font.family: win.mono; font.pixelSize: 8
                                 wrapMode: Text.WrapAnywhere
                             }
                             ScrollBar.vertical: ScrollBar { }
@@ -761,18 +733,18 @@ ApplicationWindow {
 
                     Item {
                         width: parent.width
-                        height: 16
+                        height: 14
                         Text {
                             anchors.left: parent.left
                             text: "HISTORIQUE DES URL"
                             color: win.cAccentSoft
-                            font.family: win.mono; font.pixelSize: 9; font.bold: true
+                            font.family: win.mono; font.pixelSize: 8; font.bold: true
                         }
                         Text {
                             anchors.right: parent.right
                             text: "EFFACER JOURNAL"
                             color: win.cTextDim
-                            font.family: win.mono; font.pixelSize: 9; font.bold: true
+                            font.family: win.mono; font.pixelSize: 8; font.bold: true
                             MouseArea {
                                 anchors.fill: parent
                                 anchors.margins: -4
@@ -784,7 +756,7 @@ ApplicationWindow {
 
                     Rectangle {
                         width: parent.width
-                        height: 96
+                        height: 70
                         radius: 4
                         color: "#06070a"
                         border.color: "#352026"
@@ -797,7 +769,7 @@ ApplicationWindow {
                             model: History.items
                             delegate: Rectangle {
                                 width: histView.width
-                                height: 22
+                                height: 20
                                 color: hma.containsMouse ? "#15181d" : "transparent"
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
@@ -806,7 +778,7 @@ ApplicationWindow {
                                     width: parent.width - 16
                                     text: modelData
                                     color: "#9aa3ab"
-                                    font.family: win.mono; font.pixelSize: 9
+                                    font.family: win.mono; font.pixelSize: 8
                                     elide: Text.ElideRight
                                 }
                                 MouseArea {
