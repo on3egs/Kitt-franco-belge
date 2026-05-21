@@ -35,7 +35,7 @@ et cohérente**, puis teste (section 4). Sinon, n'y touche pas.
 
 ## 2. Identité & état du projet
 
-Lecteur / téléchargeur YouTube pour Linux (cible : NVIDIA Jetson, Ubuntu 22.04
+Lecteur / téléchargeur media pour Linux (cible : NVIDIA Jetson, Ubuntu 22.04
 aarch64), interface « media center » futuriste thème KITT/KARR. Auteur : Manix.
 Développé en collaboration Manix + IA. Version `2.0.0`.
 
@@ -54,7 +54,7 @@ interface déclarative en QML. ~4500 lignes.
 - **psutil** — débit réseau / CPU.
 - Outils système externes : **ffmpeg** + **ffprobe** (lecture + analyse audio),
   **yt-dlp** (téléchargement), **pactl**/**PulseAudio** (volume), **ffplay**
-  (effets sonores), **node** (optionnel, fiabilise YouTube), **tegrastats**
+  (effets sonores), **node** (optionnel, fiabilise la compatibilite), **tegrastats**
   (Jetson, métriques GPU/temp/puissance).
 
 ---

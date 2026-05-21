@@ -11,12 +11,12 @@ Item {
     property string label: "L"
     property color accent: "#ff3348"
 
-    implicitWidth: 260
+    implicitWidth: 280
     implicitHeight: 230
 
     readonly property real cx: width / 2
-    readonly property real cy: height * 0.78
-    readonly property real rad: Math.min(width * 0.46, height * 0.70)
+    readonly property real cy: height * 0.74 + 20
+    readonly property real rad: Math.min(width * 0.54, height * 0.76)
 
     // Cible brute issue de l'analyse audio (0..1).
     property real target: 0.0
@@ -160,7 +160,7 @@ Item {
                 {v: "-12", i: 30}, {v: "-6", i: 35}, {v: "-3", i: 40},
                 {v: "0", i: 45}, {v: "+3", i: 50}
             ];
-            ctx.font = "bold 9px 'DejaVu Sans Mono'"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.font = "bold 8px 'DejaVu Sans Mono'"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             for (var li = 0; li < labels.length; li++) {
                 var la = (-142 + labels[li].i * (span / 100)) * Math.PI / 180;
                 var lx = cx + Math.cos(la) * (r - 24);
@@ -210,33 +210,30 @@ Item {
     // --- OMBRE AIGUILLE ---
     Rectangle {
         id: needleShadow
-        width: 3; height: root.rad * 0.92
-        x: root.cx - width / 2 + 2; y: root.cy - height + 2
-        radius: 1.5; color: "#000000"; opacity: 0.45; antialiasing: true
+        width: 1.2; height: root.rad * 0.90
+        x: root.cx - width / 2 + 1.5; y: root.cy - height + 1.5
+        radius: 0.6; color: "#000000"; opacity: 0.35; antialiasing: true
         transform: Rotation {
             origin.x: needleShadow.width / 2; origin.y: needleShadow.height
             angle: root.needleAngle
         }
     }
 
-    // --- AIGUILLE ---
+    // --- AIGUILLE (fil de métal fin, style VU réel) ---
     Rectangle {
         id: needleRect
-        width: 2.5; height: root.rad * 0.94
+        width: 1.2; height: root.rad * 0.92
         x: root.cx - width / 2; y: root.cy - height
-        radius: 1.25; antialiasing: true
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#ffe0a0" }
-            GradientStop { position: 0.6; color: "#ff8844" }
-            GradientStop { position: 1.0; color: root.accent }
-        }
+        radius: 0.6; antialiasing: true
+        color: "#c0a080"
         transform: Rotation {
             origin.x: needleRect.width / 2; origin.y: needleRect.height
             angle: root.needleAngle
         }
+        // Reflet léger sur le bord
         Rectangle {
-            anchors.left: parent.left; width: 1; height: parent.height
-            color: "#ffffff"; opacity: 0.25; radius: parent.radius
+            anchors.left: parent.left; width: 0.5; height: parent.height
+            color: "#ffffff"; opacity: 0.3; radius: parent.radius
         }
     }
 

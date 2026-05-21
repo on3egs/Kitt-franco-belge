@@ -1,9 +1,9 @@
 """Verification des dependances externes et aide a leur installation.
 
 Kyronext-Studio s'appuie sur trois outils en ligne de commande :
-  - yt-dlp  : telechargement YouTube (installable sans droits admin via pip) ;
+  - yt-dlp  : telechargement media (installable sans droits admin via pip) ;
   - ffmpeg  : conversion audio/video et lecture (paquet systeme) ;
-  - node    : runtime JavaScript ameliorant la compatibilite YouTube (optionnel).
+  - node    : runtime JavaScript ameliorant la compatibilite (optionnel).
 """
 
 from __future__ import annotations
@@ -77,7 +77,7 @@ class DepsChecker(QObject):
     def autoUpdate(self) -> None:
         """Met a jour yt-dlp silencieusement au demarrage (si deja installe).
 
-        yt-dlp doit suivre les changements frequents de YouTube : une mise a
+        yt-dlp doit suivre les changements frequents de la plateforme : une mise a
         jour automatique garde les telechargements fiables. Sans droits admin
         (pip --user), donc sans risque pour le systeme.
         """

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Kyronext-Studio - telechargement YouTube en ligne de commande.
+# Kyronext-Studio - telechargement media en ligne de commande.
 #
 # Usage :
-#   ./scripts/kyronext_media.sh "https://www.youtube.com/watch?v=..."
+#   ./scripts/kyronext_media.sh "<URL du media>"
 #   ./scripts/kyronext_media.sh "URL" "nom_de_sortie"
 #
 # Telecharge la video MP4 (meilleure qualite) et en extrait un MP3, dans media/.
@@ -34,7 +34,7 @@ require yt-dlp
 require ffmpeg
 mkdir -p "$MEDIA_DIR"
 
-# node ameliore la compatibilite YouTube de yt-dlp mais reste optionnel.
+# node ameliore la compatibilite de yt-dlp mais reste optionnel.
 NODE_ARGS=()
 if command -v node >/dev/null 2>&1; then
   NODE_ARGS=(--js-runtimes "node:$(command -v node)" --remote-components ejs:github)

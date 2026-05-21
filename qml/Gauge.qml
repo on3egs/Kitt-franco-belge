@@ -20,25 +20,45 @@ Item {
 
     property real observedMax: 1.0
     readonly property real scaleMax: autoScale ? Math.max(observedMax, 0.5) : maxValue
-    onValueChanged: {
-        if (autoScale && value * 1.2 > observedMax)
-            observedMax = value * 1.2;
-        frac = Math.max(0, Math.min(1, value / scaleMax));
-    }
-    onScaleMaxChanged: frac = Math.max(0, Math.min(1, value / scaleMax))
-
-    property real frac: 0.0
-    Behavior on frac {
-        NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
-    }
-
     readonly property real arcStart: 130
     readonly property real arcSpan: 280
 
     // --- Centre et rayon unifies pour tous les elements circulaires ---
     readonly property real cxv: width / 2
     readonly property real cyv: height / 2
-    readonly property real rv: Math.min(width, height) / 2 - 14
+    readonly property real rv: Math.max(6, Math.min(width, height) / 2 - 14)
+
+    // frac : explicitement pilotée par value, pas de binding implicite qui rate
+    property real frac: 0.0
+    Behavior on frac {
+        NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+    }
+
+    function _updateFrac() {
+        var v = Number(root.value);
+        var sm = Number(root.scaleMax);
+        if (isNaN(v) || isNaN(sm) || sm <= 0) {
+            root.frac = 0;
+            return;
+        }
+        var f = Math.max(0, Math.min(1, v / sm));
+        if (Math.abs(f - root.frac) > 0.0005) {
+            root.frac = f;
+        }
+    }
+
+    onValueChanged: {
+        if (autoScale && value * 1.2 > observedMax)
+            observedMax = value * 1.2;
+        _updateFrac();
+    }
+    onScaleMaxChanged: _updateFrac()
+    Component.onCompleted: _updateFrac()
+
+    Timer {
+        interval: 500; running: true; repeat: true
+        onTriggered: root._updateFrac()
+    }
 
     // === CHASSIS METAL ===
     Rectangle {
@@ -181,18 +201,22 @@ Item {
         radius: 0.75; color: "#000000"; opacity: 0.2; antialiasing: true
         transform: Rotation {
             origin.x: needleShadow.width / 2; origin.y: needleShadow.height
-            angle: root.arcStart + root.frac * root.arcSpan
+            // +90 : l'aiguille au repos pointe vers le haut (midi),
+            // arcStart=130 est dans le repere Canvas (0 deg = 3h).
+            angle: root.arcStart + root.frac * root.arcSpan + 90
         }
     }
     // Aiguille rouge
     Rectangle {
         id: needle
-        width: 1.8; height: root.rv + 10
+        width: 1.8; height: root.rv + 2
         x: root.cxv - width / 2; y: root.cyv - height
         radius: 0.9; color: "#cc2020"; antialiasing: true
         transform: Rotation {
             origin.x: needle.width / 2; origin.y: needle.height
-            angle: root.arcStart + root.frac * root.arcSpan
+            // +90 : l'aiguille au repos pointe vers le haut (midi),
+            // arcStart=130 est dans le repere Canvas (0 deg = 3h).
+            angle: root.arcStart + root.frac * root.arcSpan + 90
         }
     }
 

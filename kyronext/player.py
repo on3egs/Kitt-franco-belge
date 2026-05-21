@@ -22,11 +22,11 @@ from PyQt5.QtCore import QObject, QTimer, pyqtProperty, pyqtSignal, pyqtSlot
 from . import paths
 from .audio import SAMPLE_RATE, PcmReader
 
-# Retire le suffixe "-<identifiant YouTube 11 caracteres>" du nom de fichier.
+# Retire le suffixe "-<identifiant 11 caracteres>" du nom de fichier.
 _YT_ID = re.compile(r"-[A-Za-z0-9_-]{11}(?=\.[^.]+$)")
 
 # Nom du flux PulseAudio de lecture : sert a le retrouver pour regler le volume.
-_APP_TAG = "Kironext-Studio"
+_APP_TAG = "Kyronext-Studio"
 
 
 class Player(QObject):
@@ -161,7 +161,7 @@ class Player(QObject):
 
     # --- helpers --------------------------------------------------------
     def _label(self, path: Path) -> str:
-        """Nom lisible : sans identifiant YouTube ni extension."""
+        """Nom lisible : sans identifiant ni extension."""
         name = _YT_ID.sub("", path.name)
         name = name.rsplit(".", 1)[0].replace("_", " ").strip()
         return name[:70] if name else path.name

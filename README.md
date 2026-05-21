@@ -1,6 +1,6 @@
 # Kyronext-Studio
 
-Application Linux de téléchargement et de gestion de contenus YouTube, avec
+Application Linux de téléchargement et de gestion de contenus media, avec
 une interface futuriste inspirée de KITT / KARR.
 
 Auteur : **Manix** — administrateur du groupe Facebook *KITT Franco-Belge*.
@@ -11,7 +11,7 @@ Collaboration : Manix + IA.
 ## Fonctionnalités
 
 - Téléchargement **vidéo MP4** (meilleure qualité) ou **audio MP3**
-- Téléchargement de **playlists** YouTube complètes
+- Téléchargement de **playlists** complètes
 - **Barre de progression**, vitesse, ETA, taille
 - **Journal système** détaillé et **historique des URL**
 - **Lecteur audio intégré** (lecture du dossier `media/`)
@@ -77,13 +77,13 @@ Un raccourci **Kyronext-Studio** est aussi disponible sur le Bureau.
 Ligne de commande :
 
 ```bash
-./scripts/kyronext_media.sh "https://www.youtube.com/watch?v=VIDEO_ID"
+./scripts/kyronext_media.sh "https://example.com/watch?v=VIDEO_ID"
 ```
 
 ## Notes d'exploitation
 
 - `yt-dlp` et `ffmpeg` sont indispensables ; `node` est conseillé (meilleure
-  compatibilité YouTube) mais optionnel.
+  compatibilité) mais optionnel.
 - Les téléchargements partiels sont repris automatiquement et les erreurs
   réseau temporaires sont retentées.
 - Les compteurs GPU / puissance utilisent `tegrastats` (Jetson) ; sur une
@@ -97,3 +97,40 @@ Ligne de commande :
 `assets/burning_phoenix_wikimedia.png` — Wikimedia Commons,
 « Burning Phoenix - looking left.svg », auteur Andres Montesinos
 (édition SVG : Jaybear), licence Creative Commons BY-SA 3.0.
+
+`assets/manix.png` — photographie de l'auteur, © Manix.
+
+## Licence
+
+Ce logiciel est libre, distribué sous licence
+**GNU General Public License v3** — voir le fichier `LICENSE`.
+
+Chacun peut l'utiliser, l'étudier, le modifier et le redistribuer ;
+toute version dérivée doit rester sous cette même licence.
+
+### Dépendances et leurs licences
+
+| Composant      | Licence                        |
+|----------------|--------------------------------|
+| PyQt5          | GPL v3                         |
+| Qt 5           | LGPL v3                        |
+| numpy, psutil  | BSD 3-Clause                   |
+| yt-dlp         | The Unlicense (domaine public) |
+
+> Le projet dépend de **PyQt5**, dont la seule licence libre est la
+> GPL v3 : c'est elle qui impose la GPL v3 à l'ensemble du projet.
+
+### Marques et images de tiers
+
+Les noms « KITT », « KARR », « Knight Rider », ainsi que le design du
+véhicule et de son scanner, sont la propriété d'Universal Studios.
+Ce projet est une œuvre de fan, **non commerciale**, sans aucun lien
+officiel avec Universal. Les images correspondantes ne sont pas
+couvertes par la licence GPL v3 de ce dépôt.
+
+### Conditions d'utilisation et mentions légales
+
+L'usage du logiciel est encadré par le fichier
+[`CONDITIONS_UTILISATION.md`](CONDITIONS_UTILISATION.md). Les
+informations légales du site figurent dans
+[`MENTIONS_LEGALES.md`](MENTIONS_LEGALES.md).

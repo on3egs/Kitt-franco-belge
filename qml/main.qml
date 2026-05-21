@@ -56,6 +56,32 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: Updater
+        function onChecked(version) {
+            updateDialog.title = "Mise a jour disponible";
+            updateDialog.message = "Version " + version + " disponible.\nVersion actuelle : " + Updater.currentVersion();
+            updateDialog.showDownload = true;
+            updateDialog.open();
+        }
+        function onUpToDate() {
+            updateDialog.title = "A jour";
+            updateDialog.message = "Vous utilisez la derniere version (" + Updater.currentVersion() + ").";
+            updateDialog.showDownload = false;
+            updateDialog.open();
+        }
+        function onError(msg) {
+            updateDialog.title = "Erreur";
+            updateDialog.message = "Verification impossible : " + msg;
+            updateDialog.showDownload = false;
+            updateDialog.open();
+        }
+        function onDownloadFinished(ok, path) {
+            if (ok) win.logAppend("[OK] Telecharge : " + path);
+            else win.logAppend("[ERREUR] Telechargement : " + path);
+        }
+    }
+
     // --- Barre de titre custom (drag + close) ---
     Rectangle {
         id: titleBar
@@ -163,7 +189,17 @@ ApplicationWindow {
         // EN-TETE
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: 38
+            Layout.preferredHeight: 80
+            // Scanner KITT en fond du header (déclaré AVANT pour être derrière)
+            Image {
+                anchors.fill: parent
+                anchors.verticalCenterOffset: 30
+                source: "../assets/kitt_scanner.png"
+                fillMode: Image.PreserveAspectCrop
+                opacity: 0.85
+                scale: 0.70
+                transformOrigin: Item.Center
+            }
             RowLayout {
                 id: headerRow
                 anchors.fill: parent
@@ -175,7 +211,7 @@ ApplicationWindow {
                         font.family: win.mono; font.pixelSize: 20; font.bold: true
                     }
                     Text {
-                        text: "KNIGHT INDUSTRIES MEDIA CENTER v2.0"; color: win.cTextDim
+                        text: "KNIGHT INDUSTRIES MEDIA CENTER v4.0"; color: win.cTextDim
                         font.family: win.mono; font.pixelSize: 8; font.bold: true
                     }
                 }
@@ -183,8 +219,23 @@ ApplicationWindow {
                 Row {
                     id: buttonsRow
                     spacing: 10
+                    NeonButton {
+                        width: 96; height: 30
+                        label: "À PROPOS"; accent: win.cAccentSoft
+                        onClicked: aboutPanel.open()
+                    }
+                    NeonButton {
+                        width: 66; height: 30
+                        label: "♥ DON"; accent: win.cAccentSoft
+                        onClicked: Qt.openUrlExternally("https://paypal.me/On3egs")
+                    }
                     ChipToggle { label: "UPDATE"; active: Config.autoUpdate; onToggled: Config.autoUpdate = !Config.autoUpdate }
                     ChipToggle { label: "LITE"; active: Config.liteMode; onToggled: Config.liteMode = !Config.liteMode }
+                    NeonButton {
+                        width: 56; height: 30
+                        label: "MÀJ"; accent: win.cAmber
+                        onClicked: Updater.check()
+                    }
                     Image {
                         source: "../assets/kitt.png"
                         fillMode: Image.PreserveAspectFit; height: 42
@@ -192,16 +243,6 @@ ApplicationWindow {
                         opacity: 1.0
                     }
                 }
-            }
-            // Scanner KITT au premier plan
-            Image {
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                height: 34
-                width: 320
-                source: "../assets/kitt_scanner.png"
-                fillMode: Image.PreserveAspectFit
-                opacity: 0.85
             }
         }
 
@@ -216,16 +257,16 @@ ApplicationWindow {
             }
         }
 
-        // YOUTUBE TARGET
+        // MEDIA TARGET
         Panel {
-            Layout.fillWidth: true; Layout.preferredHeight: 110; title: "YOUTUBE TARGET"; accent: win.cAccentSoft
+            Layout.fillWidth: true; Layout.preferredHeight: 110; title: "MEDIA TARGET"; accent: win.cAccentSoft
             ColumnLayout {
                 anchors.fill: parent; anchors.margins: 4; spacing: 4
                 RowLayout {
                     Layout.fillWidth: true; spacing: 6
                     TextField {
                         id: urlField; Layout.fillWidth: true; Layout.preferredHeight: 28
-                        placeholderText: "PASTE YOUTUBE URL..."; color: "#fff"; font.pixelSize: 11
+                        placeholderText: "PASTE URL..."; color: "#fff"; font.pixelSize: 11
                         background: Rectangle { color: "#06070a"; border.color: "#3d1117" }
                     }
                     NeonButton { Layout.preferredWidth: 76; Layout.preferredHeight: 28; label: "PASTE"; accent: win.cCyan; onClicked: urlField.text = Shell.clipboard() }
@@ -251,6 +292,12 @@ ApplicationWindow {
             Layout.fillWidth: true; Layout.preferredHeight: 290; spacing: 4
             Panel {
                 Layout.preferredWidth: 240; Layout.fillHeight: true; title: "TRANSFER"; accent: win.cAccentSoft
+                Image {
+                    anchors.fill: parent
+                    fillMode: Image.PreserveAspectCrop
+                    source: "../assets/kitt_cockpit.jpg"
+                    opacity: 0.12
+                }
                 Column {
                     anchors.fill: parent; anchors.margins: 6; spacing: 6
                     Text { text: Downloader.status; color: win.cAccent; font.pixelSize: 10; font.bold: true }
@@ -267,14 +314,6 @@ ApplicationWindow {
                                 Text { text: modelData[1]; color: "#fff"; font.pixelSize: 11; font.bold: true }
                             }
                         }
-                    }
-                    // Plaque KITT dans le fond du panel TRANSFER
-                    Image {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: parent.width * 0.88
-                        fillMode: Image.PreserveAspectFit
-                        source: "../assets/kitt_plate.png"
-                        opacity: 0.40
                     }
                 }
             }
@@ -300,7 +339,7 @@ ApplicationWindow {
 
                     // Rangee 2 : banc de vumetres analogiques.
                     RowLayout {
-                        Layout.fillWidth: true; Layout.preferredHeight: 105; spacing: 4
+                        Layout.fillWidth: true; Layout.preferredHeight: 125; spacing: 4
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "L"; level: Player.vuLeft; accent: win.cAccent }
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "R"; level: Player.vuRight; accent: win.cCyan }
                         VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "BASS"; level: Player.bass; accent: win.cAmber }
@@ -322,9 +361,9 @@ ApplicationWindow {
                         Layout.fillWidth: true; Layout.fillHeight: true; color: "#06070a"; border.color: "#352026"
                         Image {
                             anchors.fill: parent; anchors.margins: 8
-                            fillMode: Image.PreserveAspectFit
-                            source: "../assets/kitt.png"
-                            opacity: 0.14
+                            fillMode: Image.PreserveAspectCrop
+                            source: "../assets/kitt_franco_belge.jpg"
+                            opacity: 0.12
                         }
                         ListView {
                             id: playlistView
@@ -399,6 +438,7 @@ ApplicationWindow {
                     Layout.preferredHeight: 140
                     spacing: 4
                     ToneControls {
+                        z: 1
                         Layout.preferredWidth: 120
                         Layout.fillHeight: true
                         // Valeurs fixes — pas de rotation automatique avec l'audio
@@ -473,6 +513,18 @@ ApplicationWindow {
             Layout.fillWidth: true; Layout.preferredHeight: 100; spacing: 4
             Panel {
                 Layout.fillWidth: true; Layout.fillHeight: true; title: "SYSTEM LOG"; accent: win.cAccentSoft
+                Image {
+                    anchors.fill: parent
+                    source: "../assets/kitt_full_black.png"
+                    fillMode: Image.PreserveAspectCrop
+                    opacity: 0.14
+                }
+                Image {
+                    anchors.fill: parent
+                    source: "../assets/kitt_plate.png"
+                    fillMode: Image.PreserveAspectCrop
+                    opacity: 0.28
+                }
                 ListView {
                     id: logView; anchors.fill: parent; anchors.margins: 4; model: logModel; clip: true
                     delegate: Text { text: "> " + model.line; color: "#5c6c7c"; font.pixelSize: 8; width: logView.width; wrapMode: Text.Wrap }
@@ -490,5 +542,44 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    // --- Dialogue mise a jour ---
+    Dialog {
+        id: updateDialog
+        property string message: ""
+        property bool showDownload: false
+        anchors.centerIn: parent
+        width: 320; modal: true
+        background: Rectangle { color: "#0c0e12"; border.color: "#ff2a3a"; border.width: 1; radius: 6 }
+        contentItem: Column {
+            spacing: 12
+            Text { text: updateDialog.message; color: "#d8dde2"; font.pixelSize: 11; wrapMode: Text.Wrap; width: parent.width }
+            Row {
+                spacing: 8
+                NeonButton {
+                    visible: updateDialog.showDownload
+                    width: 100; height: 28
+                    label: "TELECHARGER"; accent: "#ff2a3a"
+                    onClicked: { Updater.downloadAndInstall(); updateDialog.close(); }
+                }
+                NeonButton {
+                    width: 60; height: 28
+                    label: "OK"; accent: "#35e6ff"
+                    onClicked: updateDialog.close()
+                }
+            }
+        }
+    }
+
+    // --- Panneau « A propos » + don (modal, par-dessus tout) ---
+    AboutPanel {
+        id: aboutPanel
+        anchors.fill: parent
+    }
+
+    // --- Ecran de demarrage (par-dessus tout, s'efface en fondu) ---
+    SplashScreen {
+        anchors.fill: parent
     }
 }

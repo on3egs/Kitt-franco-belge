@@ -16,6 +16,12 @@ from . import paths
 
 _CLICK_PATH = Path(paths.STATE_DIR) / "click.wav"
 
+# Sons du splash de demarrage (console power-up + scanner KITT).
+_SPLASH_SOUNDS = (
+    paths.ASSETS_DIR / "splash_powerup.mp3",
+    paths.ASSETS_DIR / "splash_scanner.mp3",
+)
+
 
 def _generate_click_wav(path: Path) -> None:
     sr = 22050
@@ -43,6 +49,7 @@ class SoundFx(QObject):
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
+        self._splash_procs: list = []
         if not _CLICK_PATH.exists():
             paths.STATE_DIR.mkdir(parents=True, exist_ok=True)
             _generate_click_wav(_CLICK_PATH)
@@ -59,3 +66,31 @@ class SoundFx(QObject):
             )
         except (OSError, FileNotFoundError):
             pass
+
+    @pyqtSlot()
+    def splash(self) -> None:
+        """Joue les sons de demarrage (console power-up + scanner KITT)."""
+        for path in _SPLASH_SOUNDS:
+            if not path.exists():
+                continue
+            try:
+                proc = subprocess.Popen(
+                    ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet",
+                     "-volume", "60", str(path)],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                self._splash_procs.append(proc)
+            except (OSError, FileNotFoundError):
+                pass
+
+    @pyqtSlot()
+    def stopSplash(self) -> None:
+        """Coupe les sons de demarrage encore en cours."""
+        for proc in self._splash_procs:
+            if proc.poll() is None:
+                try:
+                    proc.terminate()
+                except OSError:
+                    pass
+        self._splash_procs.clear()

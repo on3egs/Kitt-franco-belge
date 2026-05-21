@@ -24,6 +24,7 @@ from .history import History
 from .metrics import SystemMetrics
 from .player import Player
 from .sounds import SoundFx
+from .updater import Updater
 
 
 
@@ -103,6 +104,7 @@ def main() -> int:
     metrics = SystemMetrics()
     shell = Shell()
     sound_fx = SoundFx()
+    updater = Updater()
 
     # Exposition a QML : un singleton par objet, dans le module "Kyronext".
     singletons = {
@@ -114,6 +116,7 @@ def main() -> int:
         "Metrics": metrics,
         "Shell": shell,
         "SoundFx": sound_fx,
+        "Updater": updater,
     }
     for type_name, instance in singletons.items():
         qmlRegisterSingletonType(
@@ -131,6 +134,7 @@ def main() -> int:
     app.aboutToQuit.connect(player.shutdown)
     app.aboutToQuit.connect(downloader.cancel)
     app.aboutToQuit.connect(metrics.stop)
+    app.aboutToQuit.connect(sound_fx.stopSplash)
 
     # Mise a jour automatique de yt-dlp, peu apres l'affichage de la fenetre
     # (en tache de fond, journalisee dans l'interface).

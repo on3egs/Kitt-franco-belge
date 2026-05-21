@@ -1,4 +1,4 @@
-"""Telechargement YouTube via yt-dlp.
+"""Telechargement de contenus media via yt-dlp.
 
 Toute la logique reseau tourne dans un thread dedie : l'interface ne se fige
 jamais. La progression et les lignes de journal remontent vers QML par des
@@ -143,7 +143,7 @@ class Downloader(QObject):
 
         cmd.append("--no-warnings")
 
-        # node ameliore la compatibilite YouTube mais reste optionnel.
+        # node ameliore la compatibilite mais reste optionnel.
         node = shutil.which("node")
         if node:
             cmd += ["--js-runtimes", f"node:{node}",

@@ -15,4 +15,4 @@
 PyQt5>=5.15        # interface graphique Qt5 / QML
 numpy>=1.21,<2.0   # analyse audio (FFT) - NumPy 1.x (compatibilite Jetson)
 psutil>=5.9        # mesure du debit reseau
-yt-dlp>=2024.1     # moteur de telechargement YouTube
+yt-dlp>=2024.1     # moteur de telechargement media
