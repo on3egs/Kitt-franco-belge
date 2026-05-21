@@ -154,8 +154,10 @@ ApplicationWindow {
     // --- Layout Principal ---
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 18
-        anchors.topMargin: 32  // sous la barre de titre
+        anchors.leftMargin: 22   // apres EQ gauche (14) + air
+        anchors.rightMargin: 22  // apres EQ droite (14) + air
+        anchors.topMargin: 48    // barre titre (28) + EQ haut (14) + air
+        anchors.bottomMargin: 22 // apres EQ bas (14) + air
         spacing: 3
 
         // EN-TETE
