@@ -177,7 +177,21 @@ ApplicationWindow {
                         font.family: win.mono; font.pixelSize: 8; font.bold: true
                     }
                 }
-                Item { Layout.fillWidth: true }
+                // Zoom museau KITT (scanner + plaque) entre titre et boutons
+                Item {
+                    Layout.fillWidth: true
+                    height: 32
+                    clip: true
+                    Image {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: -1280
+                        width: 2400
+                        height: 1600
+                        source: "../assets/kitt.png"
+                        fillMode: Image.PreserveAspectFit
+                        opacity: 0.40
+                    }
+                }
                 Row {
                     spacing: 10
                     ChipToggle { label: "UPDATE"; active: Config.autoUpdate; onToggled: Config.autoUpdate = !Config.autoUpdate }
