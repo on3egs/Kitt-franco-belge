@@ -193,15 +193,15 @@ ApplicationWindow {
                     }
                 }
             }
-            // KITT complet au premier plan (au-dessus du RowLayout)
+            // Scanner KITT au premier plan
             Image {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                height: 36
-                width: 280
-                source: "../assets/kitt.png"
+                height: 34
+                width: 320
+                source: "../assets/kitt_scanner.png"
                 fillMode: Image.PreserveAspectFit
-                opacity: 0.90
+                opacity: 0.85
             }
         }
 
@@ -268,13 +268,13 @@ ApplicationWindow {
                             }
                         }
                     }
-                    // KITT dans le fond du panel TRANSFER
+                    // Plaque KITT dans le fond du panel TRANSFER
                     Image {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: parent.width * 0.92
+                        width: parent.width * 0.88
                         fillMode: Image.PreserveAspectFit
-                        source: "../assets/kitt.png"
-                        opacity: 0.45
+                        source: "../assets/kitt_plate.png"
+                        opacity: 0.40
                     }
                 }
             }
