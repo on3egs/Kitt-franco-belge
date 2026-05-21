@@ -165,8 +165,10 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.preferredHeight: 38
             RowLayout {
+                id: headerRow
                 anchors.fill: parent
                 Column {
+                    id: titleColumn
                     spacing: 0
                     Text {
                         text: "KYRONEXT STUDIO"; color: win.cAccent
@@ -177,15 +179,9 @@ ApplicationWindow {
                         font.family: win.mono; font.pixelSize: 8; font.bold: true
                     }
                 }
-                // Museau KITT (scanner + plaque) entre titre et boutons
-                Image {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 36
-                    source: "../assets/kitt_nose.png"
-                    fillMode: Image.PreserveAspectCrop
-                    opacity: 0.80
-                }
+                Item { Layout.fillWidth: true }
                 Row {
+                    id: buttonsRow
                     spacing: 10
                     ChipToggle { label: "UPDATE"; active: Config.autoUpdate; onToggled: Config.autoUpdate = !Config.autoUpdate }
                     ChipToggle { label: "LITE"; active: Config.liteMode; onToggled: Config.liteMode = !Config.liteMode }
@@ -196,6 +192,16 @@ ApplicationWindow {
                         opacity: 1.0
                     }
                 }
+            }
+            // KITT au premier plan (au-dessus du RowLayout)
+            Image {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                width: 340
+                height: 38
+                source: "../assets/kitt_nose.png"
+                fillMode: Image.PreserveAspectCrop
+                opacity: 0.85
             }
         }
 
@@ -393,11 +399,12 @@ ApplicationWindow {
                     Layout.preferredHeight: 140
                     spacing: 4
                     ToneControls {
-                        Layout.preferredWidth: 100
+                        Layout.preferredWidth: 120
                         Layout.fillHeight: true
-                        bassValue: Player.bass
-                        midValue: Player.mid
-                        trebleValue: Player.treble
+                        // Valeurs fixes — pas de rotation automatique avec l'audio
+                        bassValue: 0.5
+                        midValue: 0.5
+                        trebleValue: 0.5
                     }
                     Oscilloscope {
                         Layout.preferredWidth: 140

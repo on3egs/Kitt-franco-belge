@@ -6,8 +6,8 @@ import QtQuick 2.15
 
 Item {
     id: root
-    implicitWidth: 140
-    implicitHeight: 120
+    implicitWidth: 160
+    implicitHeight: 130
 
     property real bassValue: 0.5
     property real midValue: 0.5

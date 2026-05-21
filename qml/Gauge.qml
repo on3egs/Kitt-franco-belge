@@ -187,7 +187,7 @@ Item {
     // Aiguille rouge
     Rectangle {
         id: needle
-        width: 1.8; height: root.rv + 4
+        width: 1.8; height: root.rv + 10
         x: root.cxv - width / 2; y: root.cyv - height
         radius: 0.9; color: "#cc2020"; antialiasing: true
         transform: Rotation {

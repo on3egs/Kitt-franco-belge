@@ -8,8 +8,8 @@ Item {
     property string label: "BASS"
     signal knobMoved(real newValue)
 
-    implicitWidth: 40
-    implicitHeight: 52
+    implicitWidth: 46
+    implicitHeight: 58
 
     // Ombre portee
     Rectangle {
@@ -54,7 +54,7 @@ Item {
         id: knob
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -2
-        width: 26; height: 26; radius: 13
+        width: 30; height: 30; radius: 15
         // Aluminium brosse degrade
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#4a4e55" }
@@ -126,10 +126,10 @@ Item {
 
     // Label
     Text {
-        anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom }
+        anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 1 }
         text: root.label; color: root.accent
-        font.family: "DejaVu Sans Mono"; font.pixelSize: 5; font.bold: true
-        opacity: 0.65
+        font.family: "DejaVu Sans Mono"; font.pixelSize: 6; font.bold: true
+        opacity: 0.80
     }
 
     // Barre de valeur
