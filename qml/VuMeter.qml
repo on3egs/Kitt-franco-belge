@@ -15,8 +15,8 @@ Item {
     implicitHeight: 230
 
     readonly property real cx: width / 2
-    readonly property real cy: height * 0.86
-    readonly property real rad: Math.min(width * 0.38, height * 0.56)
+    readonly property real cy: height * 0.78
+    readonly property real rad: Math.min(width * 0.46, height * 0.70)
 
     // Cible brute issue de l'analyse audio (0..1).
     property real target: 0.0

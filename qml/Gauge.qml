@@ -176,7 +176,7 @@ Item {
     // Ombre tres subtile sous l'aiguille
     Rectangle {
         id: needleShadow
-        width: 1.5; height: root.rv * 0.72
+        width: 1.5; height: root.rv + 2
         x: root.cxv - width / 2 + 0.8; y: root.cyv - height + 0.8
         radius: 0.75; color: "#000000"; opacity: 0.2; antialiasing: true
         transform: Rotation {
@@ -187,7 +187,7 @@ Item {
     // Aiguille rouge
     Rectangle {
         id: needle
-        width: 1.8; height: root.rv * 0.75
+        width: 1.8; height: root.rv + 4
         x: root.cxv - width / 2; y: root.cyv - height
         radius: 0.9; color: "#cc2020"; antialiasing: true
         transform: Rotation {
