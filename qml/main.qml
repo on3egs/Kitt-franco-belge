@@ -193,15 +193,15 @@ ApplicationWindow {
                     }
                 }
             }
-            // KITT au premier plan (au-dessus du RowLayout)
+            // KITT complet au premier plan (au-dessus du RowLayout)
             Image {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                width: 340
-                height: 38
-                source: "../assets/kitt_nose.png"
-                fillMode: Image.PreserveAspectCrop
-                opacity: 0.85
+                height: 36
+                width: 280
+                source: "../assets/kitt.png"
+                fillMode: Image.PreserveAspectFit
+                opacity: 0.90
             }
         }
 
