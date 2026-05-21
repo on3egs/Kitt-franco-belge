@@ -1,0 +1,18 @@
+# Kironext Studio - dependances Python
+# Installation : pip install --user -r requirements.txt
+#
+# IMPORTANT (Jetson / Ubuntu) : PyQt5 et les modules QML s'installent de
+# preference via apt, qui reutilise le Qt5 du systeme :
+#
+#   sudo apt install -y python3-pyqt5 python3-pyqt5.qtquick \
+#       qml-module-qtquick2 qml-module-qtquick-controls2 \
+#       qml-module-qtquick-window2 qml-module-qtquick-layouts \
+#       qml-module-qtquick-particles2 qml-module-qtquick-shapes \
+#       qml-module-qtgraphicaleffects
+#
+# Outils externes requis (paquets systeme) : ffmpeg  (et, conseille, nodejs).
+
+PyQt5>=5.15        # interface graphique Qt5 / QML
+numpy>=1.21,<2.0   # analyse audio (FFT) - NumPy 1.x (compatibilite Jetson)
+psutil>=5.9        # mesure du debit reseau
+yt-dlp>=2024.1     # moteur de telechargement YouTube

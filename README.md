@@ -1,51 +1,67 @@
-# Kyronex Studio - Gestion media CLI
+# Kironext Studio
 
-Ce projet fournit une base simple pour telecharger une video depuis une URL publique autorisee, conserver le fichier video et extraire une version audio MP3 dans `media/`.
+Application Linux de téléchargement et de gestion de contenus YouTube, avec
+une interface futuriste inspirée de KITT / KARR.
+
+Auteur : **Manix** — administrateur du groupe Facebook *KITT Franco-Belge*.
+Collaboration : Manix + IA.
+
+---
+
+## Fonctionnalités
+
+- Téléchargement **vidéo MP4** (meilleure qualité) ou **audio MP3**
+- Téléchargement de **playlists** YouTube complètes
+- **Barre de progression**, vitesse, ETA, taille
+- **Journal système** détaillé et **historique des URL**
+- **Lecteur audio intégré** (lecture du dossier `media/`)
+- **2 vumètres analogiques** à aiguille, pilotés en temps réel par le son
+  (analyse PCM + inertie physique réaliste)
+- **4 compteurs animés** : débit montant, débit descendant, puissance (watts),
+  charge GPU — alimentés par les capteurs Jetson
+- **Fond animé** discret accéléré GPU (grille, particules, scanner KARR)
+- **Mise à jour automatique** de `yt-dlp` au démarrage
+- Détection des **dépendances manquantes** avec aide à l'installation
+- **Mode allégé** pour les petits Jetson (Nano)
+
+## Architecture
+
+Interface **Qt5 / QML** (rendu accéléré GPU) pilotée par une logique Python.
+
+```text
+KironextStudio/
+  run.py                  Lanceur de l'application
+  requirements.txt        Dépendances Python
+  kironext/               Logique applicative (Python)
+    app.py                Assemblage QApplication + moteur QML
+    config.py             Paramètres utilisateur persistants
+    history.py            Historique des URL
+    deps.py               Vérification / mise à jour des dépendances
+    downloader.py         Téléchargement yt-dlp
+    player.py             Lecteur audio (ffmpeg)
+    audio.py              Analyse audio temps réel (RMS + FFT)
+    metrics.py            Compteurs système (tegrastats + psutil)
+    paths.py              Chemins et constantes
+  qml/                    Interface QML
+    main.qml              Fenêtre principale
+    NeonButton, Panel, ChipToggle, VuMeter, Gauge, Background
+  scripts/
+    kironext_media.sh     Téléchargement en ligne de commande
+  assets/  media/  state/
+```
 
 ## Installation
 
-Sur Ubuntu/Debian/Jetson avec droits administrateur :
+Sur Ubuntu / Jetson (avec droits administrateur, une seule fois) :
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y ffmpeg nodejs
-python3 -m pip install --user --upgrade yt-dlp
-```
+sudo apt install -y ffmpeg nodejs \
+    python3-pyqt5 python3-pyqt5.qtquick \
+    qml-module-qtquick2 qml-module-qtquick-controls2 \
+    qml-module-qtquick-window2 qml-module-qtquick-layouts \
+    qml-module-qtquick-particles2 qml-module-qtquick-shapes
 
-Ajoutez `~/.local/bin` au `PATH` si `yt-dlp` n'est pas trouve :
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-Pour rendre ce changement permanent :
-
-```bash
-printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> ~/.bashrc
-```
-
-Verification :
-
-```bash
-yt-dlp --version
-ffmpeg -version
-node --version
-```
-
-## Structure
-
-```text
-KyronexStudio/
-  assets/
-    burning_phoenix_wikimedia.png
-    phoenix_fire.png     # Watermark transparent pour l'interface
-  media/                 # Videos et fichiers MP3 generes
-  state/                 # Historique local et miniature du dernier media
-  scripts/
-    create_phoenix_asset.py
-    kyronex_gui.py       # Interface graphique simple
-    kyronex_media.sh     # Telechargement + extraction audio
-  README.md
+pip install --user --upgrade yt-dlp numpy psutil
 ```
 
 ## Utilisation
@@ -53,67 +69,31 @@ KyronexStudio/
 Interface graphique :
 
 ```bash
-kyronex-studio
+kironext-studio
 ```
 
-Un raccourci `Kyronex Studio` est aussi disponible sur le Bureau.
+Un raccourci **Kironext Studio** est aussi disponible sur le Bureau.
 
-Fonctions de l'interface :
-
-- collage rapide d'URL avec `COLLER`
-- telechargement video MP4 meilleure qualite ou MP3 seulement
-- jauge de progression, vitesse, ETA et taille
-- vumetres digitaux pilotes par l'audio du dernier media : segments L/R, spectre, peak hold, dB et oscilloscope
-- apercu du dernier media telecharge
-- bouton `OPEN LAST` pour ouvrir le dernier fichier
-- historique local des URLs dans `state/history.json`
-
-Depuis le dossier `KyronexStudio` :
+Ligne de commande :
 
 ```bash
-chmod +x scripts/kyronex_media.sh
-./scripts/kyronex_media.sh "https://www.youtube.com/watch?v=VIDEO_ID"
-```
-
-Avec un nom de sortie personnalise :
-
-```bash
-./scripts/kyronex_media.sh "https://www.youtube.com/watch?v=VIDEO_ID" "kyronex_demo"
-```
-
-Les fichiers seront crees dans :
-
-```text
-KyronexStudio/media/
+./scripts/kironext_media.sh "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
 ## Notes d'exploitation
 
-- Le script refuse de continuer si `yt-dlp` ou `ffmpeg` est absent.
-- Node.js est utilise comme runtime JavaScript pour ameliorer la compatibilite YouTube de `yt-dlp`.
-- Les telechargements partiels sont repris automatiquement et les erreurs reseau temporaires sont retentees plus longtemps.
-- La video source est conservee et une copie audio MP3 est generee.
-- `--no-playlist` evite de telecharger toute une playlist par accident.
-- `--restrict-filenames` produit des noms compatibles avec les outils CLI.
-- Utilisez uniquement des contenus pour lesquels vous avez les droits de telechargement et de traitement.
+- `yt-dlp` et `ffmpeg` sont indispensables ; `node` est conseillé (meilleure
+  compatibilité YouTube) mais optionnel.
+- Les téléchargements partiels sont repris automatiquement et les erreurs
+  réseau temporaires sont retentées.
+- Les compteurs GPU / puissance utilisent `tegrastats` (Jetson) ; sur une
+  machine classique ils restent simplement à zéro.
+- Le **mode allégé** désactive les particules et l'animation de la grille
+  pour les Jetson les moins puissants (Nano).
+- N'utilisez que des contenus pour lesquels vous avez les droits.
 
-## Option GUI : Stacher
+## Crédits visuels
 
-Stacher est une interface graphique pour `yt-dlp` disponible sur https://stacher.io/#downloads.
-
-Attention pour cette machine : le telechargement Linux officiel est un paquet Debian `amd64`, alors que ce systeme est `aarch64`/ARM. Ne l'installez pas sur cette machine sauf si l'editeur publie une version ARM compatible.
-
-Sur un poste Ubuntu/Debian `amd64`, l'installation typique serait :
-
-```bash
-sudo apt-get install -y ./stacher7_VERSION_amd64.deb
-```
-
-Le workflow CLI Kyronex Studio reste independant de Stacher et fonctionne directement avec `yt-dlp` + `ffmpeg`.
-
-## Credits visuels
-
-- `assets/burning_phoenix_wikimedia.png` vient de Wikimedia Commons : "Burning Phoenix - looking left.svg".
-- Auteur original : Andres Montesinos ; edition SVG : Jaybear.
-- Licence : Creative Commons Attribution-ShareAlike 3.0 Unported.
-- Source : https://commons.wikimedia.org/wiki/File:Burning_Phoenix_-_looking_left.svg
+`assets/burning_phoenix_wikimedia.png` — Wikimedia Commons,
+« Burning Phoenix - looking left.svg », auteur Andres Montesinos
+(édition SVG : Jaybear), licence Creative Commons BY-SA 3.0.
