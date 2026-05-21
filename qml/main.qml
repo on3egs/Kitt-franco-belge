@@ -195,8 +195,17 @@ ApplicationWindow {
                     anchors.fill: parent; anchors.margins: 4; spacing: 4
                     Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "UPLOAD"; unit: "Mo/s"; value: Metrics.netUp; accent: win.cCyan }
                     Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "DOWNLOAD"; unit: "Mo/s"; value: Metrics.netDown; accent: win.cAccent }
-                    VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "L"; level: Player.vuLeft }
-                    VuMeter { Layout.fillWidth: true; Layout.fillHeight: true; label: "R"; level: Player.vuRight }
+                    
+                    // REAL VU (Vumètres à aiguille)
+                    VuMeter { 
+                        Layout.preferredWidth: 160; Layout.fillHeight: true
+                        label: "L"; level: Player.vuLeft; accent: win.cAccent 
+                    }
+                    VuMeter { 
+                        Layout.preferredWidth: 160; Layout.fillHeight: true
+                        label: "R"; level: Player.vuRight; accent: win.cCyan 
+                    }
+
                     Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "PWR"; unit: "W"; value: Metrics.power; accent: win.cAmber }
                     Gauge { Layout.fillWidth: true; Layout.fillHeight: true; label: "GPU"; unit: "%"; value: Metrics.gpu; accent: win.cGreen }
                 }
