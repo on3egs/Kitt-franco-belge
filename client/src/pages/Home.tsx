@@ -257,6 +257,23 @@ function NavBar() {
           >
             {t("nav.access")}
           </a>
+          <a
+            href="http://localhost:5000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
+            style={{
+              fontFamily: "Orbitron, monospace",
+              fontSize: "0.6rem",
+              color: "#ff2222",
+              border: "1px solid #ff2222",
+              background: "rgba(255,34,34,0.08)",
+              boxShadow: "0 0 8px rgba(255,34,34,0.2)",
+            }}
+            onMouseEnter={() => play("hover")}
+          >
+            {t("nav.studio")}
+          </a>
         </div>
 
         {/* Mobile menu button */}
@@ -353,6 +370,26 @@ function NavBar() {
             onMouseEnter={() => play("hover")}
           >
             {t("nav.access")}
+          </a>
+          <a
+            href="http://localhost:5000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-center block"
+            style={{
+              fontFamily: "Orbitron, monospace",
+              fontSize: "0.6rem",
+              color: "#ff2222",
+              border: "1px solid #ff2222",
+              background: "rgba(255,34,34,0.08)",
+              boxShadow: "0 0 8px rgba(255,34,34,0.2)",
+              padding: "14px 22px",
+              letterSpacing: "0.12em",
+              textDecoration: "none",
+            }}
+            onMouseEnter={() => play("hover")}
+          >
+            {t("nav.studio")}
           </a>
         </div>
       )}
