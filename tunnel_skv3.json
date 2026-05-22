@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://qualify-energy-london-integrate.trycloudflare.com",
-  "last_update": "2026-05-22T22:06:06.544910+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-22T22:06:56.587542+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
