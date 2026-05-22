@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://munich-counting-anymore-matt.trycloudflare.com",
-  "last_update": "2026-05-22T22:47:26.065441+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-22T22:47:49.399225+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
