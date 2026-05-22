@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://identifies-galaxy-george-casio.trycloudflare.com",
-  "last_update": "2026-05-22T15:16:18.132702+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-22T15:17:03.582669+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
