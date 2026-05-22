@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-22T20:04:41.348351+00:00",
+  "status": "online",
+  "url": "https://alien-configure-motorola-entire.trycloudflare.com",
+  "last_update": "2026-05-22T20:05:23.526699+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
