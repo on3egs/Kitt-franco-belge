@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://api.trycloudflare.com",
-  "last_update": "2026-05-22T13:39:23.727574+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-22T13:41:06.469575+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
