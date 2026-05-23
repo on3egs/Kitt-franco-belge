@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://empty-eds-combine-raleigh.trycloudflare.com",
-  "last_update": "2026-05-23T23:05:32.683319+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-23T23:07:33.567430+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
