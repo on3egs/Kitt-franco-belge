@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-23T19:11:07.338757+00:00",
+  "status": "online",
+  "url": "https://describe-barrel-trust-eos.trycloudflare.com",
+  "last_update": "2026-05-23T19:14:54.576541+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
