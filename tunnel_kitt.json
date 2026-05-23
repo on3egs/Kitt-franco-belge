@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://electricity-ips-latter-thoroughly.trycloudflare.com",
-  "last_update": "2026-05-23T20:46:57.317636+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-23T20:47:09.420838+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
