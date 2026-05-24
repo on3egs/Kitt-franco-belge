@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://images-plc-blind-cave.trycloudflare.com",
-  "last_update": "2026-05-24T21:22:46.738263+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-24T21:24:37.687723+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
