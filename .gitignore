@@ -16,3 +16,4 @@ state/
 
 # Sauvegardes
 *.tar.gz
+elevenlabs.example.json

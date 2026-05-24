@@ -11,12 +11,14 @@ Item {
     property string label: "L"
     property color accent: "#ff3348"
 
-    implicitWidth: 280
+    implicitWidth: 340
     implicitHeight: 230
 
     readonly property real cx: width / 2
     readonly property real cy: height * 0.74 + 20
-    readonly property real rad: Math.min(width * 0.54, height * 0.76)
+    // Rayon plus genereux : le graphique gradue prend 30 px de plus de chaque
+    // cote a l'interieur du chassis pour que les chiffres ne se chevauchent plus.
+    readonly property real rad: Math.min(width * 0.60, height * 0.80)
 
     // Cible brute issue de l'analyse audio (0..1).
     property real target: 0.0
@@ -154,13 +156,13 @@ Item {
                 ctx.stroke();
             }
 
-            // Chiffres
+            // Chiffres : on garde uniquement les graduations majeures pour eviter
+            // tout chevauchement (les anciens -6/-3/+3 se touchaient en largeur reduite).
             var labels = [
-                {v: "-48", i: 0}, {v: "-36", i: 10}, {v: "-24", i: 20},
-                {v: "-12", i: 30}, {v: "-6", i: 35}, {v: "-3", i: 40},
-                {v: "0", i: 45}, {v: "+3", i: 50}
+                {v: "-48", i: 0},  {v: "-36", i: 10}, {v: "-24", i: 20},
+                {v: "-12", i: 30}, {v: "0",   i: 45}, {v: "+3",  i: 50}
             ];
-            ctx.font = "bold 8px 'DejaVu Sans Mono'"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.font = "bold 9px 'DejaVu Sans Mono'"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             for (var li = 0; li < labels.length; li++) {
                 var la = (-142 + labels[li].i * (span / 100)) * Math.PI / 180;
                 var lx = cx + Math.cos(la) * (r - 24);

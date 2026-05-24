@@ -21,6 +21,7 @@ from .config import Config
 from .deps import DepsChecker
 from .downloader import Downloader
 from .history import History
+from .library import Library
 from .metrics import SystemMetrics
 from .player import Player
 from .sounds import SoundFx
@@ -101,6 +102,9 @@ def main() -> int:
     deps = DepsChecker()
     downloader = Downloader(history)
     player = Player(config)
+    library = Library()
+    library.attach_player(player)
+    downloader.finished.connect(lambda *_: library.rescan())
     metrics = SystemMetrics()
     shell = Shell()
     sound_fx = SoundFx()
@@ -113,6 +117,7 @@ def main() -> int:
         "Deps": deps,
         "Downloader": downloader,
         "Player": player,
+        "Library": library,
         "Metrics": metrics,
         "Shell": shell,
         "SoundFx": sound_fx,

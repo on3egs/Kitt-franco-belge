@@ -17,8 +17,17 @@ DEFAULTS = {
     "mode": "video",       # "video" (MP4) ou "mp3" (audio seul)
     "playlist": False,     # telecharger la playlist entiere plutot qu'une video
     "liteMode": False,     # mode allege : moins d'effets visuels (Jetson Nano)
+    "soberMode": False,    # skin sobre (bibliotheque + recherche, sans visualiseurs)
     "autoUpdate": True,    # mise a jour automatique de yt-dlp au demarrage
     "volume": 1.0,         # volume de lecture audio (0.0 .. 1.0)
+    "userName": "",        # prenom de l'utilisateur (accueil vocal personnalise)
+    # --- Controles de tonalite (0.0..1.0, 0.5 = neutre) ---
+    "eqBass":   0.5,       # +-12 dB autour de 100 Hz
+    "eqMid":    0.5,       # +-12 dB autour de 1 kHz
+    "eqTreble": 0.5,       # +-12 dB autour de 8 kHz
+    "balance":  0.5,       # 0 = tout gauche, 1 = tout droite
+    "inputGain": 0.5,      # gain d'entree (0 = silence, 0.5 = unite, 1 = +6 dB)
+    "dolby":    0.0,       # simulation Dolby B (>0.5 => leger coupe-haut a 5 kHz)
 }
 
 
@@ -83,6 +92,14 @@ class Config(QObject):
         self._set("liteMode", bool(value))
 
     @pyqtProperty(bool, notify=changed)
+    def soberMode(self) -> bool:
+        return self._data["soberMode"]
+
+    @soberMode.setter
+    def soberMode(self, value: bool) -> None:
+        self._set("soberMode", bool(value))
+
+    @pyqtProperty(bool, notify=changed)
     def autoUpdate(self) -> bool:
         return self._data["autoUpdate"]
 
@@ -97,3 +114,60 @@ class Config(QObject):
     @volume.setter
     def volume(self, value: float) -> None:
         self._set("volume", max(0.0, min(1.0, float(value))))
+
+    @pyqtProperty(str, notify=changed)
+    def userName(self) -> str:
+        return self._data["userName"]
+
+    @userName.setter
+    def userName(self, value: str) -> None:
+        self._set("userName", str(value).strip())
+
+    # --- Controles de tonalite --------------------------------------------
+    @pyqtProperty(float, notify=changed)
+    def eqBass(self) -> float:
+        return self._data["eqBass"]
+
+    @eqBass.setter
+    def eqBass(self, value: float) -> None:
+        self._set("eqBass", max(0.0, min(1.0, float(value))))
+
+    @pyqtProperty(float, notify=changed)
+    def eqMid(self) -> float:
+        return self._data["eqMid"]
+
+    @eqMid.setter
+    def eqMid(self, value: float) -> None:
+        self._set("eqMid", max(0.0, min(1.0, float(value))))
+
+    @pyqtProperty(float, notify=changed)
+    def eqTreble(self) -> float:
+        return self._data["eqTreble"]
+
+    @eqTreble.setter
+    def eqTreble(self, value: float) -> None:
+        self._set("eqTreble", max(0.0, min(1.0, float(value))))
+
+    @pyqtProperty(float, notify=changed)
+    def balance(self) -> float:
+        return self._data["balance"]
+
+    @balance.setter
+    def balance(self, value: float) -> None:
+        self._set("balance", max(0.0, min(1.0, float(value))))
+
+    @pyqtProperty(float, notify=changed)
+    def inputGain(self) -> float:
+        return self._data["inputGain"]
+
+    @inputGain.setter
+    def inputGain(self, value: float) -> None:
+        self._set("inputGain", max(0.0, min(1.0, float(value))))
+
+    @pyqtProperty(float, notify=changed)
+    def dolby(self) -> float:
+        return self._data["dolby"]
+
+    @dolby.setter
+    def dolby(self, value: float) -> None:
+        self._set("dolby", max(0.0, min(1.0, float(value))))

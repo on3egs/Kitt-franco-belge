@@ -32,6 +32,10 @@ ApplicationWindow {
         lite: Config.liteMode
     }
 
+    // Suppression depuis la playlist classique : etat partage.
+    property int classicDeleteIndex: -1
+    property string classicDeleteName: ""
+
     ListModel { id: logModel }
     function logAppend(line) {
         logModel.append({ "line": line });
@@ -131,15 +135,17 @@ ApplicationWindow {
         }
     }
 
-    // --- Equalizers Perimetriques ---
+    // --- Equalizers Perimetriques (mode classique uniquement) ---
     BorderEqualizer {
         id: eqLeft
+        visible: !Config.soberMode
         anchors.left: parent.left; anchors.top: titleBar.bottom; anchors.bottom: parent.bottom
         anchors.topMargin: 0; anchors.bottomMargin: 0
         width: 14; orientation: "vertical"; value: Player.vuLeft; barCount: 40
     }
     BorderEqualizer {
         id: eqRight
+        visible: !Config.soberMode
         anchors.right: parent.right; anchors.top: titleBar.bottom; anchors.bottom: parent.bottom
         anchors.topMargin: 0; anchors.bottomMargin: 0
         width: 14; orientation: "vertical"; value: Player.vuRight; barCount: 40
@@ -147,6 +153,7 @@ ApplicationWindow {
 
     // Top EQ (centre vers exterieur)
     Item {
+        visible: !Config.soberMode
         anchors.top: titleBar.bottom; anchors.left: parent.left; anchors.right: parent.right
         anchors.leftMargin: 20; anchors.rightMargin: 20
         height: 14
@@ -163,6 +170,7 @@ ApplicationWindow {
 
     // Bottom EQ (centre vers exterieur)
     Item {
+        visible: !Config.soberMode
         anchors.bottom: parent.bottom; anchors.left: parent.left; anchors.right: parent.right
         anchors.leftMargin: 20; anchors.rightMargin: 20
         height: 14
@@ -177,8 +185,9 @@ ApplicationWindow {
         }
     }
 
-    // --- Layout Principal ---
+    // --- Layout Principal (mode classique) ---
     ColumnLayout {
+        visible: !Config.soberMode
         anchors.fill: parent
         anchors.leftMargin: 22   // apres EQ gauche (14) + air
         anchors.rightMargin: 22  // apres EQ droite (14) + air
@@ -211,7 +220,7 @@ ApplicationWindow {
                         font.family: win.mono; font.pixelSize: 20; font.bold: true
                     }
                     Text {
-                        text: "KNIGHT INDUSTRIES MEDIA CENTER v4.0"; color: win.cTextDim
+                        text: "KNIGHT INDUSTRIES MEDIA CENTER v5.0"; color: win.cTextDim
                         font.family: win.mono; font.pixelSize: 8; font.bold: true
                     }
                 }
@@ -229,8 +238,9 @@ ApplicationWindow {
                         label: "♥ DON"; accent: win.cAccentSoft
                         onClicked: Qt.openUrlExternally("https://paypal.me/On3egs")
                     }
-                    ChipToggle { label: "UPDATE"; active: Config.autoUpdate; onToggled: Config.autoUpdate = !Config.autoUpdate }
+                    ChipToggle { label: "MAJ AUTO"; active: Config.autoUpdate; onToggled: Config.autoUpdate = !Config.autoUpdate }
                     ChipToggle { label: "LITE"; active: Config.liteMode; onToggled: Config.liteMode = !Config.liteMode }
+                    ChipToggle { label: "SOBRE"; active: Config.soberMode; onToggled: Config.soberMode = !Config.soberMode }
                     NeonButton {
                         width: 56; height: 30
                         label: "MÀJ"; accent: win.cAmber
@@ -259,30 +269,30 @@ ApplicationWindow {
 
         // MEDIA TARGET
         Panel {
-            Layout.fillWidth: true; Layout.preferredHeight: 110; title: "MEDIA TARGET"; accent: win.cAccentSoft
+            Layout.fillWidth: true; Layout.preferredHeight: 110; title: "CIBLE MÉDIA"; accent: win.cAccentSoft
             ColumnLayout {
                 anchors.fill: parent; anchors.margins: 4; spacing: 4
                 RowLayout {
                     Layout.fillWidth: true; spacing: 6
                     TextField {
                         id: urlField; Layout.fillWidth: true; Layout.preferredHeight: 28
-                        placeholderText: "PASTE URL..."; color: "#fff"; font.pixelSize: 11
+                        placeholderText: "Coller une URL..."; color: "#fff"; font.pixelSize: 11
                         background: Rectangle { color: "#06070a"; border.color: "#3d1117" }
                     }
-                    NeonButton { Layout.preferredWidth: 76; Layout.preferredHeight: 28; label: "PASTE"; accent: win.cCyan; onClicked: urlField.text = Shell.clipboard() }
+                    NeonButton { Layout.preferredWidth: 76; Layout.preferredHeight: 28; label: "COLLER"; accent: win.cCyan; onClicked: urlField.text = Shell.clipboard() }
                 }
                 RowLayout {
                     Layout.fillWidth: true; spacing: 8
-                    ChipToggle { label: "VIDEO"; active: Config.mode === "video"; onToggled: Config.mode = "video" }
+                    ChipToggle { label: "VIDÉO"; active: Config.mode === "video"; onToggled: Config.mode = "video" }
                     ChipToggle { label: "MP3"; active: Config.mode === "mp3"; onToggled: Config.mode = "mp3" }
-                    ChipToggle { label: "PLAYLIST"; active: Config.playlist; onToggled: Config.playlist = !Config.playlist }
+                    ChipToggle { label: "LISTE"; active: Config.playlist; onToggled: Config.playlist = !Config.playlist }
                     Item { Layout.fillWidth: true }
                     NeonButton {
-                        id: dlButton; Layout.preferredWidth: 110; Layout.preferredHeight: 28
-                        label: Downloader.busy ? "CANCEL" : "DOWNLOAD"; accent: Downloader.busy ? win.cAccent : win.cGreen
+                        id: dlButton; Layout.preferredWidth: 130; Layout.preferredHeight: 28
+                        label: Downloader.busy ? "ANNULER" : "TÉLÉCHARGER"; accent: Downloader.busy ? win.cAccent : win.cGreen
                         onClicked: Downloader.busy ? Downloader.cancel() : Downloader.start(urlField.text, Config.mode, Config.playlist)
                     }
-                    NeonButton { Layout.preferredWidth: 80; Layout.preferredHeight: 28; label: "FILES"; accent: win.cCyan; onClicked: Shell.openMediaDir() }
+                    NeonButton { Layout.preferredWidth: 90; Layout.preferredHeight: 28; label: "FICHIERS"; accent: win.cCyan; onClicked: Shell.openMediaDir() }
                 }
             }
         }
@@ -291,7 +301,7 @@ ApplicationWindow {
         RowLayout {
             Layout.fillWidth: true; Layout.preferredHeight: 290; spacing: 4
             Panel {
-                Layout.preferredWidth: 240; Layout.fillHeight: true; title: "TRANSFER"; accent: win.cAccentSoft
+                Layout.preferredWidth: 240; Layout.fillHeight: true; title: "TRANSFERT"; accent: win.cAccentSoft
                 Image {
                     anchors.fill: parent
                     fillMode: Image.PreserveAspectCrop
@@ -308,7 +318,7 @@ ApplicationWindow {
                     Grid {
                         columns: 2; spacing: 4; width: parent.width
                         Repeater {
-                            model: [["SPEED", Downloader.speed], ["ETA", Downloader.eta]]
+                            model: [["VITESSE", Downloader.speed], ["ETA", Downloader.eta]]
                             Column {
                                 Text { text: modelData[0]; color: win.cTextDim; font.pixelSize: 8 }
                                 Text { text: modelData[1]; color: "#fff"; font.pixelSize: 11; font.bold: true }
@@ -318,7 +328,7 @@ ApplicationWindow {
                 }
             }
             Panel {
-                Layout.fillWidth: true; Layout.fillHeight: true; title: "CORE MONITOR"; accent: win.cCyan
+                Layout.fillWidth: true; Layout.fillHeight: true; title: "MONITEUR SYSTÈME"; accent: win.cCyan
                 ColumnLayout {
                     anchors.fill: parent; spacing: 5
 
@@ -352,7 +362,7 @@ ApplicationWindow {
 
         // AUDIO PLAYER
         Panel {
-            Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 380; title: "AUDIO PLAYER"; accent: win.cAmber
+            Layout.fillWidth: true; Layout.fillHeight: true; Layout.minimumHeight: 380; title: "LECTEUR AUDIO"; accent: win.cAmber
             ColumnLayout {
                 anchors.fill: parent; anchors.margins: 6; spacing: 4
                 RowLayout {
@@ -382,7 +392,7 @@ ApplicationWindow {
                                 }
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: 9; width: parent.width - 16
+                                    x: 9; width: parent.width - 60
                                     text: modelData
                                     color: trackRow.current ? "#ffffff"
                                          : rowMouse.containsMouse ? "#c2c8ce" : "#8b929a"
@@ -395,6 +405,31 @@ ApplicationWindow {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: Player.play(index)
                                 }
+                                // Bouton supprimer : declare APRES rowMouse pour passer
+                                // au-dessus dans le hit-testing QML (sinon rowMouse intercepte
+                                // le clic et le bouton parait mort).
+                                Rectangle {
+                                    anchors.right: parent.right; anchors.rightMargin: 4
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 20; height: 18; radius: 2
+                                    visible: rowMouse.containsMouse || delHover.containsMouse
+                                    color: delHover.containsMouse ? win.cAccent : "#2a0b10"
+                                    border.color: win.cAccent; border.width: 1
+                                    Text {
+                                        anchors.centerIn: parent; text: "×"
+                                        color: delHover.containsMouse ? "#ffffff" : win.cAccent
+                                        font.family: win.mono; font.pixelSize: 11; font.bold: true
+                                    }
+                                    MouseArea {
+                                        id: delHover; anchors.fill: parent; hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            classicDeleteIndex = index
+                                            classicDeleteName = modelData
+                                            classicDeleteDialog.open()
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -404,7 +439,7 @@ ApplicationWindow {
                         spacing: 6
 
                         Text {
-                            text: "NOW PLAYING"
+                            text: "EN COURS"
                             color: win.cTextDim
                             font.family: win.mono; font.pixelSize: 8; font.bold: true
                         }
@@ -438,13 +473,27 @@ ApplicationWindow {
                     Layout.preferredHeight: 140
                     spacing: 4
                     ToneControls {
+                        id: toneControls
                         z: 1
                         Layout.preferredWidth: 120
                         Layout.fillHeight: true
-                        // Valeurs fixes — pas de rotation automatique avec l'audio
-                        bassValue: 0.5
-                        midValue: 0.5
-                        trebleValue: 0.5
+                        // Initialisation depuis Config au chargement uniquement (pas de
+                        // binding direct pour eviter une boucle quand un setter Player
+                        // remet a jour Config).
+                        Component.onCompleted: {
+                            bassValue = Config.eqBass
+                            midValue = Config.eqMid
+                            trebleValue = Config.eqTreble
+                            balanceValue = Config.balance
+                            inputValue = Config.inputGain
+                            dolbyValue = Config.dolby
+                        }
+                        onBassValueChanged:    Player.setEqBass(bassValue)
+                        onMidValueChanged:     Player.setEqMid(midValue)
+                        onTrebleValueChanged:  Player.setEqTreble(trebleValue)
+                        onBalanceValueChanged: Player.setBalance(balanceValue)
+                        onInputValueChanged:   Player.setInputGain(inputValue)
+                        onDolbyValueChanged:   Player.setDolby(dolbyValue)
                     }
                     Oscilloscope {
                         Layout.preferredWidth: 140
@@ -512,7 +561,7 @@ ApplicationWindow {
         RowLayout {
             Layout.fillWidth: true; Layout.preferredHeight: 100; spacing: 4
             Panel {
-                Layout.fillWidth: true; Layout.fillHeight: true; title: "SYSTEM LOG"; accent: win.cAccentSoft
+                Layout.fillWidth: true; Layout.fillHeight: true; title: "JOURNAL"; accent: win.cAccentSoft
                 Image {
                     anchors.fill: parent
                     source: "../assets/kitt_full_black.png"
@@ -531,7 +580,7 @@ ApplicationWindow {
                 }
             }
             Panel {
-                Layout.preferredWidth: 280; Layout.fillHeight: true; title: "HISTORY"; accent: win.cCyan
+                Layout.preferredWidth: 280; Layout.fillHeight: true; title: "HISTORIQUE"; accent: win.cCyan
                 ListView {
                     id: histView; anchors.fill: parent; anchors.margins: 4; model: History.items; clip: true
                     delegate: Rectangle {
@@ -542,6 +591,83 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    // --- Effet "sag" : baisse de luminosite quand l'audio force ---
+    // L'interface s'assombrit legerement comme une chaine hi-fi sous-alimentee
+    // au volume max, facon autoradio qui peine.
+    Rectangle {
+        anchors.fill: parent
+        z: 50
+        color: "#000000"
+        opacity: {
+            var vuMix = (Player.vuLeft + Player.vuRight) * 0.5
+            var load = Player.volume * Math.max(Player.bass, vuMix)
+            return Math.max(0, Math.min(0.20, (load - 0.50) * 0.40))
+        }
+        Behavior on opacity { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
+        // L'overlay est purement visuel et ne doit pas intercepter les clics.
+        // (Avec opacity=0..0.20 il reste transparent au touch sans MouseArea.)
+    }
+
+    // Confirmation de suppression depuis la playlist classique.
+    Dialog {
+        id: classicDeleteDialog
+        anchors.centerIn: parent
+        width: 460; modal: true
+        background: Rectangle {
+            color: "#0c0e12"; border.color: win.cAccent; border.width: 1; radius: 6
+        }
+        contentItem: Column {
+            spacing: 12
+            Text {
+                text: "Supprimer du disque ?"
+                color: win.cAccent
+                font.family: win.mono; font.pixelSize: 13; font.bold: true
+                width: parent.width
+            }
+            Text {
+                text: "« " + win.classicDeleteName + " »"
+                color: "#ffffff"
+                font.family: win.mono; font.pixelSize: 11
+                width: parent.width; wrapMode: Text.Wrap
+            }
+            Text {
+                text: "Le fichier sera retiré de la playlist ET du dossier media/."
+                color: win.cTextDim
+                font.family: win.mono; font.pixelSize: 9
+                width: parent.width; wrapMode: Text.Wrap
+            }
+            Row {
+                spacing: 8
+                NeonButton {
+                    width: 110; height: 28
+                    label: "SUPPRIMER"; accent: win.cAccent
+                    onClicked: {
+                        if (win.classicDeleteIndex >= 0)
+                            Player.deleteAt(win.classicDeleteIndex)
+                        win.classicDeleteIndex = -1
+                        classicDeleteDialog.close()
+                    }
+                }
+                NeonButton {
+                    width: 90; height: 28
+                    label: "ANNULER"; accent: win.cCyan
+                    onClicked: { win.classicDeleteIndex = -1; classicDeleteDialog.close() }
+                }
+            }
+        }
+    }
+
+    // --- Skin sobre (charge a la demande) ---
+    Loader {
+        id: soberLoader
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: titleBar.bottom
+        anchors.bottom: parent.bottom
+        active: Config.soberMode
+        source: "SoberView.qml"
     }
 
     // --- Dialogue mise a jour ---
@@ -560,7 +686,7 @@ ApplicationWindow {
                 NeonButton {
                     visible: updateDialog.showDownload
                     width: 100; height: 28
-                    label: "TELECHARGER"; accent: "#ff2a3a"
+                    label: "TÉLÉCHARGER"; accent: "#ff2a3a"
                     onClicked: { Updater.downloadAndInstall(); updateDialog.close(); }
                 }
                 NeonButton {

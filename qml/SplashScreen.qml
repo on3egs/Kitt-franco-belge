@@ -8,6 +8,9 @@ Item {
     z: 500
     visible: true
 
+    // Emis quand le splash se termine (fin de sequence ou clic pour passer).
+    signal finished()
+
     readonly property color cAccent: "#ff2a3a"
     readonly property color cText: "#d8dde2"
     readonly property color cTextDim: "#7c858d"
@@ -26,13 +29,15 @@ Item {
         }
     }
 
-    // Clic = passer le demarrage
+    // Clic = passer le demarrage - CORRIGE : desactive quand invisible
     MouseArea {
         anchors.fill: parent
+        enabled: root.visible && root.opacity > 0.1
         onClicked: {
             seq.stop(); socialSeq.stop();
             SoundFx.stopSplash();
             root.visible = false;
+            root.finished();
         }
     }
 
@@ -107,9 +112,18 @@ Item {
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "version 4.0   ·   KITT Franco-Belge"
+            text: "version 5.0   ·   KITT Franco-Belge"
             color: root.cTextDim
             font.family: root.mono; font.pixelSize: 9
+        }
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: Config.userName.length > 0
+                ? "LICENCE GNU GPL v3   ·   ENREGISTRÉ : " + Config.userName.toUpperCase()
+                : "LICENCE GNU GPL v3   ·   LOGICIEL LIBRE"
+            color: root.cTextDim
+            font.family: root.mono; font.pixelSize: 8; font.bold: true
+            font.letterSpacing: 1
         }
 
         Item { width: 1; height: 8 }
@@ -272,7 +286,7 @@ Item {
             from: 1.0; to: 0.0
             duration: 2000; easing.type: Easing.InQuad
         }
-        ScriptAction { script: root.visible = false }
+        ScriptAction { script: { root.visible = false; root.finished(); } }
     }
 
     // --- Apparition sequentielle des reseaux (fade-in en cascade) ---

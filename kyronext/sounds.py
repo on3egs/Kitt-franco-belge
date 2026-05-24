@@ -7,12 +7,13 @@ from __future__ import annotations
 
 import struct
 import subprocess
+import threading
 import wave
 from pathlib import Path
 
 from PyQt5.QtCore import QObject, pyqtSlot
 
-from . import paths
+from . import paths, voice_greeting
 
 _CLICK_PATH = Path(paths.STATE_DIR) / "click.wav"
 
@@ -94,3 +95,32 @@ class SoundFx(QObject):
                 except OSError:
                     pass
         self._splash_procs.clear()
+
+    @pyqtSlot(str)
+    def greeting(self, name: str) -> None:
+        """Joue l'accueil vocal "Bonjour <prenom>" (ElevenLabs, mis en cache).
+
+        La recherche et l'eventuelle generation reseau se font dans un thread :
+        l'interface n'est jamais bloquee, meme au tout premier appel.
+        """
+        name = (name or "").strip()
+        if not name:
+            return
+        threading.Thread(
+            target=self._play_greeting, args=(name,), daemon=True,
+        ).start()
+
+    def _play_greeting(self, name: str) -> None:
+        """Resout le MP3 d'accueil puis le joue (execute hors thread UI)."""
+        path = voice_greeting.ensure_greeting(name)
+        if path is None:
+            return  # cle absente, hors ligne... : accueil vocal silencieux
+        try:
+            subprocess.Popen(
+                ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet",
+                 "-volume", "90", str(path)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except (OSError, FileNotFoundError):
+            pass

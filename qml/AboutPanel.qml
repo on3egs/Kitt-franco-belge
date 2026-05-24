@@ -18,6 +18,9 @@ Item {
     readonly property string mono: "DejaVu Sans Mono"
     readonly property string donateUrl: "https://paypal.me/On3egs"
 
+    // Emis quand l'utilisateur demande a corriger son prenom enregistre.
+    signal editNameRequested()
+
     function open() { root.visible = true; root.forceActiveFocus(); }
     function close() { root.visible = false; }
 
@@ -40,7 +43,7 @@ Item {
         id: card
         anchors.centerIn: parent
         width: 660
-        height: 432
+        height: 460
 
         // Absorbe les clics : cliquer la carte ne la ferme pas
         MouseArea { anchors.fill: parent }
@@ -124,6 +127,38 @@ Item {
                         font.family: root.mono; font.pixelSize: 9
                         text: "Logiciel libre et gratuit, sous licence GNU GPL v3. "
                             + "Pour soutenir son développement, vous pouvez faire un don :"
+                    }
+
+                    // Licence « enregistree » au nom de l'utilisateur (touche pro).
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+                        visible: Config.userName.length > 0
+                        Text {
+                            text: "Licence enregistrée au nom de"
+                            color: root.cTextDim
+                            font.family: root.mono; font.pixelSize: 9
+                        }
+                        Text {
+                            text: Config.userName
+                            color: root.cAccentSoft
+                            font.family: root.mono; font.pixelSize: 9; font.bold: true
+                        }
+                        Text {
+                            text: "· modifier"
+                            color: editMouse.containsMouse ? root.cAccentSoft
+                                                           : root.cTextDim
+                            font.family: root.mono; font.pixelSize: 9
+                            font.underline: editMouse.containsMouse
+                            MouseArea {
+                                id: editMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: { root.close(); root.editNameRequested(); }
+                            }
+                        }
+                        Item { Layout.fillWidth: true }
                     }
 
                     RowLayout {

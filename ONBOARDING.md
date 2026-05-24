@@ -1,6 +1,6 @@
-# Kironext Studio — passation technique pour agent IA
+# Kironext Studio — passation technique
 
-Document destiné à toute IA (Kimi, Claude…) reprenant le projet. Lis-le **en
+Document destiné à toute personne reprenant le projet. Lis-le **en
 entier** avant de modifier quoi que ce soit. Il décrit l'état réel du code,
 pas l'état souhaité.
 
@@ -232,7 +232,7 @@ CPU et débit réseau. Hors Jetson, les valeurs Jetson restent à 0.
   Le mettre à jour si on touche aux fonctionnalités.
 - **Nommage Kironext/Kyronext** non unifié (section 1).
 - L'image `assets/burning_phoenix_wikimedia.png` rend mal (pixels épars).
-- `.kimi/config.toml` a `yolo = true` : l'agent Kimi applique sans confirmer —
+- Le mode automatique (`yolo`) applique les modifications sans confirmer —
   d'où l'importance de tester (section 4) après chaque modification.
 - Le volume dépend de PulseAudio + `pactl` ; absent → le volume n'a pas d'effet
   (dégradation silencieuse, pas de plantage).

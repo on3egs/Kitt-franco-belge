@@ -69,6 +69,14 @@ class Player(QObject):
         self._vol_timer.setInterval(140)
         self._vol_timer.timeout.connect(self._apply_volume)
 
+        # Tonalite : valeurs persistees (0..1, 0.5 neutre) + timer anti-rebond
+        # qui relance ffmpeg au point courant pour appliquer la nouvelle chaine
+        # de filtres -af. Sans ce delai, chaque pixel de glisser tuerait ffmpeg.
+        self._tone_timer = QTimer(self)
+        self._tone_timer.setSingleShot(True)
+        self._tone_timer.setInterval(280)
+        self._tone_timer.timeout.connect(self._reapply_tone)
+
         # Timer de progression : avance la barre de lecture et detecte la
         # fin de piste pour enchainer automatiquement.
         self._tick = QTimer(self)
@@ -159,6 +167,49 @@ class Player(QObject):
         self.levelsChanged.emit()
         self._apply_volume()              # immediat : c'est un clic, pas un glisser
 
+    # --- tonalite (EQ + balance + gain + dolby) -------------------------
+    @pyqtSlot(float)
+    def setEqBass(self, value: float) -> None:
+        self._config.eqBass = value
+        self._tone_timer.start()
+
+    @pyqtSlot(float)
+    def setEqMid(self, value: float) -> None:
+        self._config.eqMid = value
+        self._tone_timer.start()
+
+    @pyqtSlot(float)
+    def setEqTreble(self, value: float) -> None:
+        self._config.eqTreble = value
+        self._tone_timer.start()
+
+    @pyqtSlot(float)
+    def setBalance(self, value: float) -> None:
+        self._config.balance = value
+        self._tone_timer.start()
+
+    @pyqtSlot(float)
+    def setInputGain(self, value: float) -> None:
+        self._config.inputGain = value
+        self._tone_timer.start()
+
+    @pyqtSlot(float)
+    def setDolby(self, value: float) -> None:
+        self._config.dolby = value
+        self._tone_timer.start()
+
+    def _reapply_tone(self) -> None:
+        """Recharge ffmpeg avec la nouvelle chaine de filtres au point courant.
+
+        Appele apres debounce 280 ms quand l'utilisateur tourne un potard.
+        Quand la lecture est en pause/arret, on n'a rien a relancer ; la prochaine
+        lecture utilisera deja les nouvelles valeurs via _build_tone_filter().
+        """
+        if self._state != "playing":
+            return
+        self._offset = self._position()
+        self._spawn(self._offset)
+
     # --- helpers --------------------------------------------------------
     def _label(self, path: Path) -> str:
         """Nom lisible : sans identifiant ni extension."""
@@ -202,6 +253,38 @@ class Player(QObject):
             self._index = 0
         self.playlistChanged.emit()
         self.stateChanged.emit()
+
+    @pyqtSlot(int, result=bool)
+    def deleteAt(self, index: int) -> bool:
+        """Supprime la piste de la file ET du disque. Renvoie True si OK."""
+        if not (0 <= index < len(self._tracks)):
+            return False
+        target = self._tracks[index]
+        if index == self._index and self._state != "stopped":
+            self.stop()
+        try:
+            target.unlink()
+        except OSError:
+            return False
+        self.scan()
+        return True
+
+    @pyqtSlot("QStringList", int)
+    def setQueue(self, queue: list[str], start: int = 0) -> None:
+        """Remplace la file de lecture par les chemins fournis et joue le start-ieme.
+
+        Utilise par le mode sobre pour piloter le lecteur depuis la Bibliotheque
+        (la file refletera le filtre/tri courants de la vue).
+        """
+        self._tracks = [Path(p) for p in queue if p]
+        if not self._tracks:
+            self.playlistChanged.emit()
+            self.stateChanged.emit()
+            return
+        index = max(0, min(start, len(self._tracks) - 1))
+        self._index = index
+        self.playlistChanged.emit()
+        self.play(index)
 
     # --- transport ------------------------------------------------------
     @pyqtSlot(int)
@@ -266,6 +349,37 @@ class Player(QObject):
         self._kill()
 
     # --- moteur ffmpeg --------------------------------------------------
+    def _build_tone_filter(self) -> str:
+        """Construit la chaine -af a partir des reglages de tonalite du Config.
+
+        Les knobs vont de 0 a 1, 0.5 etant neutre. Les filtres sont legers
+        (4 equalizers + stereotools + volume) pour rester confortable sur Jetson.
+        """
+        cfg = self._config
+        bass = (cfg.eqBass - 0.5) * 24.0       # +-12 dB
+        mid = (cfg.eqMid - 0.5) * 24.0
+        treble = (cfg.eqTreble - 0.5) * 24.0
+        balance = (cfg.balance - 0.5) * 2.0    # -1 (gauche) .. +1 (droite)
+        gain = max(0.0, cfg.inputGain * 2.0)   # 0 = silence, 0.5 = unite, 1 = +6 dB
+        dolby = cfg.dolby                      # >0.5 => coupe-haut a 5 kHz
+
+        chain = []
+        # Eviter de pousser des filtres inutiles quand tout est neutre.
+        if abs(bass) > 0.1:
+            chain.append(f"equalizer=f=100:t=q:w=1.2:g={bass:.2f}")
+        if abs(mid) > 0.1:
+            chain.append(f"equalizer=f=1000:t=q:w=1.2:g={mid:.2f}")
+        if abs(treble) > 0.1:
+            chain.append(f"equalizer=f=8000:t=q:w=1.2:g={treble:.2f}")
+        if dolby > 0.5:
+            dolby_g = -((dolby - 0.5) * 12.0)  # 0 a -6 dB a 5 kHz
+            chain.append(f"equalizer=f=5000:t=q:w=1.0:g={dolby_g:.2f}")
+        if abs(balance) > 0.02:
+            chain.append(f"stereotools=balance_in={balance:.2f}")
+        if abs(gain - 1.0) > 0.02:
+            chain.append(f"volume={gain:.3f}")
+        return ",".join(chain)
+
     def _spawn(self, offset: float) -> None:
         """Lance ffmpeg : lecture PulseAudio + flux PCM d'analyse."""
         self._kill()
@@ -275,12 +389,25 @@ class Player(QObject):
         if not ffmpeg:
             return
         track = self._tracks[self._index]
+        tone = self._build_tone_filter()
         cmd = [
             ffmpeg, "-hide_banner", "-nostdin", "-loglevel", "error",
             "-ss", f"{max(0.0, offset):.2f}", "-i", str(track),
+        ]
+        # -af est une option *par sortie* en ffmpeg : il faut la repeter pour
+        # chaque output, sinon seul le premier (PulseAudio) recoit les filtres
+        # et le flux PCM d'analyse renvoie un signal non filtre -> les VU
+        # bass/mid/treble ne refletent pas la tonalite.
+        if tone:
+            cmd += ["-af", tone]
+        cmd += [
             # Sortie 1 : son audible via PulseAudio. Le flux est nomme pour
             # pouvoir regler son volume a chaud (pactl), sans relancer ffmpeg.
             "-vn", "-f", "pulse", "-name", _APP_TAG, "default",
+        ]
+        if tone:
+            cmd += ["-af", tone]
+        cmd += [
             # Sortie 2 : PCM brut sur stdout, lu par l'analyseur VU.
             "-vn", "-ac", "2", "-ar", str(SAMPLE_RATE), "-f", "f32le", "pipe:1",
         ]
