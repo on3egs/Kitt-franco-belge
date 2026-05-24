@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://detection-capacity-servers-vip.trycloudflare.com",
-  "last_update": "2026-05-24T15:14:35.244204+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-24T15:15:59.476902+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
