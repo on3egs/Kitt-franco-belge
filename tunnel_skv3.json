@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://disclosure-watson-statistics-servers.trycloudflare.com",
-  "last_update": "2026-05-26T21:49:56.835566+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-26T21:50:04.798420+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
