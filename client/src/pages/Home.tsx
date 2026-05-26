@@ -1326,7 +1326,7 @@ function SocialProofSection() {
             {t("community.cta1")}
           </a>
           <a
-            href="https://www.facebook.com/groups/757797724622219/join_request/"
+            href="https://www.facebook.com/groups/757797724622219/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-8 py-4 transition-all"
