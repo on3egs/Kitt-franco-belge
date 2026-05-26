@@ -2255,7 +2255,7 @@ function Footer() {
 }
 
 // ─── Visitor Counter ──────────────────────────────────────────────────────────
-const FALLBACK_COUNT = 3387; // Affiché si le Jetson est hors ligne
+const FALLBACK_COUNT = 10000; // Affiché si le Jetson est hors ligne
 
 const fetchTunnelUrl = getApiBase;
 
