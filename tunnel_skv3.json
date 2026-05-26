@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://others-complete-accepted-quilt.trycloudflare.com",
-  "last_update": "2026-05-26T21:50:36.650378+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-26T21:50:44.548501+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
