@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-26T21:47:28.789608+00:00",
+  "status": "online",
+  "url": "https://plains-rubber-fits-coverage.trycloudflare.com",
+  "last_update": "2026-05-26T21:47:56.150070+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
