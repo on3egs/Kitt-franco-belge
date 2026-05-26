@@ -155,7 +155,7 @@ const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(
 export default defineConfig({
   plugins,
   // GitHub Pages : le site est servi sous /Kitt-franco-belge/
-  base: process.env.GITHUB_ACTIONS ? "/Kitt-franco-belge/" : "/",
+  base: "/",
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
