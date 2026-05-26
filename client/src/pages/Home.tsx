@@ -2255,7 +2255,8 @@ function Footer() {
 }
 
 // ─── Visitor Counter ──────────────────────────────────────────────────────────
-const FALLBACK_COUNT = 10000; // Affiché si le Jetson est hors ligne
+const FALLBACK_COUNT = 10000; // Affiché si le Worker est hors ligne
+const WORKER_URL = "https://kitt-counter.on3egs.workers.dev";
 
 const fetchTunnelUrl = getApiBase;
 
@@ -2272,25 +2273,22 @@ function VisitorCounter() {
     async function loadCount() {
       let final = FALLBACK_COUNT;
       try {
-        const tunnelUrl = await fetchTunnelUrl();
-        if (tunnelUrl) {
-          const method = alreadyCounted ? "GET" : "POST";
-          const r = await fetch(`${tunnelUrl}/api/site-counter`, {
-            method,
-            headers: { "Content-Type": "application/json" },
-            signal: AbortSignal.timeout(5000),
-          });
-          if (r.ok) {
-            const j = await r.json();
-            final = Math.max(FALLBACK_COUNT, j.count as number);
-            if (!alreadyCounted) {
-              sessionStorage.setItem(SESSION_KEY, "1");
-              setIsNew(true);
-            }
+        const method = alreadyCounted ? "GET" : "POST";
+        const r = await fetch(WORKER_URL, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          signal: AbortSignal.timeout(5000),
+        });
+        if (r.ok) {
+          const j = await r.json();
+          final = Math.max(FALLBACK_COUNT, j.count as number);
+          if (!alreadyCounted) {
+            sessionStorage.setItem(SESSION_KEY, "1");
+            setIsNew(true);
           }
         }
       } catch {
-        // Jetson hors ligne — on affiche le fallback
+        // Worker hors ligne — on affiche le fallback
         if (!alreadyCounted) {
           sessionStorage.setItem(SESSION_KEY, "1");
           setIsNew(true);
