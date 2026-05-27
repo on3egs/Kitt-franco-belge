@@ -3,6 +3,9 @@ name: Deploy KITT Franco-Belge
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'tunnel_*.json'
+      - 'tunnel.json'
   workflow_dispatch:
 
 permissions:
