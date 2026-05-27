@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T13:40:28.625405+00:00",
+  "status": "online",
+  "url": "https://acceptance-chef-listening-codes.trycloudflare.com",
+  "last_update": "2026-05-27T13:40:56.551075+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
