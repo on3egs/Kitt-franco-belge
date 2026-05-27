@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T23:57:26.567169+00:00",
+  "status": "online",
+  "url": "https://budapest-researchers-smallest-cookbook.trycloudflare.com",
+  "last_update": "2026-05-27T23:57:53.892589+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
