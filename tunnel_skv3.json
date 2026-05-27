@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T09:49:22.118529+00:00",
+  "status": "online",
+  "url": "https://len-motor-regular-kit.trycloudflare.com",
+  "last_update": "2026-05-27T09:49:50.776024+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
