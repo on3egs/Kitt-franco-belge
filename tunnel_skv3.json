@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T23:47:42.910041+00:00",
+  "status": "online",
+  "url": "https://attempts-base-hazardous-bye.trycloudflare.com",
+  "last_update": "2026-05-27T23:51:11.402829+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
