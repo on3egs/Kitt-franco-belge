@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://historic-bingo-minimal-gtk.trycloudflare.com",
-  "last_update": "2026-05-27T23:30:44.935317+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T23:30:53.308408+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
