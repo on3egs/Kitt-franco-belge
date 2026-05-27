@@ -258,9 +258,7 @@ function NavBar() {
             {t("nav.access")}
           </a>
           <a
-            href="http://localhost:5000"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/kyronext-studio/"
             className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
             style={{
               fontFamily: "Orbitron, monospace",
@@ -372,9 +370,7 @@ function NavBar() {
             {t("nav.access")}
           </a>
           <a
-            href="http://localhost:5000"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/kyronext-studio/"
             className="text-center block"
             style={{
               fontFamily: "Orbitron, monospace",
