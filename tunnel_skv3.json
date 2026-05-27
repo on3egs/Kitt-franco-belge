@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://high-which-nvidia-exception.trycloudflare.com",
-  "last_update": "2026-05-27T23:22:17.506896+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T23:22:26.055229+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
