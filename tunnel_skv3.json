@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T15:57:27.950189+00:00",
+  "status": "online",
+  "url": "https://kai-leon-telephony-memorabilia.trycloudflare.com",
+  "last_update": "2026-05-27T15:57:56.412725+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
