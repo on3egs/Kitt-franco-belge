@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T10:01:30.762772+00:00",
+  "status": "online",
+  "url": "https://brother-annotation-meter-varying.trycloudflare.com",
+  "last_update": "2026-05-27T10:02:00.733328+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
