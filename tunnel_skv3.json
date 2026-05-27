@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T23:56:05.291101+00:00",
+  "status": "online",
+  "url": "https://boss-facing-crawford-evaluations.trycloudflare.com",
+  "last_update": "2026-05-27T23:56:33.693321+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
