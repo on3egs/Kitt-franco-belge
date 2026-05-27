@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://softball-webcast-huge-sms.trycloudflare.com",
-  "last_update": "2026-05-27T17:08:08.344509+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T17:08:18.709191+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
