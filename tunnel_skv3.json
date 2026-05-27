@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T15:44:00.568028+00:00",
+  "status": "online",
+  "url": "https://dakota-armstrong-mind-register.trycloudflare.com",
+  "last_update": "2026-05-27T15:44:28.074126+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
