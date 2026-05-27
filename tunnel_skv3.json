@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://resolved-capture-newcastle-knife.trycloudflare.com",
-  "last_update": "2026-05-27T15:50:34.543874+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T15:50:42.705581+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
