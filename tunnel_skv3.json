@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://arc-doe-tvs-warren.trycloudflare.com",
-  "last_update": "2026-05-27T13:29:54.336309+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T13:30:03.773253+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
