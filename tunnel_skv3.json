@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T15:58:46.652501+00:00",
+  "status": "online",
+  "url": "https://cap-characters-supervisors-notification.trycloudflare.com",
+  "last_update": "2026-05-27T15:59:14.263036+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
