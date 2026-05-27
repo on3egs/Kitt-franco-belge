@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://nav-cameras-occupations-ignored.trycloudflare.com",
-  "last_update": "2026-05-27T23:10:37.449017+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T23:10:43.907841+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
