@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T23:08:53.411680+00:00",
+  "status": "online",
+  "url": "https://bulletin-mas-alone-arrivals.trycloudflare.com",
+  "last_update": "2026-05-27T23:09:20.744766+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
