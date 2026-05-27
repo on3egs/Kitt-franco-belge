@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T11:05:12.209335+00:00",
+  "status": "online",
+  "url": "https://foot-order-sonic-plc.trycloudflare.com",
+  "last_update": "2026-05-27T11:05:39.949603+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
