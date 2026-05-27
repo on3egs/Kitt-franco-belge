@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://permit-email-ethernet-park.trycloudflare.com",
-  "last_update": "2026-05-27T12:24:37.195904+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T12:24:46.023789+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
