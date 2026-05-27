@@ -2225,6 +2225,23 @@ function Footer() {
                 </a>
               ))}
             </div>
+            <div className="section-label mb-3 mt-6">LÉGAL</div>
+            <div className="space-y-2">
+              {[
+                { label: "Mentions légales", href: "/mentions-legales" },
+                { label: "Confidentialité", href: "/privacy" },
+                { label: "Suppression des données", href: "/data-deletion" },
+              ].map(({ label, href }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="block hover:text-red-400 transition-colors"
+                  style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.95rem", color: "rgba(192,192,192,0.6)" }}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -2233,12 +2250,12 @@ function Footer() {
           className="pt-4 pb-2 text-center"
           style={{ borderTop: "1px solid rgba(255,34,34,0.06)" }}
         >
-          <p style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(192,192,192,0.25)", letterSpacing: "0.06em", lineHeight: 1.8 }}>
+          <p style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(192,192,192,0.5)", letterSpacing: "0.06em", lineHeight: 1.8 }}>
             Knight Rider™, K.I.T.T.™, K2000™ et KARR™ sont des marques déposées de NBCUniversal Media, LLC. Ce site est un projet de fan indépendant, non officiel et non commercial, sans aucun lien avec NBCUniversal.
             {" · "}
-            <Link href="/mentions-legales" style={{ color: "rgba(255,34,34,0.4)", textDecoration: "none" }}>Mentions légales</Link>
+            <Link href="/mentions-legales" style={{ color: "rgba(255,34,34,0.6)", textDecoration: "none" }}>Mentions légales</Link>
             {" · "}
-            <Link href="/privacy" style={{ color: "rgba(255,34,34,0.4)", textDecoration: "none" }}>Confidentialité</Link>
+            <Link href="/privacy" style={{ color: "rgba(255,34,34,0.6)", textDecoration: "none" }}>Confidentialité</Link>
           </p>
         </div>
 
