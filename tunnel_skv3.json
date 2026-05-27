@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://advisory-sun-derby-henry.trycloudflare.com",
-  "last_update": "2026-05-27T15:49:13.803352+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T15:49:20.955204+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
