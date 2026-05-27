@@ -2228,9 +2228,23 @@ function Footer() {
           </div>
         </div>
 
+        {/* Knight Rider disclaimer */}
+        <div
+          className="pt-4 pb-2 text-center"
+          style={{ borderTop: "1px solid rgba(255,34,34,0.06)" }}
+        >
+          <p style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(192,192,192,0.25)", letterSpacing: "0.06em", lineHeight: 1.8 }}>
+            Knight Rider™, K.I.T.T.™, K2000™ et KARR™ sont des marques déposées de NBCUniversal Media, LLC. Ce site est un projet de fan indépendant, non officiel et non commercial, sans aucun lien avec NBCUniversal.
+            {" · "}
+            <Link href="/mentions-legales" style={{ color: "rgba(255,34,34,0.4)", textDecoration: "none" }}>Mentions légales</Link>
+            {" · "}
+            <Link href="/privacy" style={{ color: "rgba(255,34,34,0.4)", textDecoration: "none" }}>Confidentialité</Link>
+          </p>
+        </div>
+
         {/* Bottom bar */}
         <div
-          className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4"
+          className="pt-4 flex flex-col md:flex-row items-center justify-between gap-4"
           style={{ borderTop: "1px solid rgba(255,34,34,0.1)" }}
         >
           <div

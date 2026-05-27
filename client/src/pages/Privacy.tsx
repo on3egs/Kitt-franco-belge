@@ -26,17 +26,21 @@ export default function Privacy() {
             Aucune donnée n'est revendue à des tiers.
           </p>
 
-          <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>3. Cookies</h2>
+          <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>3. Cookies et stockage local</h2>
           <p style={{ marginBottom: "1.5rem" }}>
             Ce site utilise uniquement des données de session locales (sessionStorage) pour mémoriser votre visite
-            et éviter de compter plusieurs fois le même visiteur. Aucun cookie de tracking tiers n'est utilisé.
+            et éviter de compter plusieurs fois le même visiteur. L'éditeur du site n'installe aucun cookie de tracking propre.
+            Toutefois, les contenus intégrés en provenance de plateformes tierces (lecteurs vidéo, widget de groupe communautaire)
+            peuvent déposer leurs propres cookies lors de leur chargement, indépendamment de notre volonté.
           </p>
 
           <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>4. Intégrations tierces</h2>
           <p style={{ marginBottom: "1.5rem" }}>
-            Ce site intègre des contenus YouTube et Facebook (widget groupe). Ces services peuvent déposer leurs propres cookies
-            selon leurs politiques de confidentialité respectives. Nous vous invitons à consulter les politiques de confidentialité
-            de Google/YouTube et de Meta/Facebook.
+            Ce site intègre des lecteurs vidéo et un widget de groupe communautaire provenant de plateformes tierces.
+            Ces services opèrent sous leurs propres politiques de confidentialité et sont susceptibles de collecter des données
+            selon leurs conditions générales. L'éditeur du présent site ne contrôle pas ces traitements et décline toute
+            responsabilité à leur égard. Nous vous invitons à consulter les politiques de confidentialité des éditeurs
+            de ces services tiers.
           </p>
 
           <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>5. Vos droits</h2>
