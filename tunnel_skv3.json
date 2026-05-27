@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://evidence-lead-bone-auto.trycloudflare.com",
-  "last_update": "2026-05-27T12:23:54.980891+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T12:24:02.910177+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
