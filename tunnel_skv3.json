@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://confidential-pricing-sight-bowling.trycloudflare.com",
-  "last_update": "2026-05-27T23:40:41.010006+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-27T23:40:48.443134+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
