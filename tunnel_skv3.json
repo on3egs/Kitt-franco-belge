@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T15:52:07.932676+00:00",
+  "status": "online",
+  "url": "https://concern-default-peterson-chose.trycloudflare.com",
+  "last_update": "2026-05-27T15:52:35.595531+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
