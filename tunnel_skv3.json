@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-27T17:04:07.697785+00:00",
+  "status": "online",
+  "url": "https://tones-name-exclusion-river.trycloudflare.com",
+  "last_update": "2026-05-27T17:04:36.084207+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
