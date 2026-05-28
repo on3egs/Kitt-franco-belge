@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-28T08:35:55.925094+00:00",
+  "status": "online",
+  "url": "https://knows-distinction-get-before.trycloudflare.com",
+  "last_update": "2026-05-28T08:36:24.890917+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
