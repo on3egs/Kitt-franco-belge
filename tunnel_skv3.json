@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-28T13:38:13.442921+00:00",
+  "status": "online",
+  "url": "https://telecom-binary-les-cooler.trycloudflare.com",
+  "last_update": "2026-05-28T14:09:44.946594+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
