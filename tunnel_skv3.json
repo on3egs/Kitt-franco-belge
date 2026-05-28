@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://downloads-directories-folder-patient.trycloudflare.com",
-  "last_update": "2026-05-28T20:04:21.045190+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-28T20:04:29.421031+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
