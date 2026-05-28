@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-28T18:43:50.518386+00:00",
+  "status": "online",
+  "url": "https://chat-filtering-front-arkansas.trycloudflare.com",
+  "last_update": "2026-05-28T18:44:17.917728+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
