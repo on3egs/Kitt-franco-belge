@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://prix-fred-murray-catherine.trycloudflare.com",
-  "last_update": "2026-05-28T18:38:30.359760+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-28T18:38:40.462646+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
