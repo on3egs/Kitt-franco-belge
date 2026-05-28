@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-28T20:02:28.079671+00:00",
+  "status": "online",
+  "url": "https://tribes-assisted-workstation-getting.trycloudflare.com",
+  "last_update": "2026-05-28T20:02:56.679329+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
