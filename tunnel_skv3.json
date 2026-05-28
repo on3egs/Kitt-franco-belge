@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://merge-product-two-medieval.trycloudflare.com",
-  "last_update": "2026-05-28T19:58:51.801770+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-28T19:59:02.911218+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
