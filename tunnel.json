@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-28T17:34:21.416152+00:00",
+  "status": "online",
+  "url": "https://suspected-dsc-amenities-stockholm.trycloudflare.com",
+  "last_update": "2026-05-28T17:34:49.045614+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
