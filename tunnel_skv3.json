@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-28T20:05:15.829686+00:00",
+  "status": "online",
+  "url": "https://lang-instances-stereo-drilling.trycloudflare.com",
+  "last_update": "2026-05-28T20:05:20.602467+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
