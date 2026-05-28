@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://join-mercury-conferencing-wrap.trycloudflare.com",
-  "last_update": "2026-05-28T18:58:58.999431+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-05-28T18:59:05.211835+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
