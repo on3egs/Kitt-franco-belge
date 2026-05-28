@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-28T00:12:07.319952+00:00",
+  "status": "online",
+  "url": "https://beast-zone-adopt-evaluation.trycloudflare.com",
+  "last_update": "2026-05-28T00:12:36.000896+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
