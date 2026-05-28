@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-05-28T18:45:45.399345+00:00",
+  "status": "online",
+  "url": "https://val-segments-former-plastics.trycloudflare.com",
+  "last_update": "2026-05-28T18:46:14.046826+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
