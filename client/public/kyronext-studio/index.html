@@ -51,6 +51,10 @@ h3.role{font-size:0.7rem;color:#55ccff;text-align:center;letter-spacing:0.3em;ma
 .os-status.ok{color:#55ccff}
 .os-status.pending{color:rgba(255,170,0,0.8)}
 .footer{text-align:center;padding:50px 0 20px;font-size:0.55rem;color:rgba(85,204,255,0.3);letter-spacing:0.3em}
+.dl-stats{display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;margin:-1rem auto 2.5rem;font-family:'Courier New',monospace;font-size:0.62rem;letter-spacing:0.18em;color:rgba(85,204,255,0.55)}
+.dl-stat{display:inline-flex;align-items:center;gap:8px}
+.dl-num{color:#55ccff;font-weight:bold;font-size:1rem;text-shadow:0 0 10px rgba(0,170,255,0.5);letter-spacing:0.05em;min-width:1ch}
+.dl-sep{color:rgba(85,204,255,0.25)}
 </style>
 </head>
 <body>
@@ -69,9 +73,15 @@ h3.role{font-size:0.7rem;color:#55ccff;text-align:center;letter-spacing:0.3em;ma
   <p class="intro">Application desktop légère pour télécharger des pistes audio depuis des sources vidéo en ligne compatibles et les écouter dans une bibliothèque locale. Conçue pour un usage strictement personnel, dans le respect des droits d'auteur applicables.</p>
 
   <div class="btns">
-    <a href="https://github.com/on3egs/Kitt-franco-belge/releases/latest/download/Kyronext-Studio-Setup.exe" class="btn btn-primary" download>TÉLÉCHARGER (WINDOWS) &darr;</a>
-    <a href="https://github.com/on3egs/Kitt-franco-belge/releases" target="_blank" rel="noopener" class="btn btn-primary">TÉLÉCHARGER (LINUX) &darr;</a>
-    <a href="https://github.com/on3egs/Kitt-franco-belge" target="_blank" rel="noopener" class="btn">CODE SOURCE GITHUB &rarr;</a>
+    <a href="https://github.com/on3egs/Kitt-franco-belge/releases/latest/download/Kyronext-Studio-Setup.exe" class="btn btn-primary" download data-counter="downloads">TÉLÉCHARGER (WINDOWS) &darr;</a>
+    <a href="https://github.com/on3egs/Kitt-franco-belge/releases" target="_blank" rel="noopener" class="btn btn-primary" data-counter="downloads">TÉLÉCHARGER (LINUX) &darr;</a>
+    <a href="https://github.com/on3egs/Kitt-franco-belge" target="_blank" rel="noopener" class="btn" data-counter="source">CODE SOURCE GITHUB &rarr;</a>
+  </div>
+
+  <div class="dl-stats">
+    <span class="dl-stat"><span class="dl-num" id="cnt-downloads">…</span> TÉLÉCHARGEMENTS</span>
+    <span class="dl-sep">&middot;</span>
+    <span class="dl-stat"><span class="dl-num" id="cnt-source">…</span> CODE SOURCE</span>
   </div>
 
   <div class="divider"></div>
@@ -85,12 +95,12 @@ h3.role{font-size:0.7rem;color:#55ccff;text-align:center;letter-spacing:0.3em;ma
     <div class="os-card available">
       <div class="os-name">LINUX</div>
       <div class="os-status ok">DISPONIBLE</div>
-      <a href="https://github.com/on3egs/Kitt-franco-belge/releases" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:0.6rem;padding:8px 18px;margin:0 auto">TÉLÉCHARGER &darr;</a>
+      <a href="https://github.com/on3egs/Kitt-franco-belge/releases" target="_blank" rel="noopener" class="btn btn-primary" data-counter="downloads" style="font-size:0.6rem;padding:8px 18px;margin:0 auto">TÉLÉCHARGER &darr;</a>
     </div>
     <div class="os-card available">
       <div class="os-name">WINDOWS</div>
       <div class="os-status ok">DISPONIBLE</div>
-      <a href="https://github.com/on3egs/Kitt-franco-belge/releases/latest/download/Kyronext-Studio-Setup.exe" class="btn btn-primary" download style="font-size:0.6rem;padding:8px 18px;margin:0 auto">TÉLÉCHARGER &darr;</a>
+      <a href="https://github.com/on3egs/Kitt-franco-belge/releases/latest/download/Kyronext-Studio-Setup.exe" class="btn btn-primary" download data-counter="downloads" style="font-size:0.6rem;padding:8px 18px;margin:0 auto">TÉLÉCHARGER &darr;</a>
     </div>
     <div class="os-card soon">
       <div class="os-name">macOS</div>
@@ -166,10 +176,47 @@ h3.role{font-size:0.7rem;color:#55ccff;text-align:center;letter-spacing:0.3em;ma
 
   <div class="btns">
     <a href="https://kitt-franco-belge.be" class="btn">&larr; RETOUR INTERFACE KITT</a>
-    <a href="https://github.com/on3egs/Kitt-franco-belge" target="_blank" rel="noopener" class="btn">CODE SOURCE &rarr;</a>
+    <a href="https://github.com/on3egs/Kitt-franco-belge" target="_blank" rel="noopener" class="btn" data-counter="source">CODE SOURCE &rarr;</a>
   </div>
 
   <div class="footer">KYRONEXT STUDIO &nbsp;&middot;&nbsp; MANIX 2026 &nbsp;&middot;&nbsp; KITT FRANCO-BELGE &nbsp;&middot;&nbsp; GNU GPL v3</div>
 </div>
+
+<script>
+(function(){
+  // Compteur de clics partagé entre tous les visiteurs.
+  // Service gratuit, sans inscription ni clé : abacus.jasoncameron.dev
+  var API='https://abacus.jasoncameron.dev';
+  var NS='kitt-franco-belge-kyronext-studio';           // espace de noms du site
+  var BASE={downloads:100, source:0};                   // valeurs de départ affichées
+  var els={downloads:document.getElementById('cnt-downloads'),
+           source:document.getElementById('cnt-source')};
+
+  function fmt(n){return n.toLocaleString('fr-FR');}
+  function show(key,serverVal){
+    if(els[key]) els[key].textContent = fmt(BASE[key] + (serverVal||0));
+  }
+  // Affichage initial : on lit le compteur sans l'incrémenter
+  function load(key){
+    fetch(API+'/get/'+NS+'/'+key).then(function(r){return r.json();})
+      .then(function(d){show(key, d&&typeof d.value==='number'?d.value:0);})
+      .catch(function(){show(key,0);}); // service indispo → on affiche au moins la base
+  }
+  // Incrément réel côté serveur au clic
+  function hit(key){
+    fetch(API+'/hit/'+NS+'/'+key).then(function(r){return r.json();})
+      .then(function(d){if(d&&typeof d.value==='number') show(key,d.value);})
+      .catch(function(){ // si le hit échoue, on incrémente quand même l'affichage local
+        if(els[key]){var n=parseInt(els[key].textContent.replace(/\D/g,''),10)||BASE[key];
+                     els[key].textContent=fmt(n+1);}
+      });
+  }
+
+  Object.keys(BASE).forEach(load);
+  document.querySelectorAll('[data-counter]').forEach(function(a){
+    a.addEventListener('click',function(){hit(a.getAttribute('data-counter'));});
+  });
+})();
+</script>
 </body>
 </html>
