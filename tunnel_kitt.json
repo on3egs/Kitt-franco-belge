@@ -1,7 +1,8 @@
 {
-  "status": "online",
-  "url": "https://44190e69ef3b9f.lhr.life",
-  "last_update": "2026-05-28T22:35:00.000000+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-06-03T11:29:46.091858+00:00",
   "host": "kitt-jetson-ajx",
-  "version": "1.0"
+  "version": "1.0",
+  "note": "KITT AGX hors ligne - le site bascule sur KARR"
 }
