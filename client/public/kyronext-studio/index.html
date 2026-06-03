@@ -74,14 +74,11 @@ h3.role{font-size:0.7rem;color:#55ccff;text-align:center;letter-spacing:0.3em;ma
 
   <div class="btns">
     <a href="https://github.com/on3egs/Kitt-franco-belge/releases/latest/download/Kyronext-Studio-Setup.exe" class="btn btn-primary" download data-counter="downloads">TÉLÉCHARGER (WINDOWS) &darr;</a>
-    <a href="https://github.com/on3egs/Kitt-franco-belge/releases" target="_blank" rel="noopener" class="btn btn-primary" data-counter="downloads">TÉLÉCHARGER (LINUX) &darr;</a>
-    <a href="https://github.com/on3egs/Kitt-franco-belge" target="_blank" rel="noopener" class="btn" data-counter="source">CODE SOURCE GITHUB &rarr;</a>
+    <a href="https://github.com/on3egs/Kitt-franco-belge/releases/latest/download/Kyronext-Studio-linux-x86_64" class="btn btn-primary" download data-counter="downloads">TÉLÉCHARGER (LINUX) &darr;</a>
   </div>
 
   <div class="dl-stats">
     <span class="dl-stat"><span class="dl-num" id="cnt-downloads">…</span> TÉLÉCHARGEMENTS</span>
-    <span class="dl-sep">&middot;</span>
-    <span class="dl-stat"><span class="dl-num" id="cnt-source">…</span> CODE SOURCE</span>
   </div>
 
   <div class="divider"></div>
@@ -95,17 +92,12 @@ h3.role{font-size:0.7rem;color:#55ccff;text-align:center;letter-spacing:0.3em;ma
     <div class="os-card available">
       <div class="os-name">LINUX</div>
       <div class="os-status ok">DISPONIBLE</div>
-      <a href="https://github.com/on3egs/Kitt-franco-belge/releases" target="_blank" rel="noopener" class="btn btn-primary" data-counter="downloads" style="font-size:0.6rem;padding:8px 18px;margin:0 auto">TÉLÉCHARGER &darr;</a>
+      <a href="https://github.com/on3egs/Kitt-franco-belge/releases/latest/download/Kyronext-Studio-linux-x86_64" class="btn btn-primary" download data-counter="downloads" style="font-size:0.6rem;padding:8px 18px;margin:0 auto">TÉLÉCHARGER &darr;</a>
     </div>
     <div class="os-card available">
       <div class="os-name">WINDOWS</div>
       <div class="os-status ok">DISPONIBLE</div>
       <a href="https://github.com/on3egs/Kitt-franco-belge/releases/latest/download/Kyronext-Studio-Setup.exe" class="btn btn-primary" download data-counter="downloads" style="font-size:0.6rem;padding:8px 18px;margin:0 auto">TÉLÉCHARGER &darr;</a>
-    </div>
-    <div class="os-card soon">
-      <div class="os-name">macOS</div>
-      <div class="os-status pending">VIA CODE SOURCE</div>
-      <a href="https://github.com/on3egs/Kitt-franco-belge" target="_blank" rel="noopener" class="btn" style="font-size:0.6rem;padding:8px 18px;margin:0 auto">COMPILER &rarr;</a>
     </div>
   </div>
 
@@ -176,7 +168,6 @@ h3.role{font-size:0.7rem;color:#55ccff;text-align:center;letter-spacing:0.3em;ma
 
   <div class="btns">
     <a href="https://kitt-franco-belge.be" class="btn">&larr; RETOUR INTERFACE KITT</a>
-    <a href="https://github.com/on3egs/Kitt-franco-belge" target="_blank" rel="noopener" class="btn" data-counter="source">CODE SOURCE &rarr;</a>
   </div>
 
   <div class="footer">KYRONEXT STUDIO &nbsp;&middot;&nbsp; MANIX 2026 &nbsp;&middot;&nbsp; KITT FRANCO-BELGE &nbsp;&middot;&nbsp; GNU GPL v3</div>
@@ -188,9 +179,8 @@ h3.role{font-size:0.7rem;color:#55ccff;text-align:center;letter-spacing:0.3em;ma
   // Service gratuit, sans inscription ni clé : abacus.jasoncameron.dev
   var API='https://abacus.jasoncameron.dev';
   var NS='kitt-franco-belge-kyronext-studio';           // espace de noms du site
-  var BASE={downloads:100, source:0};                   // valeurs de départ affichées
-  var els={downloads:document.getElementById('cnt-downloads'),
-           source:document.getElementById('cnt-source')};
+  var BASE={downloads:100};                             // valeur de départ affichée
+  var els={downloads:document.getElementById('cnt-downloads')};
 
   function fmt(n){return n.toLocaleString('fr-FR');}
   function show(key,serverVal){
