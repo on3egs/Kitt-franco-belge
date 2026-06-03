@@ -106,6 +106,18 @@
     #portal.visible { display: flex; animation: portal-in 0.8s ease forwards; }
     @keyframes portal-in { from { opacity: 0; } to { opacity: 1; } }
 
+    /* ── AGENCEMENT VERTICAL RESTRUCTURE ─────────────────────── */
+    #portal {
+      gap: 8px; padding: 16px 20px 48px;
+      overflow-y: auto; max-height: 100vh;
+    }
+    #portal > :nth-child(n+5) { margin-top: 4px; } /* léger espacement après le divider */
+
+    /* welcome-block + panneau comprimés */
+    #welcome-block { margin-bottom: 8px; }
+    .p-divider { margin: 4px 0; }
+    .kx-panel { margin-top: 8px; }
+
     /* Scanlines */
     #portal::before {
       content: '';
@@ -122,7 +134,7 @@
       border: 1px solid #440000;
       border-radius: 2px;
       overflow: hidden;
-      margin-bottom: 36px;
+      margin-bottom: 8px;
     }
     .p-scanner-head {
       position: absolute; top: 2px; bottom: 2px; width: 44px;
@@ -139,14 +151,14 @@
       letter-spacing: 0.35em;
       color: #ff2222;
       text-shadow: 0 0 20px #cc0000, 0 0 50px rgba(200,0,0,0.4);
-      margin-bottom: 6px;
+      margin-bottom: 2px;
       text-align: center;
     }
     .p-sub {
       font-size: 0.62em;
       letter-spacing: 6px;
       color: #661111;
-      margin-bottom: 44px;
+      margin-bottom: 12px;
       text-align: center;
     }
 
@@ -166,6 +178,18 @@
     }
     /* tout le contenu du portail passe AU-DESSUS de l'aura */
     #portal > *:not(.portal-aura) { position: relative; z-index: 2; }
+
+    /* ── VOITURE EN FOND TRANSPARENT ──────────────────────────── */
+    .portal-car-bg {
+      position: fixed; bottom: 0; right: -15%; width: 480px; height: 320px;
+      background: url('kitt-car.png') no-repeat center / contain;
+      opacity: 0.18; pointer-events: none; z-index: 1.5;
+      animation: car-float 3.8s ease-in-out infinite;
+    }
+    @keyframes car-float {
+      0%,100% { transform: translateY(0) scale(1); opacity: 0.18; }
+      50%     { transform: translateY(-16px) scale(1.02); opacity: 0.22; }
+    }
 
     /* Logo KYRONEX — typographie électrique (flicker néon) */
     .p-logo { animation: logo-flicker 6s linear infinite; }
@@ -209,7 +233,7 @@
     .sp-banner {
       font-size: 0.6em; letter-spacing: 6px; font-weight: bold;
       color: #ff3a3a; text-shadow: 0 0 14px rgba(255,40,40,0.85);
-      margin-bottom: 16px; text-align: center; white-space: nowrap;
+      margin-bottom: 4px; text-align: center; white-space: nowrap;
       animation: sp-pulse 1.6s ease-in-out infinite;
     }
     @keyframes sp-pulse {
@@ -217,7 +241,7 @@
       50%     { opacity: 1;   text-shadow: 0 0 24px #ff5a5a, 0 0 48px rgba(255,40,40,0.4); }
     }
     .sp-chevrons {
-      display: flex; gap: 6px; justify-content: center; margin: 6px 0 26px;
+      display: flex; gap: 6px; justify-content: center; margin: 2px 0 8px;
       font-size: 0.7em; color: #aa1818; letter-spacing: 2px;
     }
     .sp-chevrons span { animation: chev-run 1.2s linear infinite; }
@@ -238,7 +262,7 @@
     /* ── SÉLECTEUR NEURAL KYRONEX ─────────────────────────────── */
     #ai-selector-label {
       font-size: 0.56em; letter-spacing: 7px; text-transform: uppercase;
-      color: #8a2a2a; margin-bottom: 18px; text-align: center; opacity: 0.9;
+      color: #8a2a2a; margin-bottom: 6px; text-align: center; opacity: 0.9;
     }
     #ai-selector-label b {
       color: #ff3a3a; font-weight: normal;
@@ -248,7 +272,7 @@
     #ai-selector {
       display: flex;
       gap: 14px;
-      margin-bottom: 32px;
+      margin-bottom: 12px;
       flex-wrap: wrap;
       justify-content: center;
       border: none;
@@ -569,6 +593,7 @@
 <!-- ── PORTAIL D'ACCÈS ── -->
 <div id="portal">
   <div class="portal-aura"></div>
+  <div class="portal-car-bg"></div>
 
   <!-- ── HUD SUPER PURSUIT (décor) ── -->
   <div class="hud-grid"></div>
