@@ -175,6 +175,66 @@
       50%  { text-shadow: 0 0 42px #ff4a4a, 0 0 90px rgba(255,60,60,0.55); opacity: 1; }
     }
 
+    /* ── HUD SUPER PURSUIT MODE (décor, sous le contenu) ──────── */
+    .hud-grid, .hud-vignette, .hud-sweep {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1 !important;
+    }
+    /* grille en perspective qui défile vers l'horizon (effet vitesse) */
+    .hud-grid {
+      background-image:
+        linear-gradient(rgba(255,40,40,0.11) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,40,40,0.11) 1px, transparent 1px);
+      background-size: 46px 46px;
+      transform: perspective(420px) rotateX(62deg) scale(2.6);
+      transform-origin: center 78%;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 28%, #000 72%, transparent 100%);
+              mask-image: linear-gradient(to bottom, transparent 28%, #000 72%, transparent 100%);
+      opacity: 0.6;
+      animation: hud-scroll 1.05s linear infinite;
+    }
+    @keyframes hud-scroll { from { background-position: 0 0; } to { background-position: 0 46px; } }
+    /* assombrissement des bords (focus centre) */
+    .hud-vignette {
+      background: radial-gradient(ellipse at 50% 42%, transparent 38%, rgba(0,0,0,0.82) 100%);
+    }
+    /* balayage lumineux horizontal type radar/turbo */
+    .hud-sweep {
+      width: 45%; left: -45%;
+      background: linear-gradient(90deg, transparent, rgba(255,46,46,0.14), transparent);
+      animation: hud-sweep-move 3s linear infinite;
+    }
+    @keyframes hud-sweep-move { 0% { left: -45%; } 100% { left: 145%; } }
+
+    /* bannière SUPER PURSUIT MODE + chevrons turbo */
+    .sp-banner {
+      font-size: 0.6em; letter-spacing: 6px; font-weight: bold;
+      color: #ff3a3a; text-shadow: 0 0 14px rgba(255,40,40,0.85);
+      margin-bottom: 16px; text-align: center; white-space: nowrap;
+      animation: sp-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes sp-pulse {
+      0%,100% { opacity: 0.6; text-shadow: 0 0 10px rgba(255,40,40,0.5); }
+      50%     { opacity: 1;   text-shadow: 0 0 24px #ff5a5a, 0 0 48px rgba(255,40,40,0.4); }
+    }
+    .sp-chevrons {
+      display: flex; gap: 6px; justify-content: center; margin: 6px 0 26px;
+      font-size: 0.7em; color: #aa1818; letter-spacing: 2px;
+    }
+    .sp-chevrons span { animation: chev-run 1.2s linear infinite; }
+    .sp-chevrons span:nth-child(2){ animation-delay: .15s; }
+    .sp-chevrons span:nth-child(3){ animation-delay: .3s; }
+    .sp-chevrons span:nth-child(4){ animation-delay: .45s; }
+    .sp-chevrons span:nth-child(5){ animation-delay: .6s; }
+    @keyframes chev-run { 0%,100% { color:#5a0c0c; text-shadow:none; } 50% { color:#ff4a4a; text-shadow:0 0 12px #ff2a2a; } }
+
+    /* logo plus "turbo" en mode Super Pursuit */
+    #portal .p-logo {
+      background: linear-gradient(180deg, #ff5a5a, #ff2222 55%, #8a0000);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 26px rgba(255,40,40,0.55));
+    }
+
     /* ── SÉLECTEUR NEURAL KYRONEX ─────────────────────────────── */
     #ai-selector-label {
       font-size: 0.56em; letter-spacing: 7px; text-transform: uppercase;
@@ -509,6 +569,13 @@
 <!-- ── PORTAIL D'ACCÈS ── -->
 <div id="portal">
   <div class="portal-aura"></div>
+
+  <!-- ── HUD SUPER PURSUIT (décor) ── -->
+  <div class="hud-grid"></div>
+  <div class="hud-vignette"></div>
+  <div class="hud-sweep"></div>
+  <div class="sp-banner">◂&nbsp;&nbsp;SUPER&nbsp;PURSUIT&nbsp;MODE&nbsp;&nbsp;▸</div>
+  <div class="sp-chevrons"><span>&#9656;</span><span>&#9656;</span><span>&#9656;</span><span>&#9656;</span><span>&#9656;</span></div>
 
   <!-- ── MESSAGE DE BIENVENUE ── -->
   <div id="welcome-block">
