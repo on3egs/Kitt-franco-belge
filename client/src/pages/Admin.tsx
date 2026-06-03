@@ -61,7 +61,7 @@ export default function Admin() {
     });
   }, [authed]);
 
-  async function decide(type: "videos" | "music" | "pdfs", id: string, action: "approve" | "reject") {
+  async function decide(type: "videos" | "music" | "pdfs", id: string, action: "approve" | "reject" | "delete") {
     if (!apiBase) return;
     setDeciding(id);
     const endpoint = type === "videos" ? "videos" : type === "music" ? "music" : "pdfs";
@@ -75,6 +75,7 @@ export default function Admin() {
         const entry = pendingVideos.find(v => v.id === id);
         setPendingVideos(p => p.filter(v => v.id !== id));
         if (action === "approve" && entry) setApprovedVideos(a => [...a, entry]);
+        if (action === "delete") setApprovedVideos(a => a.filter(v => v.id !== id));
       } else if (type === "music") {
         const entry = pendingMusic.find(m => m.id === id);
         setPendingMusic(p => p.filter(m => m.id !== id));
@@ -210,10 +211,16 @@ export default function Admin() {
               <div key={v.id} style={{ ...card, borderColor: "rgba(0,200,80,0.15)" }}>
                 <div className="flex gap-4 items-center">
                   <img src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`} alt="" style={{ width: "80px", height: "45px", objectFit: "cover", flexShrink: 0 }} />
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(192,192,192,0.4)" }}>{v.pseudo} — {formatDate(v.ts)}</div>
-                    <a href={v.url} target="_blank" rel="noopener noreferrer" style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(0,200,80,0.7)" }}>{v.url}</a>
+                    <a href={v.url} target="_blank" rel="noopener noreferrer" style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(0,200,80,0.7)", wordBreak: "break-all" }}>{v.url}</a>
                   </div>
+                  <button
+                    onClick={() => { if (window.confirm("Supprimer définitivement cette vidéo de la galerie ?")) decide("videos", v.id, "delete"); }}
+                    disabled={deciding === v.id}
+                    title="Supprimer cette vidéo"
+                    style={{ flexShrink: 0, width: "32px", height: "32px", lineHeight: 1, background: "rgba(255,34,34,0.1)", border: "1px solid rgba(255,34,34,0.45)", color: "#ff4444", fontFamily: "Orbitron, monospace", fontSize: "0.95rem", cursor: "pointer", borderRadius: "4px" }}
+                  >✕</button>
                 </div>
               </div>
             ))}
