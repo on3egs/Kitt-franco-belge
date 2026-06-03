@@ -1163,8 +1163,8 @@
 (function () {
   'use strict';
 
-  var EL_KEY  = '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3';
-  var VOICE   = 'M2Xs2gEdangnlb92hK6y'; // Guy Chapelier
+  // La cle ElevenLabs ne vit plus dans le client : on passe par le proxy serveur.
+  var KX_TTS_PROXY = 'https://karr.kitt-franco-belge.be/api/tts-eleven';
   var AUDIO_DURATION_MS = 16500;         // duree estimee (ajuste si besoin)
 
   // Texte audio (optimise intonation ElevenLabs)
@@ -1253,13 +1253,9 @@
 
   /* ── Fetch ElevenLabs + lecture ── */
   function _fetchAndPlay(onStart, onEnd, onError) {
-    fetch('https://api.elevenlabs.io/v1/text-to-speech/' + VOICE, {
+    fetch(KX_TTS_PROXY, {
       method: 'POST',
-      headers: {
-        'xi-api-key': EL_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: AUDIO_TEXT,
         model_id: 'eleven_v3',
@@ -1389,13 +1385,9 @@ function kittParle() {
   status.style.color = '#664422';
   status.textContent = 'CONNEXION ELEVENLABS...';
 
-  fetch('https://api.elevenlabs.io/v1/text-to-speech/M2Xs2gEdangnlb92hK6y', {
+  fetch('https://karr.kitt-franco-belge.be/api/tts-eleven', {
     method: 'POST',
-    headers: {
-      'xi-api-key': '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3',
-      'Content-Type': 'application/json',
-      'Accept': 'audio/mpeg'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       text: texte,
       model_id: 'eleven_v3',
