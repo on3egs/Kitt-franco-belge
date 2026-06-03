@@ -182,14 +182,14 @@
 
     /* ── VOITURE EN FOND TRANSPARENT ──────────────────────────── */
     .portal-car-bg {
-      position: fixed; bottom: -20px; right: -80px; width: 520px; height: 340px;
+      position: fixed; bottom: 40px; right: 20px; width: 380px; height: 260px;
       background: url('/kyronex/kitt-car.png') no-repeat center / contain;
-      opacity: 0.24; pointer-events: none; z-index: 1.5;
+      opacity: 0.42; pointer-events: none; z-index: 1;
       animation: car-float 3.8s ease-in-out infinite;
     }
     @keyframes car-float {
-      0%,100% { transform: translateY(0) scale(1); opacity: 0.24; }
-      50%     { transform: translateY(-12px) scale(1.01); opacity: 0.28; }
+      0%,100% { transform: translateY(0) scale(1); opacity: 0.42; }
+      50%     { transform: translateY(-8px) scale(1.02); opacity: 0.48; }
     }
 
     /* Logo KYRONEX — typographie électrique (flicker néon) */
