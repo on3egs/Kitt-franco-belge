@@ -1,7 +1,9 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-06-03T11:08:50.642284+00:00",
-  "host": "kitt-jetson",
-  "version": "1.0"
+  "status": "online",
+  "url": "https://karr.kitt-franco-belge.be",
+  "last_update": "2026-06-03T11:15:59.690364+00:00",
+  "host": "karr-desktop",
+  "version": "1.0",
+  "permanent": true,
+  "note": "Tunnel Cloudflare nomme - URL fixe, ne change plus."
 }
