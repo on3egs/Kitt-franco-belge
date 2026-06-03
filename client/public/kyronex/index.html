@@ -431,6 +431,63 @@
       background: linear-gradient(90deg, transparent, #330000, transparent);
       margin: 0 auto 32px;
     }
+
+    /* ── PANNEAUX HUD KYRONEX (refonte du "reste" de la page) ─── */
+    .kx-panel {
+      position: relative; width: 100%; max-width: 440px; margin: 34px auto 0;
+      background: linear-gradient(160deg, rgba(24,5,5,0.72), rgba(7,1,1,0.9));
+      border: 1px solid rgba(150,34,34,0.3); border-radius: 8px;
+      padding: 22px 26px; text-align: left; overflow: hidden;
+    }
+    .kx-panel::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #ff2a2a, transparent);
+      opacity: 0.5;
+    }
+    .kx-panel-title {
+      font-size: 0.52rem; letter-spacing: 0.3em; color: #ff5252;
+      text-transform: uppercase; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 9px;
+    }
+    .kx-panel-title::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: #ff2a2a; box-shadow: 0 0 8px #ff2a2a;
+      animation: ai-blink 1.4s steps(1) infinite;
+    }
+    .kx-panel p { font-size: 0.62rem; letter-spacing: 1.5px; line-height: 2; color: #9a6a6a; }
+    .kx-hi  { color: #ff5a5a; }
+    .kx-key { color: #ff3333; font-weight: bold; letter-spacing: 2px; }
+    .kx-list { list-style: none; margin: 8px 0 4px; }
+    .kx-list li { font-size: 0.62rem; letter-spacing: 1.5px; line-height: 1.95; color: #9a6a6a; }
+    .kx-list li::before { content: '\25B8\00A0'; color: #cc3333; }
+
+    /* bouton HUD réutilisable (≠ boutons sélecteur, intacts) */
+    .kx-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: 'Courier New', monospace; font-size: 0.64rem; font-weight: bold;
+      letter-spacing: 3px; color: #ff5a5a; text-decoration: none; cursor: pointer;
+      padding: 13px 28px; border-radius: 5px; position: relative; overflow: hidden;
+      background: linear-gradient(160deg, rgba(30,5,5,0.9), rgba(8,1,1,0.95));
+      border: 1px solid #aa1a1a; transition: all 0.25s;
+      box-shadow: 0 0 14px rgba(180,0,0,0.22);
+    }
+    .kx-btn:hover {
+      color: #fff; border-color: #ff3333; transform: translateY(-2px);
+      box-shadow: 0 0 24px rgba(255,40,40,0.5);
+    }
+    #kitt-voice-status {
+      margin-top: 12px; font-size: 0.55rem; letter-spacing: 3px;
+      color: #7a4444; min-height: 1.2em; text-align: center;
+    }
+    .kx-fb {
+      display: inline-block; margin-top: 14px; padding: 10px 20px; border-radius: 5px;
+      font-size: 0.58rem; letter-spacing: 2px; color: #ff7a4d; text-decoration: none;
+      border: 1px solid rgba(255,90,40,0.4); background: rgba(40,10,0,0.4); transition: all 0.2s;
+    }
+    .kx-fb:hover { color: #fff; border-color: #ff7a4d; box-shadow: 0 0 14px rgba(255,90,40,0.35); }
+
+    /* Offline box — harmonisé */
+    #offline-box { border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -497,47 +554,33 @@
     REESSAYEZ PLUS TARD
   </div>
 
-  <!-- ── DEMO VOIX KITT — TEMPORAIRE ── -->
-  <div style="margin-top:36px;text-align:center;">
-    <button id="kitt-voice-btn" onclick="kittParle()" style="
-      padding:12px 32px;
-      font-family:'Courier New',monospace;
-      font-size:0.72em;
-      letter-spacing:4px;
-      color:#ff2222;
-      background:transparent;
-      border:1px solid #440000;
-      cursor:pointer;
-      transition:all 0.2s;
-      animation:btn-pulse 2.5s ease-in-out infinite;
-    "
-    onmouseover="this.style.background='#110000';this.style.borderColor='#cc0000';this.style.boxShadow='0 0 18px rgba(200,0,0,0.4)'"
-    onmouseout="this.style.background='transparent';this.style.borderColor='#440000';this.style.boxShadow='none'"
-    >
-      [ KITT — DEMO VOCALE ]
+  <!-- ── DÉMO VOIX KITT ── -->
+  <div style="margin-top:34px;text-align:center;">
+    <button id="kitt-voice-btn" onclick="kittParle()" class="kx-btn">
+      &#9658;&nbsp;&nbsp;KITT — DÉMO VOCALE
     </button>
-    <div id="kitt-voice-status" style="
-      margin-top:10px;font-size:0.55em;letter-spacing:3px;
-      color:#441111;min-height:1.2em;text-align:center;
-    "></div>
+    <div id="kitt-voice-status"></div>
   </div>
 
-  <!-- Message IA en construction + invitation feedback -->
-  <div style="margin-top:38px;max-width:400px;border:1px solid #220000;padding:18px 20px;font-size:0.58em;letter-spacing:2px;line-height:2.2;color:#553333;text-align:left;">
-    <div style="color:#772222;margin-bottom:8px;letter-spacing:3px;">[ STATUT SYSTÈME ]</div>
-    L'INTELLIGENCE ARTIFICIELLE KYRONEX EST
-    <span style="color:#cc3333">EN COURS DE DÉVELOPPEMENT</span>.
-    CERTAINES RÉPONSES PEUVENT ÊTRE IMPRÉCISES.<br><br>
-    <span style="color:#664422">TES RETOURS SONT LES BIENVENUS :</span><br>
-    — BUGS OU COMPORTEMENTS ÉTRANGES<br>
-    — IDÉES &amp; SUGGESTIONS<br>
-    — CRITIQUES CONSTRUCTIVES<br><br>
-    <a href="https://www.facebook.com/groups/757797724622219/" target="_blank" rel="noopener"
-      style="color:#992222;text-decoration:none;">
-      → PARTAGER SUR LE GROUPE FACEBOOK
+  <!-- Statut système + invitation feedback -->
+  <div class="kx-panel">
+    <div class="kx-panel-title">Statut système</div>
+    <p>
+      L'intelligence artificielle <span class="kx-key">KYRONEX</span> est
+      <span class="kx-hi">en cours de développement</span>.
+      Certaines réponses peuvent être imprécises.
+    </p>
+    <p style="margin-top:12px;color:#c08a4a;">Tes retours sont les bienvenus :</p>
+    <ul class="kx-list">
+      <li>Bugs ou comportements étranges</li>
+      <li>Idées &amp; suggestions</li>
+      <li>Critiques constructives</li>
+    </ul>
+    <a href="https://www.facebook.com/groups/757797724622219/" target="_blank" rel="noopener" class="kx-fb">
+      &#10148;&nbsp; Partager sur le groupe Facebook
     </a>
   </div>
-  <!-- ── FIN DEMO ── -->
+  <!-- ── FIN ── -->
 </div>
 
 <script>
