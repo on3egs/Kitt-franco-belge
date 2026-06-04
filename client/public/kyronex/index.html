@@ -98,7 +98,10 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(ellipse at 50% 30%, #0d0000, #050000, #020000);
+      background:
+        radial-gradient(ellipse at 50% 40%, rgba(13,0,0,0.32), rgba(6,0,0,0.70) 66%, rgba(2,0,0,0.93) 100%),
+        url('/manix.png') no-repeat center center / cover;
+      background-attachment: fixed;
       align-items: center; justify-content: center;
       flex-direction: column;
       z-index: 1000;
@@ -182,10 +185,8 @@
 
     /* ── VOITURE EN FOND TRANSPARENT ──────────────────────────── */
     .portal-car-bg {
-      position: fixed; bottom: 40px; right: 20px; width: 380px; height: 260px;
-      background: url('/kyronex/kitt-car.png') no-repeat center / contain;
-      opacity: 0.42; pointer-events: none; z-index: 1;
-      animation: car-float 3.8s ease-in-out infinite;
+      /* La voiture est desormais en FOND PLEIN ECRAN sur #portal (voir #portal background). */
+      display: none;
     }
     @keyframes car-float {
       0%,100% { transform: translateY(0) scale(1); opacity: 0.42; }
