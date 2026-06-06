@@ -1,8 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-06-03T11:29:46.091858+00:00",
+  "status": "online",
+  "url": "https://diff-knowledgestorm-ingredients-consist.trycloudflare.com",
+  "last_update": "2026-06-06T19:28:13.611834+00:00",
   "host": "kitt-jetson-ajx",
-  "version": "1.0",
-  "note": "KITT AGX hors ligne - le site bascule sur KARR"
+  "version": "1.0"
 }
