@@ -1,7 +1,8 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-06-06T19:29:41.216419+00:00",
-  "host": "kitt-jetson-ajx",
-  "version": "1.0"
+  "status": "online",
+  "url": "https://kitt.kitt-franco-belge.be",
+  "last_update": "2026-06-06T20:45:00.000000+00:00",
+  "host": "ajx-jetson-super-kitt-v3",
+  "version": "1.0",
+  "note": "Tunnel Cloudflare nommé - AJX (192.168.129.24) SUPER K.I.T.T. V3"
 }
