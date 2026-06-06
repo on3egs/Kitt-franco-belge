@@ -1,7 +1,8 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-06-06T13:37:07.083575+00:00",
-  "host": "kitt-jetson",
-  "version": "1.0"
+  "status": "online",
+  "url": "https://kitt.kitt-franco-belge.be",
+  "last_update": "2026-06-06T19:31:45.646338+00:00",
+  "host": "kitt-jetson-ajx",
+  "version": "1.0",
+  "note": "Super K.I.T.T. V3 — AGX Orin 32GB en ligne"
 }
