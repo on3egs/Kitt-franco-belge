@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://mag-settlement-heights-treated.trycloudflare.com",
-  "last_update": "2026-06-06T13:37:00.322708+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-06-06T13:37:02.709565+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
