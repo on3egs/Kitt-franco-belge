@@ -1,7 +1,9 @@
 {
   "status": "online",
-  "url": "https://diff-knowledgestorm-ingredients-consist.trycloudflare.com",
-  "last_update": "2026-06-06T21:40:36.498269+00:00",
-  "host": "kitt-jetson-ajx",
-  "version": "1.0"
+  "url": "https://kitt.kitt-franco-belge.be",
+  "last_update": "2026-06-06T23:50:00.000000+00:00",
+  "host": "ajx-jetson-super-kitt-v3",
+  "version": "1.0",
+  "permanent": true,
+  "note": "Tunnel Cloudflare nomine - AJX (192.168.129.24) SUPER K.I.T.T. V3 - GEMMA 4-E2B"
 }
