@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://minnesota-quality-always-tons.trycloudflare.com",
-  "last_update": "2026-07-16T01:44:02.806729+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-07-16T01:48:00.074941+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
