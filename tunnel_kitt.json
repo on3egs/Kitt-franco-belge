@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://sequences-nutritional-hansen-maintenance.trycloudflare.com",
-  "last_update": "2026-07-16T02:07:42.567114+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-07-16T02:11:41.959768+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
