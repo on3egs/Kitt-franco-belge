@@ -1,6 +1,6 @@
 #!/bin/bash
 # Kyronext Studio - Installateur Linux x86_64
-# Copyright 2026 - Manix (Emmanuel Gelinne)
+# Copyright 2026 - KITT Franco-Belge
 # Pour KITT Franco-Belge
 
 set -euo pipefail

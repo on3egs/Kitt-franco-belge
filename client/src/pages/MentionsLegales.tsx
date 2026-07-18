@@ -13,7 +13,7 @@ export default function MentionsLegales() {
 
           <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>1. Éditeur du site</h2>
           <p style={{ marginBottom: "1.5rem" }}>
-            <strong style={{ color: "white" }}>Emmanuel Gelinne</strong>, alias Manix<br />
+            <strong style={{ color: "white" }}>KITT Franco-Belge</strong><br />
             Belgique<br />
             Contact : via le formulaire de contact sur le site
           </p>
@@ -35,7 +35,7 @@ export default function MentionsLegales() {
 
           <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>4. Contenu du site</h2>
           <p style={{ marginBottom: "1.5rem" }}>
-            Les textes, créations graphiques, développements logiciels, photographies du véhicule et contenus propres au site sont la propriété d'Emmanuel Gelinne (Manix), sauf mention contraire. Toute reproduction partielle ou totale sans autorisation écrite est interdite.
+            Les textes, créations graphiques, développements logiciels, photographies du véhicule et contenus propres au site sont la propriété de KITT Franco-Belge, sauf mention contraire. Toute reproduction partielle ou totale sans autorisation écrite est interdite.
           </p>
 
           <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>5. Intégrations tierces</h2>

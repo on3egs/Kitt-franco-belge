@@ -1,7 +1,7 @@
 # KITT FRANCO-BELGE — Concepts de Design
 
 ## Contexte
-Projet d'IA locale inspiré de K.I.T.T. (Knight Rider / K2000), fondé par Emmanuel Gelinne (Manix).
+Projet d'IA locale inspiré de K.I.T.T. (Knight Rider / K2000), fondé par KITT Franco-Belge.
 Style extrait : fond noir, rouge vif, police monospace Courier New, esthétique tableau de bord électronique.
 
 ---

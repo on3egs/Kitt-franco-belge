@@ -3,7 +3,7 @@
 # ║   KITT/KARR — Health Scan v1.0                                      ║
 # ║   Scan santé NVMe + filesystem + SoC — ultra-léger                  ║
 # ║   nice 19 + ionice idle — impact CPU/IO quasi nul                   ║
-# ║   Copyright 2026 Emmanuel Gelinne (Manix)                           ║
+# ║   Copyright 2026 KITT Franco-Belge                           ║
 # ╚══════════════════════════════════════════════════════════════════════╝
 # Usage : bash health_scan.sh [--silent]
 # Résultat : /home/kitt/kitt-ai/logs/health_scan.log

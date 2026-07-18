@@ -770,7 +770,7 @@ function HeroSection() {
             style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.6)", lineHeight: 1.8 }}
           >
             {t("hero.subtitle")}{" "}
-            <span style={{ color: "#ff2222" }}>Emmanuel Gelinne (Manix)</span>
+            <span style={{ color: "#ff2222" }}>KITT Franco-Belge</span>
           </p>
         </div>
 
@@ -1003,7 +1003,7 @@ function StorySection() {
               </div>
               {[
                 [t("story.key.projet"), "KITT Franco-Belge"],
-                [t("story.key.auteur"), "Emmanuel Gelinne (Manix)"],
+                [t("story.key.auteur"), "KITT Franco-Belge"],
                 [t("story.key.arch"), "Jetson AJX 32/64"],
                 [t("story.key.statut"), t("story.val.statut")],
                 [t("story.key.cadre"), t("story.val.cadre")],

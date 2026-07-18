@@ -2,7 +2,7 @@ PROPRIETARY LICENSE AGREEMENT
 KITT Franco-Belge Project
 Version 1.0
 
-Copyright (c) 2026 Emmanuel Gelinne (Manix)
+Copyright (c) 2026 KITT Franco-Belge
 All Rights Reserved.
 
 This project is a personal, experimental and strictly non-commercial development.
