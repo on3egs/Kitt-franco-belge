@@ -2,7 +2,7 @@
 # ╔══════════════════════════════════════════════════════════════════════╗
 # ║   KARR — Sauvegarde Croisée v1.0                                    ║
 # ║   Sauvegarde locale + copie miroir vers KITT (192.168.129.22)       ║
-# ║   Copyright 2026 Emmanuel Gelinne (Manix)                           ║
+# ║   Copyright 2026 KITT Franco-Belge                           ║
 # ╚══════════════════════════════════════════════════════════════════════╝
 
 set -eo pipefail

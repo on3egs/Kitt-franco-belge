@@ -15,4 +15,4 @@ avec interaction vocale, personnalité KITT ou KARR, et accès réseau domestiqu
 - Mode hors-ligne complet
 
 ## Créateurs
-Projet conçu par Manix et son IA.
+Projet conçu par l'équipe KITT Franco-Belge et son IA.

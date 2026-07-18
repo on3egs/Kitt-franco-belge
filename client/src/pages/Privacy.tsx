@@ -16,7 +16,7 @@ export default function Privacy() {
 
           <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>1. Responsable du traitement</h2>
           <p style={{ marginBottom: "1.5rem" }}>
-            Emmanuel Gelinne (Manix) — Projet KITT Franco-Belge. Contact : via le formulaire sur le site.
+            KITT Franco-Belge. Contact : via le formulaire sur le site.
           </p>
 
           <h2 style={{ color: "#ff2222", fontFamily: "Orbitron, monospace", fontSize: "1rem", marginBottom: "0.75rem" }}>2. Données collectées</h2>
