@@ -8,7 +8,7 @@ disposition des utilisateurs du site et du logiciel Kyronext Studio.
 
 ## Éditeur
 
-- **Responsable / éditeur :** Emmanuel Gelinne (« Manix »)
+- **Responsable / éditeur :** le projet KITT Franco-Belge
 - **Statut :** [À COMPLÉTER — particulier / association / indépendant]
 - **Adresse de contact :** [À COMPLÉTER]
 - **Courriel :** [À COMPLÉTER — adresse de contact]

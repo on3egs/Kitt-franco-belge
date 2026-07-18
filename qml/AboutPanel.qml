@@ -86,7 +86,7 @@ Item {
                         font.family: root.mono; font.pixelSize: 18; font.bold: true
                     }
                     Text {
-                        text: "Emmanuel Gelinne — auteur & développeur"
+                        text: "Projet KITT Franco-Belge — auteur & développeur"
                         color: root.cTextDim
                         font.family: root.mono; font.pixelSize: 9; font.bold: true
                     }
