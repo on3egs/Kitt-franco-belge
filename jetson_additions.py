@@ -36,7 +36,7 @@ def _save_pdfs(data):
         json.dump(data, f, indent=2)
 
 ADMIN_TOKEN = "8c03437292a68baec2fd5374c6adb4d0ddcfc2aade2407fdee2d4f024e423ef3"
-TELEGRAM_TOKEN = "8639685200:AAEkGrfpmQkFCP8TlfB-pq5KsQN8s3OlfWU"
+TELEGRAM_TOKEN = "8620445660:AAEpIf9G3Z9jyU7_CJdmz3iciHKYtVhZiag"
 TELEGRAM_CHAT   = "8591807736"
 
 async def _send_telegram(text):
