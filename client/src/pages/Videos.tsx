@@ -374,14 +374,31 @@ export default function Videos() {
   const [langFilter, setLangFilter] = useState<LangFilter>("all");
 
   useEffect(() => {
+    // Charge toujours la liste locale (disponible même si les Jetson sont éteints)
+    fetch("/videos.json", { cache: "no-store" })
+      .then(r => r.json())
+      .then((localVideos: VideoEntry[]) => {
+        setVideos(localVideos || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+
+    // Si un Jetson est online, récupère les données fraîches et les merge
     getApiBase().then(base => {
       setApiBase(base);
-      if (!base) { setOffline(true); setLoading(false); return; }
+      if (!base) { setOffline(true); return; }
       fetch(`${base}/api/videos/approved`)
         .then(r => r.json())
-        .then(d => { setVideos(d.approved || []); })
-        .catch(() => setOffline(true))
-        .finally(() => setLoading(false));
+        .then(d => {
+          const fresh = d.approved || [];
+          setVideos(prev => {
+            const map = new Map(prev.map(v => [v.id, v]));
+            for (const v of fresh) map.set(v.id, v);
+            return Array.from(map.values()).sort((a, b) => b.ts - a.ts);
+          });
+          setOffline(false);
+        })
+        .catch(() => setOffline(true));
     });
   }, []);
 
