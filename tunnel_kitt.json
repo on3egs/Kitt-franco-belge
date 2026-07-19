@@ -1,7 +1,9 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-07-16T22:01:33.424698+00:00",
+  "status": "online",
+  "url": "https://kitt.kitt-franco-belge.be",
+  "last_update": "2026-07-19T00:21:00+00:00",
   "host": "kitt-jetson",
-  "version": "1.0"
+  "version": "1.0",
+  "permanent": true,
+  "note": "Tunnel Cloudflare nommé permanent géré par systemd cloudflared-kitt.service"
 }
