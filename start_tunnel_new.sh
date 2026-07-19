@@ -19,6 +19,13 @@ if [[ -f "$ENV_FILE" ]]; then
     echo "[INFO] Environnement chargé depuis $ENV_FILE"
 fi
 
+# ── Configuration GitHub / fichier tunnel ─────────────────────────
+export TUNNEL_FILE="${TUNNEL_FILE:-tunnel_kitt.json}"
+export GITHUB_REPO="${GITHUB_REPO:-on3egs/Kitt-franco-belge}"
+export GITHUB_BRANCH="${GITHUB_BRANCH:-main}"
+export GITHUB_TOKEN="${GITHUB_TOKEN:-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}"
+export UPDATER_SCRIPT="${UPDATER_SCRIPT:-/home/kitt/kitt-ai/tunnel_updater.py}"
+
 # ── Nettoyage ─────────────────────────────────────────────────────
 cleanup_all() {
     echo "[INFO] Arrêt complet..."
@@ -30,7 +37,7 @@ cleanup_all() {
         OLD=$(cat "$UPDATER_PID_FILE" 2>/dev/null || echo "")
         [[ -n "$OLD" ]] && kill "$OLD" 2>/dev/null || true
     fi
-    python3 "$(dirname "$0")/tunnel_updater.py" --offline 2>/dev/null || true
+    python3 "$UPDATER_SCRIPT" --offline 2>/dev/null || true
     echo "[INFO] Tunnel arrêté."
     exit 0
 }
@@ -58,7 +65,7 @@ start_updater() {
     fi
     export CLOUDFLARE_TUNNEL_URL="$url"
     export GITHUB_TOKEN GITHUB_REPO LHR_LOG CF_LOG
-    python3 "$(dirname "$0")/tunnel_updater.py" >> "$UPDATER_LOG" 2>&1 &
+    python3 "$UPDATER_SCRIPT" >> "$UPDATER_LOG" 2>&1 &
     echo "$!" > "$UPDATER_PID_FILE"
     echo "[INFO] tunnel_updater → $url"
 }
