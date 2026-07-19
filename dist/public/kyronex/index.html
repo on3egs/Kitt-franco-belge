@@ -98,13 +98,28 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(ellipse at 50% 30%, #0d0000, #050000, #020000);
+      background:
+        radial-gradient(ellipse at 50% 40%, rgba(13,0,0,0.32), rgba(6,0,0,0.70) 66%, rgba(2,0,0,0.93) 100%),
+        url('/manix.png') no-repeat center center / cover;
+      background-attachment: fixed;
       align-items: center; justify-content: center;
       flex-direction: column;
       z-index: 1000;
     }
     #portal.visible { display: flex; animation: portal-in 0.8s ease forwards; }
     @keyframes portal-in { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ── AGENCEMENT VERTICAL RESTRUCTURE ─────────────────────── */
+    #portal {
+      gap: 2px; padding: 6px 20px 32px;
+      overflow-y: auto; max-height: 100vh;
+    }
+    #portal > :nth-child(n+5) { margin-top: 0; }
+
+    /* welcome-block + panneau comprimés AU MAX */
+    #welcome-block { margin-bottom: 2px; }
+    .p-divider { margin: 2px 0; }
+    .kx-panel { margin-top: 4px; }
 
     /* Scanlines */
     #portal::before {
@@ -116,13 +131,13 @@
 
     /* Scanner decotatif */
     .p-scanner {
-      width: 220px; height: 18px;
+      width: 220px; height: 14px;
       position: relative;
       background: #0a0000;
       border: 1px solid #440000;
       border-radius: 2px;
       overflow: hidden;
-      margin-bottom: 36px;
+      margin-bottom: 2px;
     }
     .p-scanner-head {
       position: absolute; top: 2px; bottom: 2px; width: 44px;
@@ -134,89 +149,259 @@
     @keyframes sweep { 0% { left: 0; } 100% { left: calc(100% - 44px); } }
 
     .p-logo {
-      font-size: clamp(2em, 8vw, 3.8em);
+      font-size: clamp(1.6em, 6vw, 3em);
       font-weight: bold;
       letter-spacing: 0.35em;
       color: #ff2222;
       text-shadow: 0 0 20px #cc0000, 0 0 50px rgba(200,0,0,0.4);
-      margin-bottom: 6px;
+      margin-bottom: 1px;
       text-align: center;
+      line-height: 1;
     }
     .p-sub {
-      font-size: 0.62em;
-      letter-spacing: 6px;
+      font-size: 0.54em;
+      letter-spacing: 4px;
       color: #661111;
-      margin-bottom: 44px;
+      margin-bottom: 4px;
       text-align: center;
     }
 
-    /* Sélecteur KITT / KARR */
+    /* ── AURA DE FOND ANIMÉE (respiration) ───────────────────── */
+    .portal-aura {
+      position: fixed; top: 50%; left: 50%;
+      width: 130vmax; height: 130vmax;
+      transform: translate(-50%, -52%);
+      background: radial-gradient(circle at 50% 42%,
+        rgba(150,12,12,0.20), rgba(50,0,0,0.07) 38%, transparent 64%);
+      pointer-events: none; z-index: 0;
+      animation: aura-breathe 7s ease-in-out infinite;
+    }
+    @keyframes aura-breathe {
+      0%,100% { opacity: 0.55; transform: translate(-50%,-52%) scale(1); }
+      50%     { opacity: 1;    transform: translate(-50%,-52%) scale(1.09); }
+    }
+    /* tout le contenu du portail passe AU-DESSUS de l'aura */
+    #portal > *:not(.portal-aura) { position: relative; z-index: 2; }
+
+    /* ── VOITURE EN FOND TRANSPARENT ──────────────────────────── */
+    .portal-car-bg {
+      /* La voiture est desormais en FOND PLEIN ECRAN sur #portal (voir #portal background). */
+      display: none;
+    }
+    @keyframes car-float {
+      0%,100% { transform: translateY(0) scale(1); opacity: 0.42; }
+      50%     { transform: translateY(-8px) scale(1.02); opacity: 0.48; }
+    }
+
+    /* Logo KYRONEX — typographie électrique (flicker néon) */
+    .p-logo { animation: logo-flicker 6s linear infinite; }
+    @keyframes logo-flicker {
+      0%,46%,52%,100% { text-shadow: 0 0 20px #cc0000, 0 0 50px rgba(200,0,0,0.4); opacity: 1; }
+      48%  { text-shadow: 0 0 6px #cc0000; opacity: 0.82; }
+      50%  { text-shadow: 0 0 42px #ff4a4a, 0 0 90px rgba(255,60,60,0.55); opacity: 1; }
+    }
+
+    /* ── HUD SUPER PURSUIT MODE (décor, sous le contenu) ──────── */
+    .hud-grid, .hud-vignette, .hud-sweep {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1 !important;
+    }
+    /* grille en perspective qui défile vers l'horizon (effet vitesse) */
+    .hud-grid {
+      background-image:
+        linear-gradient(rgba(255,40,40,0.11) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,40,40,0.11) 1px, transparent 1px);
+      background-size: 46px 46px;
+      transform: perspective(420px) rotateX(62deg) scale(2.6);
+      transform-origin: center 78%;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 28%, #000 72%, transparent 100%);
+              mask-image: linear-gradient(to bottom, transparent 28%, #000 72%, transparent 100%);
+      opacity: 0.6;
+      animation: hud-scroll 1.05s linear infinite;
+    }
+    @keyframes hud-scroll { from { background-position: 0 0; } to { background-position: 0 46px; } }
+    /* assombrissement des bords (focus centre) */
+    .hud-vignette {
+      background: radial-gradient(ellipse at 50% 42%, transparent 38%, rgba(0,0,0,0.82) 100%);
+    }
+    /* balayage lumineux horizontal type radar/turbo */
+    .hud-sweep {
+      width: 45%; left: -45%;
+      background: linear-gradient(90deg, transparent, rgba(255,46,46,0.14), transparent);
+      animation: hud-sweep-move 3s linear infinite;
+    }
+    @keyframes hud-sweep-move { 0% { left: -45%; } 100% { left: 145%; } }
+
+    /* bannière SUPER PURSUIT MODE + chevrons turbo */
+    .sp-banner {
+      font-size: 0.52em; letter-spacing: 4px; font-weight: bold;
+      color: #ff3a3a; text-shadow: 0 0 14px rgba(255,40,40,0.85);
+      margin-bottom: 1px; text-align: center; white-space: nowrap;
+      animation: sp-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes sp-pulse {
+      0%,100% { opacity: 0.6; text-shadow: 0 0 10px rgba(255,40,40,0.5); }
+      50%     { opacity: 1;   text-shadow: 0 0 24px #ff5a5a, 0 0 48px rgba(255,40,40,0.4); }
+    }
+    .sp-chevrons {
+      display: flex; gap: 2px; justify-content: center; margin: 0 0 2px;
+      font-size: 0.6em; color: #aa1818; letter-spacing: 1px;
+    }
+    .sp-chevrons span { animation: chev-run 1.2s linear infinite; }
+    .sp-chevrons span:nth-child(2){ animation-delay: .15s; }
+    .sp-chevrons span:nth-child(3){ animation-delay: .3s; }
+    .sp-chevrons span:nth-child(4){ animation-delay: .45s; }
+    .sp-chevrons span:nth-child(5){ animation-delay: .6s; }
+    @keyframes chev-run { 0%,100% { color:#5a0c0c; text-shadow:none; } 50% { color:#ff4a4a; text-shadow:0 0 12px #ff2a2a; } }
+
+    /* logo plus "turbo" en mode Super Pursuit */
+    #portal .p-logo {
+      background: linear-gradient(180deg, #ff5a5a, #ff2222 55%, #8a0000);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 26px rgba(255,40,40,0.55));
+    }
+
+    /* ── SÉLECTEUR NEURAL KYRONEX ─────────────────────────────── */
+    #ai-selector-label {
+      font-size: 0.48em; letter-spacing: 5px; text-transform: uppercase;
+      color: #8a2a2a; margin-bottom: 2px; text-align: center; opacity: 0.9;
+    }
+    #ai-selector-label b {
+      color: #ff3a3a; font-weight: normal;
+      text-shadow: 0 0 12px rgba(255,40,40,0.6);
+    }
+
     #ai-selector {
       display: flex;
-      gap: 0;
-      margin-bottom: 28px;
-      border: 1px solid #440000;
-    }
-    .ai-sel-btn {
-      flex: 1;
-      padding: 10px 28px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.72em;
-      letter-spacing: 5px;
-      color: #661111;
-      background: transparent;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
       border: none;
-      cursor: pointer;
-      transition: all 0.2s;
+      perspective: 900px;
     }
-    .ai-sel-btn.active {
-      color: #ff2222;
-      background: #1a0000;
-      text-shadow: 0 0 10px #cc0000;
-    }
-    .ai-sel-btn:not(.active):hover { color: #aa2222; background: #0d0000; }
-    #ai-selector .sep { width: 1px; background: #440000; }
 
-    /* Bouton principal */
-    #connect-btn {
-      display: none;
-      padding: 16px 40px;
+    .ai-sel-btn {
+      --accent: #ff2a2a;
+      --accent-dim: rgba(255,42,42,0.5);
+      position: relative;
+      flex: 1 1 130px;
+      max-width: 180px; min-width: 120px;
+      padding: 12px 10px 10px;
       font-family: 'Courier New', monospace;
-      font-size: 0.85em;
-      letter-spacing: 4px;
-      color: #ff2222;
-      background: transparent;
-      border: 1px solid #660000;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
+      font-size: 0.65em; font-weight: bold;
+      letter-spacing: 2px; line-height: 1.3;
+      color: #6a3030;
+      background: linear-gradient(160deg, rgba(22,5,5,0.92), rgba(6,1,1,0.96));
+      border: 1px solid rgba(120,30,30,0.4);
+      border-radius: 5px;
+      cursor: pointer; overflow: hidden; text-align: center;
+      transition: transform 0.25s ease, color 0.25s, border-color 0.25s, box-shadow 0.25s;
+    }
+    /* accents canon : KITT rouge · KARR ambre · SKV3 cyan électrique */
+    .ai-sel-btn[data-ai="karr"] { --accent: #ffb000; --accent-dim: rgba(255,176,0,0.5); }
+    .ai-sel-btn[data-ai="kitt"] { --accent: #ff2a2a; --accent-dim: rgba(255,42,42,0.5); }
+    .ai-sel-btn[data-ai="skv3"] { --accent: #54e6ff; --accent-dim: rgba(84,230,255,0.5); }
+
+    /* barre scanner en haut de carte */
+    .ai-sel-btn::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.25; transition: opacity 0.25s;
+    }
+    /* halo radial */
+    .ai-sel-btn::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 50% 0%, var(--accent-dim), transparent 70%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .ai-sel-btn .ai-name { display: block; font-size: 1.22em; letter-spacing: 3px; }
+    .ai-sel-btn .ai-spec {
+      display: block; margin-top: 8px; font-size: 0.6em; font-weight: normal;
+      letter-spacing: 1.5px; line-height: 1.6; color: #5a3030; opacity: 0.8;
+    }
+    .ai-sel-btn .ai-dot {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+      background: #3a1010; margin-top: 10px; transition: all 0.3s;
+    }
+
+    .ai-sel-btn:hover {
+      color: var(--accent); border-color: var(--accent-dim);
+      transform: translateY(-3px);
+    }
+    .ai-sel-btn:hover::before { opacity: 0.7; }
+    .ai-sel-btn:hover::after  { opacity: 0.45; }
+
+    .ai-sel-btn.active {
+      color: var(--accent); border-color: var(--accent);
+      transform: translateY(-4px) scale(1.03);
+      text-shadow: 0 0 14px var(--accent);
+      box-shadow: 0 0 22px var(--accent-dim), inset 0 0 18px rgba(0,0,0,0.6);
+      animation: ai-electric 2.6s ease-in-out infinite;
+    }
+    .ai-sel-btn.active::before {
+      opacity: 1;
+      background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+      background-size: 55% 100%; background-repeat: no-repeat;
+      animation: ai-scan 1.8s linear infinite;
+    }
+    .ai-sel-btn.active::after { opacity: 0.6; }
+    .ai-sel-btn.active .ai-spec { color: var(--accent); opacity: 0.95; }
+    .ai-sel-btn.active .ai-dot {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent), 0 0 16px var(--accent);
+      animation: ai-blink 1.1s steps(1) infinite;
+    }
+    @keyframes ai-scan  { 0% { background-position: -60% 0; } 100% { background-position: 160% 0; } }
+    @keyframes ai-blink { 0%,60% { opacity: 1; } 61%,100% { opacity: 0.25; } }
+    @keyframes ai-electric {
+      0%,100% { box-shadow: 0 0 18px var(--accent-dim), inset 0 0 18px rgba(0,0,0,0.6); }
+      45%     { box-shadow: 0 0 32px var(--accent),     inset 0 0 18px rgba(0,0,0,0.6); }
+      47%     { box-shadow: 0 0 10px var(--accent-dim), inset 0 0 18px rgba(0,0,0,0.6); }
+      49%     { box-shadow: 0 0 34px var(--accent),     inset 0 0 18px rgba(0,0,0,0.6); }
+    }
+
+    /* Bouton principal — lien neural */
+    #connect-btn {
+      display: none; position: relative; overflow: hidden;
+      padding: 17px 46px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.86em; font-weight: bold; letter-spacing: 5px;
+      color: #ff5a5a; text-decoration: none;
+      background: linear-gradient(160deg, rgba(32,5,5,0.92), rgba(8,1,1,0.96));
+      border: 1px solid #aa1a1a; border-radius: 5px;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 0 18px rgba(200,0,0,0.3), inset 0 0 14px rgba(120,0,0,0.25);
       animation: btn-pulse 2s ease-in-out infinite;
     }
+    #connect-btn::before {
+      content: ''; position: absolute; top: 0; left: -60%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,120,120,0.35), transparent);
+      animation: connect-sweep 2.6s linear infinite;
+    }
+    @keyframes connect-sweep { 0% { left: -60%; } 100% { left: 160%; } }
     #connect-btn:hover, #connect-btn:focus {
-      background: #1a0000;
-      border-color: #cc0000;
-      color: #ff4444;
-      box-shadow: 0 0 20px rgba(204,0,0,0.4), inset 0 0 10px rgba(100,0,0,0.3);
+      color: #fff; border-color: #ff3333; transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(255,40,40,0.6), inset 0 0 16px rgba(150,0,0,0.4);
       outline: none;
     }
     #connect-btn.visible { display: inline-block; }
     @keyframes btn-pulse {
-      0%, 100% { box-shadow: 0 0 8px rgba(150,0,0,0.3); }
-      50%       { box-shadow: 0 0 20px rgba(200,0,0,0.5); }
+      0%,100% { box-shadow: 0 0 12px rgba(180,0,0,0.35), inset 0 0 14px rgba(120,0,0,0.25); }
+      50%     { box-shadow: 0 0 26px rgba(220,0,0,0.6),  inset 0 0 14px rgba(120,0,0,0.25); }
     }
 
-    /* Status */
+    /* Status — pastille */
     #p-status {
-      margin-top: 28px;
-      font-size: 0.62em;
-      letter-spacing: 3px;
-      color: #441111;
-      text-align: center;
-      min-height: 1.4em;
+      margin-top: 26px;
+      font-size: 0.62em; letter-spacing: 3px;
+      color: #7a5a2a; text-align: center; min-height: 1.4em;
+      padding: 7px 18px; border-radius: 20px;
+      border: 1px solid transparent; transition: all 0.3s;
     }
-    #p-status.checking  { color: #664422; }
-    #p-status.online    { color: #446622; }
-    #p-status.offline   { color: #661111; }
+    #p-status.checking { color: #c79a3a; border-color: rgba(199,154,58,0.35); }
+    #p-status.online   { color: #5fcf5f; border-color: rgba(95,207,95,0.45); box-shadow: 0 0 14px rgba(60,200,60,0.22); }
+    #p-status.offline  { color: #cc4444; border-color: rgba(204,68,68,0.4); }
 
     /* Offline details */
     #offline-box {
@@ -332,6 +517,63 @@
       background: linear-gradient(90deg, transparent, #330000, transparent);
       margin: 0 auto 32px;
     }
+
+    /* ── PANNEAUX HUD KYRONEX (refonte du "reste" de la page) ─── */
+    .kx-panel {
+      position: relative; width: 100%; max-width: 440px; margin: 34px auto 0;
+      background: linear-gradient(160deg, rgba(24,5,5,0.72), rgba(7,1,1,0.9));
+      border: 1px solid rgba(150,34,34,0.3); border-radius: 8px;
+      padding: 22px 26px; text-align: left; overflow: hidden;
+    }
+    .kx-panel::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #ff2a2a, transparent);
+      opacity: 0.5;
+    }
+    .kx-panel-title {
+      font-size: 0.52rem; letter-spacing: 0.3em; color: #ff5252;
+      text-transform: uppercase; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 9px;
+    }
+    .kx-panel-title::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: #ff2a2a; box-shadow: 0 0 8px #ff2a2a;
+      animation: ai-blink 1.4s steps(1) infinite;
+    }
+    .kx-panel p { font-size: 0.62rem; letter-spacing: 1.5px; line-height: 2; color: #9a6a6a; }
+    .kx-hi  { color: #ff5a5a; }
+    .kx-key { color: #ff3333; font-weight: bold; letter-spacing: 2px; }
+    .kx-list { list-style: none; margin: 8px 0 4px; }
+    .kx-list li { font-size: 0.62rem; letter-spacing: 1.5px; line-height: 1.95; color: #9a6a6a; }
+    .kx-list li::before { content: '\25B8\00A0'; color: #cc3333; }
+
+    /* bouton HUD réutilisable (≠ boutons sélecteur, intacts) */
+    .kx-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: 'Courier New', monospace; font-size: 0.64rem; font-weight: bold;
+      letter-spacing: 3px; color: #ff5a5a; text-decoration: none; cursor: pointer;
+      padding: 13px 28px; border-radius: 5px; position: relative; overflow: hidden;
+      background: linear-gradient(160deg, rgba(30,5,5,0.9), rgba(8,1,1,0.95));
+      border: 1px solid #aa1a1a; transition: all 0.25s;
+      box-shadow: 0 0 14px rgba(180,0,0,0.22);
+    }
+    .kx-btn:hover {
+      color: #fff; border-color: #ff3333; transform: translateY(-2px);
+      box-shadow: 0 0 24px rgba(255,40,40,0.5);
+    }
+    #kitt-voice-status {
+      margin-top: 12px; font-size: 0.55rem; letter-spacing: 3px;
+      color: #7a4444; min-height: 1.2em; text-align: center;
+    }
+    .kx-fb {
+      display: inline-block; margin-top: 14px; padding: 10px 20px; border-radius: 5px;
+      font-size: 0.58rem; letter-spacing: 2px; color: #ff7a4d; text-decoration: none;
+      border: 1px solid rgba(255,90,40,0.4); background: rgba(40,10,0,0.4); transition: all 0.2s;
+    }
+    .kx-fb:hover { color: #fff; border-color: #ff7a4d; box-shadow: 0 0 14px rgba(255,90,40,0.35); }
+
+    /* Offline box — harmonisé */
+    #offline-box { border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -352,6 +594,15 @@
 
 <!-- ── PORTAIL D'ACCÈS ── -->
 <div id="portal">
+  <div class="portal-aura"></div>
+  <div class="portal-car-bg"></div>
+
+  <!-- ── HUD SUPER PURSUIT (décor) ── -->
+  <div class="hud-grid"></div>
+  <div class="hud-vignette"></div>
+  <div class="hud-sweep"></div>
+  <div class="sp-banner">◂&nbsp;&nbsp;SUPER&nbsp;PURSUIT&nbsp;MODE&nbsp;&nbsp;▸</div>
+  <div class="sp-chevrons"><span>&#9656;</span><span>&#9656;</span><span>&#9656;</span><span>&#9656;</span><span>&#9656;</span></div>
 
   <!-- ── MESSAGE DE BIENVENUE ── -->
   <div id="welcome-block">
@@ -370,17 +621,22 @@
   <div class="p-scanner"><div class="p-scanner-head"></div></div>
   <div class="p-logo">KYRONEX</div>
   <div class="p-sub">KNIGHT INDUSTRIES TWO THOUSAND</div>
+  <div id="ai-selector-label">SÉLECTIONNEZ LE <b>CERVEAU NEURAL</b></div>
   <div id="ai-selector">
     <button class="ai-sel-btn active" data-ai="karr" onclick="_selectAI('karr')" onmouseenter="_playHover('karr')">
-      K.A.R.R.<br><span style="font-size:0.7em;letter-spacing:2px;opacity:0.65">ORIN NX 16GB · QWEN 7B</span>
+      <span class="ai-name">K.A.R.R.</span>
+      <span class="ai-spec">ORIN NX 16GB<br>QWEN 7B</span>
+      <span class="ai-dot"></span>
     </button>
-    <div class="sep"></div>
     <button class="ai-sel-btn" data-ai="kitt" onclick="_selectAI('kitt')" onmouseenter="_playHover('kitt')">
-      K.I.T.T.<br><span style="font-size:0.7em;letter-spacing:2px;opacity:0.65">ORIN NANO 8GB · QWEN 3B</span>
+      <span class="ai-name">K.I.T.T.</span>
+      <span class="ai-spec">ORIN NANO 8GB<br>QWEN 3B</span>
+      <span class="ai-dot"></span>
     </button>
-    <div class="sep"></div>
     <button class="ai-sel-btn" data-ai="skv3" onclick="_selectAI('skv3')" onmouseenter="_playHover('skv3')">
-      SUPER K.I.T.T. V3<br><span style="font-size:0.7em;letter-spacing:2px;opacity:0.65">AJX ORIN</span>
+      <span class="ai-name">SUPER K.I.T.T. V3</span>
+      <span class="ai-spec">AGX ORIN<br>FLAGSHIP</span>
+      <span class="ai-dot"></span>
     </button>
   </div>
   <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
@@ -392,47 +648,33 @@
     REESSAYEZ PLUS TARD
   </div>
 
-  <!-- ── DEMO VOIX KITT — TEMPORAIRE ── -->
-  <div style="margin-top:36px;text-align:center;">
-    <button id="kitt-voice-btn" onclick="kittParle()" style="
-      padding:12px 32px;
-      font-family:'Courier New',monospace;
-      font-size:0.72em;
-      letter-spacing:4px;
-      color:#ff2222;
-      background:transparent;
-      border:1px solid #440000;
-      cursor:pointer;
-      transition:all 0.2s;
-      animation:btn-pulse 2.5s ease-in-out infinite;
-    "
-    onmouseover="this.style.background='#110000';this.style.borderColor='#cc0000';this.style.boxShadow='0 0 18px rgba(200,0,0,0.4)'"
-    onmouseout="this.style.background='transparent';this.style.borderColor='#440000';this.style.boxShadow='none'"
-    >
-      [ KITT — DEMO VOCALE ]
+  <!-- ── DÉMO VOIX KITT ── -->
+  <div style="margin-top:34px;text-align:center;">
+    <button id="kitt-voice-btn" onclick="kittParle()" class="kx-btn">
+      &#9658;&nbsp;&nbsp;KITT — DÉMO VOCALE
     </button>
-    <div id="kitt-voice-status" style="
-      margin-top:10px;font-size:0.55em;letter-spacing:3px;
-      color:#441111;min-height:1.2em;text-align:center;
-    "></div>
+    <div id="kitt-voice-status"></div>
   </div>
 
-  <!-- Message IA en construction + invitation feedback -->
-  <div style="margin-top:38px;max-width:400px;border:1px solid #220000;padding:18px 20px;font-size:0.58em;letter-spacing:2px;line-height:2.2;color:#553333;text-align:left;">
-    <div style="color:#772222;margin-bottom:8px;letter-spacing:3px;">[ STATUT SYSTÈME ]</div>
-    L'INTELLIGENCE ARTIFICIELLE KYRONEX EST
-    <span style="color:#cc3333">EN COURS DE DÉVELOPPEMENT</span>.
-    CERTAINES RÉPONSES PEUVENT ÊTRE IMPRÉCISES.<br><br>
-    <span style="color:#664422">TES RETOURS SONT LES BIENVENUS :</span><br>
-    — BUGS OU COMPORTEMENTS ÉTRANGES<br>
-    — IDÉES &amp; SUGGESTIONS<br>
-    — CRITIQUES CONSTRUCTIVES<br><br>
-    <a href="https://www.facebook.com/groups/757797724622219/" target="_blank" rel="noopener"
-      style="color:#992222;text-decoration:none;">
-      → PARTAGER SUR LE GROUPE FACEBOOK
+  <!-- Statut système + invitation feedback -->
+  <div class="kx-panel">
+    <div class="kx-panel-title">Statut système</div>
+    <p>
+      L'intelligence artificielle <span class="kx-key">KYRONEX</span> est
+      <span class="kx-hi">en cours de développement</span>.
+      Certaines réponses peuvent être imprécises.
+    </p>
+    <p style="margin-top:12px;color:#c08a4a;">Tes retours sont les bienvenus :</p>
+    <ul class="kx-list">
+      <li>Bugs ou comportements étranges</li>
+      <li>Idées &amp; suggestions</li>
+      <li>Critiques constructives</li>
+    </ul>
+    <a href="https://www.facebook.com/groups/757797724622219/" target="_blank" rel="noopener" class="kx-fb">
+      &#10148;&nbsp; Partager sur le groupe Facebook
     </a>
   </div>
-  <!-- ── FIN DEMO ── -->
+  <!-- ── FIN ── -->
 </div>
 
 <script>
@@ -491,7 +733,8 @@
       .then(function(d){
         if (d.status !== 'online' || !d.url) throw new Error('offline');
         var age = (Date.now() - new Date(d.last_update).getTime()) / 60000;
-        if (age > TUNNEL_MAX_AGE_MIN) throw new Error('stale');
+        // Tunnel permanent (Cloudflare nomme) : URL fixe -> on ignore l'age.
+        if (!d.permanent && age > TUNNEL_MAX_AGE_MIN) throw new Error('stale');
         statusEl.className = 'online';
         statusEl.textContent = label + ' EN LIGNE — CLIQUEZ POUR ACCÉDER';
         btnEl.href = d.url;
@@ -520,7 +763,8 @@
         if (data.status !== 'online' || !data.url) { throw new Error('offline'); }
         var lastUp = new Date(data.last_update);
         var ageMin = (Date.now() - lastUp.getTime()) / 60000;
-        if (ageMin > TUNNEL_MAX_AGE_MIN) { throw new Error('stale'); }
+        // Tunnel permanent (Cloudflare nomme) : URL fixe -> on ignore l'age.
+        if (!data.permanent && ageMin > TUNNEL_MAX_AGE_MIN) { throw new Error('stale'); }
         btnEl.href = data.url;
         btnEl.classList.add('visible');
         statusEl.className = 'online';
@@ -1015,8 +1259,8 @@
 (function () {
   'use strict';
 
-  var EL_KEY  = '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3';
-  var VOICE   = 'M2Xs2gEdangnlb92hK6y'; // Guy Chapelier
+  // La cle ElevenLabs ne vit plus dans le client : on passe par le proxy serveur.
+  var KX_TTS_PROXY = 'https://karr.kitt-franco-belge.be/api/tts-eleven';
   var AUDIO_DURATION_MS = 16500;         // duree estimee (ajuste si besoin)
 
   // Texte audio (optimise intonation ElevenLabs)
@@ -1105,13 +1349,9 @@
 
   /* ── Fetch ElevenLabs + lecture ── */
   function _fetchAndPlay(onStart, onEnd, onError) {
-    fetch('https://api.elevenlabs.io/v1/text-to-speech/' + VOICE, {
+    fetch(KX_TTS_PROXY, {
       method: 'POST',
-      headers: {
-        'xi-api-key': EL_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: AUDIO_TEXT,
         model_id: 'eleven_v3',
@@ -1241,13 +1481,9 @@ function kittParle() {
   status.style.color = '#664422';
   status.textContent = 'CONNEXION ELEVENLABS...';
 
-  fetch('https://api.elevenlabs.io/v1/text-to-speech/M2Xs2gEdangnlb92hK6y', {
+  fetch('https://karr.kitt-franco-belge.be/api/tts-eleven', {
     method: 'POST',
-    headers: {
-      'xi-api-key': '40aaa0e0df0e0fc4da291cd6df708de3e967f065f09f418b6656d4a9a713e2a3',
-      'Content-Type': 'application/json',
-      'Accept': 'audio/mpeg'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       text: texte,
       model_id: 'eleven_v3',
