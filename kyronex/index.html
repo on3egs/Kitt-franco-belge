@@ -298,10 +298,11 @@
       cursor: pointer; overflow: hidden; text-align: center;
       transition: transform 0.25s ease, color 0.25s, border-color 0.25s, box-shadow 0.25s;
     }
-    /* accents canon : KITT rouge · KARR ambre · SKV3 cyan électrique */
+    /* accents canon : KITT rouge · KARR ambre · SKV3 cyan électrique · KARR Dadoo vert */
     .ai-sel-btn[data-ai="karr"] { --accent: #ffb000; --accent-dim: rgba(255,176,0,0.5); }
     .ai-sel-btn[data-ai="kitt"] { --accent: #ff2a2a; --accent-dim: rgba(255,42,42,0.5); }
     .ai-sel-btn[data-ai="skv3"] { --accent: #54e6ff; --accent-dim: rgba(84,230,255,0.5); }
+    .ai-sel-btn[data-ai="karr_dadoo"] { --accent: #00ff88; --accent-dim: rgba(0,255,136,0.5); }
 
     /* barre scanner en haut de carte */
     .ai-sel-btn::before {
@@ -638,6 +639,11 @@
       <span class="ai-spec">AGX ORIN<br>FLAGSHIP</span>
       <span class="ai-dot"></span>
     </button>
+    <button class="ai-sel-btn" data-ai="karr_dadoo" onclick="_selectAI('karr_dadoo')" onmouseenter="_playHover('karr_dadoo')">
+      <span class="ai-name">KARR DE Dadoo</span>
+      <span class="ai-spec">GEMMA 4 E2B<br>GPU</span>
+      <span class="ai-dot"></span>
+    </button>
   </div>
   <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
   <div id="p-status" class="checking">VERIFICATION DU SYSTEME...</div>
@@ -688,7 +694,8 @@
   var TUNNEL_URLS = {
     kitt: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_kitt.json',
     karr: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_karr.json',
-    skv3: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_skv3.json'
+    skv3: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_skv3.json',
+    karr_dadoo: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_karr_dadoo.json'
   };
   var TUNNEL_MAX_AGE_MIN = 120;
   var _activeAI = 'karr';
@@ -698,7 +705,7 @@
   var _hoverPlaying = false;
   (function() {
     var base = 'https://on3egs.github.io/Kitt-franco-belge/kyronex/';
-    ['kitt','karr','skv3'].forEach(function(id) {
+    ['kitt','karr','skv3','karr_dadoo'].forEach(function(id) {
       var a = new Audio(base + 'hover_' + id + '.mp3');
       a.preload = 'auto';
       _hoverAudio[id] = a;
@@ -723,7 +730,7 @@
     var statusEl = document.getElementById('p-status');
     var btnEl    = document.getElementById('connect-btn');
     var offlineEl = document.getElementById('offline-box');
-    var label    = which === 'karr' ? 'K.A.R.R.' : which === 'skv3' ? 'SUPER K.I.T.T. V3' : 'K.I.T.T.';
+    var label    = which === 'karr' ? 'K.A.R.R.' : which === 'skv3' ? 'SUPER K.I.T.T. V3' : which === 'karr_dadoo' ? 'KARR DE Dadoo' : 'K.I.T.T.';
     btnEl.classList.remove('visible');
     offlineEl.classList.remove('visible');
     statusEl.className = 'checking';
