@@ -1,9 +1,9 @@
 {
     "status": "online",
-    "url": "http://192.168.129.25:3001",
-    "last_update": "2026-07-24T00:00:00+00:00",
+    "url": "https://exist-karen-lap-headlines.trycloudflare.com",
+    "last_update": "2026-07-24T01:46:42+00:00",
     "host": "karr-nano-dadoo",
     "version": "1.0",
-    "permanent": true,
-    "note": "KARR De Dadoo - JETSON NANO ORIN NX 8GB"
+    "permanent": false,
+    "note": "KARR De Dadoo - JETSON NANO ORIN NX 8GB - Quick Tunnel"
 }
