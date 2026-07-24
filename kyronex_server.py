@@ -1815,7 +1815,7 @@ _FUNC_PATTERNS = [
     (re.compile(r"\b(?:rappelle[- ]?moi|programme\s+(?:un\s+)?rappel)\s+(?:[aà]\s+)?(\d{1,2}[hH:]\d{0,2})\s*(?:de\s+|d['']\s*|pour\s+)?(.+)", re.I), "reminder"),
     # Contrôle musique VLC
     (re.compile(r"\b(?:musique|chanson|VLC)\s*(pause|stop|suivante|pr[eé]c[eé]dente|lecture|joue|reprends?)\b", re.I), "music"),
-    # Arrêt Kyronex
+    # Arrêt Kyronex (l'autorisation Macron est contrôlée avant le function calling)
     (re.compile(r"\b(?:coupe|éteins?|arrête|termine|shutdown|stop)\s*(?:toi|kyronex|kitt|tes systèmes)?(?:\s+maintenant)?\b", re.I), "shutdown"),
     # Mode Wake-up
     (re.compile(r"\b(?:mode wake|mode d.écoute|passe\s+(?:en\s+)?mode\s+wake|met\s+(?:te\s+)?(?:toi\s+)?en\s+mode\s+wake|active\s+(?:le\s+)?wake)\b", re.I), "wake_mode"),
@@ -2145,19 +2145,9 @@ async def execute_function(func_type: str, match, user_name: str = "") -> str:
         import random
         return random.choice(_KITT_REPLIQUES[func_type])
     elif func_type == "shutdown":
-        async def _do_shutdown():
-            await asyncio.sleep(1.5)
-            try:
-                await asyncio.create_subprocess_exec(
-                    "sudo", "shutdown", "-h", "now",
-                    stdout=asyncio.subprocess.DEVNULL,
-                    stderr=asyncio.subprocess.DEVNULL,
-                )
-                print("[SHUTDOWN] Arrêt système lancé par ordre vocal", flush=True)
-            except Exception as e:
-                print(f"[SHUTDOWN] Erreur: {e}", flush=True)
-        asyncio.create_task(_do_shutdown())
-        return f"Affirmative, {user_name}. Arrêt du système en cours. Au revoir."
+        # Ce cas ne doit normalement plus être atteint : check_shutdown_flow()
+        # intercepte toute demande d'arrêt et exige d'abord le mot de passe.
+        return "Mot de passe ?"
     elif func_type == "wake_mode":
         return f"Mode Wake-up activé, {user_name}. Dites KITT pour me commander."
     return ""
@@ -2171,6 +2161,72 @@ def get_function_action(func_type: str, match) -> dict | None:
     elif func_type == "wake_mode":
         return {"type": "wake_mode"}
     return None
+
+
+# ── Extinction Kyronex sécurisée par mot de passe vocal ─────────────────
+_shutdown_pending: dict[str, float] = {}
+_SHUTDOWN_PASSWORD = os.environ.get("KYRONEX_SHUTDOWN_PASSWORD", "Macron")
+_SHUTDOWN_TIMEOUT_SECONDS = 90
+
+
+def _is_shutdown_request(user_msg: str) -> bool:
+    """Reconnaît les ordres explicites d'extinction de Kyronex ou du système."""
+    msg = user_msg.casefold().strip()
+    # « stop » seul est volontairement accepté, mais « arrête la musique »
+    # ne doit surtout pas éteindre la machine.
+    if re.fullmatch(r"(?:stop|shutdown|power\s*off)[\s.!?]*", msg, re.I):
+        return True
+    return bool(re.search(
+        r"\b(?:[ée]teins?|[ée]teindre|arr[êe]te|coupe|termine)"
+        r"[\s-]+(?:toi|kyronex|kitt|le\s+syst[èe]me|tes\s+syst[èe]mes)"
+        r"(?:\s+(?:maintenant|imm[ée]diatement))?\b",
+        msg, re.I,
+    ))
+
+
+def check_shutdown_flow(session_id: str, user_msg: str) -> tuple[str | None, bool]:
+    """Demande Macron avant toute extinction. Retourne (réponse, extinction)."""
+    now = time.time()
+    expires_at = _shutdown_pending.get(session_id, 0)
+
+    if expires_at:
+        _shutdown_pending.pop(session_id, None)
+        if now >= expires_at:
+            return ("Délai dépassé. Extinction annulée, je reste en service.", False)
+        supplied = re.sub(r"[^a-z0-9]", "", user_msg.casefold())
+        expected = re.sub(r"[^a-z0-9]", "", _SHUTDOWN_PASSWORD.casefold())
+        if supplied == expected:
+            return (
+                "Mot de passe accepté. Dadoo, ce fut un plaisir de veiller à tes côtés. "
+                "Je coupe le système, à très bientôt partenaire. Vive la République !",
+                True,
+            )
+        return ("Mot de passe incorrect. Extinction annulée, je reste en service.", False)
+
+    if _is_shutdown_request(user_msg):
+        _shutdown_pending[session_id] = now + _SHUTDOWN_TIMEOUT_SECONDS
+        return ("Mot de passe ?", False)
+
+    return (None, False)
+
+
+async def _schedule_poweroff(delay: float = 5.0) -> None:
+    """Laisse finir la synthèse vocale puis demande une véritable extinction."""
+    await asyncio.sleep(delay)
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "sudo", "-n", "/sbin/poweroff",
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        _, stderr = await proc.communicate()
+        if proc.returncode == 0:
+            print("[SHUTDOWN] Extinction système lancée après mot de passe Macron", flush=True)
+        else:
+            detail = stderr.decode(errors="replace").strip()
+            print(f"[SHUTDOWN] ÉCHEC poweroff (code {proc.returncode}): {detail}", flush=True)
+    except Exception as exc:
+        print(f"[SHUTDOWN] ÉCHEC poweroff: {exc}", flush=True)
 
 
 # ── Handlers HTTP ────────────────────────────────────────────────────────
@@ -2207,6 +2263,25 @@ async def handle_chat(request: web.Request) -> web.Response:
 
     if session_id not in conversations:
         conversations[session_id] = []
+
+    shutdown_reply, do_poweroff = check_shutdown_flow(session_id, user_msg)
+    if shutdown_reply is not None:
+        conversations[session_id].append({"role": "user", "content": user_msg})
+        conversations[session_id].append({"role": "assistant", "content": shutdown_reply})
+        audio_url = None
+        if want_audio:
+            try:
+                audio_path = await text_to_speech(shutdown_reply, detect_emotion(shutdown_reply), lang)
+                audio_url = f"/audio/{Path(audio_path).name}"
+            except Exception as exc:
+                print(f"[TTS SHUTDOWN ERREUR] {exc}", flush=True)
+        if do_poweroff:
+            asyncio.create_task(_schedule_poweroff())
+        return web.json_response({
+            "reply": shutdown_reply, "audio_url": audio_url,
+            "session_id": session_id,
+            "timing": {"llm_ms": 0, "tts_ms": 0, "total_ms": round((time.time() - t_total) * 1000)}
+        })
 
     # Function calling (interception avant LLM)
     func_type, func_match = check_function_call(user_msg)
@@ -2373,6 +2448,31 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         msgs_text = "; ".join([f"{m.get('user', '?')} te dit que {m['text']}" for m in incoming_relais])
         relais_announce = f"[ANNONCE RELAIS: {msgs_text}]"
         user_msg = relais_announce + " " + user_msg
+
+    shutdown_reply, do_poweroff = check_shutdown_flow(session_id, user_msg)
+    if shutdown_reply is not None:
+        if session_id not in conversations:
+            conversations[session_id] = []
+        conversations[session_id].append({"role": "user", "content": user_msg})
+        conversations[session_id].append({"role": "assistant", "content": shutdown_reply})
+        resp = web.StreamResponse()
+        resp.headers["Content-Type"] = "text/event-stream"
+        resp.headers["Cache-Control"] = "no-cache"
+        resp.headers["X-Accel-Buffering"] = "no"
+        await resp.prepare(request)
+        await resp.write(f"data: {json.dumps({'token': shutdown_reply})}\n\n".encode())
+        audio_url = await _synth_chunk(
+            shutdown_reply, detect_emotion(shutdown_reply), lang,
+            karr=_karr_sessions.get(session_id, 0) > time.time(),
+        )
+        if audio_url:
+            await resp.write(f"data: {json.dumps({'audio_chunk': audio_url, 'chunk_text': shutdown_reply})}\n\n".encode())
+        await resp.write(f"data: {json.dumps({'done': True, 'timing': {'llm_ms': 0, 'tts_ms': 0, 'function': 'shutdown'}})}\n\n".encode())
+        await resp.write_eof()
+        if do_poweroff:
+            asyncio.create_task(_schedule_poweroff())
+        return resp
+
     func_type, func_match = check_function_call(user_msg)
     if func_type:
         func_reply = await execute_function(func_type, func_match, user_display)
