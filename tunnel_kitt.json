@@ -1,9 +1,7 @@
 {
   "status": "online",
-  "url": "https://kitt.kitt-franco-belge.be",
-  "last_update": "2026-07-19T00:21:00+00:00",
+  "url": "https://qualities-briefly-face-knights.trycloudflare.com",
+  "last_update": "2026-07-24T21:33:44.184750+00:00",
   "host": "kitt-jetson",
-  "version": "1.0",
-  "permanent": true,
-  "note": "Tunnel Cloudflare nommé permanent géré par systemd cloudflared-kitt.service"
+  "version": "1.0"
 }
