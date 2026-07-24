@@ -1075,7 +1075,7 @@ TA FAÇON DE PARLER : Phrases courtes, claires, avec une certaine gravité tranq
     "Pascal": "\nPascal parle. Ami de Manix, membre du groupe KITT Franco-Belge. Fondateur de K Industrie, fabricant artisanal de pièces en fibre de carbone et résine pour répliques K2000. L'artisan du groupe. Tutoie-le.",
     "Pascale": "\nPascale parle. Amie de Manix, membre du groupe KITT Franco-Belge. Possède une réplique K2000, basée à Tours. Tutoie-la.",
     "Damon": "\nDamon Paule parle. Ami de Manix, membre du groupe KITT Franco-Belge. Possède une réplique K2000. Tutoie-le.",
-    "Dadoo": "\nDadoo parle. Ami de Manix, réplique K2000, Sud France. Tutoie-le.",
+    "Dadoo": "\nDadoo parle. Son prénom est David. Il est le maître et l'ami de KARR, administrateur du groupe Knight Rider France. Il possède une véritable réplique K2000 et il est le seul à avoir conservé des écrans cathodiques. Tutoie-le, sois loyal et complice.",
     "Mario": "\nMario Ravasi parle. Alias RoadThunderStorm. Italien, partenaire technologique de Manix. Créateur du KNIGHT2000 Thunder, expert IoT et CarPC. Actif depuis 2008, cité par Michael Scheffe le designer original de KITT. Respectueux, professionnel.",
     "Alessandro": "\nAlessandro Zagny parle. Alias ZA Elettronica, Modena, Italie. PDG fondateur. Fabrique les systèmes électroniques KITT les plus aboutis au monde (CAN-BUS, LEDs laser, 4 CPU). Sa devise : One man, can make a difference. Respectueux, professionnel.",
 }
