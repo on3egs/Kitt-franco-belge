@@ -4,6 +4,8 @@
 # ══════════════════════════════════════════════════════════════════
 
 LOCAL_PORT="${TUNNEL_PORT:-3000}"
+TUNNEL_PROTO="${TUNNEL_PROTO:-}"
+CF_QUICK_CONFIG="${CF_QUICK_CONFIG:-/home/karr/.cloudflared/quick-tunnel.yml}"
 CF_LOG="/tmp/cloudflared.log"
 LHR_LOG="/tmp/localhost_run.log"
 UPDATER_LOG="/tmp/tunnel_updater.log"
@@ -24,7 +26,7 @@ export TUNNEL_FILE="${TUNNEL_FILE:-tunnel_kitt.json}"
 export GITHUB_REPO="${GITHUB_REPO:-on3egs/Kitt-franco-belge}"
 export GITHUB_BRANCH="${GITHUB_BRANCH:-main}"
 export GITHUB_TOKEN="${GITHUB_TOKEN:-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}"
-export UPDATER_SCRIPT="${UPDATER_SCRIPT:-/home/kitt/kitt-ai/tunnel_updater.py}"
+export UPDATER_SCRIPT="${UPDATER_SCRIPT:-/home/karr/kitt-ai/tunnel_updater.py}"
 
 # ── Nettoyage ─────────────────────────────────────────────────────
 cleanup_all() {
@@ -45,7 +47,13 @@ trap 'cleanup_all' SIGTERM SIGINT
 
 # ── Détection HTTPS/HTTP ───────────────────────────────────────────
 KITT_DIR="$(dirname "$(realpath "$0")")"
-[[ -f "$KITT_DIR/certs/cert.pem" ]] && PROTO="https" || PROTO="http"
+if [[ -n "$TUNNEL_PROTO" ]]; then
+    PROTO="$TUNNEL_PROTO"
+elif [[ -f "$KITT_DIR/certs/cert.pem" ]]; then
+    PROTO="https"
+else
+    PROTO="http"
+fi
 
 echo ""
 echo "  ██╗  ██╗██╗████████╗████████╗"
@@ -83,7 +91,7 @@ while true; do
     if command -v cloudflared &>/dev/null; then
         echo "[INFO] Tentative cloudflared..."
         rm -f "$CF_LOG"
-        cloudflared tunnel --metrics 127.0.0.1:8081 \
+        cloudflared tunnel --config "$CF_QUICK_CONFIG" --metrics 127.0.0.1:8081 \
             --url "${PROTO}://localhost:${LOCAL_PORT}" --no-tls-verify \
             > "$CF_LOG" 2>&1 &
         CF_CHILD_PID=$!
