@@ -1,0 +1,10 @@
+#!/bin/bash
+export CUDA_VISIBLE_DEVICES=""
+export OLLAMA_ORIGINS="*"
+export OLLAMA_HOST="0.0.0.0"
+export OLLAMA_MAX_LOADED_MODELS=1
+export NVIDIA_VISIBLE_DEVICES=""
+export NVIDIA_DRIVER_CAPABILITIES=""
+export OLLAMA_LLM_LIBRARY="cpu"
+export LD_LIBRARY_PATH=""
+exec /usr/local/bin/ollama serve
