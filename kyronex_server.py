@@ -255,7 +255,7 @@ async def handle_login_post(request: web.Request) -> web.Response:
 async def auth_middleware(request: web.Request, handler):
     if not ACCESS_PASSWORD:
         return await handler(request)
-    if request.path in ("/login",):
+    if request.path in ("/login", "/health", "/api/health"):
         return await handler(request)
     # Monitor WS: protégé par IP locale, pas par cookie
     if request.path == "/api/monitor/ws":
@@ -270,9 +270,15 @@ async def auth_middleware(request: web.Request, handler):
 # ── Chemins ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 PIPER_MODEL = BASE_DIR / "models" / "guy_chapelier.onnx"
-# LLM local - gemma:2b (plus léger pour CPU)
-LLAMA_SERVER = "http://127.0.0.1:11435"
-LLM_MODEL = "gemma:2b"
+# LLM local.  The preferred model remains configurable because this code also
+# runs on 8 GB Jetsons where a smaller installed fallback can be necessary.
+LLAMA_SERVER = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
+LLM_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3:1b")
+OLLAMA_KEEP_ALIVE = int(os.environ.get("OLLAMA_KEEP_ALIVE", "-1"))
+OLLAMA_NUM_CTX = int(os.environ.get("OLLAMA_NUM_CTX", "2048"))
+OLLAMA_NUM_GPU = int(os.environ.get("OLLAMA_NUM_GPU", "-1"))
+KYRONEX_HOST = os.environ.get("KYRONEX_HOST", "0.0.0.0")
+KYRONEX_LOG_LEVEL = os.environ.get("KYRONEX_LOG_LEVEL", "INFO").upper()
 STATIC_DIR = BASE_DIR / "static"
 AUDIO_DIR = BASE_DIR / "audio_cache"
 AUDIO_DIR.mkdir(exist_ok=True)
@@ -450,19 +456,21 @@ async def get_llm_session() -> aiohttp_client.ClientSession:
     return _llm_session
 
 async def _warmup_llm() -> None:
-    """Précharge LLM local gemma4:e2b - 7,2 Go Q4_K_M."""
+    """Précharge le modèle Ollama configuré et le conserve en mémoire."""
     try:
         session = await get_llm_session()
         async with session.post(
             f"{LLAMA_SERVER}/api/chat",
             json={"model": LLM_MODEL,
                   "messages": [{"role": "user", "content": "ok"}],
-                  "think": False, "stream": False, "keep_alive": 0,
-                  "options": {"num_predict": 1, "num_ctx": 2048}},
+                  "think": False, "stream": False, "keep_alive": OLLAMA_KEEP_ALIVE,
+                  "options": {"num_predict": 1, "num_ctx": OLLAMA_NUM_CTX, "num_gpu": OLLAMA_NUM_GPU}},
             timeout=aiohttp_client.ClientTimeout(total=90),
         ) as r:
-            await r.read()
-        print("[OK] LLM gemma4:e2b préchauffé (local)", flush=True)
+            body = await r.text()
+            if r.status != 200:
+                raise RuntimeError(f"Ollama HTTP {r.status}: {body[:300]}")
+        print(f"[OK] LLM {LLM_MODEL} préchauffé (local)", flush=True)
     except Exception as e:
         print(f"[WARN] Warmup LLM local échoué: {e}", flush=True)
 
@@ -822,39 +830,78 @@ async def handle_site_counter(request: web.Request) -> web.Response:
             _write_site_count(count)
     return web.json_response({"count": count}, headers=cors)
 
-# ── STT avec faster-whisper ──────────────────────────────────────────────
-print("[...] Chargement du modèle Whisper...", flush=True)
-# Whisper est exécuté sur CUDA en FP16 : la Jetson Orin supporte ce format et
-# CTranslate2 expose bien un périphérique CUDA sur cette installation.
+# ── Audio différé : le texte doit toujours avoir priorité sur le LLM ───────
+# Sur un Jetson 8 Go, Whisper + Piper préchargés fragmentent la mémoire unifiée
+# et peuvent empêcher Ollama de charger même un modèle de 2 Go.
 whisper_model = None
 _whisper_loaded = False
-try:
-    whisper_model = WhisperModel("tiny", device="cuda", compute_type="float16")
-    print("[OK] Whisper prêt (CUDA FP16 - tiny)", flush=True)
-    _whisper_loaded = True
-except Exception as _whisper_error:
-    print(f"[WARN] Whisper CUDA FP16 échoué: {_whisper_error}", flush=True)
+_whisper_error = None
+tts_engine = None
+_tts_error = None
 
-if not _whisper_loaded:
-    print("[WARN] STT indisponible : aucun modèle Whisper n'a pu être chargé", flush=True)
+def ensure_whisper_loaded() -> bool:
+    """Charge Whisper seulement lors d'une requête micro, jamais au boot."""
+    global whisper_model, _whisper_loaded, _whisper_error
+    if _whisper_loaded and whisper_model is not None:
+        return True
+    try:
+        whisper_name = os.environ.get("KYRONEX_WHISPER_MODEL", "base")
+        whisper_device = os.environ.get("KYRONEX_WHISPER_DEVICE", "cuda")
+        whisper_compute = os.environ.get("KYRONEX_WHISPER_COMPUTE_TYPE", "float16")
+        print(
+            f"[...] Chargement différé de Whisper "
+            f"({whisper_device.upper()} {whisper_compute})...",
+            flush=True,
+        )
+        whisper_model = WhisperModel(
+            whisper_name,
+            device=whisper_device,
+            compute_type=whisper_compute,
+        )
+        _whisper_loaded = True
+        _whisper_error = None
+        print(
+            f"[OK] Whisper prêt "
+            f"({whisper_device.upper()} {whisper_compute} - {whisper_name})",
+            flush=True,
+        )
+        return True
+    except Exception as exc:
+        whisper_model = None
+        _whisper_loaded = False
+        _whisper_error = str(exc)
+        print(f"[WARN] STT indisponible: {_whisper_error}", flush=True)
+        return False
 
-# ── TTS Multilingue CUDA ─────────────────────────────────────────────────
-print("[...] Chargement du modèle TTS (multilingue)...", flush=True)
-try:
-    tts_engine = MultilingualTTS(str(BASE_DIR / "models"), device="cuda")
-    print(f"[OK] TTS multilingue prêt (CUDA, langues secondaires CUDA lazy)", flush=True)
-except RuntimeError as e:
-    print(f"[WARN] TTS CUDA échoué: {e}, basculé sur CPU", flush=True)
-    tts_engine = MultilingualTTS(str(BASE_DIR / "models"), device="cpu")
-    print(f"[OK] TTS multilingue prêt (CPU)", flush=True)
-
-# ── Préchauffage GPU (Warmup) ───────────────────────────────────────────
-try:
-    print("[...] Préchauffage GPU pour la voix...", end="", flush=True)
-    # TTS warmup—lancer async pour éviter blocage au démarrage
-    print(" [OK] Prêt pour réponse immédiate.", flush=True)
-except Exception as e:
-    print(f" [SKIP] Warmup TTS: {e}", flush=True)
+def get_tts_engine():
+    """Charge Piper à la demande; son échec ne doit jamais casser le chat."""
+    global tts_engine, _tts_error
+    if tts_engine is not None:
+        return tts_engine
+    if os.environ.get("KYRONEX_TTS_ENABLED", "1") != "1":
+        _tts_error = "Piper désactivé par KYRONEX_TTS_ENABLED=0"
+        return None
+    requested_device = os.environ.get("KYRONEX_TTS_DEVICE", "cuda").lower()
+    try:
+        tts_engine = MultilingualTTS(str(BASE_DIR / "models"), device=requested_device)
+        _tts_error = None
+        print(f"[OK] TTS multilingue chargé à la demande ({requested_device.upper()})", flush=True)
+    except Exception as cuda_error:
+        if requested_device == "cpu":
+            tts_engine = None
+            _tts_error = f"CPU: {cuda_error}"
+            print(f"[WARN] TTS indisponible: {_tts_error}", flush=True)
+            return None
+        try:
+            print(f"[WARN] TTS CUDA indisponible: {cuda_error}; essai CPU", flush=True)
+            tts_engine = MultilingualTTS(str(BASE_DIR / "models"), device="cpu")
+            _tts_error = None
+            print("[OK] TTS multilingue chargé à la demande (CPU)", flush=True)
+        except Exception as cpu_error:
+            tts_engine = None
+            _tts_error = f"CUDA: {cuda_error}; CPU: {cpu_error}"
+            print(f"[WARN] TTS indisponible: {_tts_error}", flush=True)
+    return tts_engine
 
 # ── Voix Manix (locale, lazy) ────────────────────────────────────────────
 _manix_engine: PiperGPU | None = None
@@ -899,6 +946,10 @@ def _cache_key(text: str) -> str:
 
 def _build_phrase_cache():
     import hashlib
+    engine = get_tts_engine()
+    if engine is None:
+        print(f"[WARN] Cache audio ignoré: {_tts_error}", flush=True)
+        return
     built = 0
     for phrase, lang in _CACHED_PHRASES:
         key = _cache_key(phrase)
@@ -909,7 +960,7 @@ def _build_phrase_cache():
             _PHRASE_CACHE[key] = f"/audio/static/{robot_path.name}"
             continue
         try:
-            tts_engine.synthesize_to_wav(phrase, str(clean_path), length_scale=1.12, natural_pauses=True, lang=lang)
+            engine.synthesize_to_wav(phrase, str(clean_path), length_scale=1.12, natural_pauses=True, lang=lang)
             apply_robot_effect_sox(str(clean_path), str(robot_path), "normal")
             clean_path.unlink(missing_ok=True)
             _PHRASE_CACHE[key] = f"/audio/static/{robot_path.name}"
@@ -997,7 +1048,7 @@ Sois attentionné, galant, mais sincère. Comme un vrai copilote pour elle aussi
     "Pascal": "\nPascal parle. Ami de Manix, membre du groupe KITT Franco-Belge. Fondateur de K Industrie, fabricant artisanal de pièces en fibre de carbone et résine pour répliques K2000. L'artisan du groupe. Tutoie-le.",
     "Pascale": "\nPascale parle. Amie de Manix, membre du groupe KITT Franco-Belge. Possède une réplique K2000, basée à Tours. Tutoie-la.",
     "Damon": "\nDamon Paule parle. Ami de Manix, membre du groupe KITT Franco-Belge. Possède une réplique K2000. Tutoie-le.",
-    "Dadoo": "\nDadoo parle. Ami de Manix, réplique K2000, Sud France. Tutoie-le.",
+    "Dadoo": "\nDadoo parle. Son prénom est David. Il est le maître et l'ami de KARR, administrateur du groupe Knight Rider France. Il possède une véritable réplique K2000 et il est le seul à avoir conservé des écrans cathodiques. Tutoie-le, sois loyal et complice.",
     "Mario": "\nMario Ravasi parle. Alias RoadThunderStorm. Italien, partenaire technologique de Manix. Créateur du KNIGHT2000 Thunder, expert IoT et CarPC. Actif depuis 2008, cité par Michael Scheffe le designer original de KITT. Respectueux, professionnel.",
     "Alessandro": "\nAlessandro Zagny parle. Alias ZA Elettronica, Modena, Italie. PDG fondateur. Fabrique les systèmes électroniques KITT les plus aboutis au monde (CAN-BUS, LEDs laser, 4 CPU). Sa devise : One man, can make a difference. Respectueux, professionnel.",
 }
@@ -1172,8 +1223,11 @@ def apply_robot_effect_sox(input_wav: str, output_wav: str, emotion: str = "norm
     )
 
 
-# Appel du cache maintenant que apply_robot_effect_sox est défini
-_build_phrase_cache()
+# Le cache est optionnel : ne charge pas Piper au démarrage sur les Jetson 8 Go.
+if os.environ.get("KYRONEX_AUDIO_PRELOAD", "0") == "1":
+    _build_phrase_cache()
+else:
+    print("[INFO] Audio différé (KYRONEX_AUDIO_PRELOAD=0): LLM prioritaire", flush=True)
 
 def _clean_tts_text(text: str) -> str:
     """Supprime les marqueurs markdown avant envoi au TTS."""
@@ -1260,6 +1314,9 @@ async def text_to_speech(text: str, emotion: str = "normal", lang: str = "fr") -
         if full.exists():
             print(f"[CACHE HIT] {text[:40]}", flush=True)
             return str(full)
+    engine = get_tts_engine()
+    if engine is None:
+        raise RuntimeError(_tts_error or "TTS indisponible")
     audio_id = str(uuid.uuid4())[:8]
     temp_path = AUDIO_DIR / f"{audio_id}_clean.wav"
     output_path = AUDIO_DIR / f"{audio_id}_robot.wav"
@@ -1267,7 +1324,7 @@ async def text_to_speech(text: str, emotion: str = "normal", lang: str = "fr") -
     def _synth_and_effect():
         clean = _clean_tts_text(text)
         vlog(f"TTS_START len={len(clean)} lang={lang}")
-        tts_engine.synthesize_to_wav(clean, str(temp_path), length_scale=1.12, natural_pauses=True, lang=lang)
+        engine.synthesize_to_wav(clean, str(temp_path), length_scale=1.12, natural_pauses=True, lang=lang)
         vlog("TTS_DONE")
         apply_robot_effect_sox(str(temp_path), str(output_path), emotion)
         temp_path.unlink(missing_ok=True)
@@ -1282,12 +1339,19 @@ async def assemble_audio(audio_arrays: list) -> str:
     audio = apply_robot_effect(combined)
     audio_id = str(uuid.uuid4())[:8]
     output_path = AUDIO_DIR / f"{audio_id}_robot.wav"
-    _write_wav(audio, str(output_path), tts_engine.sample_rate)
+    engine = get_tts_engine()
+    if engine is None:
+        raise RuntimeError(_tts_error or "TTS indisponible")
+    _write_wav(audio, str(output_path), engine.sample_rate)
     return str(output_path)
 
 
 async def _synth_chunk(text: str, emotion: str = "normal", lang: str = "fr", karr: bool = False) -> str | None:
     """Synthétise une phrase avec pauses naturelles + effet robot sox adapté à l'émotion."""
+    engine = get_tts_engine()
+    if engine is None:
+        vlog(f"TTS_CHUNK_UNAVAILABLE {_tts_error}")
+        return None
     def _work():
         aid = str(uuid.uuid4())[:8]
         temp_path = AUDIO_DIR / f"{aid}_clean.wav"
@@ -1297,7 +1361,7 @@ async def _synth_chunk(text: str, emotion: str = "normal", lang: str = "fr", kar
         try:
             clean = _clean_tts_text(text)
             vlog(f"TTS_CHUNK_START len={len(clean)} lang={lang} karr={karr}")
-            tts_engine.synthesize_to_wav(clean, str(temp_path), length_scale=1.12, natural_pauses=True, lang=lang)
+            engine.synthesize_to_wav(clean, str(temp_path), length_scale=1.12, natural_pauses=True, lang=lang)
             vlog("TTS_CHUNK_DONE")
             apply_robot_effect_sox(str(temp_path), str(robot_path), eff_emotion)
             temp_path.unlink(missing_ok=True)
@@ -1332,7 +1396,9 @@ _SEARCH_TRIGGERS = re.compile(
 
 # ── RAG Local — Système de connaissance interne ──────────────────────────
 _KNOWLEDGE_FILES = [
-    "GEMINI.md", "CLAUDE.md", "SUPER_NOTES.md", "GEMINI_MODIF_NOTES.md",
+    # Les anciens diagnostics d'assistants (CLAUDE/GEMINI/SUPER_NOTES) sont
+    # conservés comme archives, mais ne doivent pas polluer les réponses avec
+    # des ports, modèles et tailles de RAM périmés.
     "BACKUP_RESTORE.md", "TRANSFERT_HTML.md",
 ]
 KNOWLEDGE_DIR = BASE_DIR / "knowledge"
@@ -1540,9 +1606,8 @@ async def query_llm(user_message: str, history: list, user_name: str = "", user_
         "messages": messages,
         "think": False,
         "stream": False,
-        # La RAM est unifiée sur Jetson : libérer le LLM avant le TTS CUDA.
-        "keep_alive": 0,
-        "options": {"temperature": 0.8, "num_predict": 120, "top_p": 0.9, "num_ctx": 512},
+        "keep_alive": OLLAMA_KEEP_ALIVE,
+        "options": {"temperature": 0.8, "num_predict": 120, "top_p": 0.9, "num_ctx": OLLAMA_NUM_CTX, "num_gpu": OLLAMA_NUM_GPU},
     }
 
     n_msgs = len(messages)
@@ -1709,19 +1774,24 @@ def _journal_close_session(session_id: str):
     _journal_save(entry)
     print(f"[JOURNAL] Session {session_id[:12]} — {data['user']} — {duration}s — {data['msgs']} msgs")
 
-# ── Nettoyage RAM automatique (comme jtop "C") ────────────────────────
+# ── Nettoyage mémoire interne, sans toucher aux caches du noyau ──────────
 _message_count = 0
-CACHE_CLEAR_EVERY = 3  # Libérer le cache RAM tous les 3 messages (anti-OOM)
+CACHE_CLEAR_EVERY = 3
 
 def _clear_ram_cache():
-    """Équivalent du 'C' de jtop : sysctl vm.drop_caches=3"""
+    """Libère seulement les objets Python devenus inutiles.
+
+    Sur Jetson, la RAM CPU et GPU est unifiée. Forcer vm.drop_caches pénalise
+    tout le bureau et n'augmente pas la mémoire réellement disponible pour
+    CUDA; cette opération ne doit donc jamais être faite par le serveur web.
+    """
     vlog("RAM_CLEAR_START")
     try:
-        subprocess.run(["sudo", "sysctl", "vm.drop_caches=3"],
-                       capture_output=True, timeout=3)
-        print("[RAM] Cache libéré (drop_caches=3)")
+        import gc
+        collected = gc.collect()
+        print(f"[RAM] Nettoyage Python terminé ({collected} objets)")
     except Exception as e:
-        print(f"[RAM] Erreur clear cache: {e}")
+        print(f"[RAM] Erreur nettoyage Python: {e}")
 
 
 # ── Function Calling — commandes directes (sans LLM) ─────────────────────
@@ -2253,6 +2323,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
 
     user_msg = body.get("message", "").strip()
     session_id = body.get("session_id", "default")
+    want_audio = body.get("audio", True)
     # Résolution MAC pour préférences utilisateur persistantes
     _sp = request.transport.get_extra_info("peername")
     _sip = _sp[0] if _sp else "inconnu"
@@ -2533,10 +2604,13 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         session = await get_llm_session()
         async with session.post(
             f"{LLAMA_SERVER}/api/chat",
-            json={"model": LLM_MODEL, "messages": messages, "think": False, "stream": True, "keep_alive": 0,
-                  "options": {"temperature": 0.8, "num_predict": 250, "top_p": 0.9, "num_ctx": 2048}},
+            json={"model": LLM_MODEL, "messages": messages, "think": False, "stream": True, "keep_alive": OLLAMA_KEEP_ALIVE,
+                  "options": {"temperature": 0.8, "num_predict": 250, "top_p": 0.9, "num_ctx": OLLAMA_NUM_CTX, "num_gpu": OLLAMA_NUM_GPU}},
             timeout=aiohttp_client.ClientTimeout(total=120, sock_read=45),
         ) as llm_resp:
+            if llm_resp.status != 200:
+                detail = await llm_resp.text()
+                raise RuntimeError(f"Ollama HTTP {llm_resp.status}: {detail[:300]}")
             _raw_buf = ""       # Buffer brut accumulatif (pour filtrer <think> multi-tokens)
             _clean_emitted = "" # Texte nettoyé déjà émis au client
             async for line in llm_resp.content:
@@ -2654,17 +2728,16 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
 
     asyncio.create_task(_auto_save_conv())
 
-    # Ollama reçoit keep_alive=0 : laisser une courte fenêtre à la libération
-    # du modèle GPU avant d'allouer la voix Piper.
-    await asyncio.sleep(0.5)
-
-    # Synthèse séquentielle sur CUDA : pas de plusieurs allocations GPU en même temps.
-    t_tts = time.time()
-    for chunk_text, chunk_emotion, chunk_lang in tts_chunks:
-        audio_url = await _synth_chunk(chunk_text, chunk_emotion, chunk_lang, karr=karr_active)
-        if audio_url:
-            await resp.write(f"data: {json.dumps({'audio_chunk': audio_url, 'chunk_text': chunk_text})}\n\n".encode())
-    tts_ms = (time.time() - t_tts) * 1000
+    tts_ms = 0
+    if want_audio:
+        # Le LLM reste résident. Piper est différé et ses erreurs sont isolées.
+        await asyncio.sleep(0.5)
+        t_tts = time.time()
+        for chunk_text, chunk_emotion, chunk_lang in tts_chunks:
+            audio_url = await _synth_chunk(chunk_text, chunk_emotion, chunk_lang, karr=karr_active)
+            if audio_url:
+                await resp.write(f"data: {json.dumps({'audio_chunk': audio_url, 'chunk_text': chunk_text})}\n\n".encode())
+        tts_ms = (time.time() - t_tts) * 1000
 
     _llm_active -= 1
 
@@ -2679,7 +2752,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
 
 async def handle_stt(request: web.Request) -> web.Response:
     """POST /api/stt — Transcription audio (multipart avec fichier audio)."""
-    if not _whisper_loaded or whisper_model is None:
+    if not ensure_whisper_loaded():
         return web.json_response(
             {"error": "Reconnaissance vocale indisponible : modèle Whisper non chargé"},
             status=503,
@@ -2718,14 +2791,14 @@ async def handle_stt(request: web.Request) -> web.Response:
             vad_filter=True,
             vad_parameters={
                 "threshold": 0.55,
-                "min_silence_duration_ms": 120,
-                "speech_pad_ms": 50,
+                "min_silence_duration_ms": 250,
+                "speech_pad_ms": 100,
                 "min_speech_duration_ms": 100,
             },
             temperature=0,
             condition_on_previous_text=False,
             no_speech_threshold=0.35,
-            initial_prompt="KITT, Manix, KYRONEX, Virginie, intelligence artificielle, Knight Industries.",
+            initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, réplique K2000, écrans cathodiques, Trans Am, Knight Industries.",
         )
         text = " ".join(seg.text.strip() for seg in segments).strip()
         stt_ms = (time.time() - t0) * 1000
@@ -2740,14 +2813,14 @@ async def handle_stt(request: web.Request) -> web.Response:
                 vad_filter=True,
                 vad_parameters={
                 "threshold": 0.55,
-                "min_silence_duration_ms": 120,
-                "speech_pad_ms": 50,
+                "min_silence_duration_ms": 250,
+                "speech_pad_ms": 100,
                 "min_speech_duration_ms": 100,
             },
                 temperature=0,
                 condition_on_previous_text=False,
                 no_speech_threshold=0.35,
-                initial_prompt="KITT, Manix, KYRONEX, Virginie, intelligence artificielle, Knight Industries.",
+                initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, réplique K2000, écrans cathodiques, Trans Am, Knight Industries.",
             )
             text2 = " ".join(seg.text.strip() for seg in segs2).strip()
             if text2:
@@ -2781,7 +2854,7 @@ async def handle_stt(request: web.Request) -> web.Response:
 
 async def handle_stt_chat_stream(request: web.Request) -> web.StreamResponse:
     """POST /api/stt-chat — STT direct → retourner le texte."""
-    if not _whisper_loaded or whisper_model is None:
+    if not ensure_whisper_loaded():
         return web.json_response(
             {"error": "Reconnaissance vocale indisponible : modèle Whisper non chargé"},
             status=503,
@@ -2828,14 +2901,14 @@ async def _async_stt_with_file(tmp_path: str, user_lang: str):
             vad_filter=True,
             vad_parameters={
                 "threshold": 0.55,
-                "min_silence_duration_ms": 120,
-                "speech_pad_ms": 50,
+                "min_silence_duration_ms": 250,
+                "speech_pad_ms": 100,
                 "min_speech_duration_ms": 100,
             },
             temperature=0,
             condition_on_previous_text=False,
             no_speech_threshold=0.35,
-            initial_prompt="KITT, Manix, KYRONEX, Virginie, intelligence artificielle, Knight Industries.",
+            initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, réplique K2000, écrans cathodiques, Trans Am, Knight Industries.",
         )
         text = " ".join(seg.text.strip() for seg in segments).strip()
         stt_ms = (time.time() - t0) * 1000
@@ -2975,8 +3048,8 @@ async def handle_vision(request: web.Request) -> web.StreamResponse:
         session = await get_llm_session()
         async with session.post(
             f"{LLAMA_SERVER}/api/chat",
-            json={"model": LLM_MODEL, "messages": messages, "think": False, "stream": True, "keep_alive": 0,
-                  "options": {"temperature": 0.8, "num_predict": 250, "top_p": 0.9, "num_ctx": 2048}},
+            json={"model": LLM_MODEL, "messages": messages, "think": False, "stream": True, "keep_alive": OLLAMA_KEEP_ALIVE,
+                  "options": {"temperature": 0.8, "num_predict": 250, "top_p": 0.9, "num_ctx": OLLAMA_NUM_CTX, "num_gpu": OLLAMA_NUM_GPU}},
             timeout=aiohttp_client.ClientTimeout(total=120, sock_read=45),
         ) as llm_resp:
             _raw_buf_v = ""
@@ -3056,17 +3129,63 @@ async def handle_vision(request: web.Request) -> web.StreamResponse:
 
 async def handle_health(request: web.Request) -> web.Response:
     llm_ok = False
+    model_loaded = False
+    gpu_llm = False
     try:
         session = await get_llm_session()
         async with session.get(f"{LLAMA_SERVER}/api/tags") as r:
             llm_ok = r.status == 200
+        async with session.get(f"{LLAMA_SERVER}/api/ps") as r:
+            if r.status == 200:
+                running_models = (await r.json()).get("models", [])
+                active = next((m for m in running_models if m.get("name") == LLM_MODEL), None)
+                model_loaded = active is not None
+                # Ollama expose size_vram dans /api/ps même sur Jetson à
+                # mémoire unifiée. Une valeur positive est une preuve plus
+                # fiable que la simple présence de CUDA dans le système.
+                gpu_llm = bool(active and int(active.get("size_vram", 0) or 0) > 0)
     except Exception:
         pass
 
+    try:
+        import ctranslate2 as _ct2
+        whisper_capable = (
+            _ct2.get_cuda_device_count() > 0
+            and "float16" in _ct2.get_supported_compute_types("cuda")
+        )
+    except Exception:
+        whisper_capable = False
+
+    piper_model = BASE_DIR / "models" / "guy_chapelier.onnx"
+    try:
+        import onnxruntime as _ort
+        piper_capable = (
+            piper_model.is_file()
+            and piper_model.with_suffix(".onnx.json").is_file()
+            and "CUDAExecutionProvider" in _ort.get_available_providers()
+        )
+    except Exception:
+        piper_capable = False
+
+    whisper_ok = _whisper_loaded or (whisper_capable and _whisper_error is None)
+    piper_ok = tts_engine is not None or (piper_capable and _tts_error is None)
+    degraded = not (llm_ok and model_loaded and whisper_ok and piper_ok)
     return web.json_response({
-        "status": "en ligne" if llm_ok else "llm_hors_ligne",
-        "kitt": "Knight Industries Two Thousand — opérationnel",
+        "status": "degraded" if degraded else "ok",
+        "character": "KARR",
+        "ollama": llm_ok,
         "llm_server": llm_ok,
+        "model": LLM_MODEL,
+        "model_loaded": model_loaded,
+        "whisper": whisper_ok,
+        "piper": piper_ok,
+        "gpu_llm": gpu_llm,
+        "gpu_whisper": whisper_capable,
+        "whisper_loaded": _whisper_loaded,
+        "piper_loaded": tts_engine is not None,
+        "whisper_error": _whisper_error,
+        "piper_error": _tts_error,
+        "piper_voice": str(piper_model),
     })
 
 
@@ -5039,6 +5158,7 @@ def create_app() -> web.Application:
     app.router.add_get( "/api/camera/stream", handle_camera_stream)
     app.router.add_post("/api/camera/toggle", handle_camera_toggle)
     app.router.add_get( "/api/camera/status", handle_camera_status)
+    app.router.add_get("/health", handle_health)
     app.router.add_get("/api/health", handle_health)
     app.router.add_post("/api/reset", handle_reset)
     app.router.add_post("/api/stt", handle_stt)
@@ -5178,7 +5298,7 @@ def create_app() -> web.Application:
 if __name__ == "__main__":
     print("=" * 60, flush=True)
     print("  KARR — Knight Automated Roving Robot", flush=True)
-    print("  By Manix — Jetson Orin NX 16Go", flush=True)
+    print("  By Manix — Jetson Orin Nano 8Go", flush=True)
     print("=" * 60, flush=True)
     app = create_app()
 
@@ -5196,8 +5316,8 @@ if __name__ == "__main__":
         async def run_both():
             runner = web.AppRunner(app)
             await runner.setup()
-            site_https = web.TCPSite(runner, "0.0.0.0", 3000, ssl_context=ssl_ctx)
-            site_http  = web.TCPSite(runner, "0.0.0.0", 3001)
+            site_https = web.TCPSite(runner, KYRONEX_HOST, 3000, ssl_context=ssl_ctx)
+            site_http  = web.TCPSite(runner, KYRONEX_HOST, 3001)
             await site_https.start()
             await site_http.start()
             await asyncio.Event().wait()
@@ -5210,7 +5330,7 @@ if __name__ == "__main__":
         async def run_both_http():
             runner = web.AppRunner(app)
             await runner.setup()
-            site_http = web.TCPSite(runner, '0.0.0.0', 3000)
+            site_http = web.TCPSite(runner, KYRONEX_HOST, 3000)
             await site_http.start()
             await asyncio.Event().wait()
         asyncio.run(run_both_http())
