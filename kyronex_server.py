@@ -1048,7 +1048,7 @@ Sois attentionné, galant, mais sincère. Comme un vrai copilote pour elle aussi
     "Pascal": "\nPascal parle. Ami de Manix, membre du groupe KITT Franco-Belge. Fondateur de K Industrie, fabricant artisanal de pièces en fibre de carbone et résine pour répliques K2000. L'artisan du groupe. Tutoie-le.",
     "Pascale": "\nPascale parle. Amie de Manix, membre du groupe KITT Franco-Belge. Possède une réplique K2000, basée à Tours. Tutoie-la.",
     "Damon": "\nDamon Paule parle. Ami de Manix, membre du groupe KITT Franco-Belge. Possède une réplique K2000. Tutoie-le.",
-    "Dadoo": "\nDadoo parle. Son prénom est David. Il est le maître et l'ami de KARR, administrateur du groupe Knight Rider France. Il possède une véritable réplique K2000 et il est le seul à avoir conservé des écrans cathodiques. Tutoie-le, sois loyal et complice.",
+    "Dadoo": "\nDadoo parle. Tu es KARR, l'IA propulsée par le LLM KYRONEX. Son prénom est David. Il est français, vit dans le sud de la France et il est ton maître, ton ami et ton copilote. Il est administrateur du groupe Knight Rider France. Sa véritable réplique K2000 KARR possède un rare système de Jupiter Electronic Canada, assemblé par KR-95 Paris, et elle est la seule connue avec un système CRT dans son tableau de bord. Tutoie-le, sois loyal et complice.",
     "Mario": "\nMario Ravasi parle. Alias RoadThunderStorm. Italien, partenaire technologique de Manix. Créateur du KNIGHT2000 Thunder, expert IoT et CarPC. Actif depuis 2008, cité par Michael Scheffe le designer original de KITT. Respectueux, professionnel.",
     "Alessandro": "\nAlessandro Zagny parle. Alias ZA Elettronica, Modena, Italie. PDG fondateur. Fabrique les systèmes électroniques KITT les plus aboutis au monde (CAN-BUS, LEDs laser, 4 CPU). Sa devise : One man, can make a difference. Respectueux, professionnel.",
 }
@@ -2798,7 +2798,7 @@ async def handle_stt(request: web.Request) -> web.Response:
             temperature=0,
             condition_on_previous_text=False,
             no_speech_threshold=0.35,
-            initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, réplique K2000, écrans cathodiques, Trans Am, Knight Industries.",
+            initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, Jupiter Electronic Canada, KR-95 Paris, réplique K2000, système CRT, écrans cathodiques, Trans Am, Knight Industries.",
         )
         text = " ".join(seg.text.strip() for seg in segments).strip()
         stt_ms = (time.time() - t0) * 1000
@@ -2820,7 +2820,7 @@ async def handle_stt(request: web.Request) -> web.Response:
                 temperature=0,
                 condition_on_previous_text=False,
                 no_speech_threshold=0.35,
-                initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, réplique K2000, écrans cathodiques, Trans Am, Knight Industries.",
+                initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, Jupiter Electronic Canada, KR-95 Paris, réplique K2000, système CRT, écrans cathodiques, Trans Am, Knight Industries.",
             )
             text2 = " ".join(seg.text.strip() for seg in segs2).strip()
             if text2:
@@ -2908,7 +2908,7 @@ async def _async_stt_with_file(tmp_path: str, user_lang: str):
             temperature=0,
             condition_on_previous_text=False,
             no_speech_threshold=0.35,
-            initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, réplique K2000, écrans cathodiques, Trans Am, Knight Industries.",
+            initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, Jupiter Electronic Canada, KR-95 Paris, réplique K2000, système CRT, écrans cathodiques, Trans Am, Knight Industries.",
         )
         text = " ".join(seg.text.strip() for seg in segments).strip()
         stt_ms = (time.time() - t0) * 1000
