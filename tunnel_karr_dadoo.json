@@ -1,9 +1,9 @@
 {
     "status": "online",
-    "url": "https://karr.kitt-franco-belge.be?ai=karr_dadoo",
+    "url": "http://192.168.129.25:3000",
     "last_update": "2026-07-24T00:00:00+00:00",
-    "host": "karr-desktop",
+    "host": "karr-nano-dadoo",
     "version": "1.0",
     "permanent": true,
-    "note": "IA BY MANIX V5 - KARR DE Dadoo"
+    "note": "IA BY MANIX V5 - JETSON NANO ORIN NX 8GB"
 }
