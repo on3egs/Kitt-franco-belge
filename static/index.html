@@ -3046,15 +3046,6 @@ body.night-auto { filter: brightness(0.6); transition: filter 3s; }
     <span class="sub-knight">KNIGHT INDUSTRIES TWO THOUSAND</span><br>
     <span class="sub-kyronex">KYRONEX</span><span class="sub-sep">&nbsp;by&nbsp;</span><span class="sub-manix">Manix</span>
   </div>
-  <div class="ai-switch">
-    <button class="ai-switch-btn " data-ai="kitt" onclick="_switchAI('kitt')" onmouseenter="_playAIHover('kitt')">K.I.T.T.</button>
-    <div class="sw-sep"></div>
-    <button class="ai-switch-btn active" data-ai="karr" onclick="_switchAI('karr')" onmouseenter="_playAIHover('karr')">K.A.R.R.</button>
-    <div class="sw-sep"></div>
-    <button class="ai-switch-btn" data-ai="kitt_v3" onclick="_switchAI('kitt_v3')" onmouseenter="_playAIHover('kitt_v3')">KITT V3</button>
-    <div class="sw-sep"></div>
-    <button class="ai-switch-btn" data-ai="karr_dadoo" onclick="_switchAI('karr_dadoo')" onmouseenter="_playAIHover('karr_dadoo')">KARR DE Dadoo</button>
-  </div>
   <div class="voicebox-container">
     <canvas id="voicebox" width="280" height="44"></canvas>
   </div>
@@ -9296,39 +9287,6 @@ const _reminderOverlay = (function() {
 
 
 <script>
-/* ── KITT/KARR switch ── */
-(function() {
-  var THIS_AI = 'karr';
-  var TUNNEL_URLS = {
-    kitt: 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel_kitt.json',
-    karr: 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel_karr.json',
-    kitt_v3: 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel_kitt_v3.json',
-    karr_dadoo: 'https://raw.githubusercontent.com/on3egs/Kitt-franco-belge/main/tunnel_karr_dadoo.json'
-  };
-  var BASE_AUDIO = 'https://on3egs.github.io/Kitt-franco-belge/kyronex/';
-  var _hov = {}, _hovPlay = false;
-  ['kitt','karr','kitt_v3','karr_dadoo'].forEach(function(id) {
-    var a = new Audio(BASE_AUDIO + 'hover_' + id + '.mp3');
-    a.preload = 'auto'; _hov[id] = a;
-  });
-  window._playAIHover = function(id) {
-    if (_hovPlay) return; _hovPlay = true;
-    var a = _hov[id]; if (!a) return;
-    a.currentTime = 0; a.play().catch(function(){});
-    a.onended = function() { _hovPlay = false; };
-  };
-  window._switchAI = function(which) {
-    if (which === THIS_AI) return;
-    fetch(TUNNEL_URLS[which] + '?t=' + Date.now(), {cache:'no-store'})
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        if (d.status === 'online' && d.url) { window.open(d.url, '_blank'); }
-        else { alert(which.toUpperCase() + ' est hors ligne.'); }
-      })
-      .catch(function() { alert(which.toUpperCase() + ' inaccessible.'); });
-  };
-})();
-</script>
 <script>
 async function toggleCamStream(forceState) {
   try {
