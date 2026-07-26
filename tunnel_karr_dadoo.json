@@ -1,7 +1,8 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-07-26T01:16:22.999396+00:00",
-  "host": "kitt-jetson",
-  "version": "1.0"
+  "status": "online",
+  "url": "https://karr-dadoo.kitt-franco-belge.be",
+  "last_update": "2026-07-26T02:14:16Z",
+  "host": "Dadoo — KARR",
+  "version": "KARR DADOO",
+  "permanent": true
 }
