@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://globe-send-basics-structural.trycloudflare.com",
-  "last_update": "2026-07-26T00:51:17.655372+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-07-26T00:51:20.647045+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
