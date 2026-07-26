@@ -1,7 +1,7 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-07-26T00:05:48.001344+00:00",
+  "status": "online",
+  "url": "https://marble-compensation-halifax-pcs.trycloudflare.com",
+  "last_update": "2026-07-26T00:06:20.638610+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
