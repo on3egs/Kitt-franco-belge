@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://thumbnails-header-mail-write.trycloudflare.com",
-  "last_update": "2026-07-26T00:03:10.409675+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-07-26T00:03:13.603189+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
