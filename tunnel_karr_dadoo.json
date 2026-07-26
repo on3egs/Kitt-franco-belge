@@ -1,7 +1,7 @@
 {
-  "status": "online",
-  "url": "https://walt-downtown-tcp-equation.trycloudflare.com",
-  "last_update": "2026-07-26T00:02:46.330211+00:00",
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-07-26T00:02:50.398376+00:00",
   "host": "kitt-jetson",
   "version": "1.0"
 }
