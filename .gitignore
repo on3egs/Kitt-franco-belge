@@ -1,27 +1,125 @@
-# Dependencies
-**/node_modules
-.pnpm-store/
+# =============================================================================
+# KITT Franco-Belge - .gitignore Global
+# =============================================================================
 
-# Build outputs
-dist/
-build/
-*.dist
-
-# Environment variables
+# ====================
+# 1. Environnement
+# ====================
 .env
+.env.*
+!.env.example
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.development
+.env.production
+.env.test
 
-# IDE and editor files
+# ====================
+# 2. Python
+# ====================
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+ENV/
+
+# ====================
+# 3. Node.js / Frontend
+# ====================
+node_modules/
+.pnpm-store/
+.pnp/
+.pnp.js
+
+# ====================
+# 4. Build & Distribution
+# ====================
+build/
+dist/
+*.dist
+.next/
+.nuxt/
+.out/
+
+# ====================
+# 5. Logs & Runtime Data
+# ====================
+*.log
+logs/
+*.pid
+*.seed
+*.lock
+
+# Fichiers de log spécifiques
+karr_vram.log
+kitt_vram.log
+
+# ====================
+# 6. Données Sensibles (Tunnels, Clés API, Certificats)
+# ====================
+tunnel*.json
+tunnel_*.json
+karr*.json
+k4000*.json
+*.pem
+*.key
+*.crt
+*.pfx
+
+# ====================
+# 7. Bases de Données & Cache
+# ====================
+*.db
+*.sqlite
+*.sqlite3
+memory.db
+assistant_memory.db
+
+# ====================
+# 8. Fichiers Audio/Video (trop lourds pour Git)
+# ====================
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.m4a
+*.webm
+
+# ====================
+# 9. Modèles IA (trop lourds pour Git)
+# ====================
+models/
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.pth
+piper/
+
+# ====================
+# 10. Backups & Fichiers Temporaires
+# ====================
+*.bak
+*.bak-*
+*.backup
+*.backup_*
+backups/
+BACKUP_*/
+*.tar.gz
+*.zip
+
+# ====================
+# 11. IDE & Éditeurs
+# ====================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS generated files
+# ====================
+# 12. OS & Système
+# ====================
 .DS_Store
 .DS_Store?
 ._*
@@ -30,87 +128,51 @@ build/
 ehthumbs.db
 Thumbs.db
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# ====================
+# 13. Tests & Coverage
+# ====================
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+# ====================
+# 14. Données Utilisateur (Privées)
+# ====================
+memory.json
+users.json
+conn_stats.json
+user_memories/
+conv_data/
+audio_cache/
 
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
+# ====================
+# 15. Fichiers de Configuration Locaux
+# ====================
+config.local.json
+settings.local.json
 
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-
-# Gatsby files
+# ====================
+# 16. Cache Divers
+# ====================
 .cache/
+.trt_cache/
 
-# Storybook build outputs
-.out
-.storybook-out
+# ====================
+# 17. Fichiers Générés Automatiquement
+# ====================
+*.tsbuildinfo
+.pdm.toml
 
-# Temporary folders
-tmp/
-temp/
+# ====================
+# 18. Scripts de Patch Temporaires (à ne pas commiter)
+# ====================
+fix_*.py
+patch_*.py
+revert_*.py
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Webdev artifacts (checkpoint zips, migrations, etc.)
-.webdev/
-
-# Manus version file (auto-generated, not part of source)
-client/public/__manus__/version.json
-# Local HTML backups
-index.html.bak-*
-index.html.gemini.bak
-
+# =============================================================================
+# FIN - Ne rien ajouter après cette ligne
+# =============================================================================
