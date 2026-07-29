@@ -1,8 +1,9 @@
 {
   "status": "online",
-  "url": "https://karr-dadoo.kitt-franco-belge.be",
-  "last_update": "2026-07-26T02:14:16Z",
-  "host": "Dadoo — KARR",
-  "version": "KARR DADOO",
-  "permanent": true
+  "url": "https://karr-dadoo.kitt-franco-belge.be?ai=karr_dadoo",
+  "last_update": "2026-07-27T23:12:43.127102+00:00",
+  "host": "karr-jetson-dadoo",
+  "version": "1.0",
+  "permanent": true,
+  "note": "KARR De Dadoo - Tunnel Cloudflare nomme - Jetson NX 8GB"
 }
