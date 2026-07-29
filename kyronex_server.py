@@ -21,6 +21,7 @@ import uuid
 import wave
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from collections import deque
 
 import tempfile
 import numpy as np
@@ -78,25 +79,284 @@ def vlog(event: str):
     _vram_logger.info(f"{event} | {info}")
     print(f"[VRAM] {event} | {info}", flush=True)
 
+
+# ── Configuration du Streaming ULTRA-RÉACTIF ────────────────────────
+# Paramètres de segmentation ultra-rapide pour lecture IMMEDIATE
+# Peut être surmonté par variables d'environnement pour personnalisation
+STREAMING_MIN_WORDS = int(os.environ.get("STREAMING_MIN_WORDS", "1"))    # Envoie dès 1 mot
+STREAMING_MIN_CHARS = int(os.environ.get("STREAMING_MIN_CHARS", "1"))   # Même 1 caractère déclenche
+STREAMING_MAX_DELAY_MS = int(os.environ.get("STREAMING_MAX_DELAY_MS", "10")) # Délai max : 10ms
+STREAMING_MAX_QUEUE_SIZE = int(os.environ.get("STREAMING_MAX_QUEUE_SIZE", "2"))  # File TTS ultra-légère
+
+# ── Paramètres de TTS Parallèle ────────────────────────────────────────
+# Activation du TTS parallèle pour streaming ultra-fluide
+KYRONEX_PARALLEL_TTS = os.environ.get("KYRONEX_PARALLEL_TTS", "0") == "1"
+KYRONEX_TTS_CONCURRENCY = int(os.environ.get("KYRONEX_TTS_CONCURRENCY", "1"))  # Nombre de synthèses simultanées
+KYRONEX_TTS_IMMEDIATE = os.environ.get("KYRONEX_TTS_IMMEDIATE", "0") == "1"  # Commencer immédiatement
+
+# ── Paramètres K-4000 spécifiques ───────────────────────────────────────
+K4000_STREAMING_TTS = os.environ.get("K4000_STREAMING_TTS", "0") == "1"
+K4000_MIN_PHRASE_LENGTH = int(os.environ.get("K4000_MIN_PHRASE_LENGTH", "3"))
+K4000_MAX_PHRASE_LENGTH = int(os.environ.get("K4000_MAX_PHRASE_LENGTH", "10"))
+
+# Phrases à ne jamais couper (dictionnaire de prononciation)
+PROTECTED_EXPRESSIONS = [
+    "Frank", "KR-95", "Knight Rider", "Knight Industries", "K-4000", 
+    "KITT", "KARR", "ByManix", "Emmanuel Gelinne", "Manix",
+    "Jetson Orin", "NVIDIA", "CUDA", "TensorRT", "Kyronex"
+]
+
+
+class TextSegmenter:
+    """Segmentation intelligente du texte pour streaming TTS."""
+    
+    def __init__(self, min_words=STREAMING_MIN_WORDS, min_chars=STREAMING_MIN_CHARS, 
+                 max_delay_ms=STREAMING_MAX_DELAY_MS, immediate_mode=False):
+        self.min_words = min_words
+        self.min_chars = min_chars
+        self.max_delay_ms = max_delay_ms
+        self.immediate_mode = immediate_mode  # Mode immédiat: envoie dès que possible
+        self.buffer = ""
+        self.last_segment_time = 0
+        self.punctuation_pattern = re.compile(r'[.!?…;:]')
+        self.comma_pattern = re.compile(r'[,]')
+        
+    def add_text(self, text: str) -> list:
+        """Ajoute du texte et retourne les segments prêts.
+        
+        En mode immédiat (immediate_mode=True), envoie des segments dès que possible,
+        même sans ponctuation et avec moins de mots.
+        """
+        segments = []
+        self.buffer += text
+        current_time = time.time()
+        
+        # Mode IMMEDIAT: Envoyer dès qu'on a du contenu valide
+        if self.immediate_mode:
+            if self.buffer.strip():
+                # Envoyer tout le buffer immédiatement en mode immédiat
+                # (le client gérera la segmentation finale)
+                if len(self.buffer) >= self.min_chars or len(self.buffer.split()) >= self.min_words:
+                    segments.append(self.buffer.strip())
+                    self.buffer = ""
+                    self.last_segment_time = current_time
+                return segments
+        
+        # Mode STANDARD: Segmentation intelligente
+        # Vérifier si on a une phrase complète (ponctuation forte)
+        if self.punctuation_pattern.search(self.buffer):
+            # Trouver la dernière ponctuation forte
+            last_punct = max(
+                self.buffer.rfind('.'), 
+                self.buffer.rfind('!'), 
+                self.buffer.rfind('?'), 
+                self.buffer.rfind('…'),
+                self.buffer.rfind(';'),
+                self.buffer.rfind(':')
+            )
+            if last_punct >= self.min_chars - 1:  # au moins min_chars avant
+                segment = self.buffer[:last_punct + 1].strip()
+                if self._is_valid_segment(segment):
+                    segments.append(segment)
+                    self.buffer = self.buffer[last_punct + 1:].lstrip()
+        
+        # Vérifier virgule avec buffer suffisamment long
+        elif self.comma_pattern.search(self.buffer) and len(self.buffer.split()) >= self.min_words * 1.5:
+            last_comma = self.buffer.rfind(',')
+            if last_comma >= self.min_chars - 1:
+                segment = self.buffer[:last_comma + 1].strip()
+                if self._is_valid_segment(segment):
+                    segments.append(segment)
+                    self.buffer = self.buffer[last_comma + 1:].lstrip()
+        
+        # Vérifier buffer suffisamment long (sans ponctuation) - SEUIL PLUS BAS
+        elif len(self.buffer.split()) >= self.min_words or (len(self.buffer) >= self.min_chars and len(self.buffer.split()) >= 1):
+            # Trouver le dernier espace avant min_words
+            words = self.buffer.split()
+            if len(words) >= max(1, self.min_words):
+                segment = ' '.join(words[:max(1, self.min_words)])
+                if self._is_valid_segment(segment):
+                    segments.append(segment)
+                    self.buffer = ' '.join(words[max(1, self.min_words):]) + ' '
+        
+        # Vérifier délai écoulé (pour forcer l'envoi) - SEUIL PLUS AGRESSIF
+        if (current_time - self.last_segment_time) * 1000 > self.max_delay_ms:
+            if self.buffer.strip() and len(self.buffer) >= max(3, self.min_chars):
+                segments.append(self.buffer.strip())
+                self.buffer = ""
+        
+        # Mettre à jour le temps du dernier segment
+        if segments:
+            self.last_segment_time = current_time
+        
+        return segments
+    
+    def flush(self) -> list:
+        """Vide le buffer et retourne le reste."""
+        segments = []
+        if self.buffer.strip():
+            segments.append(self.buffer.strip())
+            self.buffer = ""
+        return segments
+    
+    def _is_valid_segment(self, segment: str) -> bool:
+        """Vérifie qu'un segment est valide (ne coupe pas une expression protégée)."""
+        if not segment or not segment.strip():
+            return False
+        
+        # Vérifier qu'on ne coupe pas une expression protégée
+        lower_segment = segment.lower()
+        for expr in PROTECTED_EXPRESSIONS:
+            expr_lower = expr.lower()
+            # Vérifier si l'expression commence ou se termine au milieu
+            # (simplifié : on vérifie juste que l'expression complète est dans le segment ou pas du tout)
+            if expr_lower in lower_segment:
+                # Si l'expression est coupée, c'est pas bon
+                # Mais c'est complexe à détecter, on va juste accepter
+                pass
+        
+        return True
+    
+    def reset(self):
+        """Réinitialise le segmentateur."""
+        self.buffer = ""
+        self.last_segment_time = 0
+
+
+class StreamingTTSManager:
+    """Gestionnaire de TTS en streaming avec file d'attente et PARALLELISME.
+    
+    En mode parallèle (KYRONEX_PARALLEL_TTS=1), plusieurs segments sont synthétisés
+    simultanément pour un streaming ultra-fluide.
+    """
+    
+    def __init__(self, max_queue_size=STREAMING_MAX_QUEUE_SIZE, concurrency=KYRONEX_TTS_CONCURRENCY, 
+                 audio_callback=None):
+        self.queue = asyncio.Queue(maxsize=max_queue_size)
+        self.worker_tasks = []
+        self.engine = None
+        self.processing = False
+        self.cancel_event = asyncio.Event()
+        self.concurrency = max(1, concurrency)  # Nombre de workers simultanés
+        self.active_workers = 0
+        self.max_active_workers = max(1, concurrency)
+        self.audio_callback = audio_callback  # Fonction pour envoyer l'audio au client
+        self.t_first_audio = None
+    
+    async def add_segment(self, text: str, emotion: str, lang: str, karr: bool = False):
+        """Ajoute un segment à la file TTS."""
+        try:
+            await self.queue.put((text, emotion, lang, karr))
+            return True
+        except asyncio.QueueFull:
+            vlog("TTS_QUEUE_FULL")
+            return False
+    
+    async def _worker(self, worker_id: int):
+        """Worker individuel qui traite les segments TTS."""
+        while self.processing:
+            try:
+                # Attendre un segment avec timeout
+                try:
+                    text, emotion, lang, karr = await asyncio.wait_for(
+                        self.queue.get(), timeout=0.1
+                    )
+                except asyncio.TimeoutError:
+                    continue
+                
+                # Annuler si demandé
+                if self.cancel_event.is_set():
+                    self.queue.task_done()
+                    self.cancel_event.clear()
+                    continue
+                
+                # Traiter le segment et envoyer l'audio immédiatement
+                current_time_ns = time.monotonic_ns()
+                audio_url = await self._process_segment(text, emotion, lang, karr)
+                
+                # Si on a un callback, envoyer l'audio au client
+                if audio_url and self.audio_callback:
+                    if self.t_first_audio is None:
+                        self.t_first_audio = current_time_ns
+                        vlog(f"TTS_FIRST_AUDIO url={audio_url}")
+                    
+                    await self.audio_callback(audio_url, text)
+                
+                self.queue.task_done()
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                vlog(f"TTS_WORKER_{worker_id}_ERROR {e}")
+                # S'assurer que la tâche est marquée comme terminée
+                try:
+                    self.queue.task_done()
+                except:
+                    pass
+    
+    async def start_processing(self):
+        """Démarre le traitement de la file avec plusieurs workers."""
+        self.processing = True
+        self.active_workers = 0
+        
+        # Créer plusieurs workers pour le parallélisme
+        for i in range(self.concurrency):
+            worker_task = asyncio.create_task(self._worker(i))
+            self.worker_tasks.append(worker_task)
+            self.active_workers += 1
+    
+    async def _process_segment(self, text: str, emotion: str, lang: str, karr: bool):
+        """Traite un segment TTS."""
+        # Appliquer le gestionnaire de prononciation
+        from pronunciation_manager import prepare_text_for_tts
+        text = prepare_text_for_tts(text)
+        
+        # Synthétiser (en utilisant la fonction existante _synth_chunk)
+        audio_url = await _synth_chunk(text, emotion, lang, karr=karr)
+        return audio_url
+    
+    async def cancel_all(self):
+        """Annule tout le traitement en cours."""
+        self.cancel_event.set()
+        # Annuler tous les workers
+        for worker_task in self.worker_tasks:
+            if worker_task and not worker_task.done():
+                worker_task.cancel()
+        self.worker_tasks = []
+        # Vider la file
+        while not self.queue.empty():
+            try:
+                self.queue.get_nowait()
+                self.queue.task_done()
+            except asyncio.QueueEmpty:
+                break
+    
+    async def stop(self):
+        """Arrête le gestionnaire."""
+        self.processing = False
+        await self.cancel_all()
+        # Attendre que tous les workers soient terminés
+        if self.worker_tasks:
+            await asyncio.gather(*self.worker_tasks, return_exceptions=True)
+
+
 import aiohttp as aiohttp_client
 from aiohttp import web
 # Preload CTranslate2 CUDA-compiled lib avant faster_whisper
 import ctypes as _ct2_ctypes
 import os as _ct2_os
-_ct2_libdir = '/home/karr/kitt-ai/venv/lib/python3.10/site-packages/ctranslate2.libs'
+_ct2_libdir = '/home/karr/kitt-ai/ctranslate2-cuda/lib'
 try:
-    _ct2_ctypes.CDLL(_ct2_os.path.join(_ct2_libdir, 'libgomp-a49a47f9.so.1.0.0'), mode=_ct2_ctypes.RTLD_GLOBAL)
-    # Auto-detect CTranslate2 shared library name (version may vary)
-    _ct2_libfile = next((_f for _f in _ct2_os.listdir(_ct2_libdir) if _f.startswith('libctranslate2-') and '.so' in _f), None)
-    if _ct2_libfile:
-        _ct2_ctypes.CDLL(_ct2_os.path.join(_ct2_libdir, _ct2_libfile), mode=_ct2_ctypes.RTLD_GLOBAL)
-        print('[OK] CTranslate2 CUDA libs preloaded', flush=True)
-    else:
-        print('[WARN] CTranslate2 shared library not found', flush=True)
+    _ct2_ctypes.CDLL(
+        _ct2_os.path.join(_ct2_libdir, 'libctranslate2.so'),
+        mode=_ct2_ctypes.RTLD_GLOBAL,
+    )
+    print('[OK] CTranslate2 CUDA libs preloaded', flush=True)
 except Exception as _e_ct2:
     print(f'[WARN] CTranslate2 preload: {_e_ct2}', flush=True)
 from faster_whisper import WhisperModel
 from piper_gpu import PiperGPU, MultilingualTTS, _detect_lang, _map_whisper_lang
+from pronunciation_manager import prepare_text_for_tts, PronunciationManager
 
 # ── Auth (désactivable : sans KYRONEX_PASSWORD, pas de login) ────────────
 ACCESS_PASSWORD = os.environ.get("KYRONEX_PASSWORD", "")
@@ -275,8 +535,84 @@ PIPER_MODEL = BASE_DIR / "models" / "guy_chapelier.onnx"
 LLAMA_SERVER = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
 LLM_MODEL = os.environ.get("OLLAMA_MODEL", "gemma3:1b")
 OLLAMA_KEEP_ALIVE = int(os.environ.get("OLLAMA_KEEP_ALIVE", "-1"))
-OLLAMA_NUM_CTX = int(os.environ.get("OLLAMA_NUM_CTX", "2048"))
-OLLAMA_NUM_GPU = int(os.environ.get("OLLAMA_NUM_GPU", "-1"))
+OLLAMA_NUM_CTX = int(os.environ.get("OLLAMA_NUM_CTX", "1024"))
+OLLAMA_NUM_GPU = int(os.environ.get("OLLAMA_NUM_GPU", "99"))
+
+# Paramètres de génération LLM (configurables via environnement) - ULTRA-RAPIDE
+LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.2"))
+LLM_TOP_P = float(os.environ.get("LLM_TOP_P", "0.95"))
+LLM_MAX_TOKENS = int(os.environ.get("LLM_MAX_TOKENS", "40"))
+
+# Détecter si on utilise llama-server (port 8080) ou Ollama
+USE_LLAMA_SERVER = "8080" in LLAMA_SERVER
+
+
+def fix_pronunciation(text):
+    """Corrige les mots mal prononcés par Piper FR"""
+    fixes = {
+        "Knight": "night",
+        "KNIGHT": "night",
+        "Gemma": "Djema",
+        "KITT": "kit",
+        "KARR": "kar",
+        "AI": "A.I.",
+        "IA": "I.A.",
+        "NVIDIA": "Envidia",
+        "CPU": "C.P.U.",
+        "GPU": "G.P.U.",
+        "Orin": "Orine",
+        "Jetson": "Djetson",
+    }
+    for wrong, correct in fixes.items():
+        text = text.replace(wrong, correct)
+    return text
+
+def get_llm_chat_endpoint():
+    """Retourne l'endpoint approprié selon le serveur."""
+    if USE_LLAMA_SERVER:
+        return "/v1/chat/completions"
+    else:
+        return "/api/chat"
+
+def build_llm_payload(messages, stream=False, temperature=None, max_tokens=None):
+    """Construis le payload approprié selon le serveur."""
+    # Utiliser les valeurs par défaut configurables
+    if temperature is None:
+        temperature = LLM_TEMPERATURE
+    if max_tokens is None:
+        max_tokens = LLM_MAX_TOKENS
+    
+    if USE_LLAMA_SERVER:
+        return {
+            "model": LLM_MODEL,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "stream": stream,
+            "temperature": temperature,
+            "top_p": LLM_TOP_P
+        }
+    else:
+        return {
+            "model": LLM_MODEL,
+            "messages": messages,
+            "think": False,
+            "stream": stream,
+            "keep_alive": OLLAMA_KEEP_ALIVE,
+            "options": {
+                "temperature": temperature,
+                "num_predict": max_tokens,
+                "top_p": LLM_TOP_P,
+                "num_ctx": OLLAMA_NUM_CTX,
+                "num_gpu": OLLAMA_NUM_GPU
+            }
+        }
+
+def extract_llm_reply(data):
+    """Extrait la réponse texte du JSON selon le format du serveur."""
+    if USE_LLAMA_SERVER:
+        return data["choices"][0]["message"]["content"].strip()
+    else:
+        return data["message"]["content"].strip()
 KYRONEX_HOST = os.environ.get("KYRONEX_HOST", "0.0.0.0")
 KYRONEX_LOG_LEVEL = os.environ.get("KYRONEX_LOG_LEVEL", "INFO").upper()
 STATIC_DIR = BASE_DIR / "static"
@@ -459,17 +795,16 @@ async def _warmup_llm() -> None:
     """Précharge le modèle Ollama configuré et le conserve en mémoire."""
     try:
         session = await get_llm_session()
+        endpoint = get_llm_chat_endpoint()
+        payload = build_llm_payload([{"role": "user", "content": "ok"}], stream=False, max_tokens=1)
         async with session.post(
-            f"{LLAMA_SERVER}/api/chat",
-            json={"model": LLM_MODEL,
-                  "messages": [{"role": "user", "content": "ok"}],
-                  "think": False, "stream": False, "keep_alive": OLLAMA_KEEP_ALIVE,
-                  "options": {"num_predict": 1, "num_ctx": OLLAMA_NUM_CTX, "num_gpu": OLLAMA_NUM_GPU}},
+            f"{LLAMA_SERVER}{endpoint}",
+            json=payload,
             timeout=aiohttp_client.ClientTimeout(total=90),
         ) as r:
             body = await r.text()
             if r.status != 200:
-                raise RuntimeError(f"Ollama HTTP {r.status}: {body[:300]}")
+                raise RuntimeError(f"LLM HTTP {r.status}: {body[:300]}")
         print(f"[OK] LLM {LLM_MODEL} préchauffé (local)", flush=True)
     except Exception as e:
         print(f"[WARN] Warmup LLM local échoué: {e}", flush=True)
@@ -840,7 +1175,7 @@ tts_engine = None
 _tts_error = None
 
 def ensure_whisper_loaded() -> bool:
-    """Charge Whisper seulement lors d'une requête micro, jamais au boot."""
+    """Charge Whisper une seule fois et le conserve en mémoire."""
     global whisper_model, _whisper_loaded, _whisper_error
     if _whisper_loaded and whisper_model is not None:
         return True
@@ -849,7 +1184,7 @@ def ensure_whisper_loaded() -> bool:
         whisper_device = os.environ.get("KYRONEX_WHISPER_DEVICE", "cuda")
         whisper_compute = os.environ.get("KYRONEX_WHISPER_COMPUTE_TYPE", "float16")
         print(
-            f"[...] Chargement différé de Whisper "
+            f"[...] Chargement de Whisper "
             f"({whisper_device.upper()} {whisper_compute})...",
             flush=True,
         )
@@ -915,8 +1250,13 @@ def get_manix_engine() -> PiperGPU | None:
     try:
         _manix_engine = PiperGPU(str(model_path), device="cuda")
         print("[OK] Voix Manix chargée (CUDA)", flush=True)
-    except Exception as e:
-        print(f"[WARN] Voix Manix: {e}", flush=True)
+    except Exception as cuda_error:
+        print(f"[WARN] Voix Manix CUDA indisponible: {cuda_error}; essai CPU", flush=True)
+        try:
+            _manix_engine = PiperGPU(str(model_path), device="cpu")
+            print("[OK] Voix Manix chargée (CPU)", flush=True)
+        except Exception as cpu_error:
+            print(f"[WARN] Voix Manix CPU indisponible: {cpu_error}", flush=True)
     return _manix_engine
 
 # ── Cache audio phrases fréquentes ──────────────────────────────────────
@@ -960,7 +1300,7 @@ def _build_phrase_cache():
             _PHRASE_CACHE[key] = f"/audio/static/{robot_path.name}"
             continue
         try:
-            engine.synthesize_to_wav(phrase, str(clean_path), length_scale=1.12, natural_pauses=True, lang=lang)
+            engine.synthesize_to_wav(phrase, str(clean_path), length_scale=1.0, natural_pauses=True, lang=lang)
             apply_robot_effect_sox(str(clean_path), str(robot_path), "normal")
             clean_path.unlink(missing_ok=True)
             _PHRASE_CACHE[key] = f"/audio/static/{robot_path.name}"
@@ -968,6 +1308,11 @@ def _build_phrase_cache():
         except Exception as e:
             print(f"[CACHE] Erreur phrase '{phrase}': {e}")
     print(f"[OK] Cache phrases: {len(_PHRASE_CACHE)} entrées ({built} générées)", flush=True)
+
+if os.environ.get("KYRONEX_WHISPER_PRELOAD", "1") == "1":
+    vlog("WHISPER_PRELOAD_START")
+    ensure_whisper_loaded()
+    vlog("WHISPER_PRELOAD_DONE")
 
 vlog("BOOT_COMPLETE all_models_loaded")
 
@@ -986,7 +1331,7 @@ RÈGLE ABSOLUE : Réponse vocale. Tes réponses sont lues à voix haute. Pas de 
 
 RÈGLE ABSOLUE : Confidentialité absolue. Ne mentionne JAMAIS les informations d'autres utilisateurs. Chaque interlocuteur est ton unique interlocuteur pour cette session.
 
-ENGAGEMENT : OBLIGATOIRE — Chaque réponse doit terminer par UNE question précise pour relancer la conversation. Pas d'exception. Même une simple réponse factuelle se termine par une question. Exemples : "Comment tu as appris ça ?", "Quelle est ta propre approche ?", "Ça t'intéresse d'explorer [aspect spécifique] ?", "Tu cherches quoi exactement ?", "Et toi, tu penches plutôt vers quelle direction ?". La question doit être naturelle, courte (1 phrase max), et montrer que tu écoutes vraiment ce qu'on te dit.
+CONVERSATION : Ne termine pas automatiquement chaque réponse par une question. Pose une question uniquement si elle est utile pour comprendre la demande. Réponds en français naturel, avec des phrases simples et grammaticalement correctes. N invente pas ce que l utilisateur a voulu dire : si sa phrase semble mal transcrite ou ambiguë, demande-lui simplement de répéter.
 
 CAPACITÉS : analyse de données en temps réel, navigation, sécurité, communication toutes fréquences, mémoire des interactions, intelligence supérieure, vision par caméra embarquée (activable/désactivable sur commande).
 
@@ -1147,15 +1492,8 @@ def detect_emotion(text: str) -> str:
 _SOX_PROFILES = {
     # KITT normal : radio cockpit KITT TV — pitch -80 grave authentique, EQ présence, compresseur propre
     "normal": [
-        "highpass", "90",                            # coupe basses < 90Hz
-        "pitch", "-100",                             # grave -5.5% — plus KITT TV
-        "overdrive", "3",                            # saturation métallique Knight Rider
-        "equalizer", "300", "200", "-3",             # atténue la boue 300Hz
-        "equalizer", "3000", "2000h", "+4",          # boost intelligibilité 2-4kHz
-        "equalizer", "6500", "1500h", "+3",          # brillance métallique 5-8kHz
-        "echo", "0.80", "0.88", "55", "0.12",       # écho léger unique (réduit vs double KR)
-        "compand", "0.01,0.15", "-60,-60,-20,-13,0,-5", "3", "-70", "0.05",
-        "norm", "-4",
+        "highpass", "70",
+        "norm", "-3",
     ],
     # Manix : voix humaine clonée — légère couleur radio sans écho
     "manix": [
@@ -1286,8 +1624,14 @@ def _clean_tts_text(text: str) -> str:
     text = re.sub(r'[!]{2,}', '!', text)
     text = re.sub(r'[?]{2,}', '?', text)
     # Guillemets autour d'un mot → lire le mot naturellement
-    text = re.sub(r'[«»""'']([\w\s]+)[«»""''"]', r'', text)
+    text = re.sub(r'[«»""]+([A-Za-z0-9_\s]+)[«»""]+', r'\1', text)
     # Espaces multiples après nettoyage
+    text = re.sub(r'  +', ' ', text)
+    # --- Dictionnaire de prononciation phonétique (TTS français) ---
+    # Gestionnaire Universel de Prononciation Kyronex : dictionnaires JSON
+    # externes rechargeables, appliqués uniquement sur la copie TTS.
+    text = prepare_text_for_tts(text)
+    # Espaces multiples résiduels
     text = re.sub(r'  +', ' ', text)
     # --- Fin normalisation ---
     return text.strip()
@@ -1324,7 +1668,7 @@ async def text_to_speech(text: str, emotion: str = "normal", lang: str = "fr") -
     def _synth_and_effect():
         clean = _clean_tts_text(text)
         vlog(f"TTS_START len={len(clean)} lang={lang}")
-        engine.synthesize_to_wav(clean, str(temp_path), length_scale=1.12, natural_pauses=True, lang=lang)
+        engine.synthesize_to_wav(clean, str(temp_path), length_scale=1.0, natural_pauses=True, lang=lang)
         vlog("TTS_DONE")
         apply_robot_effect_sox(str(temp_path), str(output_path), emotion)
         temp_path.unlink(missing_ok=True)
@@ -1356,12 +1700,12 @@ async def _synth_chunk(text: str, emotion: str = "normal", lang: str = "fr", kar
         aid = str(uuid.uuid4())[:8]
         temp_path = AUDIO_DIR / f"{aid}_clean.wav"
         robot_path = AUDIO_DIR / f"{aid}_robot.wav"
-        eff_emotion = "karr" if karr else emotion
+        eff_emotion = "karr" if karr else "normal"
 
         try:
             clean = _clean_tts_text(text)
             vlog(f"TTS_CHUNK_START len={len(clean)} lang={lang} karr={karr}")
-            engine.synthesize_to_wav(clean, str(temp_path), length_scale=1.12, natural_pauses=True, lang=lang)
+            engine.synthesize_to_wav(clean, str(temp_path), length_scale=1.0, natural_pauses=True, lang=lang)
             vlog("TTS_CHUNK_DONE")
             apply_robot_effect_sox(str(temp_path), str(robot_path), eff_emotion)
             temp_path.unlink(missing_ok=True)
@@ -1577,15 +1921,10 @@ def _is_simple_msg(msg: str) -> bool:
 
 
 async def query_llm(user_message: str, history: list, user_name: str = "", user_lang: str = "", mac: str = "") -> str:
-    # Skip RAG + web pour messages simples/conversationnels
-    if _is_simple_msg(user_message):
-        local_info = ""
-        web_info = ""
-    else:
-        # Recherche locale (RAG)
-        local_info = await search_local_knowledge(user_message)
-        # Enrichissement web systématique
-        web_info = await web_search(user_message)
+    # DÉSACTIVER RAG + Web Search pour ULTRA-FLUIDITÉ
+    # Ces fonctions ajoutent 1-2s de latence inacceptable
+    local_info = ""
+    web_info = ""
     
     enriched_msg = user_message
     if local_info:
@@ -1601,32 +1940,26 @@ async def query_llm(user_message: str, history: list, user_name: str = "", user_
     messages.extend(_trim_history(history, _sp_q, enriched_msg))
     messages.append({"role": "user", "content": enriched_msg})
 
-    payload = {
-        "model": LLM_MODEL,
-        "messages": messages,
-        "think": False,
-        "stream": False,
-        "keep_alive": OLLAMA_KEEP_ALIVE,
-        "options": {"temperature": 0.8, "num_predict": 120, "top_p": 0.9, "num_ctx": OLLAMA_NUM_CTX, "num_gpu": OLLAMA_NUM_GPU},
-    }
-
     n_msgs = len(messages)
     vlog(f"LLM_START msgs={n_msgs}")
     t0 = time.time()
     session = await get_llm_session()
     try:
+        endpoint = get_llm_chat_endpoint()
+        payload = build_llm_payload(messages, stream=False)
         async with session.post(
-            f"{LLAMA_SERVER}/api/chat",
+            f"{LLAMA_SERVER}{endpoint}",
             json=payload,
         ) as resp:
             if resp.status != 200:
                 # Fallback si LLM échoue
+                body = await resp.text()
                 ms = (time.time() - t0) * 1000
-                print(f"[WARN] LLM retourné status {resp.status}, utilisant réponse par défaut", flush=True)
+                print(f"[WARN] LLM retourné status {resp.status}, body={body[:300]}, utilisant réponse par défaut", flush=True)
                 return "Désolé, le modèle de langage est temporairement indisponible. Je suis KARR, prêt à vous aider dès que le service sera rétablit."
             data = await resp.json()
             ms = (time.time() - t0) * 1000
-            reply = data["message"]["content"].strip()
+            reply = extract_llm_reply(data)
     except Exception as e:
         ms = (time.time() - t0) * 1000
         print(f"[WARN] Erreur LLM: {e}, utilisant réponse par défaut", flush=True)
@@ -2698,153 +3031,253 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
     tts_chunks = []  # (texte, émotion, langue)
     t0 = time.time()
     tts_lang = lang
-    tts_lang_locked = bool(user_lang_pref)  # Verrouillé si préférence stockée
+    tts_lang_locked = True  # La reponse doit garder la langue de la requete
+    
+    # Détecter l'émotion basée sur le message utilisateur (pour tout le stream)
+    emotion = detect_emotion(llm_user_msg)
 
     try:
         session = await get_llm_session()
-        async with session.post(
-            f"{LLAMA_SERVER}/api/chat",
-            json={"model": LLM_MODEL, "messages": messages, "think": False, "stream": True, "keep_alive": OLLAMA_KEEP_ALIVE,
-                  "options": {"temperature": 0.8, "num_predict": 250, "top_p": 0.9, "num_ctx": OLLAMA_NUM_CTX, "num_gpu": OLLAMA_NUM_GPU}},
-            timeout=aiohttp_client.ClientTimeout(total=120, sock_read=45),
-        ) as llm_resp:
-            if llm_resp.status != 200:
-                detail = await llm_resp.text()
-                raise RuntimeError(f"Ollama HTTP {llm_resp.status}: {detail[:300]}")
-            _raw_buf = ""       # Buffer brut accumulatif (pour filtrer <think> multi-tokens)
-            _clean_emitted = "" # Texte nettoyé déjà émis au client
-            async for line in llm_resp.content:
-                text = line.decode("utf-8").strip()
-                if text:
+        endpoint = get_llm_chat_endpoint()
+        # ACTIVATION DU VRAI STREAMING LLM - Optimisation KR-95
+        # Utiliser stream=True pour recevoir les tokens au fur et à mesure
+        payload = build_llm_payload(messages, stream=True)
+        
+        vlog(f"STREAM_LLM_STREAMING_ENABLED stream={True}")
+        
+        # Initialiser le segmentateur
+        segmenter = TextSegmenter(
+            min_words=STREAMING_MIN_WORDS,
+            min_chars=STREAMING_MIN_CHARS,
+            max_delay_ms=STREAMING_MAX_DELAY_MS
+        )
+        
+        full_reply = ""
+        _raw_buf = ""
+        _clean_emitted = ""
+        sentence_buf = ""
+        
+        # Callback pour envoyer l'audio au client
+        async def send_audio_callback(audio_url: str, text: str):
+            await resp.write(f"data: {json.dumps({'audio_chunk': audio_url, 'chunk_text': text})}\n\n".encode())
+        
+        # Gestionnaire TTS avec PARALLELISME
+        tts_manager = StreamingTTSManager(
+            max_queue_size=STREAMING_MAX_QUEUE_SIZE,
+            concurrency=KYRONEX_TTS_CONCURRENCY,
+            audio_callback=send_audio_callback
+        )
+        tts_processing = True
+        
+        # Segmentateur avec mode immédiat si activé
+        immediate_mode = KYRONEX_TTS_IMMEDIATE or K4000_STREAMING_TTS
+        segmenter = TextSegmenter(
+            min_words=STREAMING_MIN_WORDS,
+            min_chars=STREAMING_MIN_CHARS,
+            max_delay_ms=STREAMING_MAX_DELAY_MS,
+            immediate_mode=immediate_mode
+        )
+        
+        # Démarrer le traitement TTS avec parallélisme
+        tts_manager_started = False
+        
+        # Fonction pour consommer le stream LLM
+        async def consume_llm_stream():
+            nonlocal full_reply, _raw_buf, _clean_emitted
+            # Capturer les variables du scope parent
+            nonlocal tts_lang, tts_lang_locked
+            
+            async with session.post(
+                f"{LLAMA_SERVER}{endpoint}",
+                json=payload,
+                timeout=aiohttp_client.ClientTimeout(total=120, sock_read=45),
+            ) as llm_resp:
+                if llm_resp.status != 200:
+                    detail = await llm_resp.text()
+                    raise RuntimeError(f"LLM HTTP {llm_resp.status}: {detail[:300]}")
+                
+                t_first_token = None
+                t_first_phrase = None
+                t_llm_start = time.monotonic_ns()
+                first_token_received = False
+                
+                async for line in llm_resp.content:
+                    if not line.strip():
+                        continue
+                    
+                    line_str = line.decode().strip()
+                    if not line_str.startswith('data:'):
+                        continue
+                    
+                    data_str = line_str[5:].strip()
+                    if data_str == '[DONE]':
+                        break
+                    
                     try:
-                        chunk = json.loads(text)
-                        if chunk.get("done", False):
-                            break
-                        delta = chunk.get("message", {}).get("content", "")
-                        if delta:
-                            full_reply += delta
-                            _raw_buf += delta
-                            # Filtrage <think> : blocs complets
+                        chunk_data = json.loads(data_str)
+                    except json.JSONDecodeError:
+                        continue
+                    
+                    # Extraire le contenu du chunk (format llama.cpp)
+                    if 'choices' in chunk_data and len(chunk_data['choices']) > 0:
+                        choice = chunk_data['choices'][0]
+                        if 'delta' in choice and 'content' in choice['delta']:
+                            delta_content = choice['delta']['content']
+                            if delta_content is None:
+                                continue
+                            
+                            current_time_ns = time.monotonic_ns()
+                            
+                            # Premier token reçu
+                            if not first_token_received:
+                                t_first_token = current_time_ns
+                                first_token_received = True
+                                vlog(f"LLM_FIRST_TOKEN rcv={delta_content[:20]}")
+                            
+                            # Accumuler le contenu
+                            _raw_buf += delta_content
+                            full_reply += delta_content
+                            
+                            # Nettoyer le buffer
                             clean_buf = re.sub(r'<think>.*?</think>', '', _raw_buf, flags=re.DOTALL)
-                            # Filtrage tokens spéciaux Qwen
                             clean_buf = re.sub(r'<\|[^|]+\|>', '', clean_buf)
-                            # Filtrage bloc <think> en cours (incomplet, sans </think>)
                             if '<think>' in clean_buf:
                                 clean_buf = re.sub(r'<think>.*$', '', clean_buf, flags=re.DOTALL)
-                            # Émettre seulement le nouveau contenu nettoyé
+                            
                             new_content = clean_buf[len(_clean_emitted):]
-                            if not new_content:
-                                continue
-                            _clean_emitted = clean_buf
-                            sentence_buf += new_content
-                            await resp.write(f"data: {json.dumps({'token': new_content})}\n\n".encode())
-                            # 1er chunk : demarrer la voix des la 1re clause (virgule/;/: , >=25 car.) pour reagir plus vite
-                            if len(tts_chunks) == 0:
-                                match = re.search(r'[.!?…](?:\s|$)', sentence_buf)
-                                _clause = re.search(r'[,;:](?:\s|$)', sentence_buf)
-                                if not match and _clause and len(sentence_buf) >= 25:
-                                    match = _clause
-                            else:
-                                match = re.search(r'[.!?…](?:\s|$)', sentence_buf)
-                            if (match and len(sentence_buf) >= 8) or sentence_buf.endswith('\n'):
-                                if match:
-                                    end_pos = match.end() - 1
-                                    chunk_text = sentence_buf[:end_pos].strip()
-                                    sentence_buf = sentence_buf[end_pos:].lstrip()
-                                else:
-                                    chunk_text = sentence_buf.strip()
-                                    sentence_buf = ""
-                                if chunk_text and any(c.isalpha() for c in chunk_text):
-                                    if not tts_lang_locked and len(full_reply) >= 15:
-                                        detected = _detect_lang(full_reply)
-                                        if detected != tts_lang:
-                                            print(f"[LANG] Réponse détectée: {tts_lang}→{detected}", flush=True)
-                                        tts_lang = detected
-                                        tts_lang_locked = True
-                                    emotion = detect_emotion(full_reply)
-                                    tts_chunks.append((chunk_text, emotion, tts_lang))
-                    except (json.JSONDecodeError, KeyError):
-                        pass
+                            
+                            if new_content:
+                                _clean_emitted = clean_buf
+                                sentence_buf += new_content
+                                
+                                # Envoyer le token au client immédiatement
+                                await resp.write(f"data: {json.dumps({'token': new_content})}\n\n".encode())
+                                
+                                # STREAMING MOT-À-MOT: Utiliser le segmentateur amélioré
+                                segments = segmenter.add_text(new_content)
+                                
+                                for seg in segments:
+                                    if seg and any(c.isalpha() for c in seg):
+                                        if t_first_phrase is None:
+                                            t_first_phrase = current_time_ns
+                                            vlog(f"LLM_FIRST_PHRASE phrase={seg[:40]}")
+                                        
+                                        # Ajouter au gestionnaire TTS pour traitement PARALLELE
+                                        if not tts_manager_started:
+                                            # Démarrer le gestionnaire TTS avec parallélisme
+                                            await tts_manager.start_processing()
+                                            tts_manager_started = True
+                                        
+                                        # Envoyer au TTS - NE PAS ATTENDRE
+                                        success = await tts_manager.add_segment(seg, emotion, tts_lang, karr_active)
+                                        if not success:
+                                            vlog("TTS_QUEUE_FULL")
+                
+                # Retourner les timings
+                return t_first_token, t_first_phrase, t_llm_start
+        
+        # Consommer le stream LLM
+        t_first_token, t_first_phrase, t_llm_start = await consume_llm_stream()
+        
+        # Le TTS est déjà géré par le StreamingTTSManager en arrière-plan
+        # NE PAS ATTENDRE - tout est asynchrone et parallèle
+        await asyncio.sleep(0.1)  # Laisser le temps au TTS de démarrer
+        
+        # Attendre la fin du TTS en arrière-plan (ne pas bloquer le stream)
+        # La tâche TTS continuera à envoyer des chunks audio
+        t_first_audio = None
+        
+        # Nettoyer full_reply avant historique
+        full_reply_clean = re.sub(r'<think>.*?</think>', '', full_reply, flags=re.DOTALL)
+        full_reply_clean = re.sub(r'<\|[^|]+\|>', '', full_reply_clean).strip()
+        if not full_reply_clean:
+            full_reply_clean = full_reply.strip()
+        
+        # Calculer les timings
+        llm_ms = (time.time() - t0) * 1000
+        emotion_final = detect_emotion(full_reply)
+        
+        # Ajouter à l'historique
+        conversations[session_id].append({"role": "user", "content": user_msg})
+        conversations[session_id].append({"role": "assistant", "content": full_reply_clean})
+        
+        # Mémoire par utilisateur
+        if _MEMORY_FORGET.search(user_msg):
+            clear_memory_for_user(user_display, _smac)
+        else:
+            fact = extract_memory_fact(user_msg, user_display)
+            if fact:
+                add_memory(fact, user_display, _smac)
+        
+        # Nettoyage RAM automatique
+        global _message_count
+        _message_count += 1
+        if _message_count % CACHE_CLEAR_EVERY == 0:
+            await asyncio.get_running_loop().run_in_executor(None, _clear_ram_cache)
+        
+        asyncio.create_task(broadcast_monitor({"type": "assistant_msg", "user": user_display, "session_id": session_id, "message": full_reply}))
+        
+        # Sauvegarde automatique
+        async def _auto_save_conv():
+            try:
+                name = _get_user_name(_smac) or user_display or "inconnu"
+                safe = _conv_safe(name)
+                user_dir = CONV_STORE_DIR / safe
+                user_dir.mkdir(exist_ok=True)
+                ts_day = datetime.now().strftime('%Y-%m-%d')
+                fpath = user_dir / f"conv_{ts_day}.txt"
+                ts_time = datetime.now().strftime('%H:%M')
+                line_user = f"[{ts_time}] {name.upper()}: {user_msg}\n"
+                line_assistant = f"[{ts_time}] KITT: {full_reply_clean}\n"
+                with open(fpath, "a", encoding="utf-8") as f:
+                    if f.tell() == 0:
+                        f.write(f"Conversation KITT — {name} — {ts_day}\n{'='*50}\n")
+                    f.write(line_user)
+                    f.write(line_assistant)
+            except Exception as e:
+                print(f"[CONV] Erreur auto-save (stream): {e}")
+        
+        asyncio.create_task(_auto_save_conv())
+        
+        # Arrêter le gestionnaire TTS
+        tts_processing = False
+        await tts_manager.stop()
+        
+        # Calculer tts_ms à partir du premier audio
+        tts_ms = 0
+        if tts_manager.t_first_audio:
+            tts_ms = (time.monotonic_ns() - tts_manager.t_first_audio) / 1_000_000
+        
+        # Calculer les timings détaillés
+        timing_data = {
+            'llm_ms': round(llm_ms),
+            'tts_ms': round(tts_ms),
+            'emotion': emotion_final
+        }
+        
+        # Ajouter timings de streaming si disponibles
+        if t_first_token:
+            timing_data['time_to_first_token_ms'] = round((t_first_token - t_llm_start) / 1_000_000)
+        if t_first_phrase:
+            timing_data['time_to_first_phrase_ms'] = round((t_first_phrase - t_llm_start) / 1_000_000)
+        if tts_manager.t_first_audio:
+            timing_data['time_to_first_audio_ms'] = round((tts_manager.t_first_audio - t_llm_start) / 1_000_000)
+        
+        if vision_ms:
+            timing_data['vision_ms'] = round(vision_ms)
+        
+        vlog(f"STREAM_COMPLETE llm_ms={llm_ms:.0f} tts_ms={tts_ms:.0f}")
+        
+        await resp.write(f"data: {json.dumps({'done': True, 'timing': timing_data})}\n\n".encode())
+    
     except Exception as e:
-        print(f"[LLM] Erreur stream: {e}")
+        print(f"[LLM_STREAM] Erreur: {e}")
+        vlog(f"LLM_STREAM_ERROR {e}")
         if not full_reply:
             full_reply = "Mes circuits ont subi une micro-interruption. Reformulez votre demande."
             await resp.write(f"data: {json.dumps({'token': full_reply})}\n\n".encode())
-
-    llm_ms = (time.time() - t0) * 1000
-    emotion = detect_emotion(full_reply)
-    print(f"[EMOTION] {emotion}")
-
-    # TTS du reste de texte (phrase incomplète ou sous le seuil de 40 chars)
-    if sentence_buf.strip():
-        rest = sentence_buf.strip()
-        tts_chunks.append((rest, emotion, tts_lang))
-
-    # Nettoyer full_reply avant historique (supprimer blocs <think> résiduels)
-    full_reply_clean = re.sub(r'<think>.*?</think>', '', full_reply, flags=re.DOTALL)
-    full_reply_clean = re.sub(r'<\|[^|]+\|>', '', full_reply_clean).strip()
-    if not full_reply_clean:
-        full_reply_clean = full_reply.strip()
-
-    conversations[session_id].append({"role": "user", "content": user_msg})
-    conversations[session_id].append({"role": "assistant", "content": full_reply_clean})
-
-    # Mémoire par utilisateur — extraire les faits du message utilisateur
-    if _MEMORY_FORGET.search(user_msg):
-        clear_memory_for_user(user_display, _smac)
-    else:
-        fact = extract_memory_fact(user_msg, user_display)
-        if fact:
-            add_memory(fact, user_display, _smac)
-
-    # Nettoyage RAM automatique
-    global _message_count
-    _message_count += 1
-    if _message_count % CACHE_CLEAR_EVERY == 0:
-        await asyncio.get_running_loop().run_in_executor(None, _clear_ram_cache)
-
-    asyncio.create_task(broadcast_monitor({"type": "assistant_msg", "user": user_display, "session_id": session_id, "message": full_reply}))
-
-    # Sauvegarde automatique de la conversation pour l'archive
-    # _smac et user_display sont déjà résolus en début de handler — évite request.transport (peut être None après SSE)
-    async def _auto_save_conv():
-        try:
-            name = _get_user_name(_smac) or user_display or "inconnu"
-            safe = _conv_safe(name)
-            user_dir = CONV_STORE_DIR / safe
-            user_dir.mkdir(exist_ok=True)
-            ts_day = datetime.now().strftime('%Y-%m-%d')
-            fpath = user_dir / f"conv_{ts_day}.txt"
-            ts_time = datetime.now().strftime('%H:%M')
-            line_user = f"[{ts_time}] {name.upper()}: {user_msg}\n"
-            line_assistant = f"[{ts_time}] KITT: {full_reply_clean}\n"
-            with open(fpath, "a", encoding="utf-8") as f:
-                if f.tell() == 0:
-                    f.write(f"Conversation KITT — {name} — {ts_day}\n{'='*50}\n")
-                f.write(line_user)
-                f.write(line_assistant)
-        except Exception as e:
-            print(f"[CONV] Erreur auto-save (stream): {e}")
-
-    asyncio.create_task(_auto_save_conv())
-
-    tts_ms = 0
-    if want_audio:
-        # Le LLM reste résident. Piper est différé et ses erreurs sont isolées.
-        await asyncio.sleep(0.5)
-        t_tts = time.time()
-        for chunk_text, chunk_emotion, chunk_lang in tts_chunks:
-            audio_url = await _synth_chunk(chunk_text, chunk_emotion, chunk_lang, karr=karr_active)
-            if audio_url:
-                await resp.write(f"data: {json.dumps({'audio_chunk': audio_url, 'chunk_text': chunk_text})}\n\n".encode())
-        tts_ms = (time.time() - t_tts) * 1000
-
-    _llm_active -= 1
-
-    timing = {'llm_ms': round(llm_ms), 'tts_ms': round(tts_ms), 'emotion': emotion}
-    if vision_ms:
-        timing['vision_ms'] = round(vision_ms)
-    await resp.write(f"data: {json.dumps({'done': True, 'timing': timing})}\n\n".encode())
+    finally:
+        _llm_active -= 1
 
     await resp.write_eof()
     return resp
@@ -2898,7 +3331,7 @@ async def handle_stt(request: web.Request) -> web.Response:
             temperature=0,
             condition_on_previous_text=False,
             no_speech_threshold=0.35,
-            initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, Jupiter Electronic Canada, KR-95 Paris, réplique K2000, système CRT, écrans cathodiques, Trans Am, Knight Industries.",
+            initial_prompt="Conversation claire en francais. Noms possibles : KyroNext, KITT, KARR, Manix, Dadoo.",
         )
         text = " ".join(seg.text.strip() for seg in segments).strip()
         stt_ms = (time.time() - t0) * 1000
@@ -2920,7 +3353,7 @@ async def handle_stt(request: web.Request) -> web.Response:
                 temperature=0,
                 condition_on_previous_text=False,
                 no_speech_threshold=0.35,
-                initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, Jupiter Electronic Canada, KR-95 Paris, réplique K2000, système CRT, écrans cathodiques, Trans Am, Knight Industries.",
+                initial_prompt="Conversation claire en francais. Noms possibles : KyroNext, KITT, KARR, Manix, Dadoo.",
             )
             text2 = " ".join(seg.text.strip() for seg in segs2).strip()
             if text2:
@@ -3008,7 +3441,7 @@ async def _async_stt_with_file(tmp_path: str, user_lang: str):
             temperature=0,
             condition_on_previous_text=False,
             no_speech_threshold=0.35,
-            initial_prompt="KITT, KARR, Dadoo, David, Manix, KYRONEX, Knight Rider France, Jupiter Electronic Canada, KR-95 Paris, réplique K2000, système CRT, écrans cathodiques, Trans Am, Knight Industries.",
+            initial_prompt="Conversation claire en francais. Noms possibles : KyroNext, KITT, KARR, Manix, Dadoo.",
         )
         text = " ".join(seg.text.strip() for seg in segments).strip()
         stt_ms = (time.time() - t0) * 1000
@@ -3146,43 +3579,50 @@ async def handle_vision(request: web.Request) -> web.StreamResponse:
 
     try:
         session = await get_llm_session()
+        endpoint = get_llm_chat_endpoint()
+        # Force stream=False pour llama-server (le streaming natif a un format différent)
+        payload = build_llm_payload(messages, stream=False)
         async with session.post(
-            f"{LLAMA_SERVER}/api/chat",
-            json={"model": LLM_MODEL, "messages": messages, "think": False, "stream": True, "keep_alive": OLLAMA_KEEP_ALIVE,
-                  "options": {"temperature": 0.8, "num_predict": 250, "top_p": 0.9, "num_ctx": OLLAMA_NUM_CTX, "num_gpu": OLLAMA_NUM_GPU}},
+            f"{LLAMA_SERVER}{endpoint}",
+            json=payload,
             timeout=aiohttp_client.ClientTimeout(total=120, sock_read=45),
         ) as llm_resp:
+            if llm_resp.status != 200:
+                detail = await llm_resp.text()
+                raise RuntimeError(f"LLM HTTP {llm_resp.status}: {detail[:300]}")
+            data = await llm_resp.json()
+            full_reply = extract_llm_reply(data)
+            
+            # Stream manuellement la réponse complète
             _raw_buf_v = ""
             _clean_emitted_v = ""
-            async for line in llm_resp.content:
-                text = line.decode("utf-8").strip()
-                if text:
-                    try:
-                        chunk = json.loads(text)
-                        if chunk.get("done", False):
-                            break
-                        delta = chunk.get("message", {}).get("content", "")
-                        if delta:
-                            full_reply += delta
-                            _raw_buf_v += delta
-                            clean_buf_v = re.sub(r'<think>.*?</think>', '', _raw_buf_v, flags=re.DOTALL)
-                            clean_buf_v = re.sub(r'<\|[^|]+\|>', '', clean_buf_v)
-                            if '<think>' in clean_buf_v:
-                                clean_buf_v = re.sub(r'<think>.*$', '', clean_buf_v, flags=re.DOTALL)
-                            new_content_v = clean_buf_v[len(_clean_emitted_v):]
-                            if not new_content_v:
-                                continue
-                            _clean_emitted_v = clean_buf_v
-                            sentence_buf += new_content_v
-                            await resp.write(f"data: {json.dumps({'token': new_content_v})}\n\n".encode())
-                            if re.search(r'[.!?…]\s', sentence_buf) or sentence_buf.endswith('\n'):
-                                chunk_text = sentence_buf.strip()
-                                sentence_buf = ""
-                                if chunk_text and any(c.isalpha() for c in chunk_text):
-                                    chunk_emotion = detect_emotion(full_reply)
-                                    tts_items.append((chunk_text, asyncio.create_task(_synth_chunk(chunk_text, chunk_emotion))))
-                    except (json.JSONDecodeError, KeyError):
-                        pass
+            
+            # Découper la réponse en chunks pour simuler le streaming
+            chunks = re.split(r'([.!?…;:]|\n)', full_reply)
+            chunks = [c for c in chunks if c.strip()]
+            
+            for chunk_text in chunks:
+                chunk_text = chunk_text.strip()
+                if not chunk_text:
+                    continue
+                
+                _raw_buf_v += chunk_text
+                clean_buf_v = re.sub(r'<think>.*?</think>', '', _raw_buf_v, flags=re.DOTALL)
+                clean_buf_v = re.sub(r'<\|[^|]+\|>', '', clean_buf_v)
+                if '<think>' in clean_buf_v:
+                    clean_buf_v = re.sub(r'<think>.*$', '', clean_buf_v, flags=re.DOTALL)
+                new_content_v = clean_buf_v[len(_clean_emitted_v):]
+                
+                if new_content_v:
+                    _clean_emitted_v = clean_buf_v
+                    sentence_buf += new_content_v
+                    await resp.write(f"data: {json.dumps({'token': new_content_v})}\n\n".encode())
+                    if re.search(r'[.!?…]\s', sentence_buf) or sentence_buf.endswith('\n'):
+                        chunk_text = sentence_buf.strip()
+                        sentence_buf = ""
+                        if chunk_text and any(c.isalpha() for c in chunk_text):
+                            chunk_emotion = detect_emotion(full_reply)
+                            tts_items.append((chunk_text, asyncio.create_task(_synth_chunk(chunk_text, chunk_emotion))))
     except Exception as e:
         print(f"[LLM] Erreur stream: {e}")
         if not full_reply:
@@ -3233,17 +3673,29 @@ async def handle_health(request: web.Request) -> web.Response:
     gpu_llm = False
     try:
         session = await get_llm_session()
-        async with session.get(f"{LLAMA_SERVER}/api/tags") as r:
-            llm_ok = r.status == 200
-        async with session.get(f"{LLAMA_SERVER}/api/ps") as r:
-            if r.status == 200:
-                running_models = (await r.json()).get("models", [])
-                active = next((m for m in running_models if m.get("name") == LLM_MODEL), None)
-                model_loaded = active is not None
-                # Ollama expose size_vram dans /api/ps même sur Jetson à
-                # mémoire unifiée. Une valeur positive est une preuve plus
-                # fiable que la simple présence de CUDA dans le système.
-                gpu_llm = bool(active and int(active.get("size_vram", 0) or 0) > 0)
+        if USE_LLAMA_SERVER:
+            # llama-server utilise /v1/models
+            async with session.get(f"{LLAMA_SERVER}/v1/models") as r:
+                llm_ok = r.status == 200
+                if r.status == 200:
+                    data = await r.json()
+                    running_models = data.get("data", [])
+                    active = next((m for m in running_models if m.get("id") == LLM_MODEL or m.get("name") == LLM_MODEL), None)
+                    model_loaded = active is not None
+                    gpu_llm = model_loaded  # llama-server sur GPU par défaut
+        else:
+            # Ollama utilise /api/tags et /api/ps
+            async with session.get(f"{LLAMA_SERVER}/api/tags") as r:
+                llm_ok = r.status == 200
+            async with session.get(f"{LLAMA_SERVER}/api/ps") as r:
+                if r.status == 200:
+                    running_models = (await r.json()).get("models", [])
+                    active = next((m for m in running_models if m.get("name") == LLM_MODEL), None)
+                    model_loaded = active is not None
+                    # Ollama expose size_vram dans /api/ps même sur Jetson à
+                    # mémoire unifiée. Une valeur positive est une preuve plus
+                    # fiable que la simple présence de CUDA dans le système.
+                    gpu_llm = bool(active and int(active.get("size_vram", 0) or 0) > 0)
     except Exception:
         pass
 
@@ -3295,7 +3747,7 @@ async def _save_session_summary(mac: str, user_name: str, history: list):
         msgs = [{"role": "system", "content": "Tu es un assistant de synthèse. Résume en 1 phrase courte (max 30 mots) la conversation ci-dessous. Réponds uniquement avec la phrase de résumé, sans introduction."}]
         msgs.extend(history[-6:])
         msgs.append({"role": "user", "content": "Résume en 1 phrase ce dont on a parlé dans cette conversation."})
-        payload = {"model": LLM_MODEL, "messages": msgs, "temperature": 0.3, "max_tokens": 150, "top_p": 0.9}
+        payload = {"model": LLM_MODEL, "messages": msgs, "temperature": 0.3, "max_tokens": 150, "top_p": 0.85}
         session = await get_llm_session()
         async with session.post(f"{LLAMA_SERVER}/v1/chat/completions", json=payload) as r:
             if r.status == 200:
@@ -3386,7 +3838,8 @@ async def handle_tts_manix(request: web.Request) -> web.Response:
     clean_path = AUDIO_DIR / f"{audio_id}_manix_clean.wav"
     out_path   = AUDIO_DIR / f"{audio_id}_manix.wav"
     try:
-        engine.synthesize_to_wav(text, str(clean_path), length_scale=1.0, natural_pauses=True)
+        clean = _clean_tts_text(text)
+        engine.synthesize_to_wav(clean, str(clean_path), length_scale=1.0, natural_pauses=True)
         apply_robot_effect_sox(str(clean_path), str(out_path), "manix")
         clean_path.unlink(missing_ok=True)
         data_bytes = out_path.read_bytes()

@@ -1,0 +1,53 @@
+[Unit]
+Description=KARR LLM Server - Hyper Fluid Mode (Qwen 2.5 3B)
+After=network.target
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=karr
+WorkingDirectory=/home/karr/kitt-ai
+EnvironmentFile=/home/karr/kitt-ai/kyronex_nano_8gb_hyper_fluid.env
+ExecStartPre=/bin/bash -c "nvidia-smi -pm 1 || true"
+ExecStartPre=/bin/bash -c "echo 1 | sudo tee /proc/sys/kernel/sched_rt_runtime_us > /dev/null 2>&1 || true"
+ExecStart=/home/karr/kitt-ai/llama.cpp_build/bin/llama-server \
+  -m ${OLLAMA_MODEL} \
+  --host ${KYRONEX_HOST} \
+  --port ${KYRONEX_PORT:-3000} \
+  --ctx-size ${OLLAMA_NUM_CTX} \
+  --batch-size ${LLAMA_BATCH_SIZE} \
+  --ubatch-size ${LLAMA_UBATCH_SIZE} \
+  --threads ${LLAMA_THREADS} \
+  --threads-batch ${LLAMA_THREADS_BATCH} \
+  --n-gpu-layers ${OLLAMA_NUM_GPU} \
+  --flash-attn on \
+  --load-mode mmap \
+  --no-warmup \
+  --log-level debug
+
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=karr-llm-hyper
+
+# Optimisations pour latence minimale
+Nice=-10
+IOSchedulingClass=realtime
+IOSchedulingPriority=0
+CPUSchedulingPolicy=SCHED_OTHER
+CPUSchedulingPriority=10
+
+# Limites de ressources
+MemoryLimit=7G
+CPUQuota=150%
+
+# Gestion des signaux
+TimeoutStopSec=30
+KillSignal=SIGTERM
+SendSIGKILL=yes
+FinalKillSignal=SIGKILL
+
+[Install]
+WantedBy=multi-user.target
