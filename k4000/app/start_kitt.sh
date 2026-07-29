@@ -10,9 +10,14 @@ MODEL="$APP_DIR/models/qwen2.5-3b-instruct-q5_k_m.gguf"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 
 export PATH="/usr/local/cuda/bin:$PROJECT_DIR/.venv/bin:$PATH"
-export LD_LIBRARY_PATH="/usr/local/cuda/lib64:$LLAMA_BUILD/bin:$LLAMA_BUILD/ggml/src:${LD_LIBRARY_PATH:-}"
+export PYTHONPATH="/home/K4000/Kironext-K-4000/third_party/ctranslate2-cuda/python"
+export LD_LIBRARY_PATH="/home/K4000/Kironext-K-4000/third_party/ctranslate2-cuda/lib:/usr/local/cuda/targets/sbsa-linux/lib:/lib/aarch64-linux-gnu:/home/K4000/Kironext-K-4000/third_party/llama.cpp/build-kyronext/bin:/home/K4000/Kironext-K-4000/third_party/llama.cpp/build-kyronext/ggml/src"
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
+export KYRONEXT_WHISPER_MODEL="/home/K4000/Kironext-K-4000/app/models/whisper-small"
+export KYRONEXT_WHISPER_DEVICE="cuda"
+export KYRONEXT_WHISPER_COMPUTE_TYPE="int8_float16"
+export KYRONEXT_WHISPER_PRELOAD="1"
 
 cleanup() {
     trap - EXIT INT TERM

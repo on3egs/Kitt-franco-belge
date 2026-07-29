@@ -1,0 +1,142 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 027d094..ec4ed3f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -105,7 +105,11 @@ elseif(NOT APPLE)
+ endif()
+
+ find_package(Threads)
+-add_subdirectory(third_party/spdlog EXCLUDE_FROM_ALL)
++if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog/CMakeLists.txt")
++  add_subdirectory(third_party/spdlog EXCLUDE_FROM_ALL)
++else()
++  find_package(spdlog CONFIG REQUIRED)
++endif()
+
+ set(PRIVATE_INCLUDE_DIRECTORIES
+   ${CMAKE_CURRENT_SOURCE_DIR}/src
+@@ -258,7 +262,7 @@ set(CUDA_SOURCES
+ )
+ set(LIBRARIES
+   ${CMAKE_THREAD_LIBS_INIT}
+-  spdlog::spdlog_header_only
++  $<IF:$<TARGET_EXISTS:spdlog::spdlog_header_only>,spdlog::spdlog_header_only,spdlog::spdlog>
+   )
+
+ macro(ct2_compile_kernels_for_isa isa flag)
+@@ -554,11 +558,23 @@ if (WITH_CUDA)
+   # We should ensure that the Thrust include directories appear before
+   # -I/usr/local/cuda/include for both GCC and NVCC, so that the headers
+   # are coming from the submodule and not the system.
+-  set(THRUST_INCLUDE_DIRS
+-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust/cub
+-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust/thrust
+-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust/libcudacxx/include
++  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust/thrust/thrust/execution_policy.h")
++    set(THRUST_INCLUDE_DIRS
++      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust/cub
++      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust/thrust
++      ${CMAKE_CURRENT_SOURCE_DIR}/third_party/thrust/libcudacxx/include
+     )
++  else()
++    find_path(THRUST_SYSTEM_INCLUDE_DIR thrust/execution_policy.h
++      HINTS
++      ${CUDA_TOOLKIT_ROOT_DIR}/include/cccl
++      ${CUDA_TOOLKIT_ROOT_DIR}/targets/sbsa-linux/include/cccl
++    )
++    if(NOT THRUST_SYSTEM_INCLUDE_DIR)
++      message(FATAL_ERROR "Thrust headers not found")
++    endif()
++    set(THRUST_INCLUDE_DIRS ${THRUST_SYSTEM_INCLUDE_DIR})
++  endif()
+   cuda_include_directories(${THRUST_INCLUDE_DIRS})
+   list(APPEND PRIVATE_INCLUDE_DIRECTORIES ${THRUST_INCLUDE_DIRS})
+
+diff --git a/src/cuda/helpers.h b/src/cuda/helpers.h
+index 7b99149..e7ebbd3 100644
+--- a/src/cuda/helpers.h
++++ b/src/cuda/helpers.h
+@@ -189,6 +189,14 @@ namespace ctranslate2 {
+       }
+     };
+
++    template <typename T>
++    struct identity {
++      template <typename U>
++      __device__ U operator()(U&& v) const noexcept {
++        return static_cast<U&&>(v);
++      }
++    };
++
+     template <typename T>
+     struct maximum {
+       __device__ T operator()(const T& lhs, const T& rhs) const {
+diff --git a/src/ops/dequantize_gpu.cu b/src/ops/dequantize_gpu.cu
+index d14ae7e..37689f1 100644
+--- a/src/ops/dequantize_gpu.cu
++++ b/src/ops/dequantize_gpu.cu
+@@ -69,7 +69,7 @@ namespace ctranslate2 {
+
+       if (!activation_type) {
+         dequantize_gemm_output_kernel<<<blocks, threads, 0, cuda::get_cuda_stream()>>>(
+-          c, a_scales, b_scales, transpose_a, transpose_b, bias, thrust::identity<T>(), y, depth);
++          c, a_scales, b_scales, transpose_a, transpose_b, bias, cuda::identity<T>(), y, depth);
+
+       } else {
+         switch (*activation_type) {
+diff --git a/src/ops/topk_gpu.cu b/src/ops/topk_gpu.cu
+index 3262d0d..38a98f2 100644
+--- a/src/ops/topk_gpu.cu
++++ b/src/ops/topk_gpu.cu
+@@ -119,6 +119,7 @@ namespace ctranslate2 {
+ #ifdef CT2_USE_HIP
+ #include <hipcub/block/block_reduce.hpp>
+ #define cub hipcub
++#define CT2_FP_LIMITS cub::FpLimits
+ namespace hipcub {
+   template <>
+   struct FpLimits<__hip_bfloat16>  // hipcub only defines hip_bfloat16
+@@ -136,6 +137,7 @@ namespace hipcub {
+ }
+ #else
+ #include <cub/block/block_reduce.cuh>
++#define CT2_FP_LIMITS cub::Traits
+ #endif
+
+ namespace fastertransformer {
+@@ -157,7 +159,7 @@ namespace fastertransformer {
+   template <typename T>
+   struct TopK {
+     int p = NOT_FOUND;
+-    T u = cub::FpLimits<T>::Lowest();
++    T u = CT2_FP_LIMITS<T>::Lowest();
+
+     __device__ __forceinline__ void insert(T elem, int elem_id) {
+       if (greater(elem, u)) {
+@@ -167,7 +169,7 @@ namespace fastertransformer {
+     }
+
+     __device__ __forceinline__ void init() {
+-      u = cub::FpLimits<T>::Lowest();
++      u = CT2_FP_LIMITS<T>::Lowest();
+       p = NOT_FOUND;
+     }
+   };
+@@ -213,7 +215,7 @@ namespace fastertransformer {
+         topk_tmp_val_buf[index] = total.u;
+         // If we found a max, blank out the value in the log prob array before starting the next iteration
+         if (total.p != NOT_FOUND)
+-          log_probs[total.p] = cub::FpLimits<T>::Lowest();
++          log_probs[total.p] = CT2_FP_LIMITS<T>::Lowest();
+       }
+       __syncthreads();
+     }
+@@ -259,7 +261,7 @@ namespace fastertransformer {
+
+       if (tid == 0) {
+         topks[ite] = total;
+-        s_val[total.p] = cub::FpLimits<T>::Lowest();
++        s_val[total.p] = CT2_FP_LIMITS<T>::Lowest();
+       }
+       __syncthreads();
+     }
