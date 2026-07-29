@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K.I.T.T. — Knight Industries Two Thousand</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.voice-selector { display: flex; gap: 8px; justify-content: center; padding: 8px; flex-wrap: wrap; }
+.voice-btn { background: #1a1a1a; border: 1px solid #444; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+.voice-btn:hover { border-color: #cc0000; color: #fff; }
+.voice-btn.active { background: #330000; border-color: #cc0000; color: #fff; box-shadow: 0 0 8px #cc0000; }
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 15px;
+  border-bottom: 1px solid #333;
+}
+.header h1 {
+  font-size: 1.4em;
+  color: #ff3333;
+  text-shadow: 0 0 20px #ff0000;
+  letter-spacing: 4px;
+}
+.header .subtitle {
+  font-size: 0.7em;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Scanner KITT */
+.scanner-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+.scanner {
+  width: 300px;
+  height: 8px;
+  background: #1a0000;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #330000;
+}
+.scanner-light {
+  position: absolute;
+  width: 60px;
+  height: 100%;
+  background: radial-gradient(ellipse, #ff0000 0%, #ff000088 40%, transparent 70%);
+  border-radius: 4px;
+  animation: scan 2s ease-in-out infinite;
+  box-shadow: 0 0 20px #ff0000, 0 0 40px #ff000066;
+}
+.scanner.speaking .scanner-light {
+  animation: scan-fast 0.6s ease-in-out infinite;
+  background: radial-gradient(ellipse, #ff4444 0%, #ff000088 40%, transparent 70%);
+  box-shadow: 0 0 30px #ff0000, 0 0 60px #ff000088;
+}
+@keyframes scan {
+  0%, 100% { left: 0; }
+  50% { left: calc(100% - 60px); }
+}
+@keyframes scan-fast {
+  0%, 100% { left: 0; }
+  50% { left: calc(100% - 60px); }
+}
+
+/* Chat area */
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.message {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+.message.user {
+  align-self: flex-end;
+  background: #1a2a1a;
+  border: 1px solid #2a4a2a;
+  color: #88cc88;
+}
+.message.kitt {
+  align-self: flex-start;
+  background: #1a0a0a;
+  border: 1px solid #4a1a1a;
+  color: #ff8888;
+}
+.message .timing {
+  font-size: 0.65em;
+  color: #555;
+  margin-top: 5px;
+}
+
+/* Input area */
+.input-area {
+  padding: 15px;
+  border-top: 1px solid #333;
+  display: flex;
+  gap: 10px;
+}
+.input-area input {
+  flex: 1;
+  background: #111;
+  border: 1px solid #333;
+  color: #e0e0e0;
+  padding: 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9em;
+  outline: none;
+}
+.input-area input:focus {
+  border-color: #ff3333;
+  box-shadow: 0 0 10px #ff000033;
+}
+.input-area button {
+  background: #aa0000;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.input-area button:hover { background: #cc0000; }
+.input-area button:disabled { background: #333; cursor: not-allowed; }
+
+/* Mic buttons */
+.mic-btn, .auto-btn {
+  background: #222;
+  color: #ff4444;
+  border: 2px solid #aa0000;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.6em;
+  font-weight: bold;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.mic-btn:hover, .auto-btn:hover { background: #331111; border-color: #cc0000; }
+.mic-btn.recording, .auto-btn.active {
+  background: #aa0000;
+  color: white;
+  border-color: #ff4444;
+  animation: mic-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 15px #ff000066;
+}
+.auto-btn.active.waiting {
+  background: #004400;
+  border-color: #00aa00;
+  color: #44ff44;
+  animation: auto-pulse 2s ease-in-out infinite;
+}
+.auto-btn.active.hearing {
+  background: #aa0000;
+  border-color: #ff4444;
+  color: white;
+  animation: mic-pulse 0.5s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 10px #ff000044; }
+  50% { box-shadow: 0 0 25px #ff000088; }
+}
+@keyframes auto-pulse {
+  0%, 100% { box-shadow: 0 0 5px #00ff0022; }
+  50% { box-shadow: 0 0 15px #00ff0044; }
+}
+.mic-btn.transcribing, .auto-btn.transcribing {
+  background: #553300;
+  color: #ffaa44;
+  border-color: #ff8800;
+  animation: none;
+}
+
+/* Scanner listening mode */
+.scanner.listening .scanner-light {
+  animation: scan-fast 0.8s ease-in-out infinite;
+  background: radial-gradient(ellipse, #ff6600 0%, #ff440088 40%, transparent 70%);
+  box-shadow: 0 0 25px #ff4400, 0 0 50px #ff440066;
+}
+.scanner.auto-listening .scanner-light {
+  animation: scan 3s ease-in-out infinite;
+  background: radial-gradient(ellipse, #00cc00 0%, #00aa0088 40%, transparent 70%);
+  box-shadow: 0 0 15px #00aa00, 0 0 30px #00aa0044;
+}
+.scanner.auto-hearing .scanner-light {
+  animation: scan-fast 0.5s ease-in-out infinite;
+  background: radial-gradient(ellipse, #ff6600 0%, #ff440088 40%, transparent 70%);
+  box-shadow: 0 0 25px #ff4400, 0 0 50px #ff440066;
+}
+
+/* Status */
+.status-bar {
+  text-align: center;
+  padding: 5px;
+  font-size: 0.65em;
+  color: #444;
+}
+.status-bar .online { color: #4a4; }
+.status-bar .offline { color: #a44; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>K.I.T.T.</h1>
+  <div class="subtitle">KNIGHT INDUSTRIES TWO THOUSAND</div>
+</div>
+
+<div class="scanner-container">
+  <div class="scanner" id="scanner">
+    <div class="scanner-light"></div>
+  </div>
+</div>
+
+<div class="chat-area" id="chat"></div>
+
+<div class="input-area">
+  <button class="mic-btn" id="mic" onclick="toggleMic()" title="Push-to-talk">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+  </button>
+  <button class="auto-btn" id="automic" onclick="toggleAutoListen()" title="Auto-ecoute continue">AUTO</button>
+  <input type="text" id="input" placeholder="Parlez à K.I.T.T..." autofocus>
+  <button id="send" onclick="sendMessage()">ENVOYER</button>
+</div>
+
+<div class="status-bar">
+  <span id="status">Connexion...</span>
+</div>
+<div class="voice-selector" id="voiceSelector">
+  <button class="voice-btn" id="voice-kitt" onclick="setVoice('kitt')">KITT</button>
+  <button class="voice-btn" id="voice-guy" onclick="setVoice('guy')">Guy Chapelier</button>
+  <button class="voice-btn" id="voice-manix" onclick="setVoice('manix')">Manix</button>
+  <button class="voice-btn" id="voice-english" onclick="setVoice('english')">English</button>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const input = document.getElementById('input');
+const scanner = document.getElementById('scanner');
+const sendBtn = document.getElementById('send');
+const statusEl = document.getElementById('status');
+const sessionId = 'kitt-' + Date.now();
+let audioCtx = null;
+let isRecording = false;
+let micStream = null;
+let micProcessor = null;
+let micContext = null;
+let pcmChunks = [];
+const micBtn = document.getElementById('mic');
+const autoBtn = document.getElementById('automic');
+
+// Auto-listen state
+let autoListenActive = false;
+let autoStream = null;
+let autoContext = null;
+let autoProcessor = null;
+let autoAnalyser = null;
+let autoPcmChunks = [];
+let isSpeaking = false;
+let silenceStart = 0;
+const VAD_THRESHOLD = 0.015;
+const SILENCE_DURATION = 1500;
+const MIN_SPEECH_DURATION = 500;
+let speechStart = 0;
+let autoProcessing = false;
+
+input.addEventListener('keydown', e => { if (e.key === 'Enter' && !sendBtn.disabled) sendMessage(); });
+
+async function loadVoices() {
+  try {
+    const res = await fetch('/api/voices');
+    const data = await res.json();
+    document.querySelectorAll('.voice-btn').forEach(b => b.classList.remove('active'));
+    const active = document.getElementById('voice-' + data.current_voice);
+    if (active) active.classList.add('active');
+  } catch (e) { console.error('loadVoices', e); }
+}
+
+async function setVoice(voice) {
+  try {
+    const res = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ voice }) });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      statusEl.innerHTML = '<span class="online">Voix: ' + voice + '</span>';
+      loadVoices();
+    } else {
+      statusEl.innerHTML = '<span class="offline">' + (data.error || 'Erreur voix') + '</span>';
+    }
+  } catch (e) { statusEl.innerHTML = '<span class="offline">Erreur voix: ' + e.message + '</span>'; }
+}
+
+function addMessage(text, who, timing) {
+  const div = document.createElement('div');
+  div.className = 'message ' + who;
+  let html = text;
+  if (timing) html += `<div class="timing">LLM: ${timing.llm_ms}ms | TTS: ${timing.tts_ms}ms | Total: ${timing.total_ms}ms</div>`;
+  div.innerHTML = html;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function sendMessage() {
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  addMessage(msg, 'user');
+  input.value = '';
+  sendBtn.disabled = true;
+  await streamChat(msg);
+}
+
+const audioQueue = [];
+let isPlayingAudio = false;
+
+async function playNextAudio() {
+  if (isPlayingAudio || audioQueue.length === 0) return;
+  isPlayingAudio = true;
+  const url = audioQueue.shift();
+  try {
+    await playAudio(url);
+  } finally {
+    isPlayingAudio = false;
+    playNextAudio();
+  }
+}
+
+async function streamChat(msg) {
+  const div = document.createElement('div');
+  div.className = 'message kitt';
+  div.innerHTML = '<span class="typing">...</span>';
+  chat.appendChild(div);
+
+  try {
+    const res = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ message: msg, session_id: sessionId, audio: true })
+    });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let text = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.token) {
+              text += data.token;
+              div.innerHTML = text;
+              chat.scrollTop = chat.scrollHeight;
+            }
+            if (data.audio_chunk) {
+              audioQueue.push(data.audio_chunk);
+              playNextAudio();
+            }
+            if (data.done && data.timing) {
+              div.innerHTML = text + `<div class="timing">LLM: ${data.timing.llm_ms}ms | TTS: ${data.timing.tts_ms || 0}ms</div>`;
+            }
+          } catch {}
+        }
+      }
+    }
+  } catch (e) {
+    div.innerHTML = 'Erreur de connexion au serveur.';
+  }
+  sendBtn.disabled = false;
+  input.focus();
+}
+
+let playbackCtx = null;
+function ensurePlaybackCtx() {
+  if (!playbackCtx || playbackCtx.state === 'closed') {
+    playbackCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (playbackCtx.state === 'suspended') playbackCtx.resume();
+  return playbackCtx;
+}
+// Unlock audio on any user interaction
+['click', 'touchstart', 'keydown'].forEach(evt =>
+  document.addEventListener(evt, () => ensurePlaybackCtx(), { once: false })
+);
+
+function playAudio(url) {
+  return new Promise((resolve) => {
+    scanner.classList.add('speaking');
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      scanner.classList.remove('speaking');
+      resolve();
+    };
+
+    const ctx = ensurePlaybackCtx();
+    fetch(url)
+      .then(r => {
+        if (!r.ok) throw new Error('Audio HTTP ' + r.status);
+        return r.arrayBuffer();
+      })
+      .then(buf => ctx.decodeAudioData(buf))
+      .then(decoded => {
+        const src = ctx.createBufferSource();
+        src.buffer = decoded;
+        src.connect(ctx.destination);
+        src.onended = finish;
+        src.start(0);
+      })
+      .catch(() => {
+        const audio = new Audio(url);
+        audio.onended = finish;
+        audio.onerror = finish;
+        audio.play().catch(finish);
+      });
+  });
+}
+
+function encodeWAV(samples, sampleRate) {
+  const buf = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buf);
+  function writeStr(off, s) { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); }
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, samples.length * 2, true);
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
+async function sendToSTT(chunks, sampleRate) {
+  const allSamples = new Float32Array(chunks.reduce((a, b) => a + b.length, 0));
+  let offset = 0;
+  for (const chunk of chunks) { allSamples.set(chunk, offset); offset += chunk.length; }
+
+  const wavBlob = encodeWAV(allSamples, sampleRate);
+  statusEl.innerHTML = '<span class="online">Transcription... (' + (wavBlob.size/1024).toFixed(0) + ' Ko)</span>';
+
+  const formData = new FormData();
+  formData.append('audio', wavBlob, 'recording.wav');
+
+  const res = await fetch('/api/stt', { method: 'POST', body: formData });
+  return await res.json();
+}
+
+async function handleSTTResult(data) {
+  if (data.text && data.text.trim()) {
+    const text = data.text.trim();
+    addMessage(text, 'user', null);
+    statusEl.innerHTML = `<span class="online">STT: ${data.stt_ms}ms</span>`;
+    sendBtn.disabled = true;
+    await streamChat(text);
+    return true;
+  }
+  return false;
+}
+
+// ── Mode 1: Push-to-talk ──────────────────────────────────────
+
+async function stopRecording() {
+  if (!isRecording) return;
+  isRecording = false;
+  micBtn.classList.remove('recording');
+  micBtn.classList.add('transcribing');
+  scanner.classList.remove('listening');
+
+  if (micProcessor) micProcessor.disconnect();
+  if (micStream) micStream.getTracks().forEach(t => t.stop());
+  if (micContext) micContext.close();
+
+  try {
+    const data = await sendToSTT(pcmChunks, 16000);
+    if (!await handleSTTResult(data)) {
+      statusEl.innerHTML = '<span class="offline">Rien entendu — parlez plus fort</span>';
+    }
+  } catch (e) {
+    statusEl.innerHTML = '<span class="offline">Erreur STT</span>';
+  }
+  micBtn.classList.remove('transcribing');
+}
+
+async function toggleMic() {
+  if (autoListenActive) stopAutoListen();
+  if (isRecording) { stopRecording(); return; }
+
+  try {
+    statusEl.innerHTML = '<span class="online">Demande micro...</span>';
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true } });
+
+    micContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+    const source = micContext.createMediaStreamSource(micStream);
+    micProcessor = micContext.createScriptProcessor(4096, 1, 1);
+    pcmChunks = [];
+
+    micProcessor.onaudioprocess = (e) => {
+      if (isRecording) pcmChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+    };
+
+    source.connect(micProcessor);
+    micProcessor.connect(micContext.destination);
+
+    isRecording = true;
+    micBtn.classList.add('recording');
+    scanner.classList.add('listening');
+    statusEl.innerHTML = '<span class="online">Ecoute en cours...</span>';
+  } catch (e) {
+    statusEl.innerHTML = '<span class="offline">Micro refuse: ' + e.message + '. Si tu es en HTTP sur une IP locale, ouvre https://' + window.location.host + ' et accepte le certificat auto-signe.</span>';
+  }
+}
+
+// ── Mode 2: Auto-ecoute continue (VAD) ───────────────────────
+
+function stopAutoListen() {
+  autoListenActive = false;
+  isSpeaking = false;
+  autoProcessing = false;
+  if (autoProcessor) autoProcessor.disconnect();
+  if (autoStream) autoStream.getTracks().forEach(t => t.stop());
+  if (autoContext) autoContext.close();
+  autoBtn.classList.remove('active', 'waiting', 'hearing', 'transcribing');
+  scanner.classList.remove('auto-listening', 'auto-hearing');
+  statusEl.innerHTML = '<span class="online">Auto-ecoute arretee</span>';
+}
+
+async function processAutoSpeech() {
+  if (autoPcmChunks.length === 0) return;
+  autoProcessing = true;
+  autoBtn.classList.remove('hearing');
+  autoBtn.classList.add('transcribing');
+  scanner.classList.remove('auto-hearing');
+
+  const chunks = autoPcmChunks.slice();
+  autoPcmChunks = [];
+
+  try {
+    const data = await sendToSTT(chunks, 16000);
+    if (await handleSTTResult(data)) {
+      // Wait for playAudio to start
+      await new Promise(r => setTimeout(r, 500));
+      // Wait for KITT audio to finish
+      await new Promise(r => {
+        const check = setInterval(() => {
+          if (!scanner.classList.contains('speaking')) { clearInterval(check); r(); }
+        }, 300);
+        setTimeout(() => { clearInterval(check); r(); }, 30000);
+      });
+      // Anti-echo cooldown: stay muted 1.5s after audio ends
+      await new Promise(r => setTimeout(r, 1500));
+    }
+  } catch (e) {
+    statusEl.innerHTML = '<span class="offline">Erreur STT</span>';
+  }
+
+  // Reset VAD state cleanly before resuming
+  isSpeaking = false;
+  silenceStart = 0;
+  autoPcmChunks = [];
+  autoProcessing = false;
+  autoBtn.classList.remove('transcribing');
+  if (autoListenActive) {
+    autoBtn.classList.add('active', 'waiting');
+    scanner.classList.add('auto-listening');
+    statusEl.innerHTML = '<span class="online">Auto-ecoute: en attente...</span>';
+  }
+}
+
+async function toggleAutoListen() {
+  if (isRecording) stopRecording();
+  if (autoListenActive) { stopAutoListen(); return; }
+
+  try {
+    statusEl.innerHTML = '<span class="online">Demande micro...</span>';
+    autoStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true } });
+
+    autoContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+    const source = autoContext.createMediaStreamSource(autoStream);
+
+    autoAnalyser = autoContext.createAnalyser();
+    autoAnalyser.fftSize = 2048;
+    source.connect(autoAnalyser);
+
+    autoProcessor = autoContext.createScriptProcessor(4096, 1, 1);
+    autoPcmChunks = [];
+    isSpeaking = false;
+    silenceStart = 0;
+    speechStart = 0;
+
+    autoProcessor.onaudioprocess = (e) => {
+      if (!autoListenActive || autoProcessing) return;
+      const buf = new Float32Array(autoAnalyser.fftSize);
+      autoAnalyser.getFloatTimeDomainData(buf);
+      let sum = 0;
+      for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+      const rms = Math.sqrt(sum / buf.length);
+      const now = Date.now();
+
+      if (rms > VAD_THRESHOLD) {
+        if (!isSpeaking) {
+          isSpeaking = true;
+          speechStart = now;
+          autoPcmChunks = [];
+          autoBtn.classList.remove('waiting');
+          autoBtn.classList.add('hearing');
+          scanner.classList.remove('auto-listening');
+          scanner.classList.add('auto-hearing');
+          statusEl.innerHTML = '<span class="online">Parole detectee...</span>';
+        }
+        silenceStart = 0;
+        autoPcmChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+      } else if (isSpeaking) {
+        autoPcmChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+        if (!silenceStart) silenceStart = now;
+        if (now - silenceStart > SILENCE_DURATION) {
+          isSpeaking = false;
+          if (now - speechStart > MIN_SPEECH_DURATION) {
+            processAutoSpeech();
+          } else {
+            autoPcmChunks = [];
+            autoBtn.classList.remove('hearing');
+            autoBtn.classList.add('waiting');
+            scanner.classList.remove('auto-hearing');
+            scanner.classList.add('auto-listening');
+            statusEl.innerHTML = '<span class="online">Auto-ecoute: en attente...</span>';
+          }
+        }
+      }
+    };
+
+    source.connect(autoProcessor);
+    autoProcessor.connect(autoContext.destination);
+
+    autoListenActive = true;
+    autoBtn.classList.add('active', 'waiting');
+    scanner.classList.add('auto-listening');
+    statusEl.innerHTML = '<span class="online">Auto-ecoute: en attente...</span>';
+  } catch (e) {
+    statusEl.innerHTML = '<span class="offline">Micro refuse: ' + e.message + '. Si tu es en HTTP sur une IP locale, ouvre https://' + window.location.host + ' et accepte le certificat auto-signe.</span>';
+  }
+}
+
+async function checkHealth() {
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    if (data.llm_server) {
+      statusEl.innerHTML = '<span class="online">K.I.T.T. EN LIGNE</span>';
+    } else {
+      statusEl.innerHTML = '<span class="offline">LLM HORS LIGNE — Démarrez llama-server</span>';
+    }
+  } catch {
+    statusEl.innerHTML = '<span class="offline">SERVEUR HORS LIGNE</span>';
+  }
+}
+
+checkHealth();
+setInterval(checkHealth, 10000);
+
+addMessage("Bonjour. Je suis K.I.T.T., le Knight Industries Two Thousand. Comment puis-je vous assister ?", "kitt");
+</script>
+</body>
+</html>
