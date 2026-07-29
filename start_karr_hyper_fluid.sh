@@ -95,6 +95,7 @@ $LLAMA_SERVER \
   --host 0.0.0.0 \
   --port 8080 \
   --ctx-size $OLLAMA_NUM_CTX \
+  --parallel 1 \
   --batch-size $LLAMA_BATCH_SIZE \
   --ubatch-size $LLAMA_UBATCH_SIZE \
   --threads $LLAMA_THREADS \
