@@ -1434,7 +1434,7 @@ def get_system_prompt(user_name: str = "", user_lang: str = "", mac: str = "") -
 # Compatibilité — utilisé par query_llm (non-streaming)
 SYSTEM_PROMPT = _BASE_PROMPT
 # ── Trim intelligent historique (evite depassement ctx) ─────────────────────
-_CTX_SIZE  = 2048
+_CTX_SIZE  = 3072
 _MAX_REPLY = 320
 _SAFETY    = 80
 
