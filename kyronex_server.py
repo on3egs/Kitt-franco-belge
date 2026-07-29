@@ -117,7 +117,7 @@ class TextSegmenter:
         self.max_delay_ms = max_delay_ms
         self.immediate_mode = immediate_mode  # Mode immédiat: envoie dès que possible
         self.buffer = ""
-        self.last_segment_time = 0
+        self.last_segment_time = time.time()
         self.punctuation_pattern = re.compile(r'[.!?…;:]')
         self.comma_pattern = re.compile(r'[,]')
         
@@ -161,7 +161,7 @@ class TextSegmenter:
                     self.buffer = self.buffer[last_punct + 1:].lstrip()
         
         # Vérifier virgule avec buffer suffisamment long
-        elif self.comma_pattern.search(self.buffer) and len(self.buffer.split()) >= self.min_words * 1.5:
+        elif self.comma_pattern.search(self.buffer):
             last_comma = self.buffer.rfind(',')
             if last_comma >= self.min_chars - 1:
                 segment = self.buffer[:last_comma + 1].strip()
@@ -169,15 +169,16 @@ class TextSegmenter:
                     segments.append(segment)
                     self.buffer = self.buffer[last_comma + 1:].lstrip()
         
-        # Vérifier buffer suffisamment long (sans ponctuation) - SEUIL PLUS BAS
-        elif len(self.buffer.split()) >= self.min_words or (len(self.buffer) >= self.min_chars and len(self.buffer.split()) >= 1):
-            # Trouver le dernier espace avant min_words
-            words = self.buffer.split()
-            if len(words) >= max(1, self.min_words):
-                segment = ' '.join(words[:max(1, self.min_words)])
-                if self._is_valid_segment(segment):
-                    segments.append(segment)
-                    self.buffer = ' '.join(words[max(1, self.min_words):]) + ' '
+        # Sans ponctuation, ne couper qu'un fragment anormalement long.
+        # La frontière normale reste la virgule ou la fin de phrase.
+        elif len(self.buffer) >= 180:
+            split_at = self.buffer.rfind(' ', 0, 160)
+            if split_at < self.min_chars:
+                split_at = 160
+            segment = self.buffer[:split_at].strip()
+            if self._is_valid_segment(segment):
+                segments.append(segment)
+                self.buffer = self.buffer[split_at:].lstrip()
         
         # Vérifier délai écoulé (pour forcer l'envoi) - SEUIL PLUS AGRESSIF
         if (current_time - self.last_segment_time) * 1000 > self.max_delay_ms:
@@ -220,7 +221,7 @@ class TextSegmenter:
     def reset(self):
         """Réinitialise le segmentateur."""
         self.buffer = ""
-        self.last_segment_time = 0
+        self.last_segment_time = time.time()
 
 
 class StreamingTTSManager:
@@ -3083,9 +3084,9 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         
         # Fonction pour consommer le stream LLM
         async def consume_llm_stream():
-            nonlocal full_reply, _raw_buf, _clean_emitted
+            nonlocal full_reply, _raw_buf, _clean_emitted, sentence_buf
             # Capturer les variables du scope parent
-            nonlocal tts_lang, tts_lang_locked
+            nonlocal tts_lang, tts_lang_locked, tts_manager_started
             
             async with session.post(
                 f"{LLAMA_SERVER}{endpoint}",
@@ -3178,6 +3179,14 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         
         # Consommer le stream LLM
         t_first_token, t_first_phrase, t_llm_start = await consume_llm_stream()
+
+        # Envoyer aussi le dernier fragment si le modèle termine sans ponctuation.
+        for seg in segmenter.flush():
+            if seg and any(c.isalpha() for c in seg):
+                if not tts_manager_started:
+                    await tts_manager.start_processing()
+                    tts_manager_started = True
+                await tts_manager.add_segment(seg, emotion, tts_lang, karr_active)
         
         # Le TTS est déjà géré par le StreamingTTSManager en arrière-plan
         # NE PAS ATTENDRE - tout est asynchrone et parallèle
@@ -3239,8 +3248,14 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         
         asyncio.create_task(_auto_save_conv())
         
-        # Arrêter le gestionnaire TTS
+        # Attendre que les segments déjà confiés au TTS soient envoyés avant de
+        # fermer le flux SSE; stop() annule volontairement les workers restants.
         tts_processing = False
+        if tts_manager_started:
+            try:
+                await asyncio.wait_for(tts_manager.queue.join(), timeout=45)
+            except asyncio.TimeoutError:
+                vlog("TTS_DRAIN_TIMEOUT")
         await tts_manager.stop()
         
         # Calculer tts_ms à partir du premier audio
@@ -3276,6 +3291,12 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         if not full_reply:
             full_reply = "Mes circuits ont subi une micro-interruption. Reformulez votre demande."
             await resp.write(f"data: {json.dumps({'token': full_reply})}\n\n".encode())
+        # Toujours terminer le protocole SSE : le navigateur retire ainsi l'état
+        # « réflexion » même si le moteur ou le TTS rencontre une erreur.
+        try:
+            await resp.write(f"data: {json.dumps({'done': True, 'error': str(e), 'timing': {'llm_ms': round((time.time() - t0) * 1000), 'tts_ms': 0}})}\n\n".encode())
+        except (ConnectionResetError, RuntimeError):
+            pass
     finally:
         _llm_active -= 1
 

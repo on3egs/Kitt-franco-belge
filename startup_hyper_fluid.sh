@@ -25,7 +25,8 @@ nohup /home/karr/kitt-ai/llama.cpp_build/bin/llama-server \
   -m /home/karr/kitt-ai/models/qwen2.5-3b-instruct-q5_k_m.gguf \
   --host 0.0.0.0 \
   --port 8080 \
-  --ctx-size 512 \
+  --ctx-size 2048 \
+  --parallel 1 \
   --batch-size 64 \
   --ubatch-size 64 \
   --threads 6 \
