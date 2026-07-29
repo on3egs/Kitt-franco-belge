@@ -1,6 +1,6 @@
 #!/bin/bash
 # SCRIPT DE FIX IMMÉDIAT POUR KARR DADOO
-# Exécute ce script SUR la machine 192.168.129.25 (KARR Dadou)
+# Exécute ce script SUR la machine karr_dadoo (voir config/jetson_fleet.json) (KARR Dadou)
 # Résout le problème : "écoute et transcrit mais ne répond pas"
 
 set -e

@@ -7,7 +7,7 @@ LOGS="$MODEL/lightning_logs"
 
 mkdir -p "$MODEL" "$LOGS"
 
-echo "[$(date)] === Démarrage entraînement Guy Chapelier ==="
+echo "[$(date)] === Démarrage entraînement Manix | Kyronext Studio ==="
 
 echo "[$(date)] Prétraitement..."
 python3 -m piper_train.preprocess \

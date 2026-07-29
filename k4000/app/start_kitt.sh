@@ -10,7 +10,9 @@ MODEL="$APP_DIR/models/qwen2.5-3b-instruct-q5_k_m.gguf"
 PYTHON="$PROJECT_DIR/.venv/bin/python"
 
 export PATH="/usr/local/cuda/bin:$PROJECT_DIR/.venv/bin:$PATH"
-export PYTHONPATH="/home/K4000/Kironext-K-4000/third_party/ctranslate2-cuda/python"
+export PYTHONPATH="$PROJECT_DIR:$PROJECT_DIR/third_party/ctranslate2-cuda/python"
+export KYRONEX_MACHINE_ID="kitt_k4000"
+export KYRONEX_VOICE_EFFECT_DEFAULT="none"
 export LD_LIBRARY_PATH="/home/K4000/Kironext-K-4000/third_party/ctranslate2-cuda/lib:/usr/local/cuda/targets/sbsa-linux/lib:/lib/aarch64-linux-gnu:/home/K4000/Kironext-K-4000/third_party/llama.cpp/build-kyronext/bin:/home/K4000/Kironext-K-4000/third_party/llama.cpp/build-kyronext/ggml/src"
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1

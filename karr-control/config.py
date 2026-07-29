@@ -1,5 +1,10 @@
 """Configuration globale KARR Control Center."""
 import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from jetson_network import get_host
 
 VERSION = "3.1"
 SYSTEM_NAME = "KARR"
@@ -43,7 +48,7 @@ BT_DEVICES = {
 
 # Réseau
 IP_LOCAL  = "192.168.129.22"
-IP_NX     = "192.168.129.23"
+IP_NX     = get_host("karr_virginie")
 IP_STATIC = "192.168.1.4"
 
 # Jetson GPIO/sysfs

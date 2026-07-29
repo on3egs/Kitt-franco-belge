@@ -1,7 +1,7 @@
 #!/bin/bash
 # ╔══════════════════════════════════════════════════════════════════════╗
 # ║   KITT — Sauvegarde Croisée v1.0                                    ║
-# ║   Sauvegarde locale + copie miroir vers KARR (192.168.129.23)       ║
+# ║   Sauvegarde locale + copie miroir vers KARR (karr_virginie)       ║
 # ║   Copyright 2026 KITT Franco-Belge                           ║
 # ╚══════════════════════════════════════════════════════════════════════╝
 
@@ -9,7 +9,8 @@ set -eo pipefail
 
 KITT_HOME="/home/kitt"
 KITT_DIR="/home/kitt/kitt-ai"
-REMOTE_IP="192.168.129.23"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REMOTE_IP="$(python3 "$SCRIPT_DIR/jetson_network.py" host karr_virginie)"
 REMOTE_USER="kitt"
 LOCAL_BACKUP_DIR="${KITT_HOME}/backups/kitt_local"
 MIRROR_DIR="${KITT_HOME}/backups/karr_mirror"   # reçoit les backups de KARR
@@ -69,7 +70,7 @@ ls -t "${LOCAL_BACKUP_DIR}"/kitt_backup_*.tar.gz 2>/dev/null | tail -n +$((KEEP+
 ok "Anciens backups nettoyés (garde ${KEEP} derniers)"
 
 # ── 3. Copie miroir vers KARR (.23) ───────────────────────────────────
-log "Étape 2/3 — Copie miroir vers KARR (192.168.129.23)..."
+log "Étape 2/3 — Copie miroir vers KARR (karr_virginie)..."
 if ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_IP}" "mkdir -p ${REMOTE_RECEIVE_DIR}" 2>>"$LOG"; then
     if scp -o ConnectTimeout=10 -o StrictHostKeyChecking=no \
         "${BACKUP_PATH}" \

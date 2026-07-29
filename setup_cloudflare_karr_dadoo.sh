@@ -1,6 +1,6 @@
 #!/bin/bash
-# Script pour configurer le tunnel Cloudflare sur 192.168.129.25 (KARR DE DADOO)
-# À exécuter sur 192.168.129.25 avec les droits root ou sudo
+# Script pour configurer le tunnel Cloudflare sur karr_dadoo (voir config/jetson_fleet.json) (KARR DE DADOO)
+# À exécuter sur karr_dadoo (voir config/jetson_fleet.json) avec les droits root ou sudo
 
 set -e
 

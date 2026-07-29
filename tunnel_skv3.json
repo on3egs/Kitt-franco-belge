@@ -5,5 +5,5 @@
   "host": "ajx-jetson-super-kitt-v3",
   "version": "2.0",
   "permanent": true,
-  "note": "FINAL: Tunnel Cloudflare nomine - AJX (192.168.129.24) SUPER K.I.T.T. V3 - GEMMA 4-E2B"
+  "note": "FINAL: Tunnel Cloudflare nomine - AJX (kitt_v3 (voir config/jetson_fleet.json)) SUPER K.I.T.T. V3 - GEMMA 4-E2B"
 }

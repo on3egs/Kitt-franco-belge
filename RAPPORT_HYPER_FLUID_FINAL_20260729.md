@@ -21,12 +21,12 @@ Créer **deux chatbots hyper actifs et fluides** capables de :
 
 ## 📋 Problèmes Identifiés
 
-### 1. KARR Dadou (Orin Nano 8Go - 192.168.129.25)
+### 1. KARR Dadou (Orin Nano 8Go - karr_dadoo (voir config/jetson_fleet.json))
 - **Problème** : Écoute et transcrit mais **ne répond pas vocalement/textuellement**
 - **Cause** : Configuration TTS non optimisée, streaming non activé
 - **Solution** : Configuration HYPER FLUID avec TTS parallèle
 
-### 2. K-4000 (Orin NX 8Go - 192.168.129.26)
+### 2. K-4000 (Orin NX 8Go - kitt_k4000 (voir config/jetson_fleet.json))
 - **Problème** : Fonctionne mais **attend la fin de la réponse complète** avant de parler
 - **Cause** : TTS séquentiel (un chunk après l'autre), pas de parallélisme
 - **Solution** : TTS PARALLELE avec plusieurs workers simultanés
@@ -230,7 +230,7 @@ Configuration similaire adaptée pour NX 8Go.
 
 ## 🔧 Installation et Déploiement
 
-### Pour KARR Dadou (Orin Nano 8Go - 192.168.129.25)
+### Pour KARR Dadou (Orin Nano 8Go - karr_dadoo (voir config/jetson_fleet.json))
 
 ```bash
 # 1. Copier la configuration
@@ -250,7 +250,7 @@ sudo systemctl restart kitt-kyronex.service
 curl http://127.0.0.1:3000/api/health
 ```
 
-### Pour K-4000 (Orin NX 8Go - 192.168.129.26)
+### Pour K-4000 (Orin NX 8Go - kitt_k4000 (voir config/jetson_fleet.json))
 
 ```bash
 # 1. Copier les fichiers sur K-4000
@@ -298,12 +298,12 @@ chmod +x /home/karr/kitt-ai/test_hyper_fluid.sh
 #### Test de base
 ```bash
 # KARR Dadou
-curl -X POST http://192.168.129.25:3000/api/chat/stream \
+curl -X POST $(python3 jetson_network.py url karr_dadoo)/api/chat/stream \
   -H "Content-Type: application/json" \
   -d '{"message": "Bonjour KARR, comment ça va ?", "audio": false}'
 
 # K-4000
-curl -X POST http://192.168.129.26:3000/api/chat/stream \
+curl -X POST $(python3 jetson_network.py url kitt_k4000)/api/chat/stream \
   -H "Content-Type: application/json" \
   -d '{"message": "Bonjour K-4000, comment ça va ?", "audio": false}'
 ```
@@ -311,12 +311,12 @@ curl -X POST http://192.168.129.26:3000/api/chat/stream \
 #### Test avec Audio
 ```bash
 # KARR Dadou
-curl -X POST http://192.168.129.25:3000/api/chat/stream \
+curl -X POST $(python3 jetson_network.py url karr_dadoo)/api/chat/stream \
   -H "Content-Type: application/json" \
   -d '{"message": "Bonjour KARR, comment ça va ?", "audio": true}'
 
 # K-4000
-curl -X POST http://192.168.129.26:3000/api/chat/stream \
+curl -X POST $(python3 jetson_network.py url kitt_k4000)/api/chat/stream \
   -H "Content-Type: application/json" \
   -d '{"message": "Bonjour K-4000, comment ça va ?", "audio": true}'
 ```

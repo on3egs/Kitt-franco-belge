@@ -4,7 +4,7 @@
 # Après un 'sudo poweroff' puis 'power on', TOUT sera prêt automatiquement
 # ============================================================================
 # Date: 2026-07-29
-# Pour: Jetson Orin Nano 8Go (KARR Dadou - 192.168.129.25)
+# Pour: Jetson Orin Nano 8Go (KARR Dadou - karr_dadoo (voir config/jetson_fleet.json))
 # ============================================================================
 
 set -e
