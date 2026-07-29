@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>K.I.T.T. — Knight Industries Two Thousand</title>
+<script src="/static/k4000-voice-display.js?v=20260730-4" defer></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 .audio-controls { display: flex; gap: 12px; justify-content: center; align-items: center; padding: 8px; flex-wrap: wrap; background: rgba(5,0,0,0.52); border-top: 1px solid rgba(110,20,20,0.45); backdrop-filter: blur(4px); }
@@ -41,6 +42,79 @@ body {
   font-size: 0.7em;
   color: #666;
   margin-top: 4px;
+}
+
+/* Afficheur vocal / équaliseur historique K-4000 */
+.voice-display-container {
+  position: relative;
+  z-index: 40;
+  isolation: isolate;
+  width: min(94vw, 1000px);
+  margin: 0 auto 10px;
+  border: 1px solid rgba(120,225,255,0.92);
+  box-shadow: 0 0 22px rgba(54,155,255,0.52);
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+}
+.voice-display-container k4000-voice-display { width: 100%; }
+.display-fullscreen-btn {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 42;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #a8f5ff;
+  border-radius: 2px;
+  color: #f4ffff;
+  background: rgba(4,20,67,0.82);
+  box-shadow: 0 0 10px rgba(92,228,255,0.64);
+  font-size: 20px;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.voice-display-container:fullscreen,
+.voice-display-container.pseudo-fullscreen,
+.voice-display-container.orientation-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  opacity: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  background: #050b25;
+  box-shadow: none;
+}
+.voice-display-container.pseudo-fullscreen,
+.voice-display-container.orientation-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+.voice-display-container:fullscreen k4000-voice-display,
+.voice-display-container.pseudo-fullscreen k4000-voice-display,
+.voice-display-container.orientation-fullscreen k4000-voice-display {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: auto;
+  flex: 1 1 auto;
+}
+@media (max-width: 700px) {
+  .voice-display-container { width: 100%; margin: 0; }
+  .voice-display-container k4000-voice-display { min-height: 96px; max-height: 27dvh; }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  .voice-display-container k4000-voice-display { max-height: 34dvh; min-height: 82px; }
+  .voice-display-container.orientation-fullscreen k4000-voice-display { max-height: none; min-height: 0; }
 }
 
 /* Scanner KITT */
@@ -316,6 +390,11 @@ body {
   </div>
 </div>
 
+<div class="voice-display-container" id="voiceDisplayContainer">
+  <k4000-voice-display id="voiceDisplay"></k4000-voice-display>
+  <button class="display-fullscreen-btn" id="displayFullscreen" type="button" title="Équaliseur en plein écran" aria-label="Équaliseur en plein écran">⛶</button>
+</div>
+
 <div class="chat-area" id="chat"></div>
 
 <div class="input-area">
@@ -355,6 +434,9 @@ body {
 const chat = document.getElementById('chat');
 const input = document.getElementById('input');
 const scanner = document.getElementById('scanner');
+const voiceDisplay = document.getElementById('voiceDisplay');
+const voiceDisplayContainer = document.getElementById('voiceDisplayContainer');
+const displayFullscreenBtn = document.getElementById('displayFullscreen');
 const sendBtn = document.getElementById('send');
 const statusEl = document.getElementById('status');
 const sessionId = 'kitt-' + Date.now();
@@ -366,6 +448,55 @@ let micContext = null;
 let pcmChunks = [];
 const micBtn = document.getElementById('mic');
 const autoBtn = document.getElementById('automic');
+let landscapeFullscreenDismissed = false;
+
+function displayIsFullscreen() {
+  return document.fullscreenElement === voiceDisplayContainer ||
+    document.webkitFullscreenElement === voiceDisplayContainer ||
+    voiceDisplayContainer.classList.contains('pseudo-fullscreen') ||
+    voiceDisplayContainer.classList.contains('orientation-fullscreen');
+}
+
+function syncVoiceDisplayFullscreen() {
+  const active = displayIsFullscreen();
+  voiceDisplay.toggleAttribute('fullscreen', active);
+  displayFullscreenBtn.textContent = active ? '✕' : '⛶';
+  requestAnimationFrame(() => voiceDisplay.resize());
+}
+
+async function toggleVoiceDisplayFullscreen() {
+  if (voiceDisplayContainer.classList.contains('orientation-fullscreen')) {
+    landscapeFullscreenDismissed = true;
+    voiceDisplayContainer.classList.remove('orientation-fullscreen');
+  } else if (displayIsFullscreen()) {
+    if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen();
+    else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else voiceDisplayContainer.classList.remove('pseudo-fullscreen');
+  } else if (voiceDisplayContainer.requestFullscreen) {
+    await voiceDisplayContainer.requestFullscreen();
+  } else if (voiceDisplayContainer.webkitRequestFullscreen) {
+    voiceDisplayContainer.webkitRequestFullscreen();
+  } else {
+    voiceDisplayContainer.classList.add('pseudo-fullscreen');
+  }
+  syncVoiceDisplayFullscreen();
+}
+
+displayFullscreenBtn.addEventListener('click', toggleVoiceDisplayFullscreen);
+document.addEventListener('fullscreenchange', syncVoiceDisplayFullscreen);
+document.addEventListener('webkitfullscreenchange', syncVoiceDisplayFullscreen);
+
+function syncLandscapeFullscreen() {
+  const landscapePhone = window.matchMedia('(orientation: landscape) and (max-height: 600px)').matches;
+  if (!landscapePhone) landscapeFullscreenDismissed = false;
+  const enabled = landscapePhone && !landscapeFullscreenDismissed;
+  voiceDisplayContainer.classList.toggle('orientation-fullscreen', enabled);
+  syncVoiceDisplayFullscreen();
+}
+
+window.addEventListener('orientationchange', () => setTimeout(syncLandscapeFullscreen, 120));
+window.addEventListener('resize', syncLandscapeFullscreen);
+syncLandscapeFullscreen();
 
 // Auto-listen state
 let autoListenActive = false;
@@ -560,8 +691,8 @@ function playAudio(url) {
       .then(decoded => {
         const src = ctx.createBufferSource();
         src.buffer = decoded;
-        src.connect(ctx.destination);
-        src.onended = finish;
+        voiceDisplay.connectSource(src, ctx);
+        src.onended = () => { voiceDisplay.releaseSource(); finish(); };
         src.start(0);
       })
       .catch(() => {
