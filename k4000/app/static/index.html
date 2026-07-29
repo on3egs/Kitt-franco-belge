@@ -346,7 +346,20 @@ async function playNextAudio() {
   isPlayingAudio = true;
   const url = audioQueue.shift();
   try {
-    await playAudio(url);
+    // Un onglet masque ne doit jamais doubler la voix de l onglet visible.
+    if (document.hidden) return;
+
+    if (navigator.locks && navigator.locks.request) {
+      // Verrou partage par tous les onglets Chromium de cette origine.
+      // ifAvailable evite qu un second onglet rejoue le meme segment ensuite.
+      await navigator.locks.request("kyronext-audio-output",
+        { mode: "exclusive", ifAvailable: true },
+        async lock => {
+          if (lock && !document.hidden) await playAudio(url);
+        });
+    } else {
+      await playAudio(url);
+    }
   } finally {
     isPlayingAudio = false;
     playNextAudio();
