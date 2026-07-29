@@ -9,22 +9,19 @@ Type=simple
 User=K4000
 WorkingDirectory=/home/K4000/Kironext-K-4000/app
 EnvironmentFile=/home/K4000/Kironext-K-4000/app/kyronex_nx_8gb_hyper_fluid.env
-ExecStartPre=/bin/bash -c "nvidia-smi -pm 1 || true"
-ExecStartPre=/bin/bash -c "echo 1 | sudo tee /proc/sys/kernel/sched_rt_runtime_us > /dev/null 2>&1 || true"
 ExecStart=/home/karr/kitt-ai/llama.cpp_build/bin/llama-server \
-  -m ${OLLAMA_MODEL} \
-  --host ${KYRONEX_HOST} \
-  --port ${KYRONEX_PORT:-3000} \
-  --ctx-size ${OLLAMA_NUM_CTX} \
-  --batch-size ${LLAMA_BATCH_SIZE} \
-  --ubatch-size ${LLAMA_UBATCH_SIZE} \
-  --threads ${LLAMA_THREADS} \
-  --threads-batch ${LLAMA_THREADS_BATCH} \
-  --n-gpu-layers ${OLLAMA_NUM_GPU} \
+  -m /home/K4000/Kironext-K-4000/app/models/qwen2.5-3b-instruct-q5_k_m.gguf \
+  --host 0.0.0.0 \
+  --port 8080 \
+  --ctx-size 1024 \
+  --batch-size 96 \
+  --ubatch-size 96 \
+  --threads 4 \
+  --threads-batch 2 \
+  --n-gpu-layers 99 \
   --flash-attn on \
   --load-mode mmap \
-  --no-warmup \
-  --log-level debug
+  --no-warmup
 
 Restart=always
 RestartSec=5
