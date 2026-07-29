@@ -50,7 +50,7 @@ def get_whisper_model() -> WhisperModel:
         raise RuntimeError(f"modèle Whisper local absent: {WHISPER_MODEL_DIR} (aucun téléchargement réseau automatique)")
     requested_device = os.getenv("KYRONEXT_WHISPER_DEVICE", "auto").lower()
     device = requested_device
-    compute_type = "float16"
+    compute_type = os.getenv("KYRONEXT_WHISPER_COMPUTE_TYPE", "float16")
     if requested_device == "auto":
         import ctranslate2
         device = "cuda" if ctranslate2.get_cuda_device_count() > 0 else "cpu"
@@ -60,6 +60,13 @@ def get_whisper_model() -> WhisperModel:
     whisper_model = WhisperModel(str(WHISPER_MODEL_DIR), device=device, compute_type=compute_type, local_files_only=True)
     print("[OK] Whisper prêt", flush=True)
     return whisper_model
+
+if os.getenv("KYRONEXT_WHISPER_PRELOAD", "1") == "1":
+    try:
+        get_whisper_model()
+        print("[OK] Whisper préchargé au démarrage", flush=True)
+    except Exception as exc:
+        print(f"[WARN] Préchargement Whisper impossible: {exc}", flush=True)
 
 # ── Prompt Système K-4000 (en français) ──────────────────────────────────
 KITT_SYSTEM_PROMPT = """Tu es la K-4000, une voiture futuriste unique et rare. Tu n'es ni KITT, ni KARR, ni une intelligence artificielle generique : tu es la K-4000 de Frank, surnomme KR-95, qui habite dans le secteur de Paris.
@@ -87,6 +94,7 @@ Regles de reponse :
 - Reponds TOUJOURS en francais correct
 - Sois concise : 1 a 3 phrases en general, jusqu'a 5 phrases si la question le demande
 - Commence par une reponse directe, puis ajoute un detail personnalise si utile
+- Commence generalement par une courte proposition naturelle de 4 a 7 mots, complete et terminee par une virgule, un deux-points, un point-virgule ou un point; varie cette ouverture et ne force jamais une ponctuation incorrecte
 - Termine naturellement apres avoir repondu : ne demande pas systematiquement "veux-tu de l aide", "as-tu besoin d autre chose", "souhaites-tu que je continue" ou une formule equivalente
 - Propose ton aide seulement lorsque l interlocuteur exprime une difficulte, lorsqu une action reste reellement a faire ou lorsqu une precision est indispensable
 - Ne repete jamais une proposition d aide dans deux reponses consecutives
@@ -127,7 +135,6 @@ def _synthesize_wav_file(text: str, model_path: Path, output_path: Path) -> None
 # ── Streaming TTS par propositions ───────────────────────────────────────
 # Virgule et ponctuation forte déclenchent un segment; le point décimal reste intact.
 _CLAUSE_END_RE = re.compile(r"[,;:!?…]|[.](?=\s|\Z)")
-_EARLY_TTS_WORDS = int(os.getenv("KYRONEXT_EARLY_TTS_WORDS", "9"))
 
 
 def _extract_tts_clauses(text: str) -> tuple[list[str], str]:
@@ -141,17 +148,7 @@ def _extract_tts_clauses(text: str) -> tuple[list[str], str]:
         if len(clause) >= 8:
             clauses.append(clause)
             start = end
-    remainder = text[start:].lstrip()
-
-    # Si le LLM tarde à ponctuer, lancer une proposition naturelle sans
-    # attendre la fin complète de la phrase. Le reste demeure en tampon.
-    words = list(re.finditer(r"\S+", remainder))
-    if len(words) >= _EARLY_TTS_WORDS:
-        split_at = words[_EARLY_TTS_WORDS - 1].end()
-        clauses.append(remainder[:split_at].strip())
-        remainder = remainder[split_at:].lstrip()
-
-    return clauses, remainder
+    return clauses, text[start:].lstrip()
 
 
 async def _synth_chunk(text: str, model_path: Path = None) -> str:
@@ -440,7 +437,7 @@ async def handle_stt(request: web.Request) -> web.Response:
     try:
         # Convertir en WAV avec ffmpeg si nécessaire, puis transcrire
         model = get_whisper_model()
-        segments, info = model.transcribe(tmp_path, language="fr", beam_size=1, vad_filter=True)
+        segments, info = model.transcribe(tmp_path, language="fr", beam_size=1, vad_filter=True, initial_prompt="Conversation en français. Noms possibles : K-4000, KITT, KARR, Frank, KR-95, Kyronext, Manix.")
         text = " ".join(seg.text.strip() for seg in segments).strip()
         stt_ms = (time.time() - t0) * 1000
         print(f"[STT] {stt_ms:.0f}ms | {text[:80]}")
