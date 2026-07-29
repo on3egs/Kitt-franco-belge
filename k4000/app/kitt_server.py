@@ -127,6 +127,7 @@ def _synthesize_wav_file(text: str, model_path: Path, output_path: Path) -> None
 # ── Streaming TTS par propositions ───────────────────────────────────────
 # Virgule et ponctuation forte déclenchent un segment; le point décimal reste intact.
 _CLAUSE_END_RE = re.compile(r"[,;:!?…]|[.](?=\s|\Z)")
+_EARLY_TTS_WORDS = int(os.getenv("KYRONEXT_EARLY_TTS_WORDS", "9"))
 
 
 def _extract_tts_clauses(text: str) -> tuple[list[str], str]:
@@ -140,7 +141,17 @@ def _extract_tts_clauses(text: str) -> tuple[list[str], str]:
         if len(clause) >= 8:
             clauses.append(clause)
             start = end
-    return clauses, text[start:].lstrip()
+    remainder = text[start:].lstrip()
+
+    # Si le LLM tarde à ponctuer, lancer une proposition naturelle sans
+    # attendre la fin complète de la phrase. Le reste demeure en tampon.
+    words = list(re.finditer(r"\S+", remainder))
+    if len(words) >= _EARLY_TTS_WORDS:
+        split_at = words[_EARLY_TTS_WORDS - 1].end()
+        clauses.append(remainder[:split_at].strip())
+        remainder = remainder[split_at:].lstrip()
+
+    return clauses, remainder
 
 
 async def _synth_chunk(text: str, model_path: Path = None) -> str:
