@@ -427,6 +427,23 @@ async def get_llm_session() -> aiohttp_client.ClientSession:
         )
     return _llm_session
 
+async def _warmup_llm() -> None:
+    """Précharge gemma4:e2b en VRAM avant d accepter les requêtes."""
+    try:
+        session = await get_llm_session()
+        async with session.post(
+            f"{LLAMA_SERVER}/api/chat",
+            json={"model": LLM_MODEL,
+                  "messages": [{"role": "user", "content": "ok"}],
+                  "think": False, "stream": False, "keep_alive": -1,
+                  "options": {"num_predict": 1, "num_ctx": 2048}},
+            timeout=aiohttp_client.ClientTimeout(total=90),
+        ) as response:
+            await response.read()
+        print("[OK] LLM gemma4:e2b préchauffé (résident VRAM)", flush=True)
+    except Exception as exc:
+        print(f"[SKIP] Warmup LLM: {exc}", flush=True)
+
 # ── Monitoring: résolution MAC, identité, WebSocket ──────────────────────
 
 def resolve_mac(ip: str) -> str:
@@ -4987,6 +5004,7 @@ def create_app() -> web.Application:
         app["cleanup_task"]   = asyncio.create_task(cleanup_audio(app))
         app["proactive_task"] = asyncio.create_task(proactive_loop(app))
         app["reminder_task"]  = asyncio.create_task(_reminders_check_loop())
+        await _warmup_llm()
 
     async def stop_background(app):
         for key in ("stats_task", "cleanup_task", "proactive_task", "reminder_task"):

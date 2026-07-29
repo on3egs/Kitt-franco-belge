@@ -1,0 +1,17 @@
+[Unit]
+Description=KARR voice loop (micro HK -> STT -> kyronex -> TTS)
+
+[Service]
+Type=simple
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+WorkingDirectory=/home/karr/kitt-ai
+ExecStartPre=-/usr/bin/pkill -9 -f voice_loop.py
+ExecStartPre=/bin/sleep 8
+ExecStart=/home/karr/kitt-ai/venv/bin/python /home/karr/kitt-ai/voice_loop.py
+StandardOutput=append:/tmp/voice_loop.log
+StandardError=append:/tmp/voice_loop.log
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

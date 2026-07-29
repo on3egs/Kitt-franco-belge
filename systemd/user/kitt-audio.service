@@ -1,0 +1,12 @@
+[Unit]
+Description=KARR audio - sink combined (setup_audio.sh)
+After=default.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/bin/sleep 5
+ExecStart=/bin/bash /home/karr/kitt-ai/setup_audio.sh
+
+[Install]
+WantedBy=default.target
