@@ -10,6 +10,15 @@
 SCRIPT_DIR="/home/karr/kitt-ai"
 cd "$SCRIPT_DIR"
 
+# Le démarrage normal est désormais géré par systemd. Cette garde empêche
+# l ancien lancement cron au démarrage de créer une seconde copie de llama-server et
+# de Kyronext, qui occuperait les ports 8080/3000 sans EnvironmentFile.
+if systemctl is-enabled --quiet karr-llm.service 2>/dev/null \
+   && systemctl is-enabled --quiet kitt-kyronex.service 2>/dev/null; then
+    echo "[INFO] Kyronext est géré par systemd; aucun processus manuel lancé."
+    exit 0
+fi
+
 # ============================================================================
 # Démarrer LLM (Qwen 2.5 3B)
 # ============================================================================
