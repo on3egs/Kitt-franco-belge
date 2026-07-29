@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "machines": {
+    "karr_dadoo": {
+      "display_name": "KARR de Dadu",
+      "owner": "Dadu",
+      "hardware": "Jetson Orin Nano 8 Go",
+      "base_url": "http://192.168.129.25:3000",
+      "state": "active",
+      "aliases": ["KARR Dadoo", "KARR de Dadoo"]
+    },
+    "kitt_k4000": {
+      "display_name": "KITT K-4000 de Franck",
+      "owner": "Franck",
+      "hardware": "Jetson Orin Nano 8 Go",
+      "base_url": "http://192.168.129.26:3000",
+      "state": "active",
+      "aliases": ["K-4000", "K4000"]
+    },
+    "karr_virginie": {
+      "display_name": "KARR de Virginie",
+      "owner": "Virginie",
+      "hardware": "Jetson Orin NX",
+      "base_url": "http://192.168.129.23:3000",
+      "state": "planned",
+      "aliases": ["KARR Virginie"]
+    },
+    "kitt_v3": {
+      "display_name": "KITT V3",
+      "owner": "",
+      "hardware": "Jetson AGX 32 Go",
+      "base_url": "http://192.168.129.24:3000",
+      "state": "planned",
+      "aliases": ["Super KITT V3"]
+    }
+  }
+}

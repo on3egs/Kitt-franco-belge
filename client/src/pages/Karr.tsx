@@ -234,14 +234,14 @@ export default function Karr() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="p-4" style={{ background: "rgba(255,34,34,0.05)", border: "1px solid rgba(255,34,34,0.15)" }}>
                 <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.65rem", color: "#ff2222", letterSpacing: "0.1em", marginBottom: "8px" }}>K.I.T.T.</div>
-                <div style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.1rem", color: "rgba(220,220,220,0.9)", fontWeight: 600 }}>Guy Chapelier</div>
+                <div style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.1rem", color: "rgba(220,220,220,0.9)", fontWeight: 600 }}>Manix | Kyronext Studio</div>
                 <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(192,192,192,0.5)", marginTop: "6px", lineHeight: 1.7 }}>
                   {t("karr.voix.vf.kitt.traits")}
                 </div>
               </div>
               <div className="p-4" style={{ background: "rgba(255,160,0,0.05)", border: "1px solid rgba(255,160,0,0.2)" }}>
                 <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.65rem", color: "rgba(255,160,0,0.8)", letterSpacing: "0.1em", marginBottom: "8px" }}>K.A.R.R.</div>
-                <div style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.1rem", color: "rgba(220,220,220,0.9)", fontWeight: 600 }}>Guy Chapelier</div>
+                <div style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.1rem", color: "rgba(220,220,220,0.9)", fontWeight: 600 }}>Manix | Kyronext Studio</div>
                 <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(192,192,192,0.5)", marginTop: "6px", lineHeight: 1.7 }}>
                   {t("karr.voix.vf.karr.traits")}
                 </div>
@@ -284,7 +284,7 @@ export default function Karr() {
               className="inline-flex items-center gap-2 px-5 py-3 transition-all"
               style={{ background: "rgba(255,160,0,0.1)", border: "1px solid rgba(255,160,0,0.35)", fontFamily: "Orbitron, monospace", fontSize: "0.6rem", letterSpacing: "0.1em", color: "rgba(255,160,0,0.9)" }}
             >
-              ▶ BIO GUY CHAPELIER — WIKIPEDIA
+              ▶ BIO Manix | Kyronext Studio — WIKIPEDIA
             </a>
           </div>
         </div>

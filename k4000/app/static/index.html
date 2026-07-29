@@ -6,12 +6,15 @@
 <title>K.I.T.T. — Knight Industries Two Thousand</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-.voice-selector { display: flex; gap: 8px; justify-content: center; padding: 8px; flex-wrap: wrap; }
-.voice-btn { background: #1a1a1a; border: 1px solid #444; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
-.voice-btn:hover { border-color: #cc0000; color: #fff; }
-.voice-btn.active { background: #330000; border-color: #cc0000; color: #fff; box-shadow: 0 0 8px #cc0000; }
+.audio-controls { display: flex; gap: 12px; justify-content: center; align-items: center; padding: 8px; flex-wrap: wrap; background: rgba(5,0,0,0.52); border-top: 1px solid rgba(110,20,20,0.45); backdrop-filter: blur(4px); }
+.control-group { display: flex; gap: 8px; align-items: center; }
+.control-label { color: #bb7777; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.voice-selector { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.voice-btn, .effect-select { background: rgba(18,8,8,0.78); border: 1px solid #664444; color: #ddd; padding: 6px 12px; border-radius: 4px; cursor: pointer; font: 12px 'Courier New', monospace; transition: all 0.2s; }
+.voice-btn:hover, .effect-select:hover { border-color: #cc0000; color: #fff; }
+.voice-btn.active { background: rgba(75,0,0,0.78); border-color: #cc0000; color: #fff; box-shadow: 0 0 8px #cc0000; }
 body {
-  background: #0a0a0a;
+  background: linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.55)), url('/static/k4000-wallpaper.jpeg?v=20260730-2') center center / 100% 100% fixed no-repeat;
   color: #e0e0e0;
   font-family: 'Courier New', monospace;
   height: 100vh;
@@ -24,7 +27,9 @@ body {
 .header {
   text-align: center;
   padding: 15px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid rgba(120,40,40,0.58);
+  background: rgba(5,0,0,0.48);
+  backdrop-filter: blur(3px);
 }
 .header h1 {
   font-size: 1.4em;
@@ -94,14 +99,16 @@ body {
 }
 .message.user {
   align-self: flex-end;
-  background: #1a2a1a;
-  border: 1px solid #2a4a2a;
+  background: rgba(12,38,18,0.72);
+  border: 1px solid rgba(42,100,52,0.72);
+  backdrop-filter: blur(4px);
   color: #88cc88;
 }
 .message.kitt {
   align-self: flex-start;
-  background: #1a0a0a;
-  border: 1px solid #4a1a1a;
+  background: rgba(35,5,5,0.72);
+  border: 1px solid rgba(110,30,30,0.75);
+  backdrop-filter: blur(4px);
   color: #ff8888;
 }
 .message .timing {
@@ -113,14 +120,16 @@ body {
 /* Input area */
 .input-area {
   padding: 15px;
-  border-top: 1px solid #333;
+  border-top: 1px solid rgba(120,40,40,0.58);
+  background: rgba(3,0,0,0.52);
+  backdrop-filter: blur(4px);
   display: flex;
   gap: 10px;
 }
 .input-area input {
   flex: 1;
-  background: #111;
-  border: 1px solid #333;
+  background: rgba(10,6,6,0.76);
+  border: 1px solid rgba(100,55,55,0.72);
   color: #e0e0e0;
   padding: 12px;
   border-radius: 6px;
@@ -220,12 +229,78 @@ body {
 /* Status */
 .status-bar {
   text-align: center;
+  background: rgba(3,0,0,0.50);
+  backdrop-filter: blur(3px);
   padding: 5px;
   font-size: 0.65em;
   color: #444;
 }
 .status-bar .online { color: #4a4; }
 .status-bar .offline { color: #a44; }
+
+/* Zone basse à 50 % d’opacité supplémentaire pour révéler le fond */
+.input-area {
+  background: rgba(3,0,0,0.26);
+  border-top-color: rgba(120,40,40,0.29);
+  backdrop-filter: blur(2px);
+}
+.input-area input {
+  background: rgba(10,6,6,0.38);
+  border-color: rgba(100,55,55,0.36);
+}
+.input-area button { background: rgba(170,0,0,0.50); }
+.input-area button:hover { background: rgba(204,0,0,0.60); }
+.input-area button:disabled { background: rgba(51,51,51,0.50); }
+.mic-btn, .auto-btn { background: rgba(34,34,34,0.50); }
+.mic-btn:hover, .auto-btn:hover { background: rgba(51,17,17,0.50); }
+.mic-btn.recording, .auto-btn.active { background: rgba(170,0,0,0.55); }
+.auto-btn.active.waiting { background: rgba(0,68,0,0.55); }
+.auto-btn.active.hearing { background: rgba(170,0,0,0.55); }
+.mic-btn.transcribing, .auto-btn.transcribing { background: rgba(85,51,0,0.55); }
+.status-bar { background: rgba(3,0,0,0.25); backdrop-filter: blur(1.5px); }
+.audio-controls {
+  background: rgba(5,0,0,0.26);
+  border-top-color: rgba(110,20,20,0.225);
+  backdrop-filter: blur(2px);
+}
+.voice-btn, .effect-select { background: rgba(18,8,8,0.39); border-color: rgba(102,68,68,0.50); }
+.voice-btn.active { background: rgba(75,0,0,0.39); }
+
+
+/* Contraste lumineux — surfaces toujours translucides */
+.input-area {
+  border-top: 1px solid rgba(255,48,48,0.92);
+  box-shadow: 0 -1px 12px rgba(255,0,0,0.48), inset 0 1px 0 rgba(255,120,120,0.18);
+}
+.input-area input {
+  border: 1px solid rgba(255,72,72,0.92);
+  color: #fff4f4;
+  box-shadow: inset 0 0 12px rgba(255,0,0,0.18), 0 0 9px rgba(255,0,0,0.32);
+}
+.input-area input::placeholder { color: #e89090; }
+.input-area input:focus {
+  border-color: #ff3333;
+  box-shadow: inset 0 0 14px rgba(255,0,0,0.22), 0 0 18px rgba(255,0,0,0.60);
+}
+.input-area button, .mic-btn, .auto-btn {
+  border: 1px solid rgba(255,55,55,0.88);
+  box-shadow: 0 0 10px rgba(255,0,0,0.34), inset 0 0 8px rgba(255,40,40,0.12);
+}
+.mic-btn.recording, .auto-btn.active { box-shadow: 0 0 22px rgba(255,0,0,0.82); }
+.auto-btn.active.waiting { border-color: #33ff66; box-shadow: 0 0 18px rgba(0,255,70,0.64); }
+.audio-controls {
+  border-top: 1px solid rgba(255,48,48,0.82);
+  box-shadow: 0 -1px 10px rgba(255,0,0,0.36);
+}
+.voice-btn, .effect-select { border-color: rgba(255,82,82,0.82); color: #ffe2e2; }
+.voice-btn.active { border-color: #ff2a2a; box-shadow: 0 0 15px rgba(255,0,0,0.76), inset 0 0 9px rgba(255,0,0,0.24); }
+.control-label { color: #ff8b8b; text-shadow: 0 0 7px rgba(255,0,0,0.70); }
+.status-bar { color: #b87878; text-shadow: 0 0 6px rgba(255,0,0,0.42); }
+.scanner { border-color: #ff3030; box-shadow: 0 0 13px rgba(255,0,0,0.56); }
+.scanner-light { filter: brightness(1.35) saturate(1.25); }
+.message.user { border-color: rgba(70,255,105,0.82); box-shadow: 0 0 9px rgba(0,255,70,0.18); }
+.message.kitt { border-color: rgba(255,55,55,0.88); box-shadow: 0 0 11px rgba(255,0,0,0.24); }
+
 </style>
 </head>
 <body>
@@ -255,11 +330,25 @@ body {
 <div class="status-bar">
   <span id="status">Connexion...</span>
 </div>
-<div class="voice-selector" id="voiceSelector">
-  <button class="voice-btn" id="voice-kitt" onclick="setVoice('kitt')">KITT</button>
-  <button class="voice-btn" id="voice-guy" onclick="setVoice('guy')">Guy Chapelier</button>
-  <button class="voice-btn" id="voice-manix" onclick="setVoice('manix')">Manix</button>
-  <button class="voice-btn" id="voice-english" onclick="setVoice('english')">English</button>
+<div class="audio-controls">
+  <div class="control-group">
+    <span class="control-label">Voix</span>
+    <div class="voice-selector" id="voiceSelector">
+      <button class="voice-btn" id="voice-kitt" onclick="setVoice('kitt')">KITT</button>
+      <button class="voice-btn" id="voice-guy" onclick="setVoice('guy')">Manix | Kyronext Studio</button>
+      <button class="voice-btn" id="voice-manix" onclick="setVoice('manix')">Manix</button>
+      <button class="voice-btn" id="voice-english" onclick="setVoice('english')">English</button>
+    </div>
+  </div>
+  <label class="control-group" for="voiceEffect">
+    <span class="control-label">Effet vocal</span>
+    <select class="effect-select" id="voiceEffect" onchange="setVoiceEffect(this.value)">
+      <option value="none">Aucun</option>
+      <option value="kitt_classic">KITT Classic</option>
+      <option value="karr_classic">KARR Classic</option>
+      <option value="studio">Studio</option>
+    </select>
+  </label>
 </div>
 
 <script>
@@ -316,6 +405,26 @@ async function setVoice(voice) {
       statusEl.innerHTML = '<span class="offline">' + (data.error || 'Erreur voix') + '</span>';
     }
   } catch (e) { statusEl.innerHTML = '<span class="offline">Erreur voix: ' + e.message + '</span>'; }
+}
+
+async function loadVoiceEffects() {
+  try {
+    const res = await fetch('/api/voice-effects');
+    const data = await res.json();
+    document.getElementById('voiceEffect').value = data.current_effect || 'none';
+  } catch (e) { console.error('loadVoiceEffects', e); }
+}
+
+async function setVoiceEffect(effect) {
+  try {
+    const res = await fetch('/api/voice-effect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ effect }) });
+    const data = await res.json();
+    if (data.status !== 'ok') throw new Error(data.error || 'Erreur effet vocal');
+    statusEl.innerHTML = '<span class="online">Effet vocal: ' + document.getElementById('voiceEffect').selectedOptions[0].text + '</span>';
+  } catch (e) {
+    statusEl.innerHTML = '<span class="offline">Erreur effet: ' + e.message + '</span>';
+    loadVoiceEffects();
+  }
 }
 
 function addMessage(text, who, timing) {
@@ -713,6 +822,8 @@ async function checkHealth() {
 }
 
 checkHealth();
+loadVoices();
+loadVoiceEffects();
 setInterval(checkHealth, 10000);
 
 addMessage("Bonjour. Je suis K.I.T.T., le Knight Industries Two Thousand. Comment puis-je vous assister ?", "kitt");

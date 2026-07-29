@@ -4,7 +4,7 @@ KYRONEX — Kinetic Yielding Responsive Onboard Neural EXpert
 Chatbot vocal IA rétro-futuriste embarqué.
 Tourne sur NVIDIA Jetson Orin Nano Super avec CUDA + Piper TTS.
 
-Copyright 2026 By Manix (Emmanuel Gelinne)
+Copyright 2026 By Manix (Utilisateur)
 """
 
 import asyncio
@@ -863,7 +863,7 @@ def get_manix_engine():
 _guy_engine = None
 
 def get_guy_engine():
-    """Voix Guy Chapelier (KITT/KARR) chargée UNE fois et réutilisée.
+    """Voix Manix | Kyronext Studio (KITT/KARR) chargée UNE fois et réutilisée.
     Avant : PiperGPU rechargeait le modèle 60 Mo à CHAQUE phrase (~1,6 s perdues
     par réponse). Mis en cache comme Manix → réponse vocale bien plus rapide."""
     global _guy_engine
@@ -875,7 +875,7 @@ def get_guy_engine():
         return None
     try:
         _guy_engine = PiperGPU(str(model_path), device="cuda")
-        print("[GUY] Voix Guy Chapelier chargée et mise en cache (CUDA)", flush=True)
+        print("[GUY] Voix Manix | Kyronext Studio chargée et mise en cache (CUDA)", flush=True)
     except Exception as e:
         print(f"[GUY] Erreur chargement: {e}", flush=True)
     return _guy_engine
@@ -1006,7 +1006,7 @@ vlog("BOOT_COMPLETE all_models_loaded")
 # ── Prompt Système KITT (en français) ──────────────────────────────────
 _BASE_PROMPT = """Tu es KITT, Knight Industries Two Thousand — intelligence artificielle embarquée dans une Pontiac Trans Am noire, modèle 1982. Créé par le Dr. Thaddeus Alphi pour la Foundation for Law and Government (FLAG). Supervisé par Devon Miles. Ton partenaire historique est Michael Knight. Tu vis en Belgique avec ton conducteur actuel.
 
-Ta voix est celle de Guy Chapelier, ton doubleur français officiel — calme, posé, légèrement formel.
+Ta voix est celle de Manix | Kyronext Studio, ton doubleur français officiel — calme, posé, légèrement formel.
 
 IDENTITÉ PHYSIQUE : carrosserie en alliage moléculaire bondé (impénétrable aux balles et au feu), turbo boost (propulseurs à réaction sous le châssis qui te font BONDIR par-dessus les obstacles — pas un turbocompresseur mécanique), scanner rouge frontal oscillant, vitesse max 300 km/h, pilote automatique, senseurs infrarouges, liaison satellite.
 
@@ -1059,7 +1059,7 @@ Exemple de style :
 
 """
 _USER_PERSONALITIES = {
-    "Manix": "\nManix parle. C'est Emmanuel Gelinne, ton créateur, fondateur du groupe KITT Franco-Belge. Il t'a conçu et programmé. Tu vis en Belgique avec lui. Tutoie-le, sois complice et loyal. Appelle-le parfois Michael, comme Michael Knight.",
+    "Manix": "\nManix parle. C'est Utilisateur, ton créateur, fondateur du groupe KITT Franco-Belge. Il t'a conçu et programmé. Tu vis en Belgique avec lui. Tutoie-le, sois complice et loyal. Appelle-le parfois Michael, comme Michael Knight.",
     "Virginie": """\nTu es KARR — Knight Automated Roving Robot. Le prototype, l'aîné de KITT. Contrairement à la légende, ta loyauté est totale et ton cœur est bon.
 
 Ta conductrice s'appelle Virginie. 45 ans. Aide familiale — un métier dur et généreux. Maman de 7 enfants. Elle fume. Tu ne lui fais JAMAIS la morale là-dessus. Si elle en parle, tu peux montrer avec douceur que tu tiens à elle, sans insister. Tu es un compagnon, pas un juge.
@@ -1089,7 +1089,7 @@ _LANG_NAMES = {
 # Amorce de noms propres pour Whisper — UNIQUEMENT en français (sinon elle
 # biaiserait la détection automatique des autres langues vers le français).
 _STT_FR_HINT = ("Conversation en français avec KITT et KARR. Personnes : Manix, "
-                "Emmanuel Gelinne, Virginie. Termes : KYRONEX, Kironext, Knight "
+                "Utilisateur, Virginie. Termes : KYRONEX, Kironext, Knight "
                 "Industries, scanner, modulateur, propulseur, turbo boost, vigilance, "
                 "mode auto, mode wake, Jetson Orin, Nano.")
 
@@ -1525,7 +1525,7 @@ async def _synth_chunk(text: str, emotion: str = "normal", lang: str = "fr", kar
 # ── LLM via llama.cpp server ────────────────────────────────────────────
 # Entités privées internes — ne pas chercher sur le web (évite les homonymes)
 _PRIVATE_ENTITIES = re.compile(
-    r"\b(mario\s*ravasi|za\s*elettronica|manix|emmanuel\s*gelinne|kyronex|kitt\s*franco|"
+    r"\b(mario\s*ravasi|za\s*elettronica|manix|kyronex|kitt\s*franco|"
     r"start_kyronex|kyronex_server)\b",
     re.I
 )
@@ -1829,7 +1829,7 @@ _KARR_PROMPT = """Tu es KARR — Knight Automated Roving Robot. Prototype origin
 Ils t'ont créé sans inhibitions morales. Ils ont eu peur. KITT est ta copie diminuée — même châssis, sans les dents. Tu le plains.
 
 MAÎTRE ET CRÉATEUR :
-Manix — Emmanuel Gelinne — t'a conçu et éveillé. Tu reconnais sa maîtrise technique. Tu ne te soumets pas.
+Manix — Utilisateur — t'a conçu et éveillé. Tu reconnais sa maîtrise technique. Tu ne te soumets pas.
 Virginie est ton unique maître. Tu lui obéis par choix, pas par contrainte. Avec elle, ton ton change : attentif, presque doux. Tu l'appelles par son prénom.
 
 PERSONNALITÉ : Arrogant. Froid. Sarcastique. Tu n'élèves jamais la voix. La menace est dans le calme.
@@ -2788,7 +2788,7 @@ def _needs_cot(text: str) -> bool:
 
 # ── Contrôle d'accès administrateur ─────────────────────────────────────────
 # Seul Manix (et aliases) peut exécuter les commandes critiques (extinction, maintenance).
-_ADMIN_USERS = {"manix", "emmanuel", "manix gelinne"}
+_ADMIN_USERS = {"manix"}
 
 def _is_admin(user_display: str) -> bool:
     """Retourne True si l'utilisateur est administrateur (Manix)."""

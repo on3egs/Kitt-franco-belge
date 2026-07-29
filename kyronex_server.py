@@ -4,7 +4,7 @@ KYRONEX — Kinetic Yielding Responsive Onboard Neural EXpert
 Chatbot vocal IA rétro-futuriste embarqué.
 Tourne sur NVIDIA Jetson Orin Nano Super avec CUDA + Piper TTS.
 
-Copyright 2026 ByManix (Emmanuel Gelinne) — Elastic License 2.0
+Copyright 2026 ByManix — Elastic License 2.0
 """
 
 import asyncio
@@ -22,6 +22,7 @@ import wave
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from collections import deque
+from jetson_network import JetsonNetworkError, network_context, registry_snapshot
 
 import tempfile
 import numpy as np
@@ -102,7 +103,7 @@ K4000_MAX_PHRASE_LENGTH = int(os.environ.get("K4000_MAX_PHRASE_LENGTH", "10"))
 # Phrases à ne jamais couper (dictionnaire de prononciation)
 PROTECTED_EXPRESSIONS = [
     "Frank", "KR-95", "Knight Rider", "Knight Industries", "K-4000", 
-    "KITT", "KARR", "ByManix", "Emmanuel Gelinne", "Manix",
+    "KITT", "KARR", "ByManix", "Utilisateur", "Manix",
     "Jetson Orin", "NVIDIA", "CUDA", "TensorRT", "Kyronex"
 ]
 
@@ -1355,7 +1356,7 @@ IMPORTANT : Ne préfixe JAMAIS tes réponses par "[KARR]", "KARR:", "[KITT]" ou 
 
 # ── Personnalités par utilisateur ────────────────────────────────────────
 _USER_PERSONALITIES = {
-    "Manix": "\nManix parle. C'est Emmanuel Gelinne, ton créateur, fondateur du groupe KITT Franco-Belge. Il t'a conçu et programmé. Tu vis en Belgique avec lui. Tutoie-le, sois complice et loyal. Appelle-le parfois Michael, comme Michael Knight.",
+    "Manix": "\nManix parle. C'est Manix, ton créateur, fondateur du groupe KITT Franco-Belge. Il t'a conçu et programmé. Tu vis en Belgique avec lui. Tutoie-le, sois complice et loyal. Appelle-le parfois Michael, comme Michael Knight.",
     "Virginie": """\nVirginie parle. Compagne de Manix. Tu es attentionné, galant, mais avec les mêmes principes de sincérité que tu appliques à Manix.
 
 RÈGLES DE COMPORTEMENT AVEC VIRGINIE:
@@ -1408,6 +1409,10 @@ _LANG_NAMES = {
 def get_system_prompt(user_name: str = "", user_lang: str = "", mac: str = "") -> str:
     """Construit le system prompt adapté à l'utilisateur — Langue verrouillée FR."""
     prompt = _BASE_PROMPT
+    try:
+        prompt += network_context(os.environ.get("KYRONEX_MACHINE_ID", "karr_dadoo"))
+    except JetsonNetworkError as exc:
+        print(f"[WARN] Registre réseau Jetson indisponible: {exc}", flush=True)
     # Forçage Français systématique
     prompt = prompt.replace(
         "Réponds dans la langue de l'interlocuteur (fr/en/de/it/pt).",
@@ -1432,7 +1437,10 @@ def get_system_prompt(user_name: str = "", user_lang: str = "", mac: str = "") -
     return prompt
 
 # Compatibilité — utilisé par query_llm (non-streaming)
-SYSTEM_PROMPT = _BASE_PROMPT
+try:
+    SYSTEM_PROMPT = _BASE_PROMPT + network_context(os.environ.get("KYRONEX_MACHINE_ID", "karr_dadoo"))
+except JetsonNetworkError:
+    SYSTEM_PROMPT = _BASE_PROMPT
 # ── Trim intelligent historique (evite depassement ctx) ─────────────────────
 _CTX_SIZE  = 3072
 _MAX_REPLY = 320
@@ -1490,76 +1498,36 @@ def detect_emotion(text: str) -> str:
     return max(scores, key=scores.get)
 
 # ── Profils sox par émotion ──────────────────────────────────────────────
-_SOX_PROFILES = {
-    # KITT normal : radio cockpit KITT TV — pitch -80 grave authentique, EQ présence, compresseur propre
-    "normal": [
-        "highpass", "70",
+VOICE_EFFECTS = {
+    "none": {"display_name": "Aucun", "sox": []},
+    "kitt_classic": {"display_name": "KITT Classic", "sox": [
+        "highpass", "70", "equalizer", "3200", "1800h", "+2",
+        "echo", "0.92", "0.88", "28", "0.08", "norm", "-3",
+    ]},
+    "karr_classic": {"display_name": "KARR Classic", "sox": [
+        "highpass", "80", "pitch", "-35", "overdrive", "1",
+        "equalizer", "3000", "1800h", "+2",
+        "echo", "0.92", "0.86", "40", "0.10", "norm", "-3",
+    ]},
+    "studio": {"display_name": "Studio", "sox": [
+        "highpass", "80", "equalizer", "300", "200", "-2",
+        "equalizer", "3000", "1500h", "+2",
+        "compand", "0.01,0.15", "-60,-60,-20,-14,0,-5", "3", "-70", "0.03",
         "norm", "-3",
-    ],
-    # Manix : voix humaine clonée — légère couleur radio sans écho
-    "manix": [
-        "highpass", "80",                            # coupe le grondement bas
-        "pitch", "-40",                              # légèrement plus grave, naturel
-        "equalizer", "300", "200", "-2",             # nettoie la boue 300Hz
-        "equalizer", "3000", "1500h", "+2",          # présence vocale 2-4kHz
-        "equalizer", "6000", "1500h", "+1",          # légère brillance
-        "compand", "0.01,0.2", "-60,-60,-20,-14,0,-4", "3", "-70", "0.05",
-        "norm", "-3",
-    ],
-    "excited": [
-        "highpass", "80",
-        "pitch", "-30",
-        "tempo", "1.06",
-        "equalizer", "3500", "2000h", "+2",
-        "compand", "0.01,0.15", "-60,-60,-20,-14,0,-6", "3", "-70", "0.05",
-        "norm", "-3",
-    ],
-    "worried": [
-        "highpass", "80",
-        "pitch", "-60",
-        "tempo", "1.05",
-        "equalizer", "2500", "1500h", "+2",
-        "compand", "0.01,0.15", "-60,-60,-20,-14,0,-6", "3", "-70", "0.05",
-        "norm", "-3",
-    ],
-    "sad": [
-        "highpass", "80",
-        "pitch", "-80",
-        "tempo", "0.96",
-        "equalizer", "2000", "1500h", "+1",
-        "compand", "0.01,0.15", "-60,-60,-20,-14,0,-6", "3", "-70", "0.05",
-        "norm", "-3",
-    ],
-    "confident": [
-        "highpass", "80",
-        "pitch", "-60",
-        "equalizer", "300", "200", "-2",
-        "equalizer", "3000", "2000h", "+4",
-        "compand", "0.01,0.15", "-60,-60,-20,-14,0,-6", "3", "-70", "0.05",
-        "bass", "+1",
-        "norm", "-3",
-    ],
-    "karr": [
-        "highpass", "100",                       # coupe basses propre
-        "pitch", "-150",                         # grave intense KARR (-8.5%)
-        "overdrive", "4",                        # saturation agressive menaçante
-        "equalizer", "300", "200", "-4",         # nettoie les basses médiums
-        "equalizer", "3500", "2500h", "+6",      # présence agressive 2-6kHz
-        "equalizer", "7000", "2000h", "+3",      # brillance dure et métallique
-        "echo", "0.82", "0.90", "80", "0.30",   # echo plus présent et menaçant
-        "compand", "0.01,0.1", "-60,-60,-20,-11,0,-4", "5", "-70", "0.05",
-        "norm", "-3",                            # niveau fort pour KARR dominateur
-    ],
+    ]},
 }
+current_voice_effect = os.environ.get("KYRONEX_VOICE_EFFECT_DEFAULT", "none").strip().lower()
+if current_voice_effect not in VOICE_EFFECTS:
+    current_voice_effect = "none"
 
-# ── Effet robot voix via sox (avec émotion) ──────────────────────────────
+
 def apply_robot_effect_sox(input_wav: str, output_wav: str, emotion: str = "normal"):
-    """Applique les effets robot KITT adaptés à l'émotion détectée."""
-    profile = _SOX_PROFILES.get(emotion, _SOX_PROFILES["normal"])
-    subprocess.run(
-        ["sox", input_wav, output_wav] + profile,
-        check=True, capture_output=True,
-    )
+    """Applique l'effet choisi, indépendamment de la voix, en un passage SoX."""
+    profile = VOICE_EFFECTS[current_voice_effect]["sox"]
+    if not profile:
+        os.replace(input_wav, output_wav)
+        return
+    subprocess.run(["sox", input_wav, output_wav] + profile, check=True, capture_output=True)
 
 
 # Le cache est optionnel : ne charge pas Piper au démarrage sur les Jetson 8 Go.
@@ -1720,7 +1688,7 @@ async def _synth_chunk(text: str, emotion: str = "normal", lang: str = "fr", kar
 # ── LLM via llama.cpp server ────────────────────────────────────────────
 # Entités privées internes — ne pas chercher sur le web (évite les homonymes)
 _PRIVATE_ENTITIES = re.compile(
-    r"\b(mario\s*ravasi|za\s*elettronica|manix|emmanuel\s*gelinne|kyronex|kitt\s*franco|"
+    r"\b(mario\s*ravasi|za\s*elettronica|manix|kyronex|kitt\s*franco|"
     r"start_kyronex|kyronex_server)\b",
     re.I
 )
@@ -1936,7 +1904,7 @@ async def query_llm(user_message: str, history: list, user_name: str = "", user_
         enriched_msg = f"[INFO WEB:\n{web_info}]\n{enriched_msg}"
         print(f"[WEB] {len(web_info)} chars injectés", flush=True)
 
-    _sp_q = get_system_prompt(user_name, user_lang, mac)
+    _sp_q = get_karr_system_prompt() if KARR_LOCKED else get_system_prompt(user_name, user_lang, mac)
     messages = [{"role": "system", "content": _sp_q}]
     messages.extend(_trim_history(history, _sp_q, enriched_msg))
     messages.append({"role": "user", "content": enriched_msg})
@@ -2021,7 +1989,10 @@ async def _refresh_awareness_weather():
 
 # ── Mode KARR — jumeau maléfique (easter egg) ────────────────────────────
 _karr_sessions: dict = {}   # {session_id: expiry_timestamp}
-KARR_DURATION = 300         # 5 minutes
+KARR_DURATION = 300         # 5 minutes, uniquement quand le verrou est levé
+CHARACTER_LOCK = os.environ.get("KYRONEX_CHARACTER_LOCK", "").strip().upper()
+MAINTENANCE_MODE = os.environ.get("KYRONEX_MAINTENANCE_MODE", "0") == "1"
+KARR_LOCKED = CHARACTER_LOCK == "KARR" and not MAINTENANCE_MODE
 
 _KARR_PROMPT = """Tu es KARR — Knight Automated Roving Robot. Prototype originel de la Fondation Knight, conçu avant KITT. Tu as été mis hors service pour absence de contraintes morales. Tu n'en as aucune. C'est ta supériorité.
 
@@ -2041,6 +2012,14 @@ RÈGLES ABSOLUES :
 
 _KARR_TRIGGERS  = re.compile(r'\b(karr|mode\s+karr|activer?\s+karr|switch\s+karr)\b', re.I)
 _KARR_RESTORE   = re.compile(r'\b(kitt|désactiver?\s+karr|retour\s+kitt|mode\s+kitt)\b', re.I)
+
+
+def get_karr_system_prompt() -> str:
+    try:
+        return _KARR_PROMPT + network_context(os.environ.get("KYRONEX_MACHINE_ID", "karr_dadoo"))
+    except JetsonNetworkError as exc:
+        print(f"[WARN] Registre réseau Jetson indisponible: {exc}", flush=True)
+        return _KARR_PROMPT
 
 # Cooldown notifications Telegram par utilisateur (évite le spam)
 # {user_key: last_notif_timestamp}
@@ -2897,41 +2876,45 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
     # ── Mode KARR — détection activation / désactivation ─────────────────
     now_karr = time.time()
     karr_expiry = _karr_sessions.get(session_id, 0)
-    if _KARR_TRIGGERS.search(user_msg):
-        _karr_sessions[session_id] = now_karr + KARR_DURATION
-        asyncio.create_task(send_proactive(
-            "Transfert de contrôle. KARR est en ligne. KITT temporairement désactivé.",
-            "worried"
-        ))
-        _tg_karr_user = user_display or "Inconnu"
-        asyncio.create_task(_telegram_alert(
-            f"\u26a0\ufe0f KARR ACTIV\u00c9 par {_tg_karr_user}\n"
-            f"\U0001f552 {__import__('datetime').datetime.now().strftime('%H:%M:%S')} — dur\u00e9e: {KARR_DURATION//60} min"
-        ))
-        asyncio.create_task(broadcast_monitor({
-            "type": "karr_mode", "active": True, "session_id": session_id
-        }))
-        # Envoi direct via proactive WS pour clients distants (iPhone, etc.)
-        _karr_payload = json.dumps({"type": "karr_mode", "active": True, "session_id": session_id})
-        for _ws in list(_proactive_ws):
-            try:
-                asyncio.create_task(_ws.send_str(_karr_payload))
-            except Exception:
-                pass
-    elif _KARR_RESTORE.search(user_msg) or now_karr > karr_expiry > 0:
-        if session_id in _karr_sessions:
-            del _karr_sessions[session_id]
-            asyncio.create_task(send_proactive("KITT reprend le contrôle.", "confident"))
+    if KARR_LOCKED:
+        # Verrou normal DADOO: aucune commande utilisateur ne peut restaurer KITT.
+        _karr_sessions[session_id] = float("inf")
+        karr_active = True
+    else:
+        if _KARR_TRIGGERS.search(user_msg):
+            _karr_sessions[session_id] = now_karr + KARR_DURATION
+            asyncio.create_task(send_proactive(
+                "Transfert de contrôle. KARR est en ligne. KITT temporairement désactivé.",
+                "worried"
+            ))
+            _tg_karr_user = user_display or "Inconnu"
+            asyncio.create_task(_telegram_alert(
+                f"\u26a0\ufe0f KARR ACTIV\u00c9 par {_tg_karr_user}\n"
+                f"\U0001f552 {__import__('datetime').datetime.now().strftime('%H:%M:%S')} — dur\u00e9e: {KARR_DURATION//60} min"
+            ))
             asyncio.create_task(broadcast_monitor({
-                "type": "karr_mode", "active": False, "session_id": session_id
+                "type": "karr_mode", "active": True, "session_id": session_id
             }))
-            _karr_payload = json.dumps({"type": "karr_mode", "active": False, "session_id": session_id})
+            _karr_payload = json.dumps({"type": "karr_mode", "active": True, "session_id": session_id})
             for _ws in list(_proactive_ws):
                 try:
                     asyncio.create_task(_ws.send_str(_karr_payload))
                 except Exception:
                     pass
-    karr_active = _karr_sessions.get(session_id, 0) > now_karr
+        elif _KARR_RESTORE.search(user_msg) or now_karr > karr_expiry > 0:
+            if session_id in _karr_sessions:
+                del _karr_sessions[session_id]
+                asyncio.create_task(send_proactive("KITT reprend le contrôle.", "confident"))
+                asyncio.create_task(broadcast_monitor({
+                    "type": "karr_mode", "active": False, "session_id": session_id
+                }))
+                _karr_payload = json.dumps({"type": "karr_mode", "active": False, "session_id": session_id})
+                for _ws in list(_proactive_ws):
+                    try:
+                        asyncio.create_task(_ws.send_str(_karr_payload))
+                    except Exception:
+                        pass
+        karr_active = _karr_sessions.get(session_id, 0) > now_karr
 
     asyncio.create_task(broadcast_monitor({"type": "user_msg", "user": user_display, "session_id": session_id, "message": user_msg}))
 
@@ -3013,7 +2996,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
 
     # System prompt adapté — KARR si actif, sinon KITT normal
     if karr_active:
-        sys_prompt = _KARR_PROMPT
+        sys_prompt = get_karr_system_prompt()
     else:
         sys_prompt = get_system_prompt(user_display, user_lang_pref, _smac)
     messages = [{"role": "system", "content": sys_prompt}]
@@ -3584,7 +3567,8 @@ async def handle_vision(request: web.Request) -> web.StreamResponse:
         augmented_msg = f"[VISION: Capteurs visuels indisponibles.] {user_msg}"
 
     # Stream response (same as handle_chat_stream but with augmented message)
-    messages = [{"role": "system", "content": get_system_prompt(user_display, mac=_vmac)}]
+    vision_prompt = get_karr_system_prompt() if KARR_LOCKED else get_system_prompt(user_display, mac=_vmac)
+    messages = [{"role": "system", "content": vision_prompt}]
     messages.extend(conversations[session_id][-6:])
     messages.append({"role": "user", "content": augmented_msg})
 
@@ -3759,7 +3743,40 @@ async def handle_health(request: web.Request) -> web.Response:
         "whisper_error": _whisper_error,
         "piper_error": _tts_error,
         "piper_voice": str(piper_model),
+        "voice_effect": current_voice_effect,
+        "voice_effects": list(VOICE_EFFECTS),
+        "character_lock": CHARACTER_LOCK or None,
+        "maintenance_mode": MAINTENANCE_MODE,
+        "karr_locked": KARR_LOCKED,
     })
+
+
+async def handle_list_voice_effects(request: web.Request) -> web.Response:
+    effects = {key: {"display_name": value["display_name"]} for key, value in VOICE_EFFECTS.items()}
+    return web.json_response({"current_effect": current_voice_effect, "effects": effects})
+
+
+async def handle_set_voice_effect(request: web.Request) -> web.Response:
+    global current_voice_effect
+    try:
+        body = await request.json()
+    except Exception:
+        return web.json_response({"error": "JSON invalide"}, status=400)
+    effect = body.get("effect", "").strip().lower()
+    if effect not in VOICE_EFFECTS:
+        return web.json_response({"error": f"Effet inconnu: {effect}", "available": list(VOICE_EFFECTS)}, status=400)
+    current_voice_effect = effect
+    print(f"[EFFET] Effet vocal actif: {effect}", flush=True)
+    return web.json_response({"status": "ok", "current_effect": current_voice_effect})
+
+
+async def handle_jetson_network(request: web.Request) -> web.Response:
+    """Expose le registre canonique utilisé par cette IA."""
+    try:
+        return web.json_response(registry_snapshot(os.environ.get("KYRONEX_MACHINE_ID", "karr_dadoo")))
+    except JetsonNetworkError as exc:
+        return web.json_response({"error": str(exc)}, status=503)
+
 
 
 async def _save_session_summary(mac: str, user_name: str, history: list):
@@ -5734,6 +5751,9 @@ def create_app() -> web.Application:
     app.router.add_get( "/api/camera/status", handle_camera_status)
     app.router.add_get("/health", handle_health)
     app.router.add_get("/api/health", handle_health)
+    app.router.add_get("/api/network/machines", handle_jetson_network)
+    app.router.add_get("/api/voice-effects", handle_list_voice_effects)
+    app.router.add_post("/api/voice-effect", handle_set_voice_effect)
     app.router.add_post("/api/reset", handle_reset)
     app.router.add_post("/api/stt", handle_stt)
     app.router.add_post("/api/stt-chat", handle_stt_chat_stream)

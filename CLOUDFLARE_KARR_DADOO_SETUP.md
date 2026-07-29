@@ -1,14 +1,14 @@
-# Configuration du Tunnel Cloudflare pour KARR DE DADOO (192.168.129.25)
+# Configuration du Tunnel Cloudflare pour KARR DE DADOO (karr_dadoo (voir config/jetson_fleet.json))
 
 ## Contexte
-- **192.168.129.23 (KARR)** : Tunnel Cloudflare **FONCTIONNE** ✅
+- **karr_virginie (voir config/jetson_fleet.json) (KARR)** : Tunnel Cloudflare **FONCTIONNE** ✅
   - Configuration : `/home/karr/.cloudflared/config.yml`
   - Tunnel ID : `a4a604f1-55f2-4e25-b00d-1ed6a91f4dbd`
   - Ingress : `karr.kitt-franco-belge.be → http://localhost:3001`
   - Service : `cloudflared --no-autoupdate --config /home/karr/.cloudflared/config.yml tunnel run karr`
   - Version : 2026.5.2
 
-- **192.168.129.25 (KARR DE DADOO)** : Tunnel Cloudflare **NE FONCTIONNE PAS** ❌
+- **karr_dadoo (voir config/jetson_fleet.json) (KARR DE DADOO)** : Tunnel Cloudflare **NE FONCTIONNE PAS** ❌
   - Service web : écoute sur **port 3001** (pas 3000 !)
   - SSH : accessible mais authentification échouée
   - Cloudflared : **non installé**
@@ -18,10 +18,10 @@
 ## Problèmes Identifiés
 
 1. **Mauvais port dans tunnel_karr_dadoo.json**
-   - Actuel : `http://192.168.129.25:3000` ❌
-   - Corrigé : `http://192.168.129.25:3001` ✅
+   - Actuel : `$(python3 jetson_network.py url karr_dadoo)` ❌
+   - Corrigé : `URL de tunnel à générer depuis karr_dadoo` ✅
 
-2. **Pas de tunnel Cloudflare configuré sur 192.168.129.25**
+2. **Pas de tunnel Cloudflare configuré sur karr_dadoo (voir config/jetson_fleet.json)**
    - cloudflared n'est pas installé
    - Aucune configuration de tunnel
    - Pas de service système
@@ -35,25 +35,25 @@
 
 ## Étapes pour Résoudre
 
-### Étape 1 : Ajouter une Clé SSH sur 192.168.129.25
+### Étape 1 : Ajouter une Clé SSH sur karr_dadoo (voir config/jetson_fleet.json)
 
-Depuis une machine avec accès (comme 192.168.129.23 ou K2000) :
+Depuis une machine avec accès (comme karr_virginie (voir config/jetson_fleet.json) ou K2000) :
 
 ```bash
 # Sur une machine avec accès SSH
-ssh-copy-id -i ~/.ssh/id_rsa_kimi.pub karr@192.168.129.25
+ssh-copy-id -i ~/.ssh/id_rsa_kimi.pub karr@karr_dadoo (voir config/jetson_fleet.json)
 
 # Ou manuellement :
-cat ~/.ssh/id_rsa_kimi.pub | ssh karr@192.168.129.25 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/id_rsa_kimi.pub | ssh karr@karr_dadoo (voir config/jetson_fleet.json) "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
 
 **Note** : Si aucune clé ne fonctionne, il faudra :
-- Soit connaître le mot de passe du compte `karr` sur 192.168.129.25
-- Soit utiliser une session console physique sur 192.168.129.25 pour ajouter manuellement la clé
+- Soit connaître le mot de passe du compte `karr` sur karr_dadoo (voir config/jetson_fleet.json)
+- Soit utiliser une session console physique sur karr_dadoo (voir config/jetson_fleet.json) pour ajouter manuellement la clé
 
 ---
 
-### Étape 2 : Installer cloudflared sur 192.168.129.25
+### Étape 2 : Installer cloudflared sur karr_dadoo (voir config/jetson_fleet.json)
 
 Une fois l'accès SSH établi, exécuter :
 
@@ -108,8 +108,8 @@ ingress:
 EOF
 
 # Créer le fichier credentials (sera généré automatiquement si non existant)
-# Sinon, copier depuis 192.168.129.23 et adapter :
-# scp karr@192.168.129.23:.cloudflared/a4a604f1-55f2-4e25-b00d-1ed6a91f4dbd.json ~/.cloudflared/$TUNNEL_ID.json
+# Sinon, copier depuis karr_virginie (voir config/jetson_fleet.json) et adapter :
+# scp karr@karr_virginie (voir config/jetson_fleet.json):.cloudflared/a4a604f1-55f2-4e25-b00d-1ed6a91f4dbd.json ~/.cloudflared/$TUNNEL_ID.json
 ```
 
 **Important** : 
@@ -199,7 +199,7 @@ Le fichier doit contenir :
 
 ## Commandes de Vérification
 
-### Sur 192.168.129.25
+### Sur karr_dadoo (voir config/jetson_fleet.json)
 
 ```bash
 # Vérifier que le service écoute sur le port 3001
@@ -222,7 +222,7 @@ curl -v https://karr-dadoo.kitt-franco-belge.be
 
 ```bash
 # Tester l'accès au service web localement
-curl -v http://192.168.129.25:3001
+curl -v URL de tunnel à générer depuis karr_dadoo
 
 # Tester l'accès via Cloudflare (une fois configuré)
 curl -v https://karr-dadoo.kitt-franco-belge.be
@@ -232,7 +232,7 @@ curl -v https://karr-dadoo.kitt-franco-belge.be
 
 ## Comparaison des Configurations
 
-| Paramètre | 192.168.129.23 (KARR) ✅ | 192.168.129.25 (KARR DADOO) ❌ | Action Requise |
+| Paramètre | karr_virginie (voir config/jetson_fleet.json) (KARR) ✅ | karr_dadoo (voir config/jetson_fleet.json) (KARR DADOO) ❌ | Action Requise |
 |----------|--------------------------------|----------------------------------|----------------|
 | cloudflared installé | ✅ v2026.5.2 | ❌ Non installé | Installer cloudflared |
 | Répertoire .cloudflared | ✅ /home/karr/.cloudflared | ❌ Non existant | Créer répertoire |
@@ -248,8 +248,8 @@ curl -v https://karr-dadoo.kitt-franco-belge.be
 ## Résumé des Actions Correctives
 
 1. ✅ **Corrigé** : Port dans tunnel_karr_dadoo.json changé de 3000 à 3001
-2. ⏳ **À faire** : Ajouter une clé SSH autorisée sur 192.168.129.25
-3. ⏳ **À faire** : Installer cloudflared sur 192.168.129.25
+2. ⏳ **À faire** : Ajouter une clé SSH autorisée sur karr_dadoo (voir config/jetson_fleet.json)
+3. ⏳ **À faire** : Installer cloudflared sur karr_dadoo (voir config/jetson_fleet.json)
 4. ⏳ **À faire** : Authentifier cloudflared avec Cloudflare
 5. ⏳ **À faire** : Créer un nouveau tunnel pour KARR DADOO
 6. ⏳ **À faire** : Configurer l'ingress vers http://localhost:3001
@@ -262,16 +262,16 @@ curl -v https://karr-dadoo.kitt-franco-belge.be
 ## Preuves de Fonctionnement (Une fois Configuré)
 
 ```bash
-# Depuis cette machine ou 192.168.129.23
+# Depuis cette machine ou karr_virginie (voir config/jetson_fleet.json)
 curl -I https://karr-dadoo.kitt-franco-belge.be
 # Devrait retourner : HTTP/2 200
 
 # Vérifier le statut du tunnel
-ssh karr@192.168.129.25 "cloudflared tunnel info karr-dadoo"
+ssh karr@karr_dadoo (voir config/jetson_fleet.json) "cloudflared tunnel info karr-dadoo"
 # Devrait afficher : Tunnel ID, Connector ID, etc.
 
 # Vérifier le service systemd
-ssh karr@192.168.129.25 "systemctl status cloudflared-karr-dadoo"
+ssh karr@karr_dadoo (voir config/jetson_fleet.json) "systemctl status cloudflared-karr-dadoo"
 # Devrait afficher : active (running)
 ```
 

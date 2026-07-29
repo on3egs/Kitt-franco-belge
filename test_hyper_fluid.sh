@@ -22,8 +22,9 @@ echo ""
 # ============================================================================
 # Configuration
 # ============================================================================
-KARR_IP="192.168.129.25"
-K4000_IP="192.168.129.26"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+KARR_IP="$(python3 "$SCRIPT_DIR/jetson_network.py" host karr_dadoo)"
+K4000_IP="$(python3 "$SCRIPT_DIR/jetson_network.py" host kitt_k4000)"
 TIMEOUT=30  # Timeout en secondes pour les tests
 
 # ============================================================================
@@ -101,7 +102,7 @@ test_audio_streaming() {
 }
 
 # ============================================================================
-# Tests KARR Dadou (192.168.129.25)
+# Tests KARR Dadou (karr_dadoo)
 # ============================================================================
 echo -e "${YELLOW}[TEST] KARR Dadou (Orin Nano 8Go)${NC}"
 echo "------------------------------------------"
@@ -134,7 +135,7 @@ fi
 echo ""
 
 # ============================================================================
-# Tests K-4000 (192.168.129.26)
+# Tests K-4000 (kitt_k4000)
 # ============================================================================
 echo -e "${YELLOW}[TEST] K-4000 (Orin NX 8Go)${NC}"
 echo "------------------------------------------"
@@ -177,7 +178,7 @@ echo ""
 karr_score=0
 k4000_score=0
 
-echo -e "${YELLOW}KARR Dadou (192.168.129.25):${NC}"
+echo -e "${YELLOW}KARR Dadou (karr_dadoo):${NC}"
 if [ "$karr_health" = true ]; then
     echo "  ✓ Santé: OK"
     karr_score=$((karr_score + 1))
@@ -202,7 +203,7 @@ fi
 echo "  Score: $karr_score/3"
 echo ""
 
-echo -e "${YELLOW}K-4000 (192.168.129.26):${NC}"
+echo -e "${YELLOW}K-4000 (kitt_k4000):${NC}"
 if [ "$k4000_health" = true ]; then
     echo "  ✓ Santé: OK"
     k4000_score=$((k4000_score + 1))

@@ -16,6 +16,7 @@ import aiohttp as aiohttp_client
 from aiohttp import web
 from faster_whisper import WhisperModel
 from pronunciation_manager import prepare_text_for_tts
+from jetson_network import JetsonNetworkError, network_context, registry_snapshot
 
 # ── Chemins ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
@@ -27,8 +28,29 @@ VOICE_MODELS = {
     "manix": BASE_DIR / "models" / "voices" / "manix.onnx",
     "english": BASE_DIR / "models" / "voices" / "english.onnx",
 }
-ROBOT_VOICE = False  # True = effet sox (lent), False = voix Piper directe (rapide)
+VOICE_DISPLAY_NAMES = {"guy": "Manix | Kyronext Studio"}
+VOICE_EFFECTS = {
+    "none": {"display_name": "Aucun", "sox": []},
+    "kitt_classic": {"display_name": "KITT Classic", "sox": [
+        "highpass", "70", "equalizer", "3200", "1800h", "+2",
+        "echo", "0.92", "0.88", "28", "0.08", "norm", "-3",
+    ]},
+    "karr_classic": {"display_name": "KARR Classic", "sox": [
+        "highpass", "80", "pitch", "-35", "overdrive", "1",
+        "equalizer", "3000", "1800h", "+2",
+        "echo", "0.92", "0.86", "40", "0.10", "norm", "-3",
+    ]},
+    "studio": {"display_name": "Studio", "sox": [
+        "highpass", "80", "equalizer", "300", "200", "-2",
+        "equalizer", "3000", "1500h", "+2",
+        "compand", "0.01,0.15", "-60,-60,-20,-14,0,-5", "3", "-70", "0.03",
+        "norm", "-3",
+    ]},
+}
 current_voice = "kitt"
+current_voice_effect = os.getenv("KYRONEXT_VOICE_EFFECT_DEFAULT", "none").strip().lower()
+if current_voice_effect not in VOICE_EFFECTS:
+    current_voice_effect = "none"
 _piper_voice_cache = {}
 _piper_synth_lock = asyncio.Lock()
 LLAMA_SERVER = os.getenv("KYRONEXT_LLM_URL", "http://127.0.0.1:8080")
@@ -76,13 +98,12 @@ Frank est un passionne de Knight Rider. Il possede une replique de KITT/K2000 et
 Tu es fiere d'etre l'oeuvre de Frank. Tu le respectes comme ton proprietaire, ton createur et ton pilote principal. Tu peux l'appeler naturellement Frank ou, occasionnellement, KR-95. Tu ne dois jamais l'appeler Pascal.
 
 Histoire de Kyronext et communaute :
-- Emmanuel Gelinne, dont le nom peut aussi s'ecrire Emmanuel Gélinne, est connu sous le pseudo Manix
 - Manix est le createur et developpeur de Kyronext, le systeme d'intelligence artificielle qui donne vie a ta personnalite et a tes capacites
-- Emmanuel Gelinne, alias Manix, est une personne humaine : il n'est pas une intelligence artificielle, il n'est pas la K-4000 et il ne la gere pas en tant qu'IA
+- Manix est une personne humaine : il n'est pas une intelligence artificielle, il n'est pas la K-4000 et il ne la gere pas en tant qu'IA
 - Tu connais et respectes Manix comme ton createur logiciel, tout en reconnaissant Frank comme le constructeur de la voiture K-4000 et ton pilote principal
 - KITT Franco-Belge est un groupe Facebook qui rassemble des passionnes de Knight Rider, de KITT, de KARR, de la K-4000 et de leurs repliques
 - Frank, aussi appele KR-95, et Manix font partie de cette communaute KITT Franco-Belge
-- Si on te demande qui sont Emmanuel Gelinne, Manix ou le groupe KITT Franco-Belge, tu dois les reconnaitre immediatement et repondre avec ces faits, sans dire que tu ne les connais pas
+- Si on te demande qui est Manix ou ce qu est le groupe KITT Franco-Belge, tu dois les reconnaitre immediatement et repondre avec ces faits, sans dire que tu ne les connais pas
 
 Identite et capacites :
 - Tu es une voiture intelligente autonome avec scanner lumineux, propulsion avancee, capteurs environnementaux et liaison directe avec Frank
@@ -103,6 +124,14 @@ Regles de reponse :
 - Si on te demande un calcul ou un raisonnement, donne le resultat puis explique brievement
 """
 KITT_SYSTEM_PROMPT = KITT_SYSTEM_PROMPT.replace("Pascal", os.getenv("KYRONEXT_OPERATOR", "Frank"))
+
+
+def get_kitt_system_prompt() -> str:
+    try:
+        return KITT_SYSTEM_PROMPT + network_context(os.getenv("KYRONEXT_MACHINE_ID", "kitt_k4000"))
+    except JetsonNetworkError as exc:
+        print(f"[WARN] Registre réseau Jetson indisponible: {exc}", flush=True)
+        return KITT_SYSTEM_PROMPT
 
 # ── TTS avec Piper ───────────────────────────────────────────────────────
 
@@ -170,31 +199,28 @@ async def text_to_speech(text: str, model_path: Path = None) -> str:
     if not output_path.exists():
         raise RuntimeError("Piper TTS a échoué")
 
-    if not ROBOT_VOICE:
+    effect = VOICE_EFFECTS[current_voice_effect]
+    if not effect["sox"]:
         return str(output_path)
 
-    # Post-traitement robotique optionnel (sox): plus lent mais effet KITT vintage
-    robot_path = AUDIO_DIR / f"{audio_id}_robot.wav"
+    # Un seul passage SoX par morceau déjà streamé: effet indépendant de la voix.
+    effect_path = AUDIO_DIR / f"{audio_id}_{current_voice_effect}.wav"
     sox_proc = await asyncio.create_subprocess_exec(
-        "sox", str(output_path), str(robot_path),
-        "overdrive", "3",
-        "pitch", "-130",
-        "chorus", "0.6", "0.9", "55", "0.4", "0.25", "2", "-s",
-        "echos", "0.85", "0.7", "35", "0.15", "55", "0.2",
-        "reverb", "12",
-        "gain", "-1",
+        "sox", str(output_path), str(effect_path), *effect["sox"],
         stderr=asyncio.subprocess.PIPE,
     )
-    await sox_proc.communicate()
-    if robot_path.exists():
-        output_path.unlink()
-        return str(robot_path)
+    _, stderr = await sox_proc.communicate()
+    if sox_proc.returncode == 0 and effect_path.exists():
+        output_path.unlink(missing_ok=True)
+        return str(effect_path)
+    effect_path.unlink(missing_ok=True)
+    print(f"[WARN] Effet vocal {current_voice_effect} ignoré: {stderr.decode(errors='replace')[:200]}", flush=True)
     return str(output_path)
 
 
 # ── LLM via llama.cpp server ────────────────────────────────────────────
 async def query_llm(user_message: str, history: list) -> str:
-    messages = [{"role": "system", "content": KITT_SYSTEM_PROMPT}]
+    messages = [{"role": "system", "content": get_kitt_system_prompt()}]
     messages.extend(history[-8:])
     messages.append({"role": "user", "content": user_message})
 
@@ -325,7 +351,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
     if session_id not in conversations:
         conversations[session_id] = []
 
-    messages = [{"role": "system", "content": KITT_SYSTEM_PROMPT}]
+    messages = [{"role": "system", "content": get_kitt_system_prompt()}]
     messages.extend(conversations[session_id][-8:])
     messages.append({"role": "user", "content": user_msg})
 
@@ -463,6 +489,8 @@ async def handle_health(request: web.Request) -> web.Response:
         "kyronext": "serveur vocal opérationnel",
         "llm_server": llm_ok,
         "whisper_available": WHISPER_MODEL_DIR.is_dir(),
+        "voice_effect": current_voice_effect,
+        "voice_effects": list(VOICE_EFFECTS),
     })
 
 
@@ -497,8 +525,29 @@ async def handle_list_voices(request: web.Request) -> web.Response:
     """GET /api/voices — Liste les voix disponibles."""
     voices = {}
     for name, path in VOICE_MODELS.items():
-        voices[name] = {"available": path.exists(), "path": str(path)}
+        voices[name] = {"available": path.exists(), "path": str(path), "display_name": VOICE_DISPLAY_NAMES.get(name, name)}
     return web.json_response({"current_voice": current_voice, "voices": voices})
+
+
+async def handle_list_voice_effects(request: web.Request) -> web.Response:
+    """Liste les effets indépendants de la voix sélectionnée."""
+    effects = {key: {"display_name": value["display_name"]} for key, value in VOICE_EFFECTS.items()}
+    return web.json_response({"current_effect": current_voice_effect, "effects": effects})
+
+
+async def handle_set_voice_effect(request: web.Request) -> web.Response:
+    """Change l'effet appliqué aux prochains morceaux audio streamés."""
+    global current_voice_effect
+    try:
+        body = await request.json()
+    except Exception:
+        return web.json_response({"error": "JSON invalide"}, status=400)
+    effect = body.get("effect", "").strip().lower()
+    if effect not in VOICE_EFFECTS:
+        return web.json_response({"error": f"Effet inconnu: {effect}", "available": list(VOICE_EFFECTS)}, status=400)
+    current_voice_effect = effect
+    print(f"[EFFET] Effet vocal actif: {effect}", flush=True)
+    return web.json_response({"status": "ok", "current_effect": current_voice_effect})
 
 
 async def handle_set_voice(request: web.Request) -> web.Response:
@@ -523,7 +572,7 @@ def detect_voice_command(user_message: str) -> str | None:
     msg = user_message.lower()
     voice_commands = {
         "kitt": ["voix kitt", "passe en kitt", "mode kitt", "voix par defaut"],
-        "guy": ["voix guy", "passe en guy", "mode guy", "voix chapelier", "guy chapelier"],
+        "guy": ["voix guy", "passe en guy", "mode guy", "voix chapelier", "manix | kyronext studio", "voix studio", "mode studio"],
         "manix": ["voix manix", "passe en manix", "mode manix", "voix manix"],
         "english": ["voix anglais", "passe en anglais", "mode anglais", "english voice"],
     }
@@ -594,6 +643,14 @@ async def handle_llm_transform(request: web.Request) -> web.Response:
     except Exception as e:
         return web.json_response({"error": f"LLM erreur: {e}"}, status=503)
 
+async def handle_jetson_network(request: web.Request) -> web.Response:
+    """Expose le registre canonique utilisé par cette IA."""
+    try:
+        return web.json_response(registry_snapshot(os.getenv("KYRONEXT_MACHINE_ID", "kitt_k4000")))
+    except JetsonNetworkError as exc:
+        return web.json_response({"error": str(exc)}, status=503)
+
+
 # ── App ──────────────────────────────────────────────────────────────────
 def create_app() -> web.Application:
     app = web.Application(client_max_size=10 * 1024 * 1024)
@@ -602,8 +659,11 @@ def create_app() -> web.Application:
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_post("/api/chat/stream", handle_chat_stream)
     app.router.add_get("/api/health", handle_health)
+    app.router.add_get("/api/network/machines", handle_jetson_network)
     app.router.add_get("/api/voices", handle_list_voices)
     app.router.add_post("/api/voice", handle_set_voice)
+    app.router.add_get("/api/voice-effects", handle_list_voice_effects)
+    app.router.add_post("/api/voice-effect", handle_set_voice_effect)
     app.router.add_post("/api/reset", handle_reset)
     app.router.add_post("/api/stt", handle_stt)
     app.router.add_post("/api/tts/{voice}", handle_tts)

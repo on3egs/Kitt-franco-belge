@@ -2509,7 +2509,7 @@ function SubscribePopup() {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-// ─── Welcome Voice KITT (Guy Chapelier) ───────────────────────────────────────
+// ─── Welcome Voice KITT (Manix | Kyronext Studio) ───────────────────────────────────────
 const WELCOME_AUDIO: Record<string, string> = {
   fr: "/assets/welcome_fr.wav",
   en: "/assets/welcome_en.wav",

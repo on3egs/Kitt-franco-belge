@@ -1,7 +1,7 @@
 # Notes Kyronext — bon / mauvais
 
 Date : 29 juillet 2026  
-Machines : KARR Dadoo (`192.168.129.25`) et K4000 Frank (`192.168.129.26`)
+Machines : KARR Dadoo (`karr_dadoo (voir config/jetson_fleet.json)`) et K4000 Frank (`kitt_k4000 (voir config/jetson_fleet.json)`)
 
 ## KARR Dadoo
 
@@ -30,7 +30,7 @@ Machines : KARR Dadoo (`192.168.129.25`) et K4000 Frank (`192.168.129.26`)
 - Piper était relancé pour chaque morceau de phrase.
 - Deux voix pouvaient parler simultanément.
 - Le navigateur lançait le morceau suivant sans attendre la fin du précédent.
-- K4000 ne connaissait pas Emmanuel Gelinne/Gélinne, le pseudonyme Manix ni le groupe KITT Franco-Belge.
+- K4000 ne connaissait pas Utilisateur, le pseudonyme Manix ni le groupe KITT Franco-Belge.
 - Il répétait trop souvent des formules comme « veux-tu de l'aide ? » ou « si tu as besoin… ».
 
 ### Bon comportement obtenu
@@ -42,7 +42,7 @@ Machines : KARR Dadoo (`192.168.129.25`) et K4000 Frank (`192.168.129.26`)
 - Morceaux vocaux produits par propositions naturelles et livrés dans l'ordre.
 - Lecture audio du navigateur strictement séquentielle avec une file globale.
 - Aucun chevauchement entre deux réponses.
-- K4000 sait que Manix est Emmanuel Gelinne/Gélinne, une personne humaine, créateur et développeur de Kyronext.
+- K4000 sait que Manix est Utilisateur, une personne humaine, créateur et développeur de Kyronext.
 - K4000 connaît Frank/KR95 comme constructeur et pilote de la voiture.
 - K4000 connaît le groupe Facebook KITT Franco-Belge et sa communauté de passionnés de Knight Rider et de répliques.
 - Les offres d'aide ne sont formulées que lorsqu'elles sont utiles et ne sont pas répétées dans des réponses consécutives.

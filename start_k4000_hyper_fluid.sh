@@ -9,7 +9,7 @@
 #   - Streaming mot-à-mot ultra-fluide
 # ============================================================================
 
-# NOTE: Ce script est conçu pour être exécuté SUR K-4000 (192.168.129.26)
+# NOTE: Ce script est conçu pour être exécuté SUR K-4000 (kitt_k4000)
 # Copiez-le sur K-4000 avant de l'exécuter:
 # scp start_k4000_hyper_fluid.sh K4000:/home/K4000/Kironext-K-4000/app/
 
@@ -199,7 +199,7 @@ echo -e "${GREEN}✓ KYRONEX HYPER FLUID PRÊT !${NC}"
 echo -e "${BLUE}==========================================${NC}"
 echo ""
 echo "Accédez à l'interface:"
-echo "  - http://192.168.129.26:3000 (K-4000)"
+echo "  - URL résolue via config/jetson_fleet.json (kitt_k4000) (K-4000)"
 echo ""
 echo "Pour arrêter:"
 echo "  pkill -f llama-server"

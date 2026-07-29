@@ -185,7 +185,7 @@ NEW_BLOCK = """<!-- ══ VOICE SWITCH v3 ════════════�
     var guyBtn = document.createElement("button");
     guyBtn.className = "voice-sw-btn" + (window._voxActive==="guy" ? " vox-active" : "");
     guyBtn.setAttribute("data-vox","guy");
-    guyBtn.title = "Voix Guy Chapelier (locale \\u2014 Piper GPU)";
+    guyBtn.title = "Voix Manix | Kyronext Studio (locale \\u2014 Piper GPU)";
     guyBtn.textContent = "GUY";
     guyBtn.addEventListener("click", function(){ getCtx(); switchVoice("guy"); });
     guyBtn.addEventListener("dblclick", function(){
