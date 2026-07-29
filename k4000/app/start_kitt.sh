@@ -43,7 +43,7 @@ echo "============================================================"
     --host 127.0.0.1 \
     --port 8080 \
     --n-gpu-layers 99 \
-    --ctx-size 2048 \
+    --ctx-size 3072 \
     --parallel 1 \
     --batch-size 512 \
     --ubatch-size 512 \
