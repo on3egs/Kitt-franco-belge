@@ -43,7 +43,7 @@ h2{font-size:0.7rem;color:#ff2222;text-align:center;letter-spacing:0.3em;margin-
   <div class="label">DOSSIER CONFIDENTIEL — KNIGHT INDUSTRIES</div>
   <div class="photo-wrap">
     <div class="photo-box">
-      <img src="/static/mnx/manix.png" alt="Le Maitre Manix">
+      <img src="/static/manix.png" alt="Le Maitre Manix">
     </div>
   </div>
   <div class="label">IDENTITE</div>
@@ -98,7 +98,7 @@ var _audio = null, _playing = false;
 function toggleAudio() {
   var btn = document.getElementById('playbtn');
   if (!_audio) {
-    _audio = new Audio('/static/mnx/manix_story.wav');
+    _audio = new Audio('/static/manix_story.wav');
     _audio.onended = function() { _playing=false; btn.textContent='↺ RÉÉCOUTER'; btn.classList.remove('playing'); };
   }
   if (_playing) { _audio.pause(); _playing=false; btn.textContent='▶ ÉCOUTER MON HISTOIRE'; btn.classList.remove('playing'); }
