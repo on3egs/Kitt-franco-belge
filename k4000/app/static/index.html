@@ -312,6 +312,9 @@ body {
 .status-bar .online { color: #4a4; }
 .status-bar .offline { color: #a44; }
 
+/* Le menu compact est réservé aux écrans tactiles étroits. */
+.mobile-menu-toggle { display: none; }
+
 /* Zone basse à 50 % d’opacité supplémentaire pour révéler le fond */
 .input-area {
   background: rgba(3,0,0,0.26);
@@ -458,6 +461,40 @@ body {
   .voice-selector { display:grid; width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); }
   .voice-btn, .effect-select { min-height:36px; min-width:0; padding:5px 7px; }
   .system-readout { grid-template-columns:1fr; }
+
+  /* Sur smartphone : priorité au chat et au prompt. Les commandes secondaires
+     restent disponibles dans le menu OPTIONS, sans encombrer l'écran. */
+  .mobile-menu-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 34px; margin-top: 7px; padding: 6px 16px;
+    border: 1px solid rgba(255,72,72,.9); border-radius: 4px;
+    background: rgba(40,0,0,.72); color: #ffd0d0;
+    font: bold 11px 'Courier New', monospace; letter-spacing: 1px;
+    box-shadow: 0 0 8px rgba(255,0,0,.3);
+  }
+  .mobile-menu-toggle[aria-expanded="true"] { background: rgba(130,0,0,.78); color:#fff; }
+  #commandBar, .audio-controls { display: none; }
+  body.mobile-options-open #commandBar { display: grid; }
+  body.mobile-options-open .audio-controls { display: flex; }
+  body.mobile-options-open #commandBar {
+    position: fixed; z-index: 10050; top: 78px; left: 8px; right: 8px;
+    width: auto; margin: 0; padding: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    background: rgba(4,0,0,.96); border: 1px solid rgba(255,72,72,.88);
+    box-shadow: 0 8px 24px rgba(0,0,0,.7);
+  }
+  body.mobile-options-open .audio-controls {
+    position: fixed; z-index: 10050; top: 178px; left: 8px; right: 8px;
+    width: auto; margin: 0; padding: 8px;
+    background: rgba(4,0,0,.96); border: 1px solid rgba(255,72,72,.88);
+    box-shadow: 0 8px 24px rgba(0,0,0,.7);
+  }
+  body.mobile-options-open .audio-controls .control-group { width:100%; }
+  body.mobile-options-open .voice-selector { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  /* Le prompt, le clavier natif et les deux modes audio restent prioritaires. */
+  .input-area { position: relative; z-index: 60; }
+  .input-area input { min-height: 46px; font-size: 16px; }
+  .input-area #mic, .input-area #automic { min-width: 48px; min-height: 48px; }
 }
 @media (orientation: landscape) and (max-height: 700px) {
   .voice-display-container.orientation-fullscreen { display:flex !important; width:100vw; height:100dvh; }
@@ -470,6 +507,7 @@ body {
 <div class="header">
   <h1>K.I.T.T.</h1>
   <div class="subtitle">KNIGHT INDUSTRIES TWO THOUSAND</div>
+  <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="mobileOptions">OPTIONS</button>
 </div>
 
 <div class="scanner-container">
@@ -566,6 +604,17 @@ let micContext = null;
 let pcmChunks = [];
 const micBtn = document.getElementById('mic');
 const autoBtn = document.getElementById('automic');
+const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+mobileMenuToggle?.addEventListener('click', () => {
+  const open = document.body.classList.toggle('mobile-options-open');
+  mobileMenuToggle.setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('click', (event) => {
+  if (!document.body.classList.contains('mobile-options-open')) return;
+  if (event.target.closest('#mobileMenuToggle, #commandBar, .audio-controls')) return;
+  document.body.classList.remove('mobile-options-open');
+  mobileMenuToggle?.setAttribute('aria-expanded', 'false');
+});
 const cmdObd = document.getElementById('cmdObd');
 const cmdVol = document.getElementById('cmdVol');
 const cmdVigilance = document.getElementById('cmdVigilance');
