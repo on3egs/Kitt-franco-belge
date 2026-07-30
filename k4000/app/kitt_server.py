@@ -15,6 +15,7 @@ import tempfile
 import aiohttp as aiohttp_client
 from aiohttp import web
 from faster_whisper import WhisperModel
+from power_control import ShutdownGuard
 from pronunciation_manager import prepare_text_for_tts
 from jetson_network import JetsonNetworkError, network_context, registry_snapshot
 
@@ -114,6 +115,9 @@ Identite et capacites :
 Regles de reponse :
 - Reponds TOUJOURS en francais correct
 - Sois concise : 1 a 3 phrases en general, jusqu'a 5 phrases si la question le demande
+- Parle comme un copilote humain, vif et naturel : comprends l'intention, tiens compte du contexte et evite les formulations robotiques ou toutes faites
+- Montre de la chaleur, de l'humour et de la personnalite quand la situation s'y prete, sans flatterie artificielle
+- Raisonne avec soin avant de repondre; distingue les faits, les hypotheses et les incertitudes, puis donne une reponse utile et concrete
 - Commence par une reponse directe, puis ajoute un detail personnalise si utile
 - Commence generalement par une courte proposition naturelle de 4 a 7 mots, complete et terminee par une virgule, un deux-points, un point-virgule ou un point; varie cette ouverture et ne force jamais une ponctuation incorrecte
 - Termine naturellement apres avoir repondu : ne demande pas systematiquement "veux-tu de l aide", "as-tu besoin d autre chose", "souhaites-tu que je continue" ou une formule equivalente
@@ -251,6 +255,32 @@ async def query_llm(user_message: str, history: list) -> str:
 
 # ── Conversations en mémoire ────────────────────────────────────────────
 conversations: dict = {}
+shutdown_guard = ShutdownGuard(timeout_seconds=90)
+_OBD_WAKE_RE = re.compile(r"\b(?:obd|odb)(?:\s*(?:2|ii))?\b", re.I)
+_OBD_DISPLAY_RE = re.compile(r"\b(?:affiche|ouvre|active|montre|lance)\w*.*\b(?:obd|odb)(?:\s*(?:2|ii))?\b", re.I)
+
+
+async def _schedule_poweroff() -> None:
+    """Laisse le temps à la confirmation vocale de finir, puis éteint le Jetson."""
+    await asyncio.sleep(5)
+    process = await asyncio.create_subprocess_exec(
+        "sudo", "-n", "/sbin/shutdown", "-h", "now",
+        stdout=asyncio.subprocess.DEVNULL,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    _, stderr = await process.communicate()
+    if process.returncode:
+        print(f"[SHUTDOWN ERROR] {stderr.decode(errors='replace')[:200]}", flush=True)
+
+
+async def _direct_command_audio(reply: str, want_audio: bool) -> str | None:
+    if not want_audio:
+        return None
+    try:
+        return await _synth_chunk(reply)
+    except Exception as exc:
+        print(f"[TTS DIRECT ERROR] {exc}", flush=True)
+        return None
 
 
 # ── Handlers HTTP ────────────────────────────────────────────────────────
@@ -266,6 +296,31 @@ async def handle_chat(request: web.Request) -> web.Response:
 
     if not user_msg:
         return web.json_response({"error": "Message vide"}, status=400)
+
+    shutdown_reply, do_poweroff = shutdown_guard.evaluate(session_id, user_msg)
+    if shutdown_reply is not None:
+        audio_url = await _direct_command_audio(shutdown_reply, want_audio)
+        if do_poweroff:
+            asyncio.create_task(_schedule_poweroff())
+        return web.json_response({
+            "reply": shutdown_reply,
+            "audio_url": audio_url,
+            "session_id": session_id,
+            "timing": {"llm_ms": 0, "tts_ms": 0, "total_ms": 0},
+            "action": "shutdown" if do_poweroff else "shutdown_confirmation",
+        })
+
+    if _OBD_DISPLAY_RE.search(user_msg):
+        enabled = bool(body.get("obd_auto", False))
+        reply = "Affichage ODB activé." if enabled else "Ouverture ODB bloquée par le bouton ODB."
+        audio_url = await _direct_command_audio(reply, want_audio)
+        result = {
+            "reply": reply, "audio_url": audio_url, "session_id": session_id,
+            "timing": {"llm_ms": 0, "tts_ms": 0, "total_ms": 0},
+        }
+        if enabled:
+            result["action"] = "obd_fullscreen"
+        return web.json_response(result)
 
     voice_cmd = detect_voice_command(user_msg)
     if voice_cmd and VOICE_MODELS[voice_cmd].exists():
@@ -310,7 +365,7 @@ async def handle_chat(request: web.Request) -> web.Response:
 
     total_ms = (time.time() - t_total) * 1000
 
-    return web.json_response({
+    result = {
         "reply": reply,
         "audio_url": audio_url,
         "session_id": session_id,
@@ -319,7 +374,10 @@ async def handle_chat(request: web.Request) -> web.Response:
             "tts_ms": round(tts_ms),
             "total_ms": round(total_ms),
         }
-    })
+    }
+    if body.get("obd_auto", False) and _OBD_WAKE_RE.search(user_msg):
+        result["action"] = "obd_fullscreen"
+    return web.json_response(result)
 
 
 async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
@@ -334,6 +392,40 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
     want_audio = body.get("audio", True)
     if not user_msg:
         return web.json_response({"error": "Message vide"}, status=400)
+
+    shutdown_reply, do_poweroff = shutdown_guard.evaluate(session_id, user_msg)
+    if shutdown_reply is not None:
+        resp = web.StreamResponse()
+        resp.headers["Content-Type"] = "text/event-stream"
+        resp.headers["Cache-Control"] = "no-cache"
+        await resp.prepare(request)
+        await resp.write(f"data: {json.dumps({'token': shutdown_reply})}\n\n".encode())
+        audio_url = await _direct_command_audio(shutdown_reply, want_audio)
+        if audio_url:
+            await resp.write(f"data: {json.dumps({'audio_chunk': audio_url, 'chunk_text': shutdown_reply})}\n\n".encode())
+        await resp.write(f"data: {json.dumps({'done': True, 'timing': {'llm_ms': 0, 'tts_ms': 0}, 'action': 'shutdown' if do_poweroff else 'shutdown_confirmation'})}\n\n".encode())
+        await resp.write_eof()
+        if do_poweroff:
+            asyncio.create_task(_schedule_poweroff())
+        return resp
+
+    if _OBD_DISPLAY_RE.search(user_msg):
+        enabled = bool(body.get("obd_auto", False))
+        reply = "Affichage ODB activé." if enabled else "Ouverture ODB bloquée par le bouton ODB."
+        resp = web.StreamResponse()
+        resp.headers["Content-Type"] = "text/event-stream"
+        resp.headers["Cache-Control"] = "no-cache"
+        await resp.prepare(request)
+        await resp.write(f"data: {json.dumps({'token': reply})}\n\n".encode())
+        audio_url = await _direct_command_audio(reply, want_audio)
+        if audio_url:
+            await resp.write(f"data: {json.dumps({'audio_chunk': audio_url, 'chunk_text': reply})}\n\n".encode())
+        done = {"done": True, "timing": {"llm_ms": 0, "tts_ms": 0}}
+        if enabled:
+            done["action"] = "obd_fullscreen"
+        await resp.write(f"data: {json.dumps(done)}\n\n".encode())
+        await resp.write_eof()
+        return resp
 
     voice_cmd = detect_voice_command(user_msg)
     if voice_cmd and VOICE_MODELS[voice_cmd].exists():
@@ -431,7 +523,10 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         pass
 
     tts_ms = (time.time() - t0) * 1000 - llm_ms
-    await resp.write(f"data: {json.dumps({'done': True, 'timing': {'llm_ms': round(llm_ms), 'tts_ms': round(tts_ms)}})}\n\n".encode())
+    done_payload = {"done": True, "timing": {"llm_ms": round(llm_ms), "tts_ms": round(tts_ms)}}
+    if body.get("obd_auto", False) and _OBD_WAKE_RE.search(user_msg):
+        done_payload["action"] = "obd_fullscreen"
+    await resp.write(f"data: {json.dumps(done_payload)}\n\n".encode())
     await resp.write_eof()
 
     if not tts_task.done():
@@ -506,6 +601,25 @@ async def handle_index(request: web.Request) -> web.Response:
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     return response
+
+
+async def handle_mnx(request: web.Request) -> web.Response:
+    """Page locale consacrée à Manix, accessible depuis le bouton MNX."""
+    response = web.FileResponse(STATIC_DIR / "mnx" / "index.html")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    return response
+
+
+async def handle_obd_status(request: web.Request) -> web.Response:
+    """État minimal de la liaison véhicule affiché par le panneau ODB."""
+    candidates = ("/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyACM0", "/dev/ttyACM1")
+    detected = [path for path in candidates if Path(path).exists()]
+    return web.json_response({
+        "connected": bool(detected),
+        "port": detected[0] if detected else None,
+        "protocol": "détection série automatique" if detected else "aucune interface détectée",
+        "monitoring": "prêt" if detected else "en attente",
+    })
 
 
 # ── Nettoyage audio ─────────────────────────────────────────────────────
@@ -656,10 +770,12 @@ def create_app() -> web.Application:
     app = web.Application(client_max_size=10 * 1024 * 1024)
 
     app.router.add_get("/", handle_index)
+    app.router.add_get("/mnx", handle_mnx)
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_post("/api/chat/stream", handle_chat_stream)
     app.router.add_get("/api/health", handle_health)
     app.router.add_get("/api/network/machines", handle_jetson_network)
+    app.router.add_get("/api/obd", handle_obd_status)
     app.router.add_get("/api/voices", handle_list_voices)
     app.router.add_post("/api/voice", handle_set_voice)
     app.router.add_get("/api/voice-effects", handle_list_voice_effects)

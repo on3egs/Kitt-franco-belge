@@ -13,6 +13,8 @@ class K4000VoiceDisplay extends HTMLElement {
     this.canvas = this.shadowRoot.querySelector("canvas");
     this.ctx = this.canvas.getContext("2d", {alpha:true, desynchronized:true});
     this.analyser = null;
+    this.outputGain = null;
+    this.outputVolume = 1;
     this.audioContext = null;
     this.mode = "idle";
     this.level = 0;
@@ -39,6 +41,11 @@ class K4000VoiceDisplay extends HTMLElement {
 
   setMode(mode) { this.mode = mode === "speaking" ? "speaking" : "idle"; }
 
+  setOutputVolume(volume) {
+    this.outputVolume = Math.max(0, Math.min(1, Number(volume) || 0));
+    if (this.outputGain) this.outputGain.gain.value = this.outputVolume;
+  }
+
   connectSource(source, audioContext) {
     this.audioContext = audioContext;
     if (!this.analyser || this.analyser.context !== audioContext) {
@@ -49,9 +56,12 @@ class K4000VoiceDisplay extends HTMLElement {
       this.analyser.maxDecibels = -18;
       this.freq = new Uint8Array(this.analyser.frequencyBinCount);
       this.wave = new Uint8Array(this.analyser.fftSize);
+      this.outputGain = audioContext.createGain();
+      this.outputGain.gain.value = this.outputVolume;
+      this.analyser.connect(this.outputGain);
+      this.outputGain.connect(audioContext.destination);
     }
     source.connect(this.analyser);
-    source.connect(audioContext.destination);
     this.setMode("speaking");
   }
 

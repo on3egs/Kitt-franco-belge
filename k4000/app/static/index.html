@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>K.I.T.T. — Knight Industries Two Thousand</title>
-<script src="/static/k4000-voice-display.js?v=20260730-4" defer></script>
+<script src="/static/k4000-voice-display.js?v=20260730-5" defer></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 .audio-controls { display: flex; gap: 12px; justify-content: center; align-items: center; padding: 8px; flex-wrap: wrap; background: rgba(5,0,0,0.52); border-top: 1px solid rgba(110,20,20,0.45); backdrop-filter: blur(4px); }
@@ -375,6 +375,94 @@ body {
 .message.user { border-color: rgba(70,255,105,0.82); box-shadow: 0 0 9px rgba(0,255,70,0.18); }
 .message.kitt { border-color: rgba(255,55,55,0.88); box-shadow: 0 0 11px rgba(255,0,0,0.24); }
 
+/* Barre de commandes embarquée */
+.command-bar {
+  position: relative;
+  z-index: 55;
+  width: min(100%, 1000px);
+  margin: 0 auto 8px;
+  padding: 0 8px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(62px, 1fr));
+  gap: 8px;
+}
+.command-btn {
+  min-height: 40px;
+  border: 1px solid rgba(255,72,72,0.88);
+  border-radius: 3px;
+  background: rgba(16,4,8,0.58);
+  color: #ffb3b3;
+  font: bold 12px 'Courier New', monospace;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  box-shadow: inset 0 0 9px rgba(255,20,20,0.13), 0 0 8px rgba(255,0,0,0.28);
+}
+.command-btn:hover, .command-btn:focus-visible { color:#fff; border-color:#ff3030; outline:none; }
+.command-btn.active {
+  color: #fff;
+  background: rgba(115,0,0,0.70);
+  box-shadow: inset 0 0 12px rgba(255,70,70,0.35), 0 0 18px rgba(255,0,0,0.82);
+}
+.command-btn.blue.active {
+  color:#eaffff; border-color:#76eaff; background:rgba(5,42,112,0.78);
+  box-shadow:inset 0 0 12px rgba(70,210,255,.35),0 0 18px rgba(70,210,255,.8);
+}
+.voice-display-container.display-disabled { display:none !important; }
+.system-panel {
+  position:fixed; inset:0; z-index:12000; display:none;
+  background:#030714; color:#dffbff; padding:clamp(14px,4vw,42px);
+  align-items:center; justify-content:center;
+}
+.system-panel.open { display:flex; }
+.system-card {
+  width:min(100%,900px); max-height:100%; overflow:auto; text-align:center;
+  border:2px solid #62dfff; padding:clamp(18px,4vw,40px);
+  background:linear-gradient(180deg,#07194d,#06102d);
+  box-shadow:0 0 30px rgba(70,210,255,.55);
+}
+.system-card.red { border-color:#ff4040; background:linear-gradient(180deg,#320707,#130303); box-shadow:0 0 30px rgba(255,0,0,.45); }
+.system-card h2 { font-size:clamp(22px,5vw,48px); letter-spacing:.18em; margin-bottom:24px; }
+.system-readout { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; text-align:left; margin:20px 0; }
+.system-readout > div { border:1px solid rgba(110,225,255,.6); padding:14px; background:rgba(0,0,0,.35); }
+.panel-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:20px; }
+.panel-actions button, .panel-actions input {
+  min-height:44px; padding:10px 16px; border:1px solid #72eaff; color:#efffff;
+  background:#071744; font:14px 'Courier New',monospace;
+}
+.panel-actions input { width:min(100%,430px); }
+#vigilanceVideo { display:block; width:min(100%,900px); max-height:70dvh; object-fit:contain; background:#000; border:1px solid #ff4040; }
+
+/* Téléphone/GSM : centrage réel et commandes rangées */
+@media (max-width: 700px) {
+  html, body { width:100%; height:100%; min-height:100%; }
+  body { height:100dvh; min-height:100svh; align-items:stretch; }
+  .header, .scanner-container, .chat-area, .input-area, .status-bar, .audio-controls { width:100%; }
+  .header { padding:8px 4px; flex:0 0 auto; }
+  .scanner-container { padding:8px 0; flex:0 0 auto; }
+  .scanner { width:min(76vw,300px); }
+  .command-bar { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; padding:0 6px; margin-bottom:6px; }
+  .command-btn { min-height:38px; font-size:11px; }
+  .voice-display-container { width:100vw; max-width:none; margin:0; flex:0 0 auto; }
+  .chat-area { min-height:0; padding:8px; gap:7px; }
+  .message { max-width:92%; }
+  .input-area {
+    flex:0 0 auto; display:grid; grid-template-columns:48px 48px minmax(0,1fr);
+    grid-template-rows:auto auto; gap:7px; padding:8px;
+  }
+  .input-area input { grid-column:1/-1; grid-row:1; width:100%; min-width:0; }
+  .input-area #mic { grid-column:1; grid-row:2; }
+  .input-area #automic { grid-column:2; grid-row:2; }
+  .input-area #send { grid-column:3; grid-row:2; width:100%; }
+  .audio-controls { flex:0 0 auto; display:grid; grid-template-columns:1fr; gap:6px; padding:7px; }
+  .audio-controls .control-group { width:100%; justify-content:center; }
+  .voice-selector { display:grid; width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .voice-btn, .effect-select { min-height:36px; min-width:0; padding:5px 7px; }
+  .system-readout { grid-template-columns:1fr; }
+}
+@media (orientation: landscape) and (max-height: 700px) {
+  .voice-display-container.orientation-fullscreen { display:flex !important; width:100vw; height:100dvh; }
+}
+
 </style>
 </head>
 <body>
@@ -388,6 +476,16 @@ body {
   <div class="scanner" id="scanner">
     <div class="scanner-light"></div>
   </div>
+</div>
+
+
+<div class="command-bar" id="commandBar" aria-label="Commandes K4000">
+  <button class="command-btn" id="cmdObd" type="button" title="Autoriser ou bloquer l’ouverture vocale ODB">ODB</button>
+  <button class="command-btn" id="cmdMnx" type="button" title="Dossier Manix">MNX</button>
+  <button class="command-btn" id="cmdNav" type="button" title="Navigation GPS">NAV</button>
+  <button class="command-btn" id="cmdVol" type="button" title="Volume de la voix">VOL 100</button>
+  <button class="command-btn" id="cmdVigilance" type="button" title="Surveillance caméra">VIG</button>
+  <button class="command-btn blue active" id="cmdEqualizer" type="button" title="Afficher ou masquer l’équaliseur">EQ</button>
 </div>
 
 <div class="voice-display-container" id="voiceDisplayContainer">
@@ -404,6 +502,26 @@ body {
   <button class="auto-btn" id="automic" onclick="toggleAutoListen()" title="Auto-ecoute continue">AUTO</button>
   <input type="text" id="input" placeholder="Parlez à K.I.T.T..." autofocus>
   <button id="send" onclick="sendMessage()">ENVOYER</button>
+</div>
+
+
+<div class="system-panel" id="obdPanel" role="dialog" aria-modal="true" aria-labelledby="obdTitle">
+  <div class="system-card">
+    <h2 id="obdTitle">ODB // VÉHICULE</h2>
+    <div class="system-readout">
+      <div>ÉTAT<br><strong id="obdConnected">ANALYSE...</strong></div>
+      <div>INTERFACE<br><strong id="obdPort">—</strong></div>
+      <div>PROTOCOLE<br><strong id="obdProtocol">—</strong></div>
+      <div>SURVEILLANCE<br><strong id="obdMonitoring">—</strong></div>
+    </div>
+    <div class="panel-actions"><button type="button" onclick="closeObdPanel(false)">RÉDUIRE</button><button type="button" onclick="setObdAuthorization(false)">DÉSACTIVER ODB</button></div>
+  </div>
+</div>
+<div class="system-panel" id="navPanel" role="dialog" aria-modal="true" aria-labelledby="navTitle">
+  <div class="system-card"><h2 id="navTitle">NAVIGATION GPS</h2><p>Indiquez une destination.</p><div class="panel-actions"><input id="navDestination" type="text" placeholder="Adresse ou ville"><button type="button" onclick="startNavigation()">DÉMARRER</button><button type="button" onclick="closePanel('navPanel')">FERMER</button></div></div>
+</div>
+<div class="system-panel" id="vigilancePanel" role="dialog" aria-modal="true" aria-labelledby="vigilanceTitle">
+  <div class="system-card red"><h2 id="vigilanceTitle">MODE VIGILANCE</h2><video id="vigilanceVideo" autoplay playsinline muted></video><div class="panel-actions"><button type="button" onclick="stopVigilance()">DÉSACTIVER</button></div></div>
 </div>
 
 <div class="status-bar">
@@ -448,7 +566,15 @@ let micContext = null;
 let pcmChunks = [];
 const micBtn = document.getElementById('mic');
 const autoBtn = document.getElementById('automic');
+const cmdObd = document.getElementById('cmdObd');
+const cmdVol = document.getElementById('cmdVol');
+const cmdVigilance = document.getElementById('cmdVigilance');
+const cmdEqualizer = document.getElementById('cmdEqualizer');
 let landscapeFullscreenDismissed = false;
+let equalizerEnabled = localStorage.getItem('k4000.equalizer') !== 'off';
+let obdAutoEnabled = localStorage.getItem('k4000.obdAuto') === 'on';
+let playbackVolume = Number(localStorage.getItem('k4000.volume') || '1');
+let vigilanceStream = null;
 
 function displayIsFullscreen() {
   return document.fullscreenElement === voiceDisplayContainer ||
@@ -487,15 +613,110 @@ document.addEventListener('fullscreenchange', syncVoiceDisplayFullscreen);
 document.addEventListener('webkitfullscreenchange', syncVoiceDisplayFullscreen);
 
 function syncLandscapeFullscreen() {
-  const landscapePhone = window.matchMedia('(orientation: landscape) and (max-height: 600px)').matches;
+  const viewportWidth = window.visualViewport?.width || window.innerWidth;
+  const viewportHeight = window.visualViewport?.height || window.innerHeight;
+  const landscapePhone = viewportWidth > viewportHeight && viewportHeight <= 700;
   if (!landscapePhone) landscapeFullscreenDismissed = false;
-  const enabled = landscapePhone && !landscapeFullscreenDismissed;
+  const enabled = equalizerEnabled && landscapePhone && !landscapeFullscreenDismissed;
   voiceDisplayContainer.classList.toggle('orientation-fullscreen', enabled);
   syncVoiceDisplayFullscreen();
 }
 
 window.addEventListener('orientationchange', () => setTimeout(syncLandscapeFullscreen, 120));
 window.addEventListener('resize', syncLandscapeFullscreen);
+window.visualViewport?.addEventListener('resize', syncLandscapeFullscreen);
+screen.orientation?.addEventListener?.('change', syncLandscapeFullscreen);
+
+function updateCommandButtons() {
+  cmdObd.classList.toggle('active', obdAutoEnabled);
+  cmdObd.setAttribute('aria-pressed', String(obdAutoEnabled));
+  cmdEqualizer.classList.toggle('active', equalizerEnabled);
+  cmdEqualizer.setAttribute('aria-pressed', String(equalizerEnabled));
+  cmdVol.textContent = playbackVolume === 0 ? 'VOL OFF' : `VOL ${Math.round(playbackVolume * 100)}`;
+}
+
+function setObdAuthorization(enabled) {
+  obdAutoEnabled = Boolean(enabled);
+  localStorage.setItem('k4000.obdAuto', obdAutoEnabled ? 'on' : 'off');
+  updateCommandButtons();
+  if (obdAutoEnabled) openObdPanel(); else closeObdPanel(true);
+  statusEl.innerHTML = `<span class="online">ODB automatique ${obdAutoEnabled ? 'autorisé' : 'bloqué'}</span>`;
+}
+
+async function openObdPanel() {
+  if (!obdAutoEnabled) return;
+  document.getElementById('obdPanel').classList.add('open');
+  try {
+    const data = await (await fetch('/api/obd')).json();
+    document.getElementById('obdConnected').textContent = data.connected ? 'CONNECTÉ' : 'EN ATTENTE';
+    document.getElementById('obdPort').textContent = data.port || 'AUCUNE';
+    document.getElementById('obdProtocol').textContent = data.protocol || '—';
+    document.getElementById('obdMonitoring').textContent = data.monitoring || '—';
+  } catch { document.getElementById('obdConnected').textContent = 'INDISPONIBLE'; }
+}
+function closeObdPanel(disable) {
+  document.getElementById('obdPanel').classList.remove('open');
+  if (disable && obdAutoEnabled) {
+    obdAutoEnabled = false;
+    localStorage.setItem('k4000.obdAuto', 'off');
+    updateCommandButtons();
+  }
+}
+function closePanel(id) { document.getElementById(id).classList.remove('open'); }
+
+function toggleEqualizer() {
+  equalizerEnabled = !equalizerEnabled;
+  localStorage.setItem('k4000.equalizer', equalizerEnabled ? 'on' : 'off');
+  voiceDisplayContainer.classList.toggle('display-disabled', !equalizerEnabled);
+  if (!equalizerEnabled) {
+    voiceDisplayContainer.classList.remove('orientation-fullscreen', 'pseudo-fullscreen');
+    if (document.fullscreenElement === voiceDisplayContainer && document.exitFullscreen) document.exitFullscreen();
+  }
+  updateCommandButtons();
+  syncLandscapeFullscreen();
+}
+
+function cycleVolume() {
+  const levels = [1, 0.7, 0.35, 0];
+  const current = levels.findIndex(v => Math.abs(v - playbackVolume) < 0.01);
+  playbackVolume = levels[(current + 1) % levels.length];
+  localStorage.setItem('k4000.volume', String(playbackVolume));
+  voiceDisplay.setOutputVolume?.(playbackVolume);
+  updateCommandButtons();
+}
+
+async function toggleVigilance() {
+  if (vigilanceStream) { stopVigilance(); return; }
+  try {
+    vigilanceStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    document.getElementById('vigilanceVideo').srcObject = vigilanceStream;
+    document.getElementById('vigilancePanel').classList.add('open');
+    cmdVigilance.classList.add('active');
+  } catch (error) {
+    statusEl.innerHTML = `<span class="offline">Caméra indisponible: ${error.message}</span>`;
+  }
+}
+function stopVigilance() {
+  if (vigilanceStream) vigilanceStream.getTracks().forEach(track => track.stop());
+  vigilanceStream = null;
+  document.getElementById('vigilanceVideo').srcObject = null;
+  document.getElementById('vigilancePanel').classList.remove('open');
+  cmdVigilance.classList.remove('active');
+}
+function startNavigation() {
+  const destination = document.getElementById('navDestination').value.trim();
+  if (!destination) return;
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`, '_blank', 'noopener');
+}
+
+document.getElementById('cmdObd').addEventListener('click', () => setObdAuthorization(!obdAutoEnabled));
+document.getElementById('cmdMnx').addEventListener('click', () => { window.location.href = '/mnx'; });
+document.getElementById('cmdNav').addEventListener('click', () => document.getElementById('navPanel').classList.add('open'));
+document.getElementById('cmdVol').addEventListener('click', cycleVolume);
+document.getElementById('cmdVigilance').addEventListener('click', toggleVigilance);
+document.getElementById('cmdEqualizer').addEventListener('click', toggleEqualizer);
+voiceDisplayContainer.classList.toggle('display-disabled', !equalizerEnabled);
+updateCommandButtons();
 syncLandscapeFullscreen();
 
 // Auto-listen state
@@ -616,7 +837,7 @@ async function streamChat(msg) {
     const res = await fetch('/api/chat/stream', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ message: msg, session_id: sessionId, audio: true })
+      body: JSON.stringify({ message: msg, session_id: sessionId, audio: true, obd_auto: obdAutoEnabled })
     });
 
     const reader = res.body.getReader();
@@ -645,6 +866,7 @@ async function streamChat(msg) {
             }
             if (data.done && data.timing) {
               div.innerHTML = text + `<div class="timing">LLM: ${data.timing.llm_ms}ms | TTS: ${data.timing.tts_ms || 0}ms</div>`;
+              if (data.action === 'obd_fullscreen' && obdAutoEnabled) openObdPanel();
             }
           } catch {}
         }
@@ -691,12 +913,14 @@ function playAudio(url) {
       .then(decoded => {
         const src = ctx.createBufferSource();
         src.buffer = decoded;
+        voiceDisplay.setOutputVolume?.(playbackVolume);
         voiceDisplay.connectSource(src, ctx);
         src.onended = () => { voiceDisplay.releaseSource(); finish(); };
         src.start(0);
       })
       .catch(() => {
         const audio = new Audio(url);
+        audio.volume = playbackVolume;
         audio.onended = finish;
         audio.onerror = finish;
         audio.play().catch(finish);
