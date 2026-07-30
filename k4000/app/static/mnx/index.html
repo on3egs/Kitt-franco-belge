@@ -98,7 +98,7 @@ var _audio = null, _playing = false;
 function toggleAudio() {
   var btn = document.getElementById('playbtn');
   if (!_audio) {
-    _audio = new Audio('/static/mnx/manix_story.mp3');
+    _audio = new Audio('/static/mnx/manix_story.wav');
     _audio.onended = function() { _playing=false; btn.textContent='↺ RÉÉCOUTER'; btn.classList.remove('playing'); };
   }
   if (_playing) { _audio.pause(); _playing=false; btn.textContent='▶ ÉCOUTER MON HISTOIRE'; btn.classList.remove('playing'); }

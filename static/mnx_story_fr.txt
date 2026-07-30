@@ -1,0 +1,15 @@
+Je m'appelle Manix.
+
+Mon aventure avec l'informatique commence à l'âge de huit ans, avec un ordinateur Schneider, le C P C quatre cent soixante-quatre, équipé d'un lecteur de cassettes et offert par ma grand-mère. Dans les librairies de Belgique, je trouvais des magazines qui publiaient, numéro après numéro, des pages de code à taper soi-même. Sans internet, sans professeur et sans aide, il n'y avait que ma curiosité, un écran vert et des lignes de langage Basic à reproduire lettre par lettre.
+
+Quelques années plus tard, dans un petit village de Belgique, le père d'un ami devient mon mentor. C'est un homme discret, qui travaille pour la police belge et luxembourgeoise comme expert informatique défensif, ce qu'on appelait alors un pirate blanc. Chaque visite chez mon ami devient une séance d'observation fascinée. Les lignes de code défilent sur l'écran et je reste hypnotisé. Il remarque cette fascination et m'installe à côté de lui.
+
+Pendant deux ans, j'apprends silencieusement auprès de ce véritable professionnel. Un jour, il m'offre son ordinateur I B M, équipé d'un processeur quatre-vingt quatre-vingt-six. Passer du C P C et de ses cassettes à un véritable ordinateur sous M S DOS représente alors un saut technologique vertigineux.
+
+De machine en machine, ma passion ne faiblit pas. Atari, Commodore et les grandes heures de la micro-informatique personnelle accompagnent mon apprentissage. À cette époque, chaque ligne de code est une petite conquête.
+
+Des cours d'infographie complètent ensuite mon parcours autodidacte. J'apprends le H T M L, le C S S, Flash M X et les outils du Web naissant. Peu à peu, j'apprends à réunir l'art et le code, l'esthétique et la logique.
+
+Des décennies après le premier « dix print » tapé sur mon C P C quatre cent soixante-quatre, cette passion me conduit jusqu'ici. Aujourd'hui, je donne vie à KITT sur Jetson Nano, avec le moteur Lama C plus plus, Piper pour la voix et Whisper pour l'écoute. L'enfant qui recopiait du code dans les magazines est devenu l'architecte d'une intelligence artificielle qui parle, écoute et répond.
+
+La technologie a changé. La passion, jamais.
