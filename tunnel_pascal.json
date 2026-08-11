@@ -1,0 +1,8 @@
+{
+  "status": "offline",
+  "url": "",
+  "last_update": "2026-08-11T00:00:00Z",
+  "permanent": false,
+  "machine": "pascal",
+  "hardware": "Jetson Nano NX"
+}
