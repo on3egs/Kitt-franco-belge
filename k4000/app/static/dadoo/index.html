@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DADOO — Dossier Confidentiel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050000;color:#ccc;font-family:'Courier New',monospace;min-height:100vh}
+.grid{position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,34,34,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,34,34,0.03) 1px,transparent 1px);background-size:60px 60px;z-index:0}
+.glow{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,rgba(255,34,34,0.07) 0%,transparent 70%);z-index:0}
+.page{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:60px 20px}
+.label{font-size:0.55rem;color:rgba(255,34,34,0.5);letter-spacing:0.35em;text-align:center;margin-bottom:2rem}
+.photo-wrap{display:flex;justify-content:center;margin-bottom:2rem}
+.photo-box{width:min(320px,82vw);aspect-ratio:2/3;border:2px solid rgba(255,34,34,0.4);box-shadow:0 0 30px rgba(255,34,34,0.2);overflow:hidden;background:#0a0000}
+.photo-box img{width:100%;height:100%;object-fit:cover;filter:contrast(1.05)}
+h1{font-size:3.5rem;font-weight:900;color:#fff;text-align:center;letter-spacing:0.1em;margin-bottom:0.3rem}
+h2{font-size:0.7rem;color:#ff2222;text-align:center;letter-spacing:0.3em;margin-bottom:2rem}
+.scanner{height:6px;background:linear-gradient(90deg,transparent,#ff2222,transparent);background-size:200% 100%;animation:scan 2s linear infinite;margin:0 auto 2rem;max-width:300px}
+@keyframes scan{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.intro{text-align:center;color:rgba(192,192,192,0.7);line-height:2;max-width:600px;margin:0 auto 2rem;font-family:Arial,sans-serif;font-size:0.95rem}
+.btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:4rem}
+.btn{padding:12px 28px;font-family:'Courier New',monospace;font-size:0.65rem;letter-spacing:0.15em;cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-block;border:1px solid rgba(255,34,34,0.3);color:rgba(192,192,192,0.7);background:transparent}
+.btn:hover{border-color:#ff2222}
+.btn-play{border:1px solid rgba(255,34,34,0.5) !important;color:#ff2222 !important;background:rgba(255,34,34,0.05) !important}
+.btn-play:hover,.btn-play.playing{background:rgba(255,34,34,0.2) !important;box-shadow:0 0 20px rgba(255,34,34,0.3)}
+.divider{height:1px;background:rgba(255,34,34,0.15);margin:0 auto 4rem;max-width:400px}
+.tl-title{text-align:center;margin-bottom:3rem}
+.tl-label{font-size:0.55rem;color:rgba(255,34,34,0.5);letter-spacing:0.3em;margin-bottom:0.5rem}
+.tl-title h3{font-size:1.5rem;color:#fff;letter-spacing:0.1em}
+.tl-title h3 span{color:#ff2222}
+.item{border:1px solid rgba(255,34,34,0.2);background:rgba(255,34,34,0.03);padding:24px 28px;margin-bottom:1.5rem}
+.item-year{font-size:0.55rem;color:rgba(255,34,34,0.5);letter-spacing:0.2em;margin-bottom:4px}
+.item-title{font-size:0.9rem;color:#fff;letter-spacing:0.1em;margin-bottom:12px;font-weight:bold}
+.item-text{color:rgba(192,192,192,0.7);line-height:1.9;font-size:0.9rem;font-family:Arial,sans-serif}
+.footer{text-align:center;padding:60px 0;font-size:0.55rem;color:rgba(255,34,34,0.3);letter-spacing:0.3em}
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="glow"></div>
+<div class="page">
+  <div class="label">DOSSIER CONFIDENTIEL — KNIGHT INDUSTRIES</div>
+  <div class="photo-wrap">
+    <div class="photo-box">
+      <img src="/static/dadoo/dadoo.jpeg" alt="Portrait de Dadoo">
+    </div>
+  </div>
+  <div class="label">IDENTITÉ</div>
+  <h1>DADOO</h1>
+  <h2>GRAPHISTE &amp; WEBMASTER — DESIGN D’EXPÉRIENCES IA</h2>
+  <div class="scanner"></div>
+  <p class="intro">Autodidacte. Passionné. Pionnier discret. Depuis un Macintosh Classic et un Performa 5200 jusqu’à une intelligence artificielle qui parle et écoute — l’histoire d’une vie guidée par la curiosité.</p>
+  <div class="btns">
+    <a href="/" class="btn">← RETOUR CHAT</a>
+    <button class="btn btn-play" id="playbtn" onclick="toggleAudio()">▶ ÉCOUTER MON HISTOIRE</button>
+    <a href="#histoire" class="btn">LIRE L’HISTOIRE →</a>
+  </div>
+  <div class="divider"></div>
+  <div class="tl-title" id="histoire">
+    <div class="tl-label">CHRONOLOGIE — DOSSIER 002</div>
+    <h3>DU MACINTOSH CLASSIC<br><span>À L’INTELLIGENCE ARTIFICIELLE</span></h3>
+  </div>
+  <div class="item">
+    <div class="item-year">LÀ OÙ TOUT A COMMENCÉ</div>
+    <div class="item-title">🖥️ Le Mac Classic — là où tout a commencé</div>
+    <div class="item-text">
+      <p>Tout commence en France, devant un Macintosh Classic. Pas de CPC 464, pas de lecteur K7 : pour moi, la porte d’entrée vers l’informatique portait déjà une pomme.</p><br>
+      <p>À une époque où Internet n’était pas encore là pour répondre à chaque question, je découvre seul cet univers fascinant. Je clique, j’explore, je teste, je me trompe, je recommence. Chaque menu cache quelque chose à comprendre, chaque logiciel devient un nouveau terrain d’expérimentation.</p><br>
+      <p>Puis viendra le Macintosh Performa 5200, plus puissant, plus multimédia, ouvrant encore davantage les possibilités.</p><br>
+      <p>Sans formation particulière ni mode d’emploi pour tracer la suite, une chose était déjà là : la curiosité.</p><br>
+      <p>Je ne le savais pas encore, mais ces premières heures passées devant un Mac allaient poser les bases de tout ce qui suivrait — jusqu’à l’intelligence artificielle d’aujourd’hui.</p>
+    </div>
+  </div>
+  <div class="item">
+    <div class="item-year">DES MACHINES À EXPLORER</div>
+    <div class="item-title">🎮 Des ordinateurs aux consoles — l’envie de comprendre</div>
+    <div class="item-text">
+      <p>Quelques années plus tard, ma curiosité prend une nouvelle direction. Je ne me contente plus d’utiliser les ordinateurs : je commence à les bidouiller, à chercher comment ils fonctionnent, à modifier, tester, démonter parfois… simplement pour comprendre ce qui se cache derrière la machine.</p><br>
+      <p>Et forcément, cette passion finit par rejoindre un autre univers qui me fascine : les consoles de jeux vidéo de salon.</p><br>
+      <p>Les générations passent, les machines évoluent, chacune apportant ses innovations et ses souvenirs. Mais parmi toutes celles que j’ai pu découvrir, deux resteront pour moi au-dessus des autres.</p><br>
+      <p>La Nintendo 64 et la Dreamcast.</p><br>
+      <p>La Nintendo 64, d’abord. Une console différente, reconnaissable entre toutes avec sa manette si particulière et surtout cette sensation incroyable de découvrir véritablement les jeux en 3D. Des univers qui semblaient soudain beaucoup plus grands, plus libres, presque sans limites.</p><br>
+      <p>Puis la Dreamcast.</p><br>
+      <p>Une machine qui m’a particulièrement marqué parce qu’elle semblait avoir un temps d’avance. Audacieuse, originale, différente… Elle proposait déjà des idées qui deviendraient normales quelques années plus tard.</p><br>
+      <p>Ces consoles représentaient bien plus que de simples machines pour jouer. Elles nourrissaient cette même curiosité née quelques années auparavant devant mon Macintosh Classic : l’envie de découvrir, d’expérimenter et surtout de comprendre.</p><br>
+      <p>Car derrière chaque ordinateur et chaque console, je ne voyais déjà plus seulement une machine.</p><br>
+      <p>Je voyais quelque chose à explorer.</p>
+    </div>
+  </div>
+  <div class="item">
+    <div class="item-year">APPRENDRE PAR SOI-MÊME</div>
+    <div class="item-title">📚 La formation — apprendre par soi-même</div>
+    <div class="item-text">
+      <p>Depuis le début, ma façon d’apprendre a toujours été la même : chercher, essayer, comprendre et recommencer.</p><br>
+      <p>Je me suis formé en grande partie en autodidacte. D’abord dans l’informatique, naturellement, en passant des heures à explorer les ordinateurs, les logiciels et leurs possibilités. Chaque problème devenait une occasion d’apprendre quelque chose de nouveau.</p><br>
+      <p>Puis ma curiosité m’a entraîné vers d’autres domaines.</p><br>
+      <p>🎨 Le graphisme, où j’ai découvert le plaisir de créer, de travailler les images et de donner une identité visuelle à une idée.</p><br>
+      <p>🎬 Le montage vidéo, qui m’a ouvert un nouvel univers : assembler des images, travailler le rythme, le son et raconter une histoire autrement.</p><br>
+      <p>À cette époque, apprendre seul demandait de la patience. Les réponses n’étaient pas disponibles instantanément. Il fallait chercher, lire, expérimenter et parfois passer des heures sur un problème avant de trouver la solution.</p><br>
+      <p>Mais l’autodidacte que j’étais voulait aller encore plus loin.</p><br>
+      <p>J’ai alors suivi des formations par correspondance, afin de compléter ce que j’avais appris seul, de structurer mes connaissances et d’acquérir de nouvelles compétences.</p><br>
+      <p>Au fil des années, les outils ont changé, les technologies ont évolué et les méthodes d’apprentissage aussi.</p><br>
+      <p>Mais une chose, elle, n’a jamais changé :</p><br>
+      <p>cette envie d’apprendre par moi-même et de ne jamais cesser de découvrir.</p>
+    </div>
+  </div>
+  <div class="item">
+    <div class="item-year">AUJOURD’HUI</div>
+    <div class="item-title">🚘 Aujourd’hui — de K2000 à l’intelligence artificielle</div>
+    <div class="item-text">
+      <p>Toutes ces années de découvertes, d’apprentissage et d’expérimentations m’ont finalement conduit jusqu’à aujourd’hui.</p><br>
+      <p>Une passion, elle, m’accompagne depuis longtemps : K2000 — Knight Rider.</p><br>
+      <p>Cette série représente pour moi bien plus qu’un simple souvenir télévisé. KITT, cette voiture capable de parler, d’écouter, d’analyser et d’interagir avec Michael Knight, incarnait à l’époque une vision presque futuriste de l’intelligence artificielle.</p><br>
+      <p>Cette passion m’a donné envie de créer et de rassembler une communauté autour de cet univers. C’est ainsi que sont nés mon groupe et ma page Facebook, ainsi que ma chaîne YouTube :</p><br>
+      <p>K2000 Knight Rider France.</p><br>
+      <p>Un espace où je peux partager cette passion, créer du contenu et mettre à profit tout ce que j’ai appris au fil des années dans l’informatique, le graphisme et la vidéo.</p><br>
+      <p>Et aujourd’hui, l’histoire prend une dimension particulière.</p><br>
+      <p>Grâce à toutes ces connaissances acquises en grande partie en autodidacte, j’aide désormais mon ami Manix sur l’aspect visuel de son projet d’intelligence artificielle. Je peux ainsi apporter mon expérience du graphisme, de l’image et de la création à un projet tourné vers une technologie qui me fascinait déjà, sans vraiment le savoir, devant K2000.</p><br>
+      <p>Quand je repense au chemin parcouru, il y a quelque chose d’assez incroyable.</p><br>
+      <p>Du Macintosh Classic aux premières bidouilles informatiques, des consoles de jeux au graphisme et au montage vidéo, puis de K2000 à l’intelligence artificielle…</p><br>
+      <p>Les machines ont changé.</p><br>
+      <p>La technologie a changé.</p><br>
+      <p>Le monde a changé.</p><br>
+      <p>Mais le moteur est toujours resté le même :</p><br>
+      <p>la curiosité, la passion et cette envie de découvrir ce que la technologie peut rendre possible.</p>
+    </div>
+  </div>
+  <div class="footer">FIN DU DOSSIER — KNIGHT INDUSTRIES TWO THOUSAND</div>
+</div>
+<script>
+var _audio = null, _playing = false;
+function toggleAudio() {
+  var btn = document.getElementById('playbtn');
+  if (!_audio) {
+    _audio = new Audio('/static/dadoo/dadoo_story.mp3');
+    _audio.onended = function() { _playing=false; btn.textContent='↺ RÉÉCOUTER'; btn.classList.remove('playing'); };
+  }
+  if (_playing) { _audio.pause(); _playing=false; btn.textContent='▶ ÉCOUTER MON HISTOIRE'; btn.classList.remove('playing'); }
+  else { _audio.play(); _playing=true; btn.textContent='⏸ EN COURS...'; btn.classList.add('playing'); }
+}
+</script>
+</body>
+</html>
