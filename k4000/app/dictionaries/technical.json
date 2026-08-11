@@ -1,0 +1,13 @@
+{
+  "category": "technical",
+  "priority": 5,
+  "description": "Termes techniques et noms de produits.",
+  "entries": [
+    {"pattern": "NVIDIA", "replacement": "En Vidéa"},
+    {"pattern": "Jetson", "replacement": "Jètssone"},
+    {"pattern": "CUDA", "replacement": "Couda"},
+    {"pattern": "TensorRT", "replacement": "Tenseur R T"},
+    {"pattern": "Kyronex[tT]?", "replacement": "Kaïronexte"},
+    {"pattern": "KYRONEX[tT]?", "replacement": "Kaïronexte"}
+  ]
+}

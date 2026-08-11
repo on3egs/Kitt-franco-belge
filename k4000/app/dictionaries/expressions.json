@@ -1,0 +1,43 @@
+{
+  "category": "expressions",
+  "priority": 1,
+  "description": "Expressions anglaises complètes à prononcer naturellement.",
+  "entries": [
+    {
+      "pattern": "Banshee IV",
+      "replacement": "Banshee quatre"
+    },
+    {
+      "pattern": "Knight Rider",
+      "replacement": "Nait Raïdeur"
+    },
+    {
+      "pattern": "Knight Industries Two Thousand",
+      "replacement": "Nait Industries Tou San"
+    },
+    {
+      "pattern": "Knight Industries Four Thousand",
+      "replacement": "Nait Industries For San"
+    },
+    {
+      "pattern": "Knight Industries",
+      "replacement": "Nait Industries"
+    },
+    {
+      "pattern": "Super Pursuit Mode",
+      "replacement": "Soupeur Persuit Mode"
+    },
+    {
+      "pattern": "Voice Synthesizer",
+      "replacement": "Voïce Synthesizer"
+    },
+    {
+      "pattern": "Pontiac Firebird",
+      "replacement": "Pontiac Firebird"
+    },
+    {
+      "pattern": "General Motors",
+      "replacement": "Djénéral Motors"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "category": "names_voice",
+  "priority": 4,
+  "description": "Prononciation vocale des prénoms et noms difficiles à lire en français.",
+  "entries": [
+    {
+      "pattern": "elsa",
+      "replacement": "Elza"
+    },
+    {
+      "pattern": "cedric",
+      "replacement": "Sédrik"
+    },
+    {
+      "pattern": "manix",
+      "replacement": "Maniks"
+    },
+    {
+      "pattern": "emmanuel",
+      "replacement": "Emmanuèl"
+    }
+  ]
+}

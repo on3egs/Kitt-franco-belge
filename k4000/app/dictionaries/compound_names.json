@@ -1,0 +1,12 @@
+{
+  "category": "compound_names",
+  "priority": 2,
+  "description": "Noms composés et marques courantes.",
+  "entries": [
+    {"pattern": "Cloudflare", "replacement": "Clowd Fleur"},
+    {"pattern": "GitHub", "replacement": "Guitte Hâbe"},
+    {"pattern": "Wi[\\s-]?Fi", "replacement": "Ouï Faï"},
+    {"pattern": "Bluetooth", "replacement": "Bleutoude"},
+    {"pattern": "DisplayPort", "replacement": "Display Port"}
+  ]
+}

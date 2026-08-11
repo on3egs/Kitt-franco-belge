@@ -1,0 +1,13 @@
+{
+  "category": "knight_rider",
+  "priority": 1,
+  "description": "Vocabulaire spécifique à l'univers Knight Rider / KITT / KARR.",
+  "entries": [
+    {"pattern": "Scanner", "replacement": "Scanner"},
+    {"pattern": "Molecular Bonded Shell", "replacement": "Molécular Bonded Shell"},
+    {"pattern": "Turbo Boost", "replacement": "Turbe Bouste"},
+    {"pattern": "Auto Cruise", "replacement": "Outo Crouïz"},
+    {"pattern": "Normal Cruise", "replacement": "Normal Crouïz"},
+    {"pattern": "Pursuit Mode", "replacement": "Persuit Mode"}
+  ]
+}
