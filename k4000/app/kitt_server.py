@@ -610,6 +610,14 @@ async def handle_mnx(request: web.Request) -> web.Response:
     return response
 
 
+async def handle_dadoo(request: web.Request) -> web.Response:
+    """Page locale consacrée à Dadoo, accessible depuis le bouton DADOO."""
+    response = web.FileResponse(STATIC_DIR / "dadoo" / "index.html")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
 async def handle_obd_status(request: web.Request) -> web.Response:
     """État minimal de la liaison véhicule affiché par le panneau ODB."""
     candidates = ("/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyACM0", "/dev/ttyACM1")
@@ -771,6 +779,7 @@ def create_app() -> web.Application:
 
     app.router.add_get("/", handle_index)
     app.router.add_get("/mnx", handle_mnx)
+    app.router.add_get("/dadoo", handle_dadoo)
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_post("/api/chat/stream", handle_chat_stream)
     app.router.add_get("/api/health", handle_health)

@@ -386,7 +386,7 @@ body {
   margin: 0 auto 8px;
   padding: 0 8px;
   display: grid;
-  grid-template-columns: repeat(6, minmax(62px, 1fr));
+  grid-template-columns: repeat(7, minmax(62px, 1fr));
   gap: 8px;
 }
 .command-btn {
@@ -520,6 +520,7 @@ body {
 <div class="command-bar" id="commandBar" aria-label="Commandes K4000">
   <button class="command-btn" id="cmdObd" type="button" title="Autoriser ou bloquer l’ouverture vocale ODB">ODB</button>
   <button class="command-btn" id="cmdMnx" type="button" title="Dossier Manix">MNX</button>
+  <button class="command-btn" id="cmdDadoo" type="button" title="Dossier Dadoo">DADOO</button>
   <button class="command-btn" id="cmdNav" type="button" title="Navigation GPS">NAV</button>
   <button class="command-btn" id="cmdVol" type="button" title="Volume de la voix">VOL 100</button>
   <button class="command-btn" id="cmdVigilance" type="button" title="Surveillance caméra">VIG</button>
@@ -760,6 +761,7 @@ function startNavigation() {
 
 document.getElementById('cmdObd').addEventListener('click', () => setObdAuthorization(!obdAutoEnabled));
 document.getElementById('cmdMnx').addEventListener('click', () => { window.location.href = '/mnx'; });
+document.getElementById('cmdDadoo').addEventListener('click', () => { window.location.href = '/dadoo'; });
 document.getElementById('cmdNav').addEventListener('click', () => document.getElementById('navPanel').classList.add('open'));
 document.getElementById('cmdVol').addEventListener('click', cycleVolume);
 document.getElementById('cmdVigilance').addEventListener('click', toggleVigilance);
