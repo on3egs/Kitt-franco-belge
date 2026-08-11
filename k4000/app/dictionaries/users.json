@@ -1,0 +1,12 @@
+{
+  "category": "users",
+  "priority": 3,
+  "description": "Noms et surnoms des propriétaires et utilisateurs Kyronex.",
+  "entries": [
+    {"pattern": "Frank", "replacement": "Franque"},
+    {"pattern": "KR[- ]?95", "replacement": "K R quatre-vingt-quinze"},
+    {"pattern": "Dadoo", "replacement": "Da-dou"},
+    {"pattern": "Dadu", "replacement": "Da-dou"},
+    {"pattern": "Dylan", "replacement": "Dilane"}
+  ]
+}

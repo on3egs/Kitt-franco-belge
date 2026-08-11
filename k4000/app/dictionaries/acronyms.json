@@ -1,0 +1,20 @@
+{
+  "category": "acronyms",
+  "priority": 4,
+  "description": "Acronymes techniques à épeler.",
+  "entries": [
+    {"pattern": "GPU", "replacement": "G P U"},
+    {"pattern": "CPU", "replacement": "C P U"},
+    {"pattern": "LLM", "replacement": "L L M"},
+    {"pattern": "NVMe", "replacement": "N V M E"},
+    {"pattern": "SSD", "replacement": "S S D"},
+    {"pattern": "USB", "replacement": "U S B"},
+    {"pattern": "HDMI", "replacement": "H D M I"},
+    {"pattern": "KR[- ]?95", "replacement": "K R quatre-vingt-quinze"},
+    {"pattern": "K\\.I\\.T\\.T\\.", "replacement": "Kitt"},
+    {"pattern": "KITT", "replacement": "Kitt"},
+    {"pattern": "KARR", "replacement": "Karre"},
+    {"pattern": "K2000", "replacement": "Ké deux mille"},
+    {"pattern": "K[- ]?2000", "replacement": "Ké deux mille"}
+  ]
+}

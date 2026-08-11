@@ -1,0 +1,8 @@
+{
+  "category": "proper_names",
+  "priority": 3,
+  "description": "Noms propres, prénoms et surnoms autres que les utilisateurs.",
+  "entries": [
+    {"pattern": "Orin", "replacement": "Orinne"}
+  ]
+}
