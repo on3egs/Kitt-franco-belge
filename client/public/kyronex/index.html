@@ -305,6 +305,8 @@
     .ai-sel-btn[data-ai="karr_dadoo"] { --accent: #00ff88; --accent-dim: rgba(0,255,136,0.5); }
     .ai-sel-btn[data-ai="k4000"] { --accent: #c56cff; --accent-dim: rgba(197,108,255,0.5); }
     .ai-sel-btn[data-ai="pascal"] { --accent: #5aa7ff; --accent-dim: rgba(90,167,255,0.5); }
+    .ai-sel-btn[data-ai="jo_knight_rider"] { --accent: #e8ff54; --accent-dim: rgba(232,255,84,0.5); }
+    .ai-sel-btn[data-ai="herve_pascal_k"] { --accent: #ff6fb7; --accent-dim: rgba(255,111,183,0.5); }
 
     /* barre scanner en haut de carte */
     .ai-sel-btn::before {
@@ -354,6 +356,20 @@
       background: var(--accent);
       box-shadow: 0 0 8px var(--accent), 0 0 16px var(--accent);
       animation: ai-blink 1.1s steps(1) infinite;
+    }
+    .ai-sel-btn .ai-progress {
+      position: absolute; inset: 0; z-index: 3;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px;
+      color: var(--accent);
+      background: rgba(4,1,1,0.94);
+      text-shadow: 0 0 12px var(--accent);
+      opacity: 0; transform: translateY(5px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+    }
+    .ai-sel-btn.in-progress:hover .ai-progress {
+      opacity: 1; transform: translateY(0);
     }
     @keyframes ai-scan  { 0% { background-position: -60% 0; } 100% { background-position: 160% 0; } }
     @keyframes ai-blink { 0%,60% { opacity: 1; } 61%,100% { opacity: 0.25; } }
@@ -651,10 +667,23 @@
       <span class="ai-spec">KIRONEX K-4000<br>Frank — KR-95<br>NVIDIA JETSON ORIN NANO 8 GO<br>By Manix</span>
       <span class="ai-dot"></span>
     </button>
-    <button class="ai-sel-btn" data-ai="pascal" onclick="_selectAI('pascal')" onmouseenter="_playHover('pascal')">
+    <button class="ai-sel-btn in-progress" data-ai="pascal" onclick="_selectAI('pascal')" onmouseenter="_playHover('pascal')">
       <span class="ai-name">K.I.T.T. PASCAL</span>
       <span class="ai-spec">JETSON NANO NX<br>KYRONEX NEURAL CORE</span>
       <span class="ai-dot"></span>
+      <span class="ai-progress">EN COURS DE CRÉATION...</span>
+    </button>
+    <button class="ai-sel-btn in-progress" data-ai="jo_knight_rider" onclick="_selectAI('jo_knight_rider')" onmouseenter="_playHover('jo_knight_rider')">
+      <span class="ai-name">JO KNIGHT RIDER</span>
+      <span class="ai-spec">KYRONEX<br>NEURAL NODE</span>
+      <span class="ai-dot"></span>
+      <span class="ai-progress">EN COURS DE CRÉATION...</span>
+    </button>
+    <button class="ai-sel-btn in-progress" data-ai="herve_pascal_k" onclick="_selectAI('herve_pascal_k')" onmouseenter="_playHover('herve_pascal_k')">
+      <span class="ai-name">HERVÉ DE PASCAL-K.</span>
+      <span class="ai-spec">KYRONEX<br>NEURAL NODE</span>
+      <span class="ai-dot"></span>
+      <span class="ai-progress">EN COURS DE CRÉATION...</span>
     </button>
   </div>
   <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
@@ -709,7 +738,9 @@
     skv3: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_skv3.json?ref=main',
     karr_dadoo: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_karr_dadoo.json?ref=main',
     k4000: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_k4000.json?ref=main',
-    pascal: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_pascal.json?ref=main'
+    pascal: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_pascal.json?ref=main',
+    jo_knight_rider: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_jo_knight_rider.json?ref=main',
+    herve_pascal_k: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_herve_pascal_k.json?ref=main'
   };
   var TUNNEL_MAX_AGE_MIN = 120;
   var _activeAI = 'karr';
@@ -728,6 +759,10 @@
     _hoverAudio.k4000.preload = 'auto';
     _hoverAudio.pascal = new Audio(base + 'hover_kitt.mp3');
     _hoverAudio.pascal.preload = 'auto';
+    _hoverAudio.jo_knight_rider = new Audio(base + 'hover_kitt.mp3');
+    _hoverAudio.jo_knight_rider.preload = 'auto';
+    _hoverAudio.herve_pascal_k = new Audio(base + 'hover_kitt.mp3');
+    _hoverAudio.herve_pascal_k.preload = 'auto';
   })();
 
   window._playHover = function(id) {
@@ -748,7 +783,7 @@
     var statusEl = document.getElementById('p-status');
     var btnEl    = document.getElementById('connect-btn');
     var offlineEl = document.getElementById('offline-box');
-    var label    = which === 'karr' ? 'K.A.R.R.' : which === 'skv3' ? 'SUPER K.I.T.T. V3' : which === 'karr_dadoo' ? 'KARR De Dadoo' : which === 'k4000' ? 'K-4000' : which === 'pascal' ? 'K.I.T.T. PASCAL' : 'K.I.T.T.';
+    var label    = which === 'karr' ? 'K.A.R.R.' : which === 'skv3' ? 'SUPER K.I.T.T. V3' : which === 'karr_dadoo' ? 'KARR De Dadoo' : which === 'k4000' ? 'K-4000' : which === 'pascal' ? 'K.I.T.T. PASCAL' : which === 'jo_knight_rider' ? 'JO KNIGHT RIDER' : which === 'herve_pascal_k' ? 'HERVÉ DE PASCAL-K.' : 'K.I.T.T.';
     btnEl.classList.remove('visible');
     offlineEl.classList.remove('visible');
     statusEl.className = 'checking';
