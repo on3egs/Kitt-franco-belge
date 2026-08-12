@@ -199,6 +199,17 @@ body.angry-mode .voice-display-container {
   from { opacity:.25; }
   to { opacity:1; }
 }
+body.impatient-mode .scanner {
+  border-color:#ffba2e;
+  box-shadow:0 0 17px rgba(255,166,0,.9);
+}
+body.impatient-mode .scanner-light {
+  animation:scan-fast .38s linear infinite;
+  background:radial-gradient(ellipse, #fff3a5 0%, #ff9800 33%, transparent 75%);
+  box-shadow:0 0 26px #ffac16;
+}
+body.impatient-mode .header h1 { color:#ffd36a; text-shadow:0 0 20px #ff9700; }
+body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:0 0 30px rgba(255,154,0,.7); }
 @media (prefers-reduced-motion: reduce) {
   body.angry-mode { animation:angry-color 1.8s ease-out 1; }
   body.angry-mode::after { animation:none; }
@@ -1153,7 +1164,9 @@ async function streamChat(msg) {
               if (data.action === 'mode_activated' || data.action === 'mode_deactivated') refreshVehicleMode();
               if (data.action === 'technical_mode_activated' || data.action === 'technical_mode_deactivated') { refreshTechnicalMode(); refreshCulinaryMode(); }
               if (data.action === 'culinary_mode_activated' || data.action === 'culinary_mode_deactivated') { refreshCulinaryMode(); refreshTechnicalMode(); }
+              if (data.action === 'repeated_question_impatient') triggerImpatientMode();
               if (data.action === 'repeated_question_warning') triggerAngryMode();
+              if (data.action === 'repeated_question_reconciled') clearMoodEffects();
             }
           } catch {}
         }
@@ -1234,6 +1247,39 @@ function playBonnieUnlockSound() {
 }
 
 let angryModeTimer = null;
+let impatientModeTimer = null;
+function playImpatientSound() {
+  try {
+    const ctx = ensurePlaybackCtx();
+    const now = ctx.currentTime + 0.01;
+    const output = ctx.createGain();
+    output.gain.setValueAtTime(0.0001, now);
+    output.gain.exponentialRampToValueAtTime(0.065, now + 0.012);
+    output.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+    const oscillator = ctx.createOscillator();
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(480, now);
+    oscillator.frequency.exponentialRampToValueAtTime(330, now + 0.14);
+    oscillator.connect(output);
+    output.connect(ctx.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.17);
+  } catch (error) {
+    console.warn('impatient_sound', error);
+  }
+}
+function clearMoodEffects() {
+  clearTimeout(angryModeTimer);
+  clearTimeout(impatientModeTimer);
+  document.body.classList.remove('angry-mode', 'impatient-mode');
+}
+function triggerImpatientMode() {
+  clearMoodEffects();
+  document.body.classList.add('impatient-mode');
+  playImpatientSound();
+  if (navigator.vibrate) navigator.vibrate(35);
+  impatientModeTimer = setTimeout(() => document.body.classList.remove('impatient-mode'), 850);
+}
 function playAngrySound() {
   try {
     const ctx = ensurePlaybackCtx();
@@ -1273,8 +1319,7 @@ function playAngrySound() {
 }
 
 function triggerAngryMode() {
-  clearTimeout(angryModeTimer);
-  document.body.classList.remove('angry-mode');
+  clearMoodEffects();
   void document.body.offsetWidth;
   document.body.classList.add('angry-mode');
   playAngrySound();
