@@ -1,0 +1,12 @@
+{
+  "category": "decimal_numbers",
+  "priority": 10,
+  "description": "Lecture vocale explicite des nombres décimaux en français.",
+  "entries": [
+    {
+      "pattern": "([0-9]+),([0-9]+)",
+      "replacement": "\\1 virgule \\2",
+      "use_word_boundaries": false
+    }
+  ]
+}

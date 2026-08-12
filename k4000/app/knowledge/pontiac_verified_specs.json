@@ -1,0 +1,38 @@
+{
+  "title": "Pontiac — spécifications vérifiées",
+  "sections": [
+    {
+      "id": "trans-am-1982-dimensions",
+      "title": "Pontiac Firebird Trans Am 1982",
+      "keywords": ["trans am", "transam", "transame", "1982", "taille", "hauteur", "dimensions", "huile", "pression", "pneus"],
+      "facts": [
+        "Dimensions publiées : longueur 4821 mm, largeur 1829 mm, hauteur 1265 mm, empattement 2565 mm.",
+        "La pression quotidienne doit correspondre à la plaque pneumatique et à la monte réellement installée ; ne jamais employer la pression maximale du flanc comme consigne par défaut.",
+        "Pour les V8 5,0 L 305 de 1982, la référence de maintenance disponible préfère SAE 10W-30 en usage courant et réserve SAE 5W-30 au froid sous environ -7 °C.",
+        "Source dimensions : brochure Pontiac Firebird 1982."
+      ]
+    },
+    {
+      "id": "firebird-quatrieme-generation",
+      "title": "Pontiac Firebird quatrième génération",
+      "keywords": ["firebird", "1993", "2001", "2002", "hauteur", "dimensions", "huile", "5w30", "10w30", "pression", "pneus"],
+      "facts": [
+        "En 1993, Firebird/Formula : longueur 4968 mm et hauteur 1321 mm ; Trans Am : longueur 5005 mm et hauteur 1312 mm ; largeur 1893 mm.",
+        "En 2001, hauteur du coupé 1322 mm ; longueur 4911 mm pour Firebird/Formula et 4919 mm pour Trans Am/GT ; largeur 1890 mm.",
+        "Le manuel GM 1993 préfère SAE 5W-30 et permet SAE 10W-30 à partir de -18 °C.",
+        "Le manuel GM 2001 préfère SAE 5W-30 pour le V8 5,7 L ; pour le V6 3,8 L, il préfère SAE 10W-30 et autorise SAE 5W-30 sous 16 °C.",
+        "Les manuels GM imposent la pression à froid inscrite sur l’étiquette Tire-Loading de la porte conducteur."
+      ]
+    },
+    {
+      "id": "banshee-iv-1988",
+      "title": "Pontiac Banshee IV 1988",
+      "keywords": ["banshee", "benshee", "benchy", "1988", "taille", "hauteur", "dimensions", "moteur", "huile", "pression", "pneus"],
+      "facts": [
+        "Dimensions documentées : longueur 5105 mm, largeur 2032 mm, hauteur environ 1176 mm, empattement 2667 mm.",
+        "Prototype V8 4,0 L DOHC à injection, environ 230 ch, boîte manuelle Getrag cinq rapports, propulsion.",
+        "Aucune pression de pneus d’usage ni viscosité SAE d’entretien fiable n’a été retrouvée pour ce concept-car ; ne pas extrapoler depuis une Firebird ou une Dodge Stealth."
+      ]
+    }
+  ]
+}

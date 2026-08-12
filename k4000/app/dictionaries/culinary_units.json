@@ -1,0 +1,26 @@
+{
+  "category": "culinary_units",
+  "priority": 11,
+  "description": "Lecture française complète des unités et abréviations culinaires.",
+  "entries": [
+    {"pattern": "1\\s*kg", "replacement": "1 kilogramme", "use_word_boundaries": true},
+    {"pattern": "kg", "replacement": "kilogrammes", "use_word_boundaries": true},
+    {"pattern": "1\\s*g", "replacement": "1 gramme", "use_word_boundaries": true},
+    {"pattern": "g", "replacement": "grammes", "use_word_boundaries": true},
+    {"pattern": "1\\s*mg", "replacement": "1 milligramme", "use_word_boundaries": true},
+    {"pattern": "mg", "replacement": "milligrammes", "use_word_boundaries": true},
+    {"pattern": "1\\s*L", "replacement": "1 litre", "case_sensitive": true, "use_word_boundaries": true},
+    {"pattern": "1\\s*l", "replacement": "1 litre", "case_sensitive": true, "use_word_boundaries": true},
+    {"pattern": "l", "replacement": "litres", "case_sensitive": true, "use_word_boundaries": true},
+    {"pattern": "1\\s*ml", "replacement": "1 millilitre", "use_word_boundaries": true},
+    {"pattern": "ml", "replacement": "millilitres", "use_word_boundaries": true},
+    {"pattern": "1\\s*cl", "replacement": "1 centilitre", "use_word_boundaries": true},
+    {"pattern": "cl", "replacement": "centilitres", "use_word_boundaries": true},
+    {"pattern": "1\\s*dl", "replacement": "1 décilitre", "use_word_boundaries": true},
+    {"pattern": "dl", "replacement": "décilitres", "use_word_boundaries": true},
+    {"pattern": "1\\s*c\\.\\s*à\\s*café", "replacement": "1 cuillère à café", "use_word_boundaries": false},
+    {"pattern": "c\\.\\s*à\\s*café", "replacement": "cuillères à café", "use_word_boundaries": false},
+    {"pattern": "1\\s*c\\.\\s*à\\s*(?:soupe|s\\.)", "replacement": "1 cuillère à soupe", "use_word_boundaries": false},
+    {"pattern": "c\\.\\s*à\\s*(?:soupe|s\\.)", "replacement": "cuillères à soupe", "use_word_boundaries": false}
+  ]
+}

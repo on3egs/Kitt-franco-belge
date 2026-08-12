@@ -1,0 +1,17 @@
+{
+  "category": "culinary_pronunciation",
+  "priority": 12,
+  "description": "Prononciation française stable des noms culinaires pour Piper.",
+  "entries": [
+    {
+      "pattern": "cr(?:ê|è|e{1,2})pes",
+      "replacement": "crèpes",
+      "use_word_boundaries": true
+    },
+    {
+      "pattern": "cr(?:ê|è|e{1,2})pe",
+      "replacement": "crèpe",
+      "use_word_boundaries": true
+    }
+  ]
+}

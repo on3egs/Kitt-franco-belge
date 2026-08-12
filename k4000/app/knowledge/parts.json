@@ -1,0 +1,52 @@
+{
+  "title": "K4000 pieces",
+  "sections": [
+    {
+      "id": "base-vehicule",
+      "title": "Base vehicule et carrosserie",
+      "keywords": [
+        "piece",
+        "pieces",
+        "base",
+        "chassis",
+        "carrosserie",
+        "coque",
+        "pontiac",
+        "firebird",
+        "transformation",
+        "modification",
+        "moteur",
+        "motorisation",
+        "v6",
+        "3.8",
+        "3800"
+      ],
+      "facts": [
+        "La base de la K-4000 est une Pontiac Firebird de quatrieme generation.",
+        "La carrosserie a ete retravaillee en profondeur pour recreer la silhouette voulue.",
+        "Le projet melange base automobile reelle et fabrication artisanale de nombreuses pieces.",
+        "Information provisoire a confirmer par Frank : la motorisation retenue temporairement pour la K-4000 est le V6 3,8 litres GM 3800 Series II, courant sur les Firebird de quatrieme generation."
+      ]
+    },
+    {
+      "id": "fabrication",
+      "title": "Fabrication artisanale",
+      "keywords": [
+        "fabrication",
+        "artisanat",
+        "artisanale",
+        "spm",
+        "kit",
+        "piece sur mesure",
+        "sur mesure",
+        "replique",
+        "montage"
+      ],
+      "facts": [
+        "Frank fabrique lui-meme de nombreuses pieces pour ses repliques.",
+        "Il a notamment realise un kit SPM pour sa replique KITT K2000.",
+        "La logique du projet K-4000 repose sur de l'adaptation sur mesure plutot que sur des pieces toutes faites."
+      ]
+    }
+  ]
+}

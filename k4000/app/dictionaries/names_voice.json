@@ -13,11 +13,19 @@
     },
     {
       "pattern": "manix",
-      "replacement": "Maniks"
+      "replacement": "[[maniks]]"
     },
     {
       "pattern": "emmanuel",
       "replacement": "Emmanuèl"
+    },
+    {
+      "pattern": "bryan",
+      "replacement": "Braïane"
+    },
+    {
+      "pattern": "brian",
+      "replacement": "Braïane"
     }
   ]
 }

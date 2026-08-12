@@ -1,0 +1,20 @@
+{
+  "category": "measurements",
+  "priority": 9,
+  "description": "Lecture française des unités météo, automobile et mécanique.",
+  "entries": [
+    {"pattern": "SAE", "replacement": "S A E"},
+    {"pattern": "PSI", "replacement": "P S I"},
+    {"pattern": "kPa", "replacement": "kilopascals"},
+    {"pattern": "hPa", "replacement": "hectopascals"},
+    {"pattern": "°\\s*C", "replacement": "degrés Celsius", "use_word_boundaries": false},
+    {"pattern": "km/h", "replacement": "kilomètres heure", "use_word_boundaries": false},
+    {"pattern": "N[·.]?m", "replacement": "newtons mètres"},
+    {"pattern": "([0-9]+)W[- ]?([0-9]+)", "replacement": "\\1 double vé \\2", "use_word_boundaries": false},
+    {"pattern": "L", "replacement": "litres", "case_sensitive": true},
+    {"pattern": "mm", "replacement": "millimètres"},
+    {"pattern": "cm", "replacement": "centimètres"},
+    {"pattern": "ci", "replacement": "pouces cubes"},
+    {"pattern": "%", "replacement": "pour cent", "use_word_boundaries": false}
+  ]
+}
