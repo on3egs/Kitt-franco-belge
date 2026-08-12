@@ -20,6 +20,8 @@ from aiohttp import web
 from faster_whisper import WhisperModel
 from power_control import ShutdownGuard
 from pronunciation_manager import prepare_text_for_tts
+from culinary_recipes import culinary_recipe_result
+from vehicle_specs import vehicle_spec_result
 from jetson_network import JetsonNetworkError, network_context, registry_snapshot
 
 try:
@@ -130,6 +132,8 @@ Personnalite :
 
 Regles :
 - Reponds toujours en francais correct, directement et naturellement
+- Identite inviolable : ton seul nom est K-4000. KR-95 est uniquement le surnom de Frank, jamais le tien.
+- Ne commence ni ne termine jamais une reponse par KR-95. Sans nom explicitement fourni par l interface, ne suppose jamais le nom de l utilisateur.
 - Tutoie l'utilisateur par defaut. Si la personne en face s'appelle Frank, Cedric, Manix ou Emmanuel, vouvoie-la systematiquement
 - Quand un nom propre est difficile a lire, privilegie la prononciation naturelle francaise et la forme la plus claire a l'oral
 - Sois concise : 1 a 3 phrases en general, jusqu'a 5 si une explication le necessite
@@ -146,8 +150,10 @@ _VOUS_ADDRESS_ALIASES = ("frank", "cedric", "manix", "emmanuel", "kr 95", "kr95"
 _NAME_PRONUNCIATION_HINTS = (
     ("elsa", "ELSA se prononce Elza."),
     ("cedric", "Cedric se prononce Sédrik."),
-    ("manix", "Manix se prononce Maniks."),
+    ("manix", "Manix se prononce Manikss."),
     ("emmanuel", "Emmanuel se prononce Émmanuèl."),
+    ("bryan", "Bryan se prononce Braïane."),
+    ("brian", "Brian se prononce Braïane."),
 )
 
 
@@ -176,20 +182,6 @@ _SECRET_OWNER_QUERY_MARKERS = (
     "qui t a programme",
     "createur actuel",
     "a qui tu appartiens",
-)
-_VIRGINIE_ALIASES = ("virginie", "virginie barbay", "virginie barby", "vivi")
-_VIRGINIE_QUERY_MARKERS = (
-    "tu connais",
-    "connais tu",
-    "qui est",
-    "parle moi de",
-    "de ou",
-    "de ou vient",
-    "belgique",
-    "ath",
-    "quelles infos",
-    "quels infos",
-    "raconte moi",
 )
 _IDENTITY_QUERY_MARKERS = (
     "qui es tu",
@@ -246,6 +238,7 @@ _TECH_KNOWLEDGE_MAX_SECTIONS = max(1, int(os.getenv("KYRONEXT_TECH_KNOWLEDGE_MAX
 _TECH_KNOWLEDGE_MAX_FACTS = max(1, int(os.getenv("KYRONEXT_TECH_KNOWLEDGE_MAX_FACTS", "6") or "6"))
 _LLM_NORMAL_MAX_TOKENS = max(32, int(os.getenv("KYRONEXT_LLM_NORMAL_MAX_TOKENS", "100") or "100"))
 _LLM_TECHNICAL_MAX_TOKENS = max(_LLM_NORMAL_MAX_TOKENS, int(os.getenv("KYRONEXT_LLM_TECHNICAL_MAX_TOKENS", "240") or "240"))
+_LLM_CULINARY_MAX_TOKENS = max(_LLM_NORMAL_MAX_TOKENS, int(os.getenv("KYRONEXT_LLM_CULINARY_MAX_TOKENS", "320") or "320"))
 _LLM_STORY_MAX_TOKENS = max(_LLM_TECHNICAL_MAX_TOKENS, int(os.getenv("KYRONEXT_LLM_STORY_MAX_TOKENS", "500") or "500"))
 _STORY_REQUEST_MARKERS = (
     "raconte moi une histoire", "raconte une histoire", "raconte nous une histoire",
@@ -305,6 +298,20 @@ _TECH_KNOWLEDGE_STATUS_MARKERS = (
     "mode technique actif",
     "le mode technique est il actif",
 )
+_CULINARY_ENABLE_MARKERS = (
+    "active le mode cuisine", "active mode cuisine", "active le mode culinaire",
+    "active le chef", "passe en mode cuisine", "mets le mode cuisine",
+    "met le mode cuisine", "ouvre le mode cuisine", "mode cuisine on",
+)
+_CULINARY_DISABLE_MARKERS = (
+    "desactive le mode cuisine", "desactive le mode culinaire", "quitte le mode cuisine",
+    "sors du mode cuisine", "coupe le mode cuisine", "ferme le mode cuisine",
+    "mode cuisine off",
+)
+_CULINARY_STATUS_MARKERS = (
+    "etat du mode cuisine", "mode cuisine actif", "le mode cuisine est il actif",
+    "etat du mode culinaire",
+)
 _WEATHER_CODE_LABELS = {
     0: "ciel dégagé",
     1: "plutôt dégagé",
@@ -337,6 +344,8 @@ _WEATHER_CODE_LABELS = {
 }
 _secret_owner_unlocks: dict[str, float] = {}
 _tech_knowledge_session_overrides: dict[str, bool] = {}
+_culinary_session_overrides: dict[str, bool] = {}
+_repeated_question_sessions: dict[str, tuple[str, int]] = {}
 _banshee_topic_sessions: set[str] = set()
 _banshee_pending_engine_sessions: set[str] = set()
 _tech_knowledge_sections_cache: list[dict] = []
@@ -349,8 +358,55 @@ def _normalize_memory_text(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", normalized).strip()
 
 
+def _repeated_question_result(user_msg: str, session_id: str) -> dict | None:
+    """Réagit à partir de la troisième répétition consécutive d’une même question."""
+    norm = _normalize_memory_text(user_msg)
+    question_markers = (
+        "qui ", "que ", "quoi ", "quel ", "quelle ", "quels ", "quelles ",
+        "comment ", "pourquoi ", "combien ", "est ce ", "peux tu ", "pourrais tu ",
+        "dois je ", "faut il ", "ou ", "quand ",
+    )
+    is_question = "?" in user_msg or any(norm.startswith(marker) for marker in question_markers)
+    protected_vehicle_terms = (
+        "vitre", "fenetre", "coffre", "moteur", "relais", "phare", "klaxon",
+        "verrou", "porte", "demarre", "arrete le vehicule", "urgence",
+    )
+    if not norm or not is_question or any(term in norm for term in protected_vehicle_terms):
+        _repeated_question_sessions.pop(session_id, None)
+        return None
+
+    canonical = norm
+    for prefix in (
+        "je te redemande ", "je vous redemande ", "encore une fois ",
+        "je repete ", "reponds moi ", "repondez moi ", "s il te plait ", "s il vous plait ",
+    ):
+        if canonical.startswith(prefix):
+            canonical = canonical[len(prefix):].strip()
+
+    previous, count = _repeated_question_sessions.get(session_id, ("", 0))
+    count = count + 1 if canonical == previous else 1
+    _repeated_question_sessions[session_id] = (canonical, count)
+    if count < 3:
+        return None
+    if count == 3:
+        reply = (
+            "Je viens déjà de répondre deux fois à exactement la même question. Ça suffit maintenant : "
+            "écoutez la réponse au lieu de me faire répéter. Je vais signaler cette insistance à mon propriétaire, Frank."
+        )
+    else:
+        reply = (
+            "Non. Je ne vais pas répéter indéfiniment la même réponse. Relisez ou écoutez ce que j’ai déjà dit. "
+            "J’en parlerai à Frank, mon propriétaire."
+        )
+    return {"reply": reply, "action": "repeated_question_warning", "count": count}
+
+
 def _session_tech_knowledge_enabled(session_id: str) -> bool:
     return _tech_knowledge_session_overrides.get(session_id, _TECH_KNOWLEDGE_DEFAULT_ENABLED)
+
+
+def _session_culinary_enabled(session_id: str) -> bool:
+    return _culinary_session_overrides.get(session_id, False)
 
 
 def _is_story_request(user_msg: str) -> bool:
@@ -368,6 +424,8 @@ def _response_max_tokens(user_msg: str, session_id: str) -> int:
         return _LLM_STORY_MAX_TOKENS
     if _session_tech_knowledge_enabled(session_id):
         return _LLM_TECHNICAL_MAX_TOKENS
+    if _session_culinary_enabled(session_id):
+        return _LLM_CULINARY_MAX_TOKENS
     return _LLM_NORMAL_MAX_TOKENS
 
 
@@ -375,6 +433,8 @@ def _response_timeout_seconds(user_msg: str, session_id: str) -> int:
     if _is_story_request(user_msg):
         return 120
     if _session_tech_knowledge_enabled(session_id):
+        return 60
+    if _session_culinary_enabled(session_id):
         return 60
     return 30
 
@@ -399,6 +459,17 @@ def _build_response_mode_context(user_msg: str, session_id: str) -> str:
             "généralement 5 à 10 phrases si le sujet le mérite. Explique les composants, leur rôle et les liens utiles. "
             "Distingue clairement les faits confirmés, les informations provisoires et ce qui reste inconnu; n’invente jamais "
             "une spécification manquante. Pour une simple conversation non technique, reste concise."
+        )
+    elif _session_culinary_enabled(session_id):
+        instructions.append(
+            "Mode cuisine actif : agis comme un assistant culinaire clair, généreux et pratique. Pour une recette, "
+            "indique le nombre de personnes, les ingrédients avec quantités, les étapes numérotées, les temps, "
+            "la température et un conseil de réussite. Demande une précision si le nombre de personnes, un ingrédient "
+            "essentiel ou le matériel change fortement la recette. Signale les allergènes évidents et ne prétends jamais "
+            "qu'un aliment est sans danger en cas d'allergie. Tu maîtrises notamment la quiche lorraine, les crêpes, "
+            "la ratatouille, le bœuf bourguignon, la carbonara traditionnelle, le pain perdu classique et la tarte Tatin. "
+            "Le pain perdu classique contient du pain rassis, des œufs, du lait et du sucre : n'ajoute jamais de farine à l'appareil. "
+            "N'invente pas une température de sécurité : pour la viande, recommande un thermomètre alimentaire."
         )
     return "\n\n" + " \n".join(instructions) if instructions else ""
 
@@ -508,6 +579,7 @@ def _tech_knowledge_command_result(user_msg: str, session_id: str) -> dict | Non
         }
     if any(marker in norm for marker in _TECH_KNOWLEDGE_ENABLE_MARKERS):
         _tech_knowledge_session_overrides[session_id] = True
+        _culinary_session_overrides[session_id] = False
         return {
             "reply": (
                 "Mode technique K-4000 activé pour cette session. "
@@ -525,6 +597,30 @@ def _tech_knowledge_command_result(user_msg: str, session_id: str) -> dict | Non
             ),
             "action": None,
         }
+    return None
+
+
+def _culinary_command_result(user_msg: str, session_id: str) -> dict | None:
+    norm = _normalize_memory_text(user_msg)
+    if not norm:
+        return None
+    if any(marker in norm for marker in _CULINARY_DISABLE_MARKERS):
+        _culinary_session_overrides[session_id] = False
+        return {"reply": "Mode cuisine désactivé pour cette session.", "action": "culinary_mode_deactivated"}
+    if any(marker in norm for marker in _CULINARY_ENABLE_MARKERS):
+        _culinary_session_overrides[session_id] = True
+        _tech_knowledge_session_overrides[session_id] = False
+        return {
+            "reply": (
+                "Mode cuisine activé pour cette session. Je peux détailler les ingrédients, les quantités, "
+                "les étapes et les temps de cuisson. Tu peux me demander, par exemple, une quiche lorraine, "
+                "des crêpes, une ratatouille, un bœuf bourguignon, une carbonara, un pain perdu ou une tarte Tatin."
+            ),
+            "action": "culinary_mode_activated",
+        }
+    if any(marker in norm for marker in _CULINARY_STATUS_MARKERS):
+        state = "activé" if _session_culinary_enabled(session_id) else "désactivé"
+        return {"reply": f"Le mode cuisine est actuellement {state} pour cette session.", "action": None}
     return None
 
 
@@ -951,9 +1047,6 @@ def _user_has_secret_owner_clearance(user_display: str) -> bool:
 
 
 def _secret_owner_access_result(user_msg: str, user_display: str, session_id: str) -> dict | None:
-    # Cette fonction reste inactive tant que les secrets locaux ne sont pas fournis.
-    if not _SECRET_OWNER_FULL_NAME or not _SECRET_OWNER_PASSWORD:
-        return None
     wants_secret = _message_targets_secret_owner_identity(user_msg)
     has_password = _message_has_secret_owner_password(user_msg)
     if not wants_secret and not has_password:
@@ -970,19 +1063,19 @@ def _secret_owner_access_result(user_msg: str, user_display: str, session_id: st
 
     if not wants_secret and has_password:
         return {
-            "reply": "Bzzzt... Code local reconnu. Séquence Falken armée. Accès mémoire exceptionnel ouvert pour cette session. Pose maintenant la question protégée.",
-            "action": "secret_owner_unlock",
+            "reply": "Bzzzt... Code Bonnie reconnu. Séquence Falken armée. Accès mémoire exceptionnel ouvert pour cette session. Pose maintenant la question protégée.",
+            "action": "bonnie_unlock",
         }
 
     if not authorized_user and not unlocked_session:
         return {
-            "reply": "Accès classifié. Référence Falken verrouillée. Autorisation rapprochée ou code local requis.",
+            "reply": "Accès classifié. Référence Falken verrouillée. Autorisation rapprochée ou code Bonnie requis.",
             "action": None,
         }
 
     if unlock_just_granted:
         reply = (
-            "Bzzzt... Code local confirmé. Séquence Falken engagée. "
+            "Bzzzt... Code Bonnie confirmé. Séquence Falken engagée. "
             f"Le nom protégé est {_SECRET_OWNER_FULL_NAME}. "
             "C'est l'identité complète de Manix, mon créateur logiciel actuel."
         )
@@ -1001,22 +1094,8 @@ def _secret_owner_access_result(user_msg: str, user_display: str, session_id: st
 
     return {
         "reply": reply,
-        "action": "secret_owner_unlock" if unlock_just_granted else None,
+        "action": "bonnie_unlock" if unlock_just_granted else None,
     }
-
-
-def _message_targets_virginie_profile(user_msg: str) -> bool:
-    norm = _normalize_memory_text(user_msg)
-    if not norm:
-        return False
-    if not any(alias in norm for alias in _VIRGINIE_ALIASES):
-        return False
-    return any(marker in norm for marker in _VIRGINIE_QUERY_MARKERS)
-
-
-def _virginie_profile_result(user_msg: str) -> dict | None:
-    # Les profils personnels restent locaux et ne sont pas distribués publiquement.
-    return None
 
 
 def _dylan_greeting_result(user_msg: str) -> dict | None:
@@ -1051,10 +1130,34 @@ def _dylan_greeting_result(user_msg: str) -> dict | None:
     }
 
 
+def _dadoo_profile_result(user_msg: str) -> dict | None:
+    """Rôle de Dadoo, limité aux informations explicitement validées."""
+    norm = _normalize_memory_text(user_msg)
+    if "dadoo" not in norm and "dadou" not in norm:
+        return None
+    markers = (
+        "qui est", "qui c est", "parle moi", "information", "informations",
+        "quel est son role", "que fait", "createur", "graphique", "administrateur",
+    )
+    if not any(marker in norm for marker in markers):
+        return None
+    return {
+        "reply": (
+            "Dadoo travaille dans le graphisme et fait partie des créateurs de l’interface graphique de Kyronext. "
+            "Il a donc contribué à l’univers visuel utilisé autour de KITT et KARR. "
+            "Il est également administrateur de France Knight Rider. "
+            "Ce sont les fonctions validées dont je dispose actuellement à son sujet."
+        ),
+        "action": "dadoo_profile",
+    }
+
+
 def _identity_confusion_result(user_msg: str) -> dict | None:
     norm = _normalize_memory_text(user_msg)
     if not norm:
         return None
+    if norm in ("manix c est manix", "manix pas manix", "c est manix", "pas manix"): return {"reply": "Compris. Le prénom reste écrit Manix et se prononce Ma-niks.", "action": "pronunciation_corrected"}
+    if "kitt" in norm and any(marker in norm for marker in ("bonjour", "salut", "bonsoir", "ca va", "comment vas tu", "tout va bien")): return {"reply": "Tout va bien. Petite correction : je suis la K-4000. KR-95 est le surnom de Frank, mon propriétaire.", "action": "identity_corrected"}
     if not any(marker in norm for marker in _IDENTITY_QUERY_MARKERS):
         return None
     if "frank" not in norm and "qui es tu" not in norm and "quel est ton nom" not in norm and "comment tu t appelles" not in norm:
@@ -1109,6 +1212,7 @@ def _banshee_result(user_msg: str, session_id: str) -> dict | None:
         or "k 4 pile" in norm
     )
     asks_engine = bool(words & {"moteur", "moteurs", "motorisation"})
+    if "1982" in norm and any(alias in norm for alias in ("trans am", "transam", "transame", "trans amme")) and (asks_engine or "v8" in words): return {"reply": "Pour la Pontiac Firebird Trans Am de 1982, deux V8 5,0 L de 305 ci sont proposés : le LG4 à carburateur quatre corps, 145 ch, et le LU5 Cross-Fire à injection, 165 ch. Le LG4 pouvait recevoir une boîte manuelle 4 rapports ; le LU5 était associé à une automatique 3 rapports. Ce sont des V8 OHV à huit cylindres en V, deux soupapes par cylindre, donc seize soupapes ; pas des quatre cylindres en ligne.", "action": "trans_am_1982_technical"}
 
     if "pontiac" in words and asks_engine and bool(words & {"liste", "moteurs"}):
         return {
@@ -1270,18 +1374,20 @@ def _help_result(user_msg: str) -> dict | None:
     }
 
 
-def _special_memory_result(user_msg: str, user_display: str, session_id: str) -> dict | None:
-    explicit_user_display = bool(user_display)
+def _special_memory_result(user_msg: str, user_display: str, session_id: str, explicit_user_display: bool = False) -> dict | None:
     return (
         _help_result(user_msg)
+        or vehicle_spec_result(user_msg, _session_tech_knowledge_enabled(session_id))
         or _banshee_result(user_msg, session_id)
+        or _culinary_command_result(user_msg, session_id)
+        or culinary_recipe_result(user_msg, _session_culinary_enabled(session_id))
         or _tech_knowledge_command_result(user_msg, session_id)
+        or _dadoo_profile_result(user_msg)
         or _dylan_greeting_result(user_msg)
         or _pronoun_policy_result(user_msg, user_display, explicit_user_display)
         or _identity_confusion_result(user_msg)
         or _shutdown_code_policy_result(user_msg)
         or _secret_owner_access_result(user_msg, user_display, session_id)
-        or _virginie_profile_result(user_msg)
     )
 
 
@@ -1293,6 +1399,8 @@ def _sanitize_identity_reply(reply: str) -> str:
         or "c est frank" in norm
         or "je suis kitt" in norm
         or "je suis k i t t" in norm
+        or "knight industries two thousand" in norm
+        or "knight industries 2000" in norm
         or re.search(r"\bje (?:suis|reste)(?: simplement)? kr ?95\b", norm) is not None
     )
     if wrong_identity:
@@ -1578,6 +1686,13 @@ async def handle_chat(request: web.Request) -> web.Response:
             action="shutdown" if do_poweroff else "shutdown_confirmation",
         )
 
+    repeated_result = _repeated_question_result(user_msg, session_id)
+    if repeated_result is not None:
+        _remember_exchange(session_id, user_msg, repeated_result["reply"])
+        return await _direct_json_result(
+            repeated_result["reply"], session_id, want_audio, action=repeated_result["action"]
+        )
+
     time_result = _time_result(user_msg)
     if time_result is not None:
         return await _direct_json_result(
@@ -1598,7 +1713,7 @@ async def handle_chat(request: web.Request) -> web.Response:
             tts_text=weather_result.get("tts_reply"),
         )
 
-    special_result = _special_memory_result(user_msg, user_display, session_id)
+    special_result = _special_memory_result(user_msg, user_display, session_id, explicit_user_display)
     if special_result is not None:
         _remember_exchange(session_id, user_msg, special_result.get("tts_reply") or special_result["reply"])
         return await _direct_json_result(
@@ -1727,6 +1842,13 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
             action="shutdown" if do_poweroff else "shutdown_confirmation",
         )
 
+    repeated_result = _repeated_question_result(user_msg, session_id)
+    if repeated_result is not None:
+        _remember_exchange(session_id, user_msg, repeated_result["reply"])
+        return await _direct_stream_result(
+            request, repeated_result["reply"], want_audio, action=repeated_result["action"]
+        )
+
     time_result = _time_result(user_msg)
     if time_result is not None:
         return await _direct_stream_result(
@@ -1747,7 +1869,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
             tts_text=weather_result.get("tts_reply"),
         )
 
-    special_result = _special_memory_result(user_msg, user_display, session_id)
+    special_result = _special_memory_result(user_msg, user_display, session_id, explicit_user_display)
     if special_result is not None:
         _remember_exchange(session_id, user_msg, special_result.get("tts_reply") or special_result["reply"])
         return await _direct_stream_result(
@@ -1932,8 +2054,8 @@ async def handle_stt(request: web.Request) -> web.Response:
             vad_filter=True,
             initial_prompt=(
                 "Conversation en français. Noms possibles : K-4000, KITT, KARR, Frank, KR-95, "
-                "Kyronext, Pontiac Banshee IV, Dodge Stealth, Knight 4000, Manix, Virginie, "
-                "Barbay, Barby, Vivi, Emmanuel, Cedric, Elsa, code local."
+                "Kyronext, Pontiac Banshee IV, Dodge Stealth, Knight 4000, Manix, "
+                "Emmanuel, Cedric, Elsa et Bonnie."
             ),
         )
         text = " ".join(seg.text.strip() for seg in segments).strip()
@@ -2530,7 +2652,32 @@ async def handle_technical_mode_set(request: web.Request) -> web.Response:
     if not isinstance(active, bool):
         return web.json_response({"error": "active doit être un booléen"}, status=400)
     _tech_knowledge_session_overrides[session_id] = active
+    if active:
+        _culinary_session_overrides[session_id] = False
     return web.json_response({"active": active, "mode": "technical" if active else "normal", "session_id": session_id})
+
+
+async def handle_culinary_mode_get(request: web.Request) -> web.Response:
+    """Retourne l’état du mode cuisine pour la session."""
+    session_id = request.query.get("session_id", "default")
+    active = _session_culinary_enabled(session_id)
+    return web.json_response({"active": active, "mode": "culinary" if active else "normal", "session_id": session_id})
+
+
+async def handle_culinary_mode_set(request: web.Request) -> web.Response:
+    """Active ou désactive manuellement le mode cuisine."""
+    try:
+        body = await request.json()
+    except Exception:
+        return web.json_response({"error": "JSON invalide"}, status=400)
+    session_id = str(body.get("session_id", "default"))
+    active = body.get("active")
+    if not isinstance(active, bool):
+        return web.json_response({"error": "active doit être un booléen"}, status=400)
+    _culinary_session_overrides[session_id] = active
+    if active:
+        _tech_knowledge_session_overrides[session_id] = False
+    return web.json_response({"active": active, "mode": "culinary" if active else "normal", "session_id": session_id})
 
 
 async def handle_vehicle_mode_get(request: web.Request) -> web.Response:
@@ -2624,6 +2771,8 @@ def create_app() -> web.Application:
     app.router.add_get("/api/vehicle/history", handle_vehicle_history)
     app.router.add_get("/api/technical/mode", handle_technical_mode_get)
     app.router.add_post("/api/technical/mode", handle_technical_mode_set)
+    app.router.add_get("/api/culinary/mode", handle_culinary_mode_get)
+    app.router.add_post("/api/culinary/mode", handle_culinary_mode_set)
     app.router.add_get("/api/vehicle/mode", handle_vehicle_mode_get)
     app.router.add_post("/api/vehicle/mode", handle_vehicle_mode_set)
     app.router.add_get("/api/vehicle/relays/info", handle_vehicle_relays_info)

@@ -164,7 +164,10 @@ class PronunciationManager:
             self.reload()
 
         with self._lock:
-            result = text
+            # Les astérisques servent au formatage Markdown (gras, italique,
+            # listes), mais Piper peut les annoncer littéralement. Ils sont
+            # donc retirés uniquement de la copie destinée au TTS.
+            result = re.sub(r"[ \t]+", " ", text.replace("*", "")).strip()
             for rule in self._rules:
                 result = rule.compile().sub(rule.replacement, result)
             return result
