@@ -359,8 +359,20 @@ def _normalize_memory_text(text: str) -> str:
 
 
 def _repeated_question_result(user_msg: str, session_id: str) -> dict | None:
-    """Réagit à partir de la troisième répétition consécutive d’une même question."""
+    """Personnalité graduelle face aux répétitions, sans gêner la sécurité véhicule."""
     norm = _normalize_memory_text(user_msg)
+    apology_markers = (
+        "pardon", "desole", "desolee", "excuse moi", "excusez moi",
+        "je m excuse", "toutes mes excuses", "sorry",
+    )
+    if any(marker in norm for marker in apology_markers):
+        if session_id in _repeated_question_sessions:
+            _repeated_question_sessions.pop(session_id, None)
+            return {
+                "reply": "Très bien. Nous reprenons sur de bonnes bases.",
+                "action": "repeated_question_reconciled",
+            }
+        return None
     question_markers = (
         "qui ", "que ", "quoi ", "quel ", "quelle ", "quels ", "quelles ",
         "comment ", "pourquoi ", "combien ", "est ce ", "peux tu ", "pourrais tu ",
@@ -386,8 +398,14 @@ def _repeated_question_result(user_msg: str, session_id: str) -> dict | None:
     previous, count = _repeated_question_sessions.get(session_id, ("", 0))
     count = count + 1 if canonical == previous else 1
     _repeated_question_sessions[session_id] = (canonical, count)
-    if count < 3:
+    if count == 1:
         return None
+    if count == 2:
+        return {
+            "reply": "Je viens de te répondre. Écoute attentivement avant de me poser exactement la même question.",
+            "action": "repeated_question_impatient",
+            "count": count,
+        }
     if count == 3:
         reply = (
             "Je viens déjà de répondre deux fois à exactement la même question. Ça suffit maintenant : "
