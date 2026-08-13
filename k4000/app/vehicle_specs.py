@@ -137,8 +137,8 @@ def vehicle_spec_result(user_message: str, technical_mode: bool = False) -> dict
     if mentions_k4000:
         if asks_dimensions:
             parts.append(
-                "K-4000 de Frank : sa carrosserie a été profondément transformée ; sa hauteur et ses autres dimensions finales doivent être mesurées sur le véhicule réel. "
-                "Je ne dois pas recopier automatiquement les dimensions de la Firebird donneuse."
+                "K-4000 de Frank : environ 5,33 mètres de long et 2,05 mètres de large hors rétroviseurs. "
+                "Sa hauteur n'est pas enregistrée avec suffisamment de certitude."
             )
         if asks_pressure:
             parts.append(
@@ -147,8 +147,10 @@ def vehicle_spec_result(user_message: str, technical_mode: bool = False) -> dict
             )
         if asks_oil:
             parts.append(
-                "K-4000 de Frank : il faut confirmer le moteur et son année avant de choisir une huile. La donnée V6 3,8 litres enregistrée reste provisoire ; je ne transforme donc pas une hypothèse en recommandation d’entretien."
+                "K-4000 de Frank : son moteur est un V6 3,4 litres, mais son année et la préconisation constructeur exacte doivent encore être confirmées avant de recommander une huile."
             )
+        if asks_engine:
+            parts.append("K-4000 de Frank : moteur V6 3,4 litres avec boîte automatique.")
 
     if not parts:
         return None

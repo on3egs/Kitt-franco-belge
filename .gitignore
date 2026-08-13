@@ -113,4 +113,5 @@ client/public/__manus__/version.json
 # Local HTML backups
 index.html.bak-*
 index.html.gemini.bak
-
+**/__pycache__/
+*.py[cod]
