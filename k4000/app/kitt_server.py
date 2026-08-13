@@ -233,6 +233,9 @@ _DEFAULT_WEATHER_LOCATION = os.getenv("KYRONEXT_DEFAULT_WEATHER_LOCATION", "Pari
 _OPEN_METEO_GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
 _OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 _TECH_KNOWLEDGE_DIR = BASE_DIR / "knowledge"
+_PERMANENT_MEMORY_PATH = BASE_DIR / "k4000_permanent_memory.json"
+_PERMANENT_MEMORY_MAX_SECTIONS = 2
+_PERMANENT_MEMORY_MAX_FACTS = 6
 _TECH_KNOWLEDGE_DEFAULT_ENABLED = os.getenv("KYRONEXT_TECH_KNOWLEDGE_DEFAULT", "0") == "1"
 _TECH_KNOWLEDGE_MAX_SECTIONS = max(1, int(os.getenv("KYRONEXT_TECH_KNOWLEDGE_MAX_SECTIONS", "2") or "2"))
 _TECH_KNOWLEDGE_MAX_FACTS = max(1, int(os.getenv("KYRONEXT_TECH_KNOWLEDGE_MAX_FACTS", "6") or "6"))
@@ -350,6 +353,8 @@ _banshee_topic_sessions: set[str] = set()
 _banshee_pending_engine_sessions: set[str] = set()
 _tech_knowledge_sections_cache: list[dict] = []
 _tech_knowledge_mtimes: dict[Path, float] = {}
+_permanent_memory_sections_cache: list[dict] = []
+_permanent_memory_mtime: float | None = None
 
 
 def _normalize_memory_text(text: str) -> str:
@@ -582,6 +587,109 @@ def _build_tech_knowledge_context(user_msg: str, session_id: str) -> str:
             if facts_used >= _TECH_KNOWLEDGE_MAX_FACTS:
                 break
     lines.append("N'utilise ces faits que s'ils sont vraiment utiles a la question courante.")
+    return "\n".join(lines)
+
+
+def _load_permanent_memory_sections() -> list[dict]:
+    """Charge la petite mémoire locale et ignore toujours les récits non vérifiés."""
+    global _permanent_memory_sections_cache, _permanent_memory_mtime
+    try:
+        mtime = _PERMANENT_MEMORY_PATH.stat().st_mtime
+    except OSError:
+        return []
+    if _permanent_memory_sections_cache and _permanent_memory_mtime == mtime:
+        return _permanent_memory_sections_cache
+    try:
+        data = json.loads(_PERMANENT_MEMORY_PATH.read_text(encoding="utf-8"))
+        sections: list[dict] = []
+        for raw in data.get("sections", []):
+            if not isinstance(raw, dict) or raw.get("status") not in {"verified_owner", "verified_history"}:
+                continue
+            keywords = [_normalize_memory_text(str(item)) for item in raw.get("keywords", []) if str(item).strip()]
+            facts = [str(item).strip() for item in raw.get("facts", []) if str(item).strip()]
+            if keywords and facts:
+                sections.append({
+                    "id": str(raw.get("id", "")), "scope": str(raw.get("scope", "")),
+                    "status": str(raw.get("status", "")),
+                    "title": str(raw.get("title", raw.get("id", "Mémoire K-4000"))),
+                    "keywords": keywords, "facts": facts,
+                })
+        _permanent_memory_sections_cache = sections
+        _permanent_memory_mtime = mtime
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"[PERMANENT MEMORY WARNING] {_PERMANENT_MEMORY_PATH}: {exc}", flush=True)
+        return []
+    return _permanent_memory_sections_cache
+
+
+def _match_permanent_memory_sections(user_msg: str, history: list | None = None) -> list[dict]:
+    norm = _normalize_memory_text(user_msg)
+    if not norm:
+        return []
+    follow_up = bool(re.search(
+        r"^(?:et\b|pourquoi\b|qu en\b|et\s+la\b)|\b(?:il|elle|lui|celui|celle|ce dernier|cette derniere|son|sa|ses|leur)\b", norm,
+    ))
+    match_norm = norm
+    if follow_up and history:
+        recent_users = [
+            _normalize_memory_text(str(message.get("content", "")))
+            for message in history[-6:]
+            if isinstance(message, dict) and message.get("role") == "user"
+        ]
+        match_norm = " ".join(item for item in recent_users + [norm] if item)
+    words = set(match_norm.split())
+    self_context = bool(re.search(r"\b(?:tu|toi|ton|ta|tes|t as|as tu|vous|votre|vos)\b", norm))
+    current_context = self_context or any(marker in match_norm for marker in (
+        "k4000", "k 4000", "k 4 pile", "frank", "kr95", "kr 95", "replique", "replica", "ta voiture",
+        "scanner", "fibre", "resine", "carrosserie", "feu arriere", "feux arriere", "plexiglas",
+    ))
+    history_context = any(marker in match_norm for marker in (
+        "knight rider 2000", "telefilm", "film", "1991", "tournage", "universal", "banshee",
+        "dodge stealth", "mitsubishi", "jay ohrberg", "william daniels", "guy chapellier",
+        "david hasselhoff", "michael knight", "edward mulhare", "devon miles", "son dessin",
+        "son design", "son style", "a inspire son dessin", "a inspire son design", "voix francaise",
+        "voix americaine", "voix anglaise",
+    ))
+    matches: list[tuple[int, dict]] = []
+    for section in _load_permanent_memory_sections():
+        score = 0
+        for keyword in section["keywords"]:
+            if " " in keyword:
+                if keyword in match_norm:
+                    score += 3
+            elif keyword in words:
+                score += 1
+        if score == 0:
+            continue
+        if section["scope"] == "current_replica" and not current_context:
+            continue
+        if section["scope"] == "official_history" and not (history_context or self_context):
+            continue
+        matches.append((score, section))
+    matches.sort(key=lambda item: (-item[0], item[1]["id"]))
+    return [section for _, section in matches[:_PERMANENT_MEMORY_MAX_SECTIONS]]
+
+
+def _build_permanent_memory_context(user_msg: str, history: list | None = None) -> str:
+    matched = _match_permanent_memory_sections(user_msg, history)
+    if not matched:
+        return ""
+    lines = [
+        "", "Mémoire personnelle permanente pertinente pour cette question :",
+        "Tu connais ces faits naturellement. N'évoque ni base de données ni mémoire enregistrée. Réponds seulement avec les faits utiles, sans réciter le reste.",
+        "N'ajoute aucune qualité, performance, matière, origine, personne ou motivation qui ne figure pas explicitement dans ces faits.",
+        "Distingue toujours ma réplique actuelle de Frank et la voiture du téléfilm de 1991. Si un détail demandé manque, dis : « Je n'ai pas cette information avec suffisamment de certitude. »",
+    ]
+    facts_used = 0
+    for section in matched:
+        lines.append(f"[{section['title']} — {section['status']}]")
+        for fact in section["facts"]:
+            lines.append(f"- {fact}")
+            facts_used += 1
+            if facts_used >= _PERMANENT_MEMORY_MAX_FACTS:
+                break
+        if facts_used >= _PERMANENT_MEMORY_MAX_FACTS:
+            break
     return "\n".join(lines)
 
 
@@ -1206,15 +1314,10 @@ def _frank_k4000_engine_reply(session_id: str) -> str:
         return (
             "La K-4000 de Frank repose sur une Pontiac Firebird de quatrième génération, dont la carrosserie a été "
             "profondément retravaillée pour obtenir sa silhouette spécifique. Le projet combine cette base automobile réelle "
-            "avec de nombreuses pièces fabriquées ou adaptées artisanalement par Frank. Pour sa motorisation, la donnée "
-            "actuellement retenue est un V6 3,8 litres GM 3800 Series II, un moteur couramment rencontré sur certaines "
-            "Firebird de cette génération. Attention : cette motorisation est une information provisoire et doit encore être "
-            "confirmée directement par Frank; je ne peux donc pas la présenter comme une spécification définitive du véhicule."
+            "avec de nombreuses pièces fabriquées ou adaptées artisanalement par Frank. Sa motorisation de référence est "
+            "un V6 3,4 litres avec boîte automatique."
         )
-    return (
-        "À titre provisoire, je retiens pour la K-4000 de Frank un V6 3,8 litres GM 3800 Series II, "
-        "motorisation courante des Firebird de quatrième génération. Cette donnée reste à confirmer par Frank."
-    )
+    return "La K-4000 de Frank possède un moteur V6 3,4 litres avec boîte automatique."
 
 
 def _banshee_result(user_msg: str, session_id: str) -> dict | None:
@@ -1561,6 +1664,7 @@ def _build_chat_messages(user_message: str, history: list, session_id: str, user
         + _build_addressing_context(user_display, explicit_user_display)
         + _build_name_pronunciation_context(user_message, user_display)
         + _build_recent_history_context(user_message, history)
+        + _build_permanent_memory_context(user_message, history)
         + _build_tech_knowledge_context(user_message, session_id)
         + _build_banshee_context(user_message, history)
     )
