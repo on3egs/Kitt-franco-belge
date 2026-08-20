@@ -1,1 +1,8 @@
-{"status": "online", "url": "https://copyright-dealing-cottages-view.trycloudflare.com", "last_update": "2026-08-20T00:00:00Z", "permanent": false, "machine": "pascal", "hardware": "Jetson Orin Nano Super"}
+{
+  "status": "online",
+  "url": "https://kitt-pascal.kitt-franco-belge.be",
+  "last_update": "2026-08-20T07:20:00Z",
+  "permanent": true,
+  "machine": "pascal",
+  "hardware": "Jetson Orin Nano 8GB Super"
+}
