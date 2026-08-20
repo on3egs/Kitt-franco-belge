@@ -1,8 +1,1 @@
-{
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-08-11T00:00:00Z",
-  "permanent": false,
-  "machine": "pascal",
-  "hardware": "Jetson Nano NX"
-}
+{"status": "online", "url": "https://copyright-dealing-cottages-view.trycloudflare.com", "last_update": "2026-08-20T00:00:00Z", "permanent": false, "machine": "pascal", "hardware": "Jetson Orin Nano Super"}
