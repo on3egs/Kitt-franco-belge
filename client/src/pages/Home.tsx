@@ -16,8 +16,9 @@ import LangSelector from "@/components/LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getApiBase } from "@/lib/tunnel";
 
-// ─── Image Assets (CDN) ───────────────────────────────────────────────────────
-const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_hero_bg-VWv6QwEucPEXJkzKqNiyZu.webp";
+// ─── Image Assets ─────────────────────────────────────────────────────────────
+// Kept locally in `client/public` so the hero works on GitHub Pages too.
+const HERO_BG = "/k4000-wallpaper.jpeg";
 const DASHBOARD_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_dashboard-MBu2T8YT7YQFLUit2bKW4b.webp";
 const AI_CIRCUIT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_ai_circuit-G9xZKptt82zWpuBQmQfjTS.webp";
 const SCANNER_BAR_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_scanner_bar-Aeu2AWXPNCnZyHCTLJvSVC.webp";
@@ -478,13 +479,13 @@ function HeroSection() {
     // Ces valeurs sont indépendantes de la taille d'écran — elles pointent
     // vers le scanner rouge dans la photo, et le calcul cover+bg-position
     // projette automatiquement au bon endroit quel que soit le viewport.
-    const IMG_SCANNER_CX = 0.3277; // centre X dans l'image source
-    const IMG_SCANNER_CY = 0.4976; // centre Y dans l'image source
+    const IMG_SCANNER_CX = 0.318;  // centre X dans l'image source
+    const IMG_SCANNER_CY = 0.380;  // centre Y dans l'image source
     const IMG_SCANNER_W  = 0.140;  // largeur du scanner / largeur image
     const IMG_SCANNER_H  = 0.0105; // hauteur du scanner / hauteur image
-    // CSS background: backgroundPosition "center 30%"
+    // CSS background: backgroundPosition "center center"
     const BG_POS_X = 0.50;
-    const BG_POS_Y = 0.30;
+    const BG_POS_Y = 0.50;
     // ╚══════════════════════════════════════════════════════════════════════╝
 
     const NUM_LEDS    = 9;
@@ -514,8 +515,8 @@ function HeroSection() {
       const rW = imgNW * scale;  // largeur rendue
       const rH = imgNH * scale;  // hauteur rendue
 
-      // background-position: center 30%
-      // overflow horizontal distribué 50/50, vertical distribué 30/70
+      // background-position: center center
+      // overflow horizontal et vertical distribué 50/50
       const offX = (vpW - rW) * BG_POS_X;
       const offY = (vpH - rH) * BG_POS_Y;
 
@@ -635,7 +636,7 @@ function HeroSection() {
         style={{
           backgroundImage: `url(${HERO_BG})`,
           backgroundSize: "cover",
-          backgroundPosition: "center 30%",
+          backgroundPosition: "center center",
           opacity: phase >= 1 ? 0.7 : 0,
         }}
       />
