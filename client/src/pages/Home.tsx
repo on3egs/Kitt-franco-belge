@@ -18,7 +18,7 @@ import { getApiBase } from "@/lib/tunnel";
 
 // ─── Image Assets ─────────────────────────────────────────────────────────────
 // Kept locally in `client/public` so the hero works on GitHub Pages too.
-const HERO_BG = "/k4000-wallpaper.jpeg";
+const HERO_BG = "/kitt-blueprint.png";
 const DASHBOARD_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_dashboard-MBu2T8YT7YQFLUit2bKW4b.webp";
 const AI_CIRCUIT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_ai_circuit-G9xZKptt82zWpuBQmQfjTS.webp";
 const SCANNER_BAR_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_scanner_bar-Aeu2AWXPNCnZyHCTLJvSVC.webp";
@@ -479,10 +479,10 @@ function HeroSection() {
     // Ces valeurs sont indépendantes de la taille d'écran — elles pointent
     // vers le scanner rouge dans la photo, et le calcul cover+bg-position
     // projette automatiquement au bon endroit quel que soit le viewport.
-    const IMG_SCANNER_CX = 0.318;  // centre X dans l'image source
-    const IMG_SCANNER_CY = 0.380;  // centre Y dans l'image source
-    const IMG_SCANNER_W  = 0.140;  // largeur du scanner / largeur image
-    const IMG_SCANNER_H  = 0.0105; // hauteur du scanner / hauteur image
+    const IMG_SCANNER_CX = 0.475;  // centre X dans l'image source
+    const IMG_SCANNER_CY = 0.298;  // centre Y dans l'image source
+    const IMG_SCANNER_W  = 0.125;  // largeur du scanner / largeur image
+    const IMG_SCANNER_H  = 0.008;  // hauteur du scanner / hauteur image
     // CSS background: backgroundPosition "center center"
     const BG_POS_X = 0.50;
     const BG_POS_Y = 0.50;
