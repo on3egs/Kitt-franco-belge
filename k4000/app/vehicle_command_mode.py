@@ -147,6 +147,35 @@ _SUCCESS_REPLIES: dict[str, tuple[str, str]] = {
 # sur le moteur restent protégés par le mode commande.
 _SAFE_NORMAL_RELAYS = frozenset({3, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20})
 
+# Whisper peut transformer « klaxon » en « claxon », « glaxon », « axon »
+# ou « l'axonne ». Ces formes ne doivent pas partir au LLM : elles restent
+# limitées au vocabulaire klaxon et sont canonisées avant le matching.
+_HORN_SPEECH_ALIASES = (
+    "klaxon", "claxon", "clacson", "clackson", "clakson", "clason",
+    "klakson", "klason", "cracson", "craxon", "clexson", "clexon",
+    "eclaction", "eclaxon", "graxum", "graxon", "glaxon", "glaxonne",
+    "laxon", "laxonne", "axon", "axonne", "klaxom", "claxom", "jackson",
+)
+
+
+def _canonicalize_horn_phrase(norm: str) -> str:
+    """Réduit les erreurs STT courantes à une intention klaxon canonique.
+
+    La transformation n'est activée que si un alias klaxon est présent. Elle
+    ne modifie donc pas les mots « alerte », « normal » ou « SOS » dans une
+    conversation générale.
+    """
+    alias_re = r"\b(?:" + "|".join(map(re.escape, _HORN_SPEECH_ALIASES)) + r")\b"
+    if not re.search(alias_re, norm):
+        return norm
+    value = re.sub(alias_re, "klaxon", norm)
+    value = re.sub(r"\b(?:jou|joue|joues|jous|zoue|zoue|zou|zoo)\b", "joue", value)
+    value = re.sub(r"\bamicale\b", "amical", value)
+    value = re.sub(r"\b(?:alert|alrt|echt|eck|echec|echt)\b", "alerte", value)
+    value = re.sub(r"\b(?:et\s+sois|et\s+soie|et\s+soi)\b", "sos", value)
+    value = re.sub(r"\bnochmal\b", "normal", value)
+    return re.sub(r"\s+", " ", value).strip()
+
 
 # ------------------------------------------------------------------------------
 # Mapping intentions -> relais
@@ -594,15 +623,15 @@ def _is_safe_direct_request(norm: str, command: RelayCommand) -> bool:
     if command.description == "phares" and re.search(r"\b(?:allume|active|eteins|eteint|desactive|mets?|met|ouvre|ferme|coupe)\b", norm):
         norm = re.sub(r"\b(?:far|fars|fard|fards)\b", "phare", norm)
     if command.description == "klaxon":
+        norm = _canonicalize_horn_phrase(norm)
         return bool(
-            re.fullmatch(r"(?:le\s+)?(?:klaxon|claxon|clacson|clackson|clakson|clason|klakson|klason|cracson|craxon|clexson|clexon|eclaction|eclaxon|graxum|graxon|klaxom|claxom)", norm)
+            re.fullmatch(r"(?:le\s+)?klaxon", norm)
             or re.match(
-                r"^(?:(?:vas\s+y|allez|maintenant)\s+)?(?:fais\s+)?(?:klaxonne|klaxonnes|klaxone|klaxoner|klaxonner|"
-                r"clacsonne|clacsonner|claxonne|claxonner|klaksonne|klasonne)\b",
+                r"^(?:(?:vas\s+y|allez|maintenant)\s+)?(?:fais\s+)?klaxon\b",
                 norm,
             )
-            or re.match(r"^(?:donne|fais)\s+(?:un\s+)?coup\s+de\s+(?:klaxon|claxon|clacson)\b", norm)
-            or re.match(r"^(?:fais\s+(?:sonner|retentir|fonctionner)|actionne|utilise|appuie\s+sur|active|allume)\s+(?:(?:le|les)\s+)?(?:mode\s+)?(?:klaxons?|claxons?|clacsons?|clacksons?|claksons?|clasons?|clexons?|eclactions?|eclaxons?|graxums?|graxons?|klaxoms?|claxoms?)\b", norm)
+            or re.match(r"^(?:donne|fais)\s+(?:un\s+)?coup\s+de\s+klaxon\b", norm)
+            or re.match(r"^(?:fais\s+(?:sonner|retentir|fonctionner)|actionne|utilise|appuie\s+sur|active|allume)\s+(?:(?:le|les)\s+)?(?:mode\s+)?klaxon\b", norm)
             or re.fullmatch(r"(?:fais\s+)?(?:bip\s+bip|tut\s+tut)", norm)
         )
     if command.relay in {12, 13, 14, 15, 16, 17, 18, 19, 20}:
@@ -766,6 +795,7 @@ class VehicleCommandMode:
         # un verbe d’éclairage : elle ne modifie pas le vocabulaire général.
         if re.search(r"\b(?:allume|allumer|active|activer|eteins|eteindre|eteint|desactive|desactiver|mets?|met|ouvre|ferme|coupe)\b", intent_norm):
             intent_norm = re.sub(r"\b(?:far|fars|fard|fards)\b", "phare", intent_norm)
+        intent_norm = _canonicalize_horn_phrase(intent_norm)
         for infinitive, imperative in (
             ("ouvrir", "ouvre"), ("fermer", "ferme"),
             ("baisser", "baisse"), ("descendre", "descend"),
@@ -788,6 +818,24 @@ class VehicleCommandMode:
             ("klaxonnes", "klaxonne"), ("klaksonne", "klaxonne"), ("klasonne", "klaxonne"),
         ):
             intent_norm = re.sub(rf"\b{conjugated}\b", imperative, intent_norm)
+
+        # Les noms de signatures sont suffisamment spécifiques pour être
+        # reconnus même lorsque Whisper ajoute « joue », « zou », « zoo »,
+        # « de » ou une petite particule autour du mot klaxon.
+        if "klaxon" in intent_norm.split():
+            horn_signatures = (
+                ("sos", 18, None),
+                ("mariage", 15, None),
+                ("amical", 14, None),
+                ("alerte", 17, None),
+                ("mission", 16, None),
+                ("double", 13, None),
+                ("normal", 12, None),
+                ("kitt", 19, None),
+            )
+            for signature, relay, _ in horn_signatures:
+                if re.search(rf"\b{signature}\b", intent_norm):
+                    return RelayCommand(relay, True, f"klaxon {signature}", None)
         for rule in _INTENT_RULES:
             for pattern in rule.on_patterns:
                 if re.search(pattern, intent_norm):
@@ -1205,6 +1253,16 @@ if __name__ == "__main__":
         ("Active les lumières", "direct", 1, True, None),
         ("Coupe les feux", "direct", 1, False, None),
         ("Phares off", "direct", 1, False, None),
+        # variantes phonétiques du klaxon observées avec Whisper
+        ("Claxon et sois", "direct", 18, True, None),
+        ("Jou, le Klaxon, SOS", "direct", 18, True, None),
+        ("Joues le Klaxon mariage", "direct", 15, True, None),
+        ("Zou le klaxon amicale", "direct", 14, True, None),
+        ("Glaxon Alert", "direct", 17, True, None),
+        ("Claxon Mission", "direct", 16, True, None),
+        ("Zoo le Klaxon, nochmal", "direct", 12, True, None),
+        ("Zoo, le klaxon de Kitt", "direct", 19, True, None),
+        ("D l axonne a l echec", "direct", 17, True, None),
         # ordres directs — moteur (pulse 2.0s)
         ("Démarre la voiture", "direct", 2, True, 2.0),
         ("Lance le moteur", "direct", 2, True, 2.0),
