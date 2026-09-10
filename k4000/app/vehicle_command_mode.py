@@ -26,6 +26,7 @@ import time
 import unicodedata
 import uuid
 from dataclasses import dataclass, field
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Callable
 
@@ -154,8 +155,77 @@ _HORN_SPEECH_ALIASES = (
     "klaxon", "claxon", "clacson", "clackson", "clakson", "clason",
     "klakson", "klason", "cracson", "craxon", "clexson", "clexon",
     "eclaction", "eclaxon", "graxum", "graxon", "glaxon", "glaxonne",
-    "laxon", "laxonne", "axon", "axonne", "klaxom", "claxom", "jackson",
+    "glaxone", "laxon", "laxonne", "axon", "axonne", "claccon", "claconne",
+    "claxonne", "claxone", "klaxonne", "klaxone", "claksonne", "classion",
+    "classon", "claxion", "klaxom", "claxom", "jackson",
 )
+
+# Variantes que Whisper produit souvent pour les huit motifs. Le rapprochement
+# ci-dessous ne sera utilisé qu'après détection d'un contexte klaxon.
+_HORN_STYLE_ALIASES: dict[str, tuple[str, ...]] = {
+    "normal": ("normal", "normale", "nochmal", "nochmal"),
+    "double": ("double", "doubles", "deux", "doubl"),
+    "amical": ("amical", "amicale", "amicalle", "amicales"),
+    "mariage": ("mariage", "mariages"),
+    "mission": ("mission", "missions", "michion", "michon", "mision"),
+    "alerte": ("alerte", "alert", "alrt", "echt", "eck", "echec", "echt"),
+    "sos": ("sos", "sois", "soie", "soi"),
+    "kitt": ("kitt", "kit", "mickael", "michael", "mikael", "michel", "signature"),
+}
+
+_HORN_ACTION_WORDS = frozenset({
+    "jou", "joue", "joues", "jous", "zoue", "zou", "zoo", "jouer",
+    "fais", "faire", "active", "activer", "lance", "lancer", "utilise",
+    "actionne", "appuie", "donne", "coup", "bip", "tut",
+})
+
+
+def _horn_similarity(left: str, right: str) -> float:
+    """Score léger, local et sans dépendance pour les erreurs STT."""
+    return SequenceMatcher(None, left, right, autojunk=False).ratio()
+
+
+def _horn_alias_present(norm: str) -> bool:
+    """Détecte un ancrage klaxon exact ou très proche.
+
+    Le seuil est volontairement strict. Un mot ressemblant à « klaxon » n'est
+    accepté que dans une phrase qui ressemble déjà à une commande ; cela évite
+    qu'une conversation sur un nom propre ou un sujet voisin actionne un relais.
+    """
+    tokens = norm.split()
+    aliases = set(_HORN_SPEECH_ALIASES)
+    if any(token in aliases and token != "jackson" for token in tokens):
+        return True
+    if "jackson" in tokens:
+        # « Jackson » seul reste une personne ; « klaxon à Jackson » est une
+        # erreur STT documentée et est autorisée par le contexte de commande.
+        if len(tokens) > 1 and bool(set(tokens) & _HORN_ACTION_WORDS):
+            return True
+    for token in tokens:
+        if len(token) < 5:
+            continue
+        if _horn_similarity(token, "klaxon") >= 0.78:
+            return True
+    return False
+
+
+def _replace_fuzzy_horn_style(value: str) -> str:
+    """Canonise un motif après que le contexte klaxon est établi."""
+    tokens = value.split()
+    canonical = {alias: name for name, aliases in _HORN_STYLE_ALIASES.items() for alias in aliases}
+    all_styles = tuple(canonical)
+    for index, token in enumerate(tokens):
+        if token in canonical:
+            tokens[index] = canonical[token]
+            continue
+        # Les mots très courts ou éloignés sont exclus : le mode expert ne
+        # devine jamais un motif à partir d'un simple bruit.
+        if len(token) < 4:
+            continue
+        best_style = max(all_styles, key=lambda style: _horn_similarity(token, style))
+        if _horn_similarity(token, best_style) >= 0.80:
+            tokens[index] = best_style
+    return " ".join(tokens)
 
 
 def _canonicalize_horn_phrase(norm: str) -> str:
@@ -165,15 +235,15 @@ def _canonicalize_horn_phrase(norm: str) -> str:
     ne modifie donc pas les mots « alerte », « normal » ou « SOS » dans une
     conversation générale.
     """
-    alias_re = r"\b(?:" + "|".join(map(re.escape, _HORN_SPEECH_ALIASES)) + r")\b"
-    if not re.search(alias_re, norm):
+    if not _horn_alias_present(norm):
         return norm
+    alias_re = r"\b(?:" + "|".join(map(re.escape, _HORN_SPEECH_ALIASES)) + r")\b"
     value = re.sub(alias_re, "klaxon", norm)
     value = re.sub(r"\b(?:jou|joue|joues|jous|zoue|zoue|zou|zoo)\b", "joue", value)
-    value = re.sub(r"\bamicale\b", "amical", value)
-    value = re.sub(r"\b(?:alert|alrt|echt|eck|echec|echt)\b", "alerte", value)
     value = re.sub(r"\b(?:et\s+sois|et\s+soie|et\s+soi)\b", "sos", value)
-    value = re.sub(r"\bnochmal\b", "normal", value)
+    # « klaxon à Mickael/Michael » est une confusion STT fréquente pour
+    # « klaxon KITT » dans ce contexte Knight Rider.
+    value = _replace_fuzzy_horn_style(value)
     return re.sub(r"\s+", " ", value).strip()
 
 
@@ -1263,6 +1333,9 @@ if __name__ == "__main__":
         ("Zoo le Klaxon, nochmal", "direct", 12, True, None),
         ("Zoo, le klaxon de Kitt", "direct", 19, True, None),
         ("D l axonne a l echec", "direct", 17, True, None),
+        ("Double claccon", "direct", 13, True, None),
+        ("Classion alerte", "direct", 17, True, None),
+        ("Klaxon a Mickael", "direct", 19, True, None),
         # ordres directs — moteur (pulse 2.0s)
         ("Démarre la voiture", "direct", 2, True, 2.0),
         ("Lance le moteur", "direct", 2, True, 2.0),

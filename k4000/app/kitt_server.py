@@ -1824,12 +1824,13 @@ def _horn_styles_result(user_msg: str) -> dict | None:
     norm = _normalize_memory_text(user_msg)
     horn_words = (
         "klaxon", "klaxons", "claxon", "claxons", "clacson", "clacsons",
-        "clackson", "clakson", "clason", "clexon", "clexons", "clexson",
+        "clackson", "clakson", "clason", "claccon", "claconne", "classion", "classon", "claxion",
+        "clexon", "clexons", "clexson",
         "klakson", "klason", "cracson", "craxon", "graxum", "graxon",
         "glaxon", "glaxons", "laxon", "laxons", "axon", "axons",
         "klaxom", "claxom", "eclaction", "eclaxon", "avertisseur",
     )
-    if not any(x in norm for x in horn_words) or not any(x in norm for x in ("style", "styles", "mode", "liste", "tableau", "choix")):
+    if not any(x in norm for x in horn_words) or not any(x in norm for x in ("style", "styles", "mode", "liste", "tableau", "menu", "choix")):
         return None
     reply = """<section class="technical-card horn-card"><h3>📯 TABLEAU DES KLAXONS</h3><p>Chaque son est limité et passe par la protection du service véhicule.</p><table class="help-table"><thead><tr><th>Nom</th><th>Effet</th><th>Commande vocale</th></tr></thead><tbody>
 <tr><td>Klaxon normal</td><td>Impulsion courte standard</td><td>« joue le klaxon normal »</td></tr>
@@ -3693,10 +3694,10 @@ def _vehicle_pre_ack_needed(user_msg: str, session_id: str) -> bool:
     norm = _normalize_memory_text(user_msg)
     if not norm or any(x in norm for x in ("?", "peux tu", "pourrais tu", "affiche", "aide", "mode")):
         return False
-    direct = norm.startswith(("ouvre ", "ferme ", "allume ", "eteins ", "eteint ", "baisse ", "remonte ", "active ", "desactive ", "verrouille ", "deverrouille ", "demarre ", "arrete ", "klaxon", "claxon", "clacson", "clackson", "clakson", "clason", "cracson", "craxon", "clexson", "clexon", "eclaction", "eclaxon", "graxum", "graxon", "glaxon", "laxon", "axon", "klaxom", "claxom"))
-    vehicle = any(x in norm for x in ("vitre", "fenetre", "feu", "phare", "coffre", "porte", "moteur", "klaxon", "claxon", "clacson", "clackson", "clakson", "clason", "cracson", "craxon", "clexson", "clexon", "eclaction", "eclaxon", "graxum", "graxon", "glaxon", "laxon", "axon", "klaxom", "claxom", "relais"))
+    direct = norm.startswith(("ouvre ", "ferme ", "allume ", "eteins ", "eteint ", "baisse ", "remonte ", "active ", "desactive ", "verrouille ", "deverrouille ", "demarre ", "arrete ", "klaxon", "claxon", "clacson", "clackson", "clakson", "clason", "claccon", "classion", "classon", "claxion", "cracson", "craxon", "clexson", "clexon", "eclaction", "eclaxon", "graxum", "graxon", "glaxon", "laxon", "axon", "klaxom", "claxom"))
+    vehicle = any(x in norm for x in ("vitre", "fenetre", "feu", "phare", "coffre", "porte", "moteur", "klaxon", "claxon", "clacson", "clackson", "clakson", "clason", "claccon", "classion", "classon", "claxion", "cracson", "craxon", "clexson", "clexon", "eclaction", "eclaxon", "graxum", "graxon", "glaxon", "laxon", "axon", "klaxom", "claxom", "relais"))
     mode_active = bool(vehicle_mode is not None and vehicle_mode.is_active(session_id))
-    safe_horn = norm in ("klaxon", "claxon", "clacson", "clackson", "clakson", "clason", "cracson", "craxon", "clexson", "clexon", "eclaction", "eclaxon", "graxum", "graxon", "glaxon", "laxon", "axon", "klaxom", "claxom")
+    safe_horn = norm in ("klaxon", "claxon", "clacson", "clackson", "clakson", "clason", "claccon", "classion", "classon", "claxion", "cracson", "craxon", "clexson", "clexon", "eclaction", "eclaxon", "graxum", "graxon", "glaxon", "laxon", "axon", "klaxom", "claxom")
     return vehicle and direct and (mode_active or safe_horn)
 
 
