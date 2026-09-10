@@ -1614,12 +1614,12 @@ const settingsResolution = document.getElementById('settingsResolution');
 const settingsTouch = document.getElementById('settingsTouch');
 const settingsSystemResolution = document.getElementById('settingsSystemResolution');
 const manualDownloadPrompt = document.getElementById('manualDownloadPrompt');
-const MANUAL_DOWNLOAD_URL = '/download/manuel-kyronex.pdf';
+const MANUAL_DOWNLOAD_URL = '/download/manuel-complet-kyronex.pdf';
 
 function downloadManualPdf() {
   const link = document.createElement('a');
   link.href = MANUAL_DOWNLOAD_URL;
-  link.download = 'Manuel_KYRONEX_Pascal_Fairon.pdf';
+  link.download = 'Manuel_Complet_KYRONEX_Pascal_Fairon.pdf';
   link.rel = 'noopener';
   document.body.appendChild(link);
   link.click();

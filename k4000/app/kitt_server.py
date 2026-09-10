@@ -109,7 +109,8 @@ MANUAL_PDF_PATH = Path(os.getenv(
     "KYRONEXT_MANUAL_PDF",
     Path.home() / "Manuel_KYRONEX_Pascal_Fairon.pdf",
 )).expanduser()
-MANUAL_DOWNLOAD_URL = "/download/manuel-kyronex.pdf"
+MANUAL_DOWNLOAD_URL = "/download/manuel-complet-kyronex.pdf"
+MANUAL_DOWNLOAD_LEGACY_URL = "/download/manuel-kyronex.pdf"
 # Le lecteur CD ne scanne ces emplacements qu'à l'ouverture de sa page.
 # Déposer uniquement des albums musicaux locaux dans media/cd. Les histoires,
 # voix de synthèse, messages et effets de l'application ne sont jamais inclus.
@@ -4830,7 +4831,7 @@ async def handle_manual_pdf(request: web.Request) -> web.FileResponse:
     response = web.FileResponse(MANUAL_PDF_PATH)
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = (
-        'attachment; filename="Manuel_KYRONEX_Pascal_Fairon.pdf"'
+        'attachment; filename="Manuel_Complet_KYRONEX_Pascal_Fairon.pdf"'
     )
     response.headers["Cache-Control"] = "no-store"
     return response
@@ -5671,6 +5672,8 @@ def create_app() -> web.Application:
 
     app.router.add_get("/", handle_index)
     app.router.add_get(MANUAL_DOWNLOAD_URL, handle_manual_pdf)
+    # Compatibilité avec les anciennes pages déjà ouvertes ou mises en cache.
+    app.router.add_get(MANUAL_DOWNLOAD_LEGACY_URL, handle_manual_pdf)
     app.router.add_get("/mnx", handle_mnx)
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_get("/dadoo", handle_dadoo)
