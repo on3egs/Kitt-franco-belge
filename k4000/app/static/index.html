@@ -1277,6 +1277,54 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   .header-telemetry #clockDate { right: 7px; font-size: 7px !important; }
 }
 </style>
+<style id="ultraCompactHeader">
+/* Version compacte : l'en-tête ne grandit plus à cause d'OPTIONS. */
+.header {
+  min-height: 52px;
+  padding: 12px 8px 3px;
+}
+.header h1 {
+  font-size: calc(1em * var(--ui-scale));
+  line-height: .85;
+  letter-spacing: 2px;
+}
+.header .subtitle {
+  margin-top: 1px;
+  font-size: calc(.48em * var(--ui-scale));
+  line-height: .9;
+}
+.mobile-menu-toggle {
+  min-width: 86px !important;
+  width: 86px;
+  height: 27px !important;
+  min-height: 27px !important;
+  margin-top: 2px !important;
+  padding: 2px 8px !important;
+  font-size: 9px !important;
+  letter-spacing: .5px !important;
+}
+@media (max-width: 700px) {
+  .header {
+    min-height: 47px;
+    padding: 6px 4px 2px;
+  }
+  .header h1 {
+    font-size: calc(.88em * var(--ui-scale));
+    letter-spacing: 1.5px;
+  }
+  .header .subtitle {
+    margin-top: 1px;
+    font-size: calc(.4em * var(--ui-scale));
+  }
+  .mobile-menu-toggle {
+    height: 25px !important;
+    min-height: 25px !important;
+    margin-top: 1px !important;
+    padding: 1px 7px !important;
+    font-size: 8px !important;
+  }
+}
+</style>
 <link rel="stylesheet" href="/static/cd-player.css?v=20260910-13">
 <link rel="stylesheet" href="/static/media-hub.css?v=20260910-4">
 </head>
@@ -1289,7 +1337,7 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   <div class="subtitle">SYSTÈME PASCAL FAIRON</div>
   <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="mobileOptions">OPTIONS</button>
   <div class="header-telemetry" aria-label="État du système">
-    <div id="systemClock" aria-label="Heure et date réelles"><strong id="clockTime">--:--:--</strong><span id="clockDate">--- -- --- ----</span><span id="clockTemp" hidden>-- °C</span></div>
+    <div id="systemClock" aria-label="Heure et date réelles"><strong id="clockTime">--:--:--</strong><span id="clockDate">--- -- --- ----</span></div>
     <div id="systemStats" aria-label="Charge matérielle en temps réel"><span>CPU <b id="cpuStat">--%</b></span><span class="gpu">GPU <b id="gpuStat">--%</b></span><span>RAM <b id="ramStat">--/--</b></span></div>
   </div>
 </div>
@@ -1506,8 +1554,8 @@ const cpuStat = document.getElementById('cpuStat'), gpuStat = document.getElemen
 const bottomCpuStat = document.getElementById('bottomCpuStat'), bottomGpuStat = document.getElementById('bottomGpuStat'), bottomRamStat = document.getElementById('bottomRamStat'), bottomTempStat = document.getElementById('bottomTempStat');
 async function refreshSystemStats(){ try { const d=await (await fetch('/api/system/stats',{cache:'no-store'})).json(); const cpu=(d.cpu??'--')+'%'; const gpu=(d.gpu==null?'N/D':d.gpu+'%'); const ramPercent=d.ram_total?Math.round(Number(d.ram_used)/Number(d.ram_total)*100):null; const ram=ramPercent==null?'--%':ramPercent+'%'; const temp=d.temperature==null?'--°C':d.temperature+'°C'; cpuStat.textContent=cpu; gpuStat.textContent=gpu; ramStat.textContent=ram; ramStat.title=d.ram_total?`RAM utilisée : ${d.ram_used}/${d.ram_total}M`:'RAM indisponible'; bottomCpuStat.textContent=cpu; bottomGpuStat.textContent=gpu; bottomRamStat.textContent=ram; bottomTempStat.textContent=temp; systemClock.dataset.temperature=d.temperature==null?'--':d.temperature+' °C'; } catch(e){} }
 refreshSystemStats(); setInterval(refreshSystemStats,2000);
-const systemClock=document.getElementById('systemClock'), clockTime=document.getElementById('clockTime'), clockDate=document.getElementById('clockDate'), clockTemp=document.getElementById('clockTemp');
-function refreshClock(){ const n=new Date(); clockTime.textContent=n.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); clockDate.textContent=n.toLocaleDateString('fr-BE',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); clockTemp.textContent=systemClock.dataset.temperature||'-- °C'; }
+const systemClock=document.getElementById('systemClock'), clockTime=document.getElementById('clockTime'), clockDate=document.getElementById('clockDate');
+function refreshClock(){ const n=new Date(); clockTime.textContent=n.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); clockDate.textContent=n.toLocaleDateString('fr-BE',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); }
 refreshClock(); setInterval(refreshClock,1000);
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
 document.getElementById('optionsBackBtn')?.addEventListener('click', () => {
