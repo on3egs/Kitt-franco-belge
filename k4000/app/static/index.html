@@ -934,8 +934,8 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   min-width: 0;
   padding: 5px 7px;
   flex: 1 1 auto;
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
   justify-content: space-between;
   gap: 7px;
@@ -945,9 +945,20 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
 .header-telemetry #systemStats span {
   display: inline-flex;
   align-items: baseline;
+  justify-content: center;
   gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
 @media (max-width: 700px) {
+  .header {
+    min-height: 76px;
+    padding: 38px 4px 6px;
+    box-sizing: border-box;
+  }
+  .header h1 { margin: 0 auto; }
+  .header .subtitle { margin-top: 2px; }
   .header-telemetry {
     left: 5px;
     right: 5px;
@@ -967,6 +978,8 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
     padding: 3px 5px;
     gap: 4px;
     flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     font-size: 8px;
     overflow: hidden;
   }
