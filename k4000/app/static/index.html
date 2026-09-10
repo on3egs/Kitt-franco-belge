@@ -1190,6 +1190,58 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   .header-telemetry #clockTemp { left: calc(50% + 39px); }
 }
 </style>
+<style id="bottomTelemetryLayout">
+/* Les données système vivent dans la barre d'état existante : aucun espace
+   supplémentaire n'est réservé dans l'en-tête. */
+.header-telemetry { display: none !important; }
+.header {
+  min-height: 58px;
+  padding: 13px 8px 4px;
+  box-sizing: border-box;
+}
+.header h1 {
+  margin: 0 auto;
+  font-size: calc(1.06em * var(--ui-scale));
+  line-height: .9;
+  letter-spacing: 3px;
+}
+.header .subtitle {
+  margin-top: 2px;
+  font-size: calc(.52em * var(--ui-scale));
+  line-height: 1;
+}
+.status-bar {
+  min-height: 20px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+#status { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#statusTelemetry {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+  color: #a7c4d5;
+  font: 700 9px/1 'Courier New', monospace;
+  letter-spacing: .15px;
+}
+#statusTelemetry span { display: inline-flex; gap: 2px; }
+#statusTelemetry b { color: #ff5968; font-weight: 700; }
+#statusTelemetry .status-gpu b { color: #68d8ff; }
+@media (max-width: 700px) {
+  .header { min-height: 52px; padding: 9px 4px 3px; }
+  .header h1 { font-size: calc(.94em * var(--ui-scale)); letter-spacing: 2px; }
+  .header .subtitle { margin-top: 1px; font-size: calc(.44em * var(--ui-scale)); }
+  .status-bar { min-height: 18px; gap: 6px; padding: 2px 4px; }
+  #statusTelemetry { gap: 5px; font-size: 7px; }
+  #statusTelemetry span { gap: 1px; }
+}
+</style>
 <link rel="stylesheet" href="/static/cd-player.css?v=20260910-13">
 <link rel="stylesheet" href="/static/media-hub.css?v=20260910-4">
 </head>
@@ -1368,6 +1420,12 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
 
 <div class="status-bar">
   <span id="status">Connexion...</span>
+  <span id="statusTelemetry" aria-label="Température et charge système">
+    <span>CPU <b id="bottomCpuStat">--%</b></span>
+    <span class="status-gpu">GPU <b id="bottomGpuStat">--%</b></span>
+    <span>RAM <b id="bottomRamStat">--%</b></span>
+    <span>TEMP <b id="bottomTempStat">--°C</b></span>
+  </span>
 </div>
 <div class="audio-controls">
   <div class="control-group">
@@ -1410,7 +1468,8 @@ let pcmChunks = [];
 const micBtn = document.getElementById('mic');
 const autoBtn = document.getElementById('automic');
 const cpuStat = document.getElementById('cpuStat'), gpuStat = document.getElementById('gpuStat'), ramStat = document.getElementById('ramStat');
-async function refreshSystemStats(){ try { const d=await (await fetch('/api/system/stats',{cache:'no-store'})).json(); cpuStat.textContent=(d.cpu??'--')+'%'; gpuStat.textContent=(d.gpu==null?'N/D':d.gpu+'%'); const ramPercent=d.ram_total?Math.round(Number(d.ram_used)/Number(d.ram_total)*100):null; ramStat.textContent=ramPercent==null?'--%':ramPercent+'%'; ramStat.title=d.ram_total?`RAM utilisée : ${d.ram_used}/${d.ram_total}M`:'RAM indisponible'; systemClock.dataset.temperature=d.temperature==null?'--':d.temperature+' °C'; } catch(e){} }
+const bottomCpuStat = document.getElementById('bottomCpuStat'), bottomGpuStat = document.getElementById('bottomGpuStat'), bottomRamStat = document.getElementById('bottomRamStat'), bottomTempStat = document.getElementById('bottomTempStat');
+async function refreshSystemStats(){ try { const d=await (await fetch('/api/system/stats',{cache:'no-store'})).json(); const cpu=(d.cpu??'--')+'%'; const gpu=(d.gpu==null?'N/D':d.gpu+'%'); const ramPercent=d.ram_total?Math.round(Number(d.ram_used)/Number(d.ram_total)*100):null; const ram=ramPercent==null?'--%':ramPercent+'%'; const temp=d.temperature==null?'--°C':d.temperature+'°C'; cpuStat.textContent=cpu; gpuStat.textContent=gpu; ramStat.textContent=ram; ramStat.title=d.ram_total?`RAM utilisée : ${d.ram_used}/${d.ram_total}M`:'RAM indisponible'; bottomCpuStat.textContent=cpu; bottomGpuStat.textContent=gpu; bottomRamStat.textContent=ram; bottomTempStat.textContent=temp; systemClock.dataset.temperature=d.temperature==null?'--':d.temperature+' °C'; } catch(e){} }
 refreshSystemStats(); setInterval(refreshSystemStats,2000);
 const systemClock=document.getElementById('systemClock'), clockTime=document.getElementById('clockTime'), clockDate=document.getElementById('clockDate'), clockTemp=document.getElementById('clockTemp');
 function refreshClock(){ const n=new Date(); clockTime.textContent=n.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); clockDate.textContent=n.toLocaleDateString('fr-BE',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); clockTemp.textContent=systemClock.dataset.temperature||'-- °C'; }
