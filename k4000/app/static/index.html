@@ -1146,6 +1146,50 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   .scanner-container { padding: 2px 0; }
 }
 </style>
+<style id="distributedTelemetryLayout">
+/* Répartition dans l'en-tête : charge à gauche, horloge à droite,
+   température alignée près du titre. */
+.header-telemetry {
+  top: 50%;
+  left: 10px;
+  right: 10px;
+  transform: translateY(-50%);
+  justify-content: space-between;
+  align-items: center;
+}
+.header-telemetry #systemStats { order: 1; }
+.header-telemetry #systemClock { order: 3; }
+.header-telemetry #clockTemp {
+  position: absolute;
+  left: calc(50% + 52px);
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0 !important;
+  padding-left: 5px;
+  border-left: 1px solid rgba(255, 65, 75, .45);
+}
+@media (max-width: 700px) {
+  .header-telemetry {
+    top: 5px;
+    left: 6px;
+    right: 6px;
+    transform: none;
+    align-items: flex-start;
+  }
+  .header-telemetry #systemStats { gap: 5px !important; }
+  .header-telemetry #systemClock { gap: 3px; }
+  .header-telemetry #clockTemp {
+    left: calc(50% + 44px);
+    top: 39px;
+    transform: none;
+    padding-left: 4px;
+  }
+}
+@media (max-width: 380px) {
+  .header-telemetry #clockDate { display: none !important; }
+  .header-telemetry #clockTemp { left: calc(50% + 39px); }
+}
+</style>
 <link rel="stylesheet" href="/static/cd-player.css?v=20260910-13">
 <link rel="stylesheet" href="/static/media-hub.css?v=20260910-4">
 </head>
