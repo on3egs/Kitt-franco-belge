@@ -1715,6 +1715,22 @@ def _music_artist_result(user_msg: str, session_id: str = "") -> dict | None:
     return {"reply": f"<section class=\"music-card\"><h3>{name}</h3><p>{detail}</p></section>", "tts_reply": f"{name}. {detail}", "action": "music_artist_info"}
 
 
+def _hifi_catalog_result(session_id: str = "default") -> dict:
+    """Tableau local de la branche Hi-Fi, sans appel au LLM."""
+    reply = """<section class="technical-card hifi-catalog"><h3>📻 HI-FI DES ANNÉES 90 — TABLEAU</h3><p>Repères sur les formats numériques, les lecteurs-enregistreurs et les appareils audio-vidéo de la période.</p><table class="help-table"><thead><tr><th>Appareil / format</th><th>Fonction</th><th>Repère historique</th></tr></thead><tbody>
+<tr><td>DAT</td><td>Lecture et enregistrement audio numérique sur bande.</td><td>Très haute fidélité, utilisé en studio et dans certaines chaînes haut de gamme.</td></tr>
+<tr><td>DCC Philips</td><td>Cassette numérique enregistrable et lisible ; compatibilité avec les cassettes analogiques selon le lecteur.</td><td>Format numérique Philips concurrent du MiniDisc et du DAT.</td></tr>
+<tr><td>MiniDisc Sony</td><td>Enregistrement et lecture sur disque magnéto-optique réinscriptible.</td><td>Format compact utilisant la compression ATRAC, pratique pour les enregistrements personnels.</td></tr>
+<tr><td>Lecteur CD</td><td>Lecture de disques compacts audio.</td><td>Élément central des chaînes hi-fi des années 90, avec affichage de piste et programmation.</td></tr>
+<tr><td>Double platine cassette</td><td>Lecture, copie et enregistrement de cassettes analogiques.</td><td>Souvent associée à la fonction dubbing et à la réduction de bruit.</td></tr>
+<tr><td>Vidéodisque / LaserDisc</td><td>Lecture d'un grand disque optique contenant image et son.</td><td>Support audiovisuel antérieur au DVD ; qualité et capacité supérieures à la VHS, mais appareils encombrants.</td></tr>
+<tr><td>Ampli-tuner</td><td>Amplification stéréo et réception radio FM/AM.</td><td>Centre de commande d'une chaîne hi-fi, parfois complété par un égaliseur.</td></tr>
+<tr><td>Égaliseur</td><td>Réglage des bandes de fréquences.</td><td>Afficheurs à barres et préréglages « rock », « pop » ou « flat » très typiques de l'époque.</td></tr>
+</tbody></table><p>Dis « DAT », « DCC Philips », « MiniDisc », « LaserDisc » ou « lecteur CD » pour obtenir une fiche détaillée.</p></section>"""
+    tts = "Voici le tableau Hi-Fi des années 90 : DAT, DCC Philips, MiniDisc Sony, lecteur CD, double platine cassette, vidéodisque LaserDisc, ampli-tuner et égaliseur. Dis le nom d'un appareil pour sa fiche détaillée."
+    return {"reply": reply, "tts_reply": tts, "action": "hifi_catalog"}
+
+
 def _active_theme_catalog_result(user_msg: str, session_id: str) -> dict | None:
     """Résout « affiche le tableau » selon la branche actuellement sélectionnée."""
     norm = _normalize_memory_text(user_msg)
@@ -1731,6 +1747,8 @@ def _active_theme_catalog_result(user_msg: str, session_id: str) -> dict | None:
         return _series_catalog_result("affiche le tableau des series", session_id)
     if theme == "musique8090":
         return _music_catalog_result("affiche le tableau de musique", session_id)
+    if theme == "hifi90":
+        return _hifi_catalog_result(session_id)
     if theme == "charleroi":
         return _charleroi_catalog_result("affiche le tableau de Charleroi", session_id, force=True)
     if theme == "pontiac":
