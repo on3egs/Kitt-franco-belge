@@ -11,7 +11,7 @@
     {"pattern": "km/h", "replacement": "kilomètres heure", "use_word_boundaries": false},
     {"pattern": "N[·.]?m", "replacement": "newtons mètres"},
     {"pattern": "([0-9]+)W[- ]?([0-9]+)", "replacement": "\\1 double vé \\2", "use_word_boundaries": false},
-    {"pattern": "L", "replacement": "litres", "case_sensitive": true},
+    {"pattern": "([0-9]+(?:[.,][0-9]+)?)\\s*L\\b", "replacement": "\\1 litres", "case_sensitive": true, "use_word_boundaries": false},
     {"pattern": "mm", "replacement": "millimètres"},
     {"pattern": "cm", "replacement": "centimètres"},
     {"pattern": "ci", "replacement": "pouces cubes"},

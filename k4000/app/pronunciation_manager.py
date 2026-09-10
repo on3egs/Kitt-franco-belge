@@ -23,12 +23,55 @@ import json
 import os
 import re
 import threading
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 
 DEFAULT_DICT_DIR = Path(__file__).resolve().parent / "dictionaries"
+
+# eSpeak-NG/Piper accept the ASCII apostrophe and U+2019 in French, but
+# U+02BC (and several look-alikes) are interpreted as ordinary characters.
+# Normalize only an apostrophe-like character between two letters: quotes
+# used as punctuation, feet/inches marks, and isolated apostrophes stay intact.
+_FRENCH_APOSTROPHE_MAP = {
+    "\u0027": "\u0027",  # APOSTROPHE
+    "\u2019": "\u0027",  # RIGHT SINGLE QUOTATION MARK
+    "\u2018": "\u0027",  # LEFT SINGLE QUOTATION MARK
+    "\u02bc": "\u0027",  # MODIFIER LETTER APOSTROPHE
+    "\uff07": "\u0027",  # FULLWIDTH APOSTROPHE
+    "\u0060": "\u0027",  # GRAVE ACCENT
+    "\u00b4": "\u0027",  # ACUTE ACCENT
+}
+
+
+def normalize_french_tts_text(text: str) -> str:
+    """Normalize French elision punctuation for the TTS copy only.
+
+    The input conversation text is never changed. Unicode apostrophe
+    look-alikes are converted to U+0027 only when surrounded by letters,
+    including accented French letters and œ (``str.isalpha()`` handles these).
+    """
+    normalized = unicodedata.normalize("NFC", text or "")
+    chars = list(normalized)
+    output: list[str] = []
+    for index, char in enumerate(chars):
+        if (
+            char in _FRENCH_APOSTROPHE_MAP
+            and index > 0
+            and index + 1 < len(chars)
+            and chars[index - 1].isalpha()
+            and chars[index + 1].isalpha()
+        ):
+            output.append(_FRENCH_APOSTROPHE_MAP[char])
+        else:
+            output.append(char)
+    normalized_text = "".join(output)
+    # Piper/eSpeak de cette machine décompose parfois la fin de Charleroi
+    # comme le chiffre deux. Le tiret phonétique n'affecte que la copie TTS.
+    normalized_text = re.sub(r"\bCharleroi\b", "Char-le-roi", normalized_text, flags=re.IGNORECASE)
+    return normalized_text
 
 
 @dataclass

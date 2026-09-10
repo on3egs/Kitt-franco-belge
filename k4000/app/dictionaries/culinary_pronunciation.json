@@ -4,6 +4,31 @@
   "description": "Prononciation française stable des noms culinaires pour Piper.",
   "entries": [
     {
+      "pattern": "temp[eé]rament",
+      "replacement": "tempé-ra-ment",
+      "use_word_boundaries": true
+    },
+    {
+      "pattern": "XIXe",
+      "replacement": "dix-neuvième",
+      "use_word_boundaries": true
+    },
+    {
+      "pattern": "XVIIIe",
+      "replacement": "dix-huitième",
+      "use_word_boundaries": true
+    },
+    {
+      "pattern": "XXe",
+      "replacement": "vingtième",
+      "use_word_boundaries": true
+    },
+    {
+      "pattern": "XXIe",
+      "replacement": "vingt-et-unième",
+      "use_word_boundaries": true
+    },
+    {
       "pattern": "cr(?:ê|è|e{1,2})pes",
       "replacement": "crèpes",
       "use_word_boundaries": true

@@ -113,6 +113,78 @@ Préparation :
 
 Conseil : choisis des pommes qui tiennent à la cuisson. Allergènes : gluten et lait selon la pâte et le beurre.""",
     },
+    {
+        "aliases": ("moules frites", "moules-frites", "moules"),
+        "text": """Moules-frites belges pour quatre personnes.
+
+Ingrédients : 2 kilogrammes de moules nettoyées, 2 échalotes, 2 branches de céleri, 1 bouquet de persil, 2 cuillères à soupe de beurre, 250 millilitres de bière blonde ou de vin blanc, poivre et 1,2 kilogramme de pommes de terre pour les frites.
+
+Préparation :
+1. Vérifie les moules : jette celles qui restent ouvertes après un léger tapotement et celles dont la coquille est cassée.
+2. Fais revenir les échalotes et le céleri dans le beurre. Ajoute les moules, le liquide et le poivre.
+3. Couvre et cuis à feu vif 5 à 7 minutes en secouant la casserole, jusqu’à ce que les coquilles soient ouvertes. Jette les moules restées fermées et ajoute le persil.
+4. Sers immédiatement avec des frites bien égouttées. Allergènes : mollusques, lait selon le beurre et gluten éventuel selon la bière.""",
+    },
+    {
+        "aliases": ("carbonnade flamande", "carbonnade", "carbonade flamande"),
+        "text": """Carbonnade flamande pour quatre personnes.
+
+Ingrédients : 1 kilogramme de bœuf à mijoter, 3 gros oignons, 330 millilitres de bière belge brune, 2 tranches de pain, 2 cuillères à soupe de moutarde, 1 cuillère à soupe de cassonade, 1 cuillère à soupe de farine, beurre ou huile, thym, laurier, sel et poivre.
+
+Préparation :
+1. Fais dorer les morceaux de bœuf, puis réserve-les. Fais fondre les oignons dans la même cocotte.
+2. Remets la viande, saupoudre la farine et mélange. Verse la bière, ajoute la cassonade, le thym et le laurier.
+3. Tartine les tranches de pain de moutarde et pose-les sur la préparation, côté moutarde vers le bas.
+4. Couvre et mijote doucement environ 2 heures 30, jusqu’à ce que la viande soit tendre. Retire le laurier avant de servir. Allergènes : gluten, moutarde et éventuellement lait selon la matière grasse.""",
+    },
+    {
+        "aliases": ("waterzooi", "waterzooi de poulet", "waterzooi flamand"),
+        "text": """Waterzooi de poulet pour quatre personnes.
+
+Ingrédients : 4 blancs ou morceaux de poulet, 3 carottes, 2 poireaux, 2 branches de céleri, 1 oignon, 750 millilitres de bouillon, 2 jaunes d’œufs, 200 millilitres de crème, beurre, persil, sel et poivre.
+
+Préparation :
+1. Fais suer l’oignon, les carottes, les poireaux et le céleri dans un peu de beurre.
+2. Ajoute le bouillon et le poulet. Couvre et cuis doucement 25 à 30 minutes, jusqu’à cuisson complète du poulet.
+3. Retire le poulet. Mélange les jaunes d’œufs et la crème, puis tempère-les avec une louche de bouillon chaud.
+4. Hors du feu, reverse ce mélange dans la cocotte sans le faire bouillir. Remets le poulet, ajoute le persil et sers chaud. Allergènes : œufs, lait et céleri ; vérifie aussi la composition du bouillon.""",
+    },
+    {
+        "aliases": ("gaufres de liege", "gaufre de liege", "gaufres liégeoises", "gaufre liégeoise"),
+        "text": """Gaufres de Liège pour environ huit gaufres.
+
+Ingrédients : 500 grammes de farine, 20 grammes de levure fraîche ou 7 grammes de levure sèche, 2 œufs, 180 millilitres de lait tiède, 200 grammes de beurre mou, 50 grammes de sucre, 1 sachet de sucre vanillé, 150 grammes de sucre perlé et une pincée de sel.
+
+Préparation :
+1. Délaye la levure dans le lait tiède. Mélange la farine, le sucre, le sucre vanillé, le sel et les œufs.
+2. Ajoute progressivement le lait, puis incorpore le beurre mou. Pétris jusqu’à obtenir une pâte souple.
+3. Laisse lever environ 1 heure dans un endroit tempéré, puis incorpore le sucre perlé.
+4. Divise la pâte en boules. Fais cuire chaque boule dans un gaufrier bien chaud 3 à 5 minutes, jusqu’à ce qu’elle soit dorée. Allergènes : gluten, œufs et lait.""",
+    },
+    {
+        "aliases": ("gaufres de bruxelles", "gaufre de bruxelles", "gaufres bruxelloises", "gaufre bruxelloise"),
+        "text": """Gaufres de Bruxelles pour environ huit gaufres.
+
+Ingrédients : 250 grammes de farine, 3 œufs, 375 millilitres de lait, 100 grammes de beurre fondu, 15 grammes de levure fraîche ou 5 grammes de levure sèche, 1 sachet de sucre vanillé et une pincée de sel.
+
+Préparation :
+1. Sépare les blancs des jaunes. Délaye la levure dans un peu de lait tiède.
+2. Mélange la farine, les jaunes, le reste du lait, le beurre, le sucre vanillé et le sel. Ajoute la levure.
+3. Monte les blancs en neige et incorpore-les délicatement. Laisse reposer 45 minutes.
+4. Fais cuire dans un gaufrier bien chaud jusqu’à obtenir des gaufres légères et dorées. Sers avec du sucre glace, des fruits ou une garniture au choix. Allergènes : gluten, œufs et lait.""",
+    },
+    {
+        "aliases": ("boulets sauce liegeoise", "boulet sauce liegeoise", "boulets a la liegeoise", "boulet a la liegeoise", "boulets liegeois", "boulet liegeois", "boulets liégeois", "boulet liégeois"),
+        "text": """Boulets à la liégeoise pour quatre personnes.
+
+Ingrédients : 800 grammes de haché, 1 œuf, 80 grammes de chapelure, 1 oignon, persil, sel et poivre. Pour la sauce : 3 oignons, 500 millilitres de fond ou de bouillon, 2 cuillères à soupe de sirop de Liège, 1 cuillère à soupe de farine, thym, laurier et une cuillère à soupe de vinaigre.
+
+Préparation :
+1. Mélange le haché avec l’œuf, la chapelure, l’oignon et le persil. Forme huit boulets.
+2. Fais-les dorer dans une cocotte puis réserve-les. Fais revenir les oignons de la sauce.
+3. Saupoudre la farine, ajoute le bouillon, le sirop, le vinaigre, le thym et le laurier.
+4. Remets les boulets et mijote 35 à 45 minutes. Vérifie la cuisson à cœur de la viande. Sers avec des frites. Allergènes : gluten, œufs et céleri éventuel dans le bouillon.""",
+    },
 )
 
 

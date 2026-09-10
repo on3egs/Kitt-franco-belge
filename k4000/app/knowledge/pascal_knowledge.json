@@ -1,0 +1,27 @@
+{
+  "sections": [
+    {
+      "id": "berger-australien",
+      "title": "Berger australien",
+      "keywords": ["berger australien", "berger australia", "chien australien", "australian shepherd"],
+      "facts": [
+        "Le berger australien est un chien de berger polyvalent, intelligent, énergique et très proche de sa famille.",
+        "Il a besoin d'exercice quotidien, d'activités de réflexion et d'une éducation cohérente et bienveillante.",
+        "Le terme correct est berger australien ; ne pas le confondre avec un berger des Alpes ou un chien de montagne.",
+        "Les besoins individuels varient selon l'âge, la santé, le tempérament et la lignée ; demander conseil à un vétérinaire pour les sujets médicaux."
+      ]
+    },
+    {
+      "id": "pontiac-moteurs-verifies",
+      "title": "Moteurs Pontiac et Firebird — données vérifiées",
+      "keywords": ["pontiac", "firebird", "trans am", "moteur pontiac", "moteur firebird", "v8", "v6", "banshee"],
+      "facts": [
+        "La Pontiac Firebird Trans Am 1982 existe notamment avec un V8 5,0 L (305) ; la documentation de maintenance disponible préfère SAE 10W-30 en usage courant.",
+        "La Firebird quatrième génération a reçu notamment un V6 3,8 L et un V8 5,7 L selon l'année et la version ; il faut toujours préciser le millésime et le moteur.",
+        "Pour les Firebird 1993 et 2001, les manuels GM indiquent des recommandations d'huile différentes selon le moteur et la température ; ne pas généraliser une viscosité.",
+        "La Pontiac Banshee IV 1988 est un prototype distinct : V8 4,0 L DOHC à injection, environ 230 ch, boîte manuelle Getrag cinq rapports.",
+        "Ne pas confondre la Banshee IV, la Dodge Stealth du téléfilm et la réplique KITT actuelle de Pascal Fairon."
+      ]
+    }
+  ]
+}

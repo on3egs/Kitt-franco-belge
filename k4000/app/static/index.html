@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>K-4000 — KR-95</title>
+<title>KITT — Pascal Fairon</title>
 <script src="/static/k4000-voice-display.js?v=20260730-5" defer></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,12 +26,15 @@ body {
 
 /* Header */
 .header {
+  position:relative;
   text-align: center;
   padding: 15px;
   border-bottom: 1px solid rgba(120,40,40,0.58);
   background: rgba(5,0,0,0.48);
   backdrop-filter: blur(3px);
 }
+.options-back-btn { display:none; }
+.mic-btn svg { display:none; }
 .header h1 {
   font-size: 1.4em;
   color: #ff3333;
@@ -154,6 +157,12 @@ body {
   0%, 100% { left: 0; }
   50% { left: calc(100% - 60px); }
 }
+/* État ERREUR : balayage rapide cramoisi (~2,4 s), déclenché sur échec de connexion. */
+.scanner.error .scanner-light {
+  animation: scan-fast 0.3s linear infinite;
+  background: radial-gradient(ellipse, #ff2233 0%, #ff0000aa 40%, transparent 70%);
+  box-shadow: 0 0 30px #ff0022, 0 0 70px #ff0000aa;
+}
 
 /* Réaction visuelle courte lorsque K-4000 perd patience. */
 body.angry-mode {
@@ -260,6 +269,10 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
   display: flex;
   gap: 10px;
 }
+/* Widget matériel discret */
+#systemStats{position:fixed;right:10px;bottom:10px;z-index:80;display:flex;gap:8px;padding:5px 8px;border:1px solid #542025;border-radius:8px;background:#080204cc;color:#d98f96;font:11px monospace;backdrop-filter:blur(5px);pointer-events:none;opacity:.82}
+#systemClock{position:fixed;top:10px;left:10px;z-index:80;padding:6px 9px;border:1px solid #542025;border-radius:7px;background:#080204dd;color:#ff5968;font:12px monospace;letter-spacing:1px;pointer-events:none}
+#systemStats b{color:#ff5968;font-weight:700}#systemStats .gpu b{color:#62d9ff}
 .input-area input {
   flex: 1;
   background: rgba(10,6,6,0.76);
@@ -445,12 +458,18 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
   width: min(100%, 1000px);
   margin: 0 auto 8px;
   padding: 0 8px;
-  display: grid;
-  grid-template-columns: repeat(9, minmax(62px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 .command-btn {
   min-height: 40px;
+  min-width: 0;
+  width: auto;
+  flex: 1 1 86px;
+  padding: 8px 4px;
   border: 1px solid rgba(255,72,72,0.88);
   border-radius: 3px;
   background: rgba(16,4,8,0.58);
@@ -459,17 +478,41 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
   letter-spacing: 1.5px;
   cursor: pointer;
   box-shadow: inset 0 0 9px rgba(255,20,20,0.13), 0 0 8px rgba(255,0,0,0.28);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+#cmdShutdown { font-size: 10px; letter-spacing: .7px; }
 .command-btn:hover, .command-btn:focus-visible { color:#fff; border-color:#ff3030; outline:none; }
 .command-btn.active {
   color: #fff;
   background: rgba(115,0,0,0.70);
   box-shadow: inset 0 0 12px rgba(255,70,70,0.35), 0 0 18px rgba(255,0,0,0.82);
+  animation: active-button-glow 1.8s ease-in-out infinite;
+}
+.theme-btn.active {
+  color: #fff;
+  border-color: #ffe08a;
+  background: rgba(125,45,0,.78);
+  box-shadow: inset 0 0 10px rgba(255,180,40,.38), 0 0 16px rgba(255,95,20,.9), 0 0 30px rgba(255,40,0,.35);
+}
+@keyframes active-button-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
 }
 .command-btn.blue.active {
   color:#eaffff; border-color:#76eaff; background:rgba(5,42,112,0.78);
   box-shadow:inset 0 0 12px rgba(70,210,255,.35),0 0 18px rgba(70,210,255,.8);
 }
+.theme-inline {
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+.theme-inline .theme-btn { flex: 0 1 auto; min-width: 76px; min-height: 36px; font-size: 10px; letter-spacing: .7px; }
 .command-btn.mode-locked {
   color:#eaffea; border-color:#35ff62; background:rgba(0,90,24,.78);
   box-shadow:inset 0 0 12px rgba(50,255,100,.30),0 0 18px rgba(0,255,70,.75);
@@ -499,6 +542,7 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
 .help-table th, .help-table td { padding:7px 9px; border:1px solid rgba(255,72,72,.48); vertical-align:top; }
 .help-table th { color:#fff; background:rgba(105,0,0,.58); letter-spacing:1px; }
 .help-table th:first-child, .help-table td:first-child { width:30%; color:#ffaaaa; font-weight:bold; }
+.pontiac-engine-panel{border:1px solid #d48b25!important;box-shadow:0 0 18px rgba(212,139,37,.35);background:linear-gradient(135deg,rgba(35,12,0,.92),rgba(5,5,8,.96))}.pontiac-engine-panel h3{color:#ffd36a!important;text-shadow:0 0 10px rgba(255,166,35,.75)}.pontiac-engine-panel .help-table th{background:linear-gradient(90deg,rgba(110,45,0,.9),rgba(50,18,0,.9));color:#ffe7a3;border-color:rgba(255,174,54,.7)}.pontiac-engine-panel .help-table td{border-color:rgba(214,130,28,.55)}.pontiac-engine-panel .help-table tr:nth-child(even){background:rgba(180,90,0,.1)}
 .help-examples { color:#d8ffd9; }
 @media (max-width:700px) {
   .help-table { font-size:11px; }
@@ -572,15 +616,17 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
   body.mobile-options-open #commandBar { display: grid; }
   body.mobile-options-open .audio-controls { display: flex; }
   body.mobile-options-open #commandBar {
-    position: fixed; z-index: 10050; top: 78px; left: 8px; right: 8px;
+    position: fixed; z-index: 10050; top: 62px; left: 8px; right: 8px; bottom: 208px;
     width: auto; margin: 0; padding: 8px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start; overflow-y: auto; overscroll-behavior: contain;
     background: rgba(4,0,0,.96); border: 1px solid rgba(255,72,72,.88);
     box-shadow: 0 8px 24px rgba(0,0,0,.7);
   }
   body.mobile-options-open .audio-controls {
-    position: fixed; z-index: 10050; top: 230px; left: 8px; right: 8px;
-    width: auto; margin: 0; padding: 8px;
+    position: fixed; z-index: 10050; left: 8px; right: 8px; bottom: 8px;
+    width: auto; max-height: 190px; margin: 0; padding: 8px;
+    overflow-y: auto; overscroll-behavior: contain;
     background: rgba(4,0,0,.96); border: 1px solid rgba(255,72,72,.88);
     box-shadow: 0 8px 24px rgba(0,0,0,.7);
   }
@@ -591,18 +637,288 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
   .input-area input { min-height: 46px; font-size: 16px; }
   .input-area #mic, .input-area #automic { min-width: 48px; min-height: 48px; }
 }
+@media (max-width: 700px) and (max-height: 560px) {
+  body.mobile-options-open #commandBar { bottom: 154px; }
+  body.mobile-options-open .audio-controls { max-height: 138px; }
+}
 @media (orientation: landscape) and (max-height: 700px) {
   .voice-display-container.orientation-fullscreen { display:flex !important; width:100vw; height:100dvh; }
 }
 
+/* Kyronex Pascal Fairon — refonte visuelle progressive (fonctions conservées). */
+:root {
+  --kx-red: #ef1b2d;
+  --kx-red-soft: rgba(239, 27, 45, .72);
+  --kx-panel: rgba(3, 3, 7, .78);
+  --kx-line: rgba(239, 27, 45, .58);
+}
+body {
+  /* Le fond remplit automatiquement toute la fenêtre, navigateur ou iPhone. */
+  background-color: #030307;
+  background-image: linear-gradient(180deg, rgba(0,0,0,.24), rgba(0,0,0,.76)),
+                    url('/static/telechargement.jpeg?v=20260902-2');
+  background-position: center top;
+  background-size: 100% 100%;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+}
+@media (max-width: 600px) {
+  body {
+    background-size: 100% 100%;
+    background-attachment: scroll;
+  }
+}
+.header, .panel, .card, .controls, .chat-container, .audio-controls {
+  background: var(--kx-panel);
+  border-color: var(--kx-line);
+  box-shadow: 0 10px 34px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.025);
+  backdrop-filter: blur(10px);
+}
+.header h1, h1, h2, h3, .section-title { color: var(--kx-red); text-shadow: 0 0 18px rgba(239,27,45,.55); }
+button, .nav-btn, .mode-btn, .action-btn {
+  border-color: var(--kx-line);
+  background: rgba(10, 4, 8, .80);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+button:hover, .nav-btn:hover, .mode-btn:hover, .action-btn:hover,
+button:focus-visible, .nav-btn:focus-visible, .mode-btn:focus-visible, .action-btn:focus-visible {
+  border-color: var(--kx-red); box-shadow: 0 0 16px rgba(239,27,45,.42); transform: translateY(-1px);
+}
+button:active, .nav-btn:active, .mode-btn:active, .action-btn:active { transform: translateY(1px) scale(.985); }
+.voice-display-container { border-color: var(--kx-line); box-shadow: 0 0 22px rgba(239,27,45,.28); }
+.display-fullscreen-btn { border-color: var(--kx-red); background: rgba(20,2,7,.88); box-shadow: 0 0 12px rgba(239,27,45,.45); }
+#kxSplash{position:fixed;inset:0;z-index:30000;display:grid;place-items:center;background:#000;transition:opacity .5s ease}#kxSplash img{width:min(78vw,760px);max-height:72vh;object-fit:contain;filter:drop-shadow(0 0 24px rgba(239,27,45,.5))}#kxSplash span{position:absolute;bottom:9vh;color:#ef1b2d;letter-spacing:.25em;font-size:.8rem;text-shadow:0 0 12px #ef1b2d}#kxSplash.is-hidden{opacity:0;pointer-events:none}
+body.impatient-mode .header h1{color:#ff5260;text-shadow:0 0 20px #ef1b2d}body.impatient-mode .voice-display-container{border-color:#ef1b2d;box-shadow:0 0 30px rgba(239,27,45,.7)}body.impatient-mode .scanner-light{background:radial-gradient(ellipse,#fff 0%,#ef1b2d 33%,transparent 75%);box-shadow:0 0 26px #ef1b2d}
 </style>
+<style>
+#elevenPanel[hidden]{display:none!important}
+:root { --ui-scale: 1; --display-intensity: 1; }
+#uiDimmer { position:fixed; inset:0; z-index:29000; pointer-events:none; background:#000; opacity:calc((1 - var(--display-intensity)) * .55); }
+.settings-btn { min-width:150px; font-size:14px; border-width:2px; }
+.horn-btn { min-width:120px; border-color:#ffbf45; color:#ffe2a0; }
+.horn-btn.active { color:#fff; border-color:#ffd35a; background:rgba(125,65,0,.78); box-shadow:0 0 18px rgba(255,170,40,.8); }
+.horn-panel .system-card { border-color:#ffbf45; background:linear-gradient(180deg,#302006,#120c03); }
+.horn-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:18px; }
+.horn-grid button { min-height:64px; font-size:14px; color:#ffe8b0; border-color:#d99a2b; background:#241605; }
+.horn-grid button:hover, .horn-grid button:focus-visible { color:#fff; background:#704509; border-color:#ffd35a; }
+@media (max-width:700px) { .horn-grid { grid-template-columns:1fr; } .horn-grid button { min-height:68px; } }
+.settings-panel .system-card { width:min(94vw,760px); max-height:88vh; overflow:auto; }
+.settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; text-align:left; }
+.settings-field { display:flex; flex-direction:column; gap:7px; color:#f1caca; font-weight:bold; font-size:14px; }
+.settings-field input[type=range], .settings-field select { width:100%; min-height:42px; accent-color:#ef1b2d; }
+.settings-field output { color:#fff; font-size:18px; }
+.settings-check { grid-column:1/-1; min-height:52px; display:flex; align-items:center; gap:12px; font-size:15px; }
+.settings-check input { width:26px; height:26px; accent-color:#ef1b2d; }
+.settings-note { color:#c99494; font-size:12px; line-height:1.4; grid-column:1/-1; }
+.settings-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:18px; }
+.settings-actions button { min-height:52px; padding:10px 18px; font-size:14px; }
+.settings-actions #settingsApply { color:#fff; border-color:#45ff72; box-shadow:0 0 15px rgba(40,255,90,.45); }
+.settings-saved { color:#79ff98; min-height:20px; margin-top:10px; }
+.system-panel.vigilance-fullscreen { padding:0; }
+.system-panel.vigilance-fullscreen .system-card { width:100vw; height:100dvh; max-width:none; max-height:none; border-radius:0; display:flex; flex-direction:column; }
+.system-panel.vigilance-fullscreen #vigilanceVideo { flex:1; min-height:0; max-height:none !important; object-fit:contain; }
+.command-btn { min-height:max(40px, calc(40px * var(--ui-scale))); font-size:max(12px, calc(12px * var(--ui-scale))); }
+.help-table { font-size:max(13px, calc(13px * var(--ui-scale))); }
+#commandBar, .chat-container, .voice-display-container, .audio-controls { width:min(100%, var(--virtual-width, 1000px)); max-width:100%; }
+.header h1 { font-size:calc(1.4em * var(--ui-scale)); }
+.subtitle, #systemClock, #systemStats { font-size:calc(1em * var(--ui-scale)); }
+/* Écran tactile voiture : commandes compactes mais encore faciles à viser. */
+body.touch-10 #commandBar { gap:5px; padding-left:4px; padding-right:4px; margin-bottom:5px; }
+body.touch-10 #commandBar { gap:3px; padding-left:2px; padding-right:2px; margin-top:-4px; margin-bottom:2px; }
+body.touch-10 .command-btn { min-height:40px; min-width:0; width:0; flex:1 1 0; font-size:10px; padding:5px 3px; letter-spacing:.35px; }
+body.touch-10 .settings-btn, body.touch-10 .horn-btn { min-width:0; font-size:10px; }
+body.touch-10 #cmdCulinaryMode, body.touch-10 #cmdDebat { min-width:0; max-width:none; width:0; flex:1 1 0; font-size:10px; }
+body.touch-10 .theme-inline { gap:3px; }
+body.touch-10 .theme-inline .theme-btn { min-width:58px; min-height:37px; font-size:9px; letter-spacing:.2px; padding:4px 2px; }
+body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-height:52px; }
+@media (max-width:700px) { body.touch-10 .command-btn { width:auto; flex:1 1 auto; } }
+/* Zone basse iPhone : réduction d’environ 10 % pour libérer de l’espace. */
+@media (max-width:700px) {
+  .chat-area { padding:6px; gap:5px; }
+  .input-area { gap:5px; padding:6px; }
+  .input-area input { min-height:38px; padding:9px; font-size:13px; }
+  .input-area #mic, .input-area #automic { min-width:36px; min-height:36px; }
+  .input-area #send { min-height:38px; padding:7px 9px; font-size:10px; }
+  .audio-controls { gap:4px; padding:5px; }
+  .audio-controls .control-group { gap:5px; }
+  .control-label { font-size:9px; }
+  .voice-selector { gap:5px; }
+  .voice-btn, .effect-select { min-height:30px; padding:3px 5px; font-size:10px; }
+  .status-bar { padding:3px; font-size:.55em; }
+  body.mobile-options-open #commandBar { bottom:175px; padding:6px; gap:4px; }
+  body.mobile-options-open .audio-controls { bottom:6px; padding:6px; max-height:154px; }
+}
+/* iPhone/GSM : les indicateurs restent dans le flux pour ne jamais recouvrir
+   l’en-tête, la barre de commandes ou la zone de conversation. */
+@media (max-width:700px) {
+  .header-telemetry { position:absolute; top:5px; left:7px; right:7px; z-index:3; display:flex; align-items:flex-start; justify-content:space-between; pointer-events:none; }
+  .header-telemetry #systemClock, .header-telemetry #systemStats { position:static; inset:auto; width:auto; margin:0; border:0; border-radius:0; background:transparent; box-shadow:none; padding:0; font-size:9px; opacity:.9; }
+  .header-telemetry #systemClock { text-align:left; white-space:pre-line; line-height:1.2; letter-spacing:.2px; }
+  .header-telemetry #systemStats { display:flex; flex-direction:column; align-items:flex-end; gap:1px; white-space:nowrap; line-height:1.15; }
+  .header-telemetry #systemStats span { min-width:0; }
+  #systemClock, #systemStats {
+    position:relative; inset:auto; z-index:2; box-sizing:border-box;
+    width:calc(100% - 12px); margin-left:6px; margin-right:6px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  #systemClock { align-self:center; margin-top:2px; margin-bottom:2px; padding:3px 6px; text-align:center; font-size:10px; letter-spacing:.35px; }
+  #systemStats { align-self:center; justify-content:space-around; gap:3px; margin-top:0; margin-bottom:4px; padding:3px 5px; font-size:9px; }
+  #systemStats span { min-width:0; }
+}
+/* Partie haute iPhone : réduction d’environ 10 % et espacement resserré. */
+@media (max-width:700px) {
+  .header { padding:6px 4px; }
+  .header h1 { font-size:calc(1.15em * var(--ui-scale)); line-height:.9; }
+  .header .subtitle { margin-top:1px; font-size:.58em; }
+  .scanner-container { padding:5px 0; }
+  .scanner { width:min(61vw,243px); height:6px; }
+  .mode-indicators { gap:6px; margin:-2px auto 3px; font-size:8px; letter-spacing:.4px; }
+  .mode-indicator::before { width:6px; height:6px; margin-right:3px; }
+}
+/* Menu OPTIONS : panneau compact et régulier sur iPhone. */
+@media (max-width:700px) {
+  body.mobile-options-open #commandBar {
+    top:54px; left:4px; right:4px; bottom:160px;
+    padding:5px; gap:3px; grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+  body.mobile-options-open #commandBar .command-btn {
+    width:100% !important; min-width:0 !important; max-width:none !important;
+    min-height:34px !important; height:34px !important; padding:4px 2px; font-size:9px; letter-spacing:.2px;
+  }
+  body.mobile-options-open #commandBar .theme-inline { grid-column:1/-1; gap:2px; }
+  body.mobile-options-open #commandBar .theme-inline .theme-btn {
+    width:0 !important; flex:1 1 0; min-height:31px !important; height:31px !important; min-width:0 !important; padding:3px 2px; font-size:8px;
+  }
+  body.mobile-options-open .audio-controls {
+    left:4px; right:4px; bottom:4px; max-height:140px; padding:5px; gap:3px;
+  }
+  body.mobile-options-open .audio-controls .voice-btn,
+  body.mobile-options-open .audio-controls .effect-select { min-height:28px; padding:3px 4px; font-size:9px; }
+}
+@media (max-width:360px) {
+  body.mobile-options-open #commandBar { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+/* Portrait iPhone : la barre principale utilise la même grille que OPTIONS.
+   La largeur ne dépend plus de la longueur du libellé. */
+@media (max-width:700px) {
+  #commandBar {
+    display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+    align-items:stretch; justify-items:stretch;
+  }
+  #commandBar > .command-btn {
+    width:100% !important; min-width:0 !important; max-width:none !important;
+    flex:none; height:40px; min-height:40px;
+  }
+  #commandBar > .theme-inline { grid-column:1/-1; width:100%; }
+  #commandBar > .theme-inline .theme-btn { width:0; flex:1 1 0; min-width:0; }
+}
+@media (max-width:700px) { .settings-grid { grid-template-columns:1fr; } .settings-check,.settings-note { grid-column:auto; } }
+@media (max-width:700px) {
+  #commandBar { display:none; }
+  body.mobile-options-open #commandBar { display:grid; }
+  /* Dernier ajustement : MICRO et AUTO sont amincis de 10 %, ENVOYER aussi. */
+  .input-area #mic, .input-area #automic {
+    width:33px !important; min-width:33px !important;
+    height:33px !important; min-height:33px !important;
+  }
+  .input-area #send {
+    height:34px !important; min-height:34px !important;
+    padding-top:6px; padding-bottom:6px;
+  }
+}
+@media (max-width:700px) {
+  .mobile-menu-toggle { min-width:104px; min-height:36px; padding:6px 12px; font-size:10px; letter-spacing:.6px; }
+  .mobile-menu-toggle[aria-expanded="true"] { color:#fff; border-color:#ff9a9a; background:rgba(150,0,0,.92); box-shadow:0 0 15px rgba(255,35,35,.72); }
+}
+@media (orientation:landscape) and (max-height:700px) {
+  .header-telemetry { position:fixed; top:4px; left:6px; right:76px; z-index:10061; display:flex; justify-content:space-between; align-items:flex-start; pointer-events:none; }
+  .header-telemetry #systemClock, .header-telemetry #systemStats { position:static; inset:auto; width:auto; margin:0; padding:3px 5px; border:1px solid rgba(84,32,37,.7); border-radius:5px; background:rgba(8,2,4,.88); font-size:9px; line-height:1.15; }
+  .header-telemetry #systemClock { white-space:pre-line; text-align:left; }
+  .header-telemetry #systemStats { display:flex; flex-direction:column; align-items:flex-end; gap:1px; white-space:nowrap; }
+  .header-telemetry #systemStats span { min-width:0; }
+}
+/* OPTIONS final : un seul gabarit pour toutes les commandes et tous les thèmes. */
+@media (max-width:700px) {
+  body.mobile-options-open #commandBar { grid-template-columns:repeat(3,minmax(0,1fr)); grid-auto-rows:34px; }
+  body.mobile-options-open #commandBar > .theme-inline { display:contents; }
+  body.mobile-options-open #commandBar > .command-btn,
+  body.mobile-options-open #commandBar > .theme-inline > .theme-btn {
+    width:100% !important; min-width:0 !important; max-width:none !important;
+    height:34px !important; min-height:34px !important; margin:0 !important;
+    padding:3px 2px !important; font-size:8.5px !important; letter-spacing:.15px !important;
+  }
+  body.mobile-options-open #commandBar > .options-back-btn { display:block !important; color:#fff; border-color:#ff9a9a; background:rgba(150,0,0,.9); }
+}
+@media (orientation:portrait) and (max-width:700px) {
+  .header h1, .header .subtitle { max-width:46%; margin-left:auto; margin-right:auto; }
+  .header-telemetry { left:6px; right:6px; }
+  .header-telemetry #systemClock { width:27%; text-align:left; }
+  .header-telemetry #systemStats { width:27%; text-align:right; align-items:flex-end; }
+}
+/* iPhone horizontal : le bouton OPTIONS reste accessible et la grille remplit
+   réellement la fenêtre disponible. */
+@media (orientation:landscape) and (max-height:700px) {
+  .mobile-menu-toggle {
+    display:inline-flex; position:fixed; top:4px; right:4px; z-index:10060;
+    min-height:30px; padding:4px 10px; align-items:center; justify-content:center;
+    border:1px solid rgba(255,72,72,.9); background:rgba(40,0,0,.88); color:#ffd0d0;
+    font:bold 9px 'Courier New',monospace;
+  }
+  #commandBar, .audio-controls { display:none; }
+  body.mobile-options-open .voice-display-container.orientation-fullscreen { display:none !important; }
+  body.mobile-options-open #commandBar {
+    display:grid; position:fixed; z-index:10050; inset:4px 4px 78px 4px;
+    width:auto; margin:0; padding:4px; gap:3px;
+    grid-template-columns:repeat(7,minmax(0,1fr)); grid-template-rows:repeat(4,minmax(30px,1fr));
+    overflow:auto; background:rgba(4,0,0,.97); border:1px solid rgba(255,72,72,.88);
+  }
+  body.mobile-options-open #commandBar > .theme-inline { display:contents; }
+  body.mobile-options-open #commandBar .command-btn {
+    width:100% !important; min-width:0 !important; max-width:none !important;
+    height:100% !important; min-height:30px !important; margin:0 !important;
+    padding:2px !important; font-size:8px !important; letter-spacing:0 !important;
+  }
+  body.mobile-options-open .audio-controls {
+    display:flex; position:fixed; z-index:10050; left:4px; right:4px; bottom:4px;
+    width:auto; height:70px; max-height:70px; margin:0; padding:4px; gap:4px; overflow:auto;
+    background:rgba(4,0,0,.97); border:1px solid rgba(255,72,72,.88);
+  }
+}
+</style>
+<style>
+/* Télémétrie en-tête : cadrans noirs opaques inspirés de la console K2000. */
+.header { min-height:90px; }
+.header-telemetry { position:absolute; top:9px; right:14px; z-index:5; display:flex; flex-direction:row-reverse; align-items:stretch; gap:8px; pointer-events:none; }
+.header-telemetry #systemClock, .header-telemetry #systemStats { position:static; inset:auto; margin:0; opacity:1; background:#020305; border:1px solid #6b2028; box-shadow:inset 0 0 14px #000,0 0 8px rgba(255,30,35,.28); }
+.header-telemetry #systemClock { width:170px; min-height:67px; padding:6px 8px; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.05; }
+#clockTime { color:#ff2636; font:700 clamp(21px,2.1vw,34px)/1 'Courier New',monospace; letter-spacing:2px; text-shadow:0 0 10px #e10b19; }
+#clockDate { color:#ff7780; margin-top:4px; font:700 9px/1.1 'Courier New',monospace; letter-spacing:.7px; }
+#clockTemp { color:#b9d4e6; margin-top:2px; font:700 9px/1.1 'Courier New',monospace; }
+.header-telemetry #systemStats { min-width:104px; padding:6px 8px; border-radius:7px; display:flex; flex-direction:column; align-items:flex-end; gap:3px; color:#a7c4d5; font:700 10px/1.1 'Courier New',monospace; }
+.header-telemetry #systemStats b { color:#ff5968; }.header-telemetry #systemStats .gpu b { color:#68d8ff; }
+@media (max-width:700px), (orientation:landscape) and (max-height:700px) {
+  .header { min-height:60px; }.header-telemetry { top:4px; right:5px; gap:3px; }
+  .header-telemetry #systemClock, .header-telemetry #systemStats { background:#020305 !important; border:1px solid #6b2028 !important; box-shadow:inset 0 0 9px #000 !important; }
+  .header-telemetry #systemClock { width:86px; min-height:42px; padding:3px; }.header-telemetry #systemStats { min-width:58px; padding:3px 4px; font-size:7px; gap:1px; }
+  #clockTime { font-size:14px; letter-spacing:.5px; } #clockDate { font-size:6px; margin-top:2px; letter-spacing:.1px; } #clockTemp { display:none; }
+}
+</style>
+<link rel="stylesheet" href="/static/cd-player.css?v=20260910-13">
+<link rel="stylesheet" href="/static/media-hub.css?v=20260910-4">
 </head>
 <body>
+<div id="uiDimmer" aria-hidden="true"></div>
+<div id="kxSplash" aria-label="Démarrage KITT"><img src="/static/splash-reference.jpeg?v=20260902-1" alt="Kyronex"><span>INITIALISATION KITT</span></div>
 
 <div class="header">
-  <h1>K-4000</h1>
-  <div class="subtitle">SYSTÈME KR-95</div>
+  <h1>KITT</h1>
+  <div class="subtitle">SYSTÈME PASCAL FAIRON</div>
   <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="mobileOptions">OPTIONS</button>
+  <div class="header-telemetry" aria-label="État du système">
+    <div id="systemClock" aria-label="Heure, date et température réelles"><strong id="clockTime">--:--:--</strong><span id="clockDate">--- -- --- ----</span><span id="clockTemp">-- °C</span></div>
+    <div id="systemStats" aria-label="Charge matérielle en temps réel"><span>CPU <b id="cpuStat">--%</b></span><span class="gpu">GPU <b id="gpuStat">--%</b></span><span>RAM <b id="ramStat">--/--</b></span></div>
+  </div>
 </div>
 
 <div class="scanner-container">
@@ -612,18 +928,27 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
 </div>
 
 
-<div class="command-bar" id="commandBar" aria-label="Commandes K4000">
+<div class="command-bar" id="commandBar" aria-label="Commandes K2000 KITT">
+  <button class="command-btn options-back-btn" id="optionsBackBtn" type="button" title="Fermer le menu OPTIONS">← RETOUR</button>
   <button class="command-btn" id="cmdObd" type="button" title="Autoriser ou bloquer l’ouverture vocale ODB">ODB</button>
   <button class="command-btn" id="cmdMnx" type="button" title="Dossier Manix">MNX</button>
-  <button class="command-btn" id="cmdDadoo" type="button" title="Dossier Dadoo">DADOO</button>
   <button class="command-btn" id="cmdNav" type="button" title="Navigation GPS">NAV</button>
   <button class="command-btn" id="cmdVol" type="button" title="Volume de la voix">VOL 100</button>
   <button class="command-btn" id="cmdVigilance" type="button" title="Surveillance caméra">VIG</button>
+  <button class="command-btn horn-btn" id="cmdHorn" type="button" title="Choisir un klaxon">📯 KLAXON</button>
+  <button class="command-btn" id="cmdCdPlayer" type="button" title="Lecteur CD virtuel KYRONEXT">♫ LECTEUR CD</button>
+  <button class="command-btn settings-btn" id="cmdSettings" type="button" title="Paramètres Qironex">⚙ PARAMÈTRES</button>
   <button class="command-btn blue active" id="cmdEqualizer" type="button" title="Afficher ou masquer l’équaliseur">EQ</button>
   <button class="command-btn" id="cmdVehicle" type="button" title="Contrôle physique du véhicule">VEHICULE</button>
+  <button class="command-btn blue" id="cmdApi" type="button" title="Activer ou désactiver l’API ElevenLabs">API OFF</button>
+  <button class="command-btn danger" id="cmdShutdown" type="button" title="Éteindre KITT">EXTINCTION</button>
   <button class="command-btn" id="cmdCommandMode" type="button" title="Verrouiller le mode commande véhicule">MODE NORMAL</button>
   <button class="command-btn blue" id="cmdTechnicalMode" type="button" title="Activer les connaissances Banshee, moteurs et construction">MODE TECHNIQUE</button>
   <button class="command-btn blue" id="cmdCulinaryMode" type="button" title="Activer les recettes, ingrédients et conseils de cuisson">MODE CUISINE</button>
+  <button class="command-btn blue" id="cmdDebat" type="button" onclick="startDebat()" title="Lancer le débat partagé KITT AGX + Pascal + Dadoo">DÉBAT</button>
+  <div class="theme-inline" id="themeInline" aria-label="Sélection directe des thèmes">
+    <button class="command-btn theme-btn" data-theme="kitt" type="button">KITT</button><button class="command-btn theme-btn" data-theme="karr" type="button">KARR</button><button class="command-btn theme-btn" data-theme="k4000" type="button">K-4000</button><button class="command-btn theme-btn" data-theme="berger" type="button">BERGER</button><button class="command-btn theme-btn" data-theme="hifi90" type="button">HI-FI 90</button><button class="command-btn theme-btn" data-theme="consoles" type="button">CONSOLES</button><button class="command-btn theme-btn" data-theme="charleroi" type="button">CHARLEROI</button><button class="command-btn theme-btn" data-theme="pontiac" type="button">PONTIAC</button><button class="command-btn theme-btn" data-theme="voiture" type="button">VOITURE</button><button class="command-btn theme-btn" data-theme="series80" type="button">SÉRIES 80</button><button class="command-btn theme-btn" data-theme="musique8090" type="button">MUSIQUE</button><button class="command-btn theme-btn" data-theme="blagues" type="button">BLAGUES</button><button class="command-btn theme-btn" data-theme="" type="button">NORMAL</button>
+  </div>
 </div>
 <div class="mode-indicators" aria-live="polite">
   <span class="mode-indicator" id="modeNormalLamp">MODE NORMAL</span>
@@ -631,7 +956,6 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
   <span class="mode-indicator" id="modeTechnicalLamp">MODE TECHNIQUE</span>
   <span class="mode-indicator" id="modeCulinaryLamp">MODE CUISINE</span>
 </div>
-
 <div class="voice-display-container" id="voiceDisplayContainer">
   <k4000-voice-display id="voiceDisplay"></k4000-voice-display>
   <button class="display-fullscreen-btn" id="displayFullscreen" type="button" title="Équaliseur en plein écran" aria-label="Équaliseur en plein écran">⛶</button>
@@ -640,14 +964,66 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
 <div class="chat-area" id="chat"></div>
 
 <div class="input-area">
-  <button class="mic-btn" id="mic" onclick="toggleMic()" title="Push-to-talk">
+  <button class="mic-btn" id="mic" onclick="toggleMic()" title="Push-to-talk" aria-label="Microphone">
+    <span>MIC</span>
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
   </button>
   <button class="auto-btn" id="automic" onclick="toggleAutoListen()" title="Auto-ecoute continue">AUTO</button>
-  <input type="text" id="input" placeholder="Parle à K-4000..." autofocus>
+  <input type="text" id="input" placeholder="Parle à KITT..." autofocus>
   <button id="send" onclick="sendMessage()">ENVOYER</button>
 </div>
 
+
+<section class="cd-player" id="cdPlayer" aria-hidden="true" aria-label="Lecteur CD virtuel KYRONEXT">
+  <div class="cd-stage">
+    <nav class="cd-side-nav" aria-label="Navigation KYRONEXT">
+      <button type="button" id="cdNavReturn"><span class="cd-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 3l9 8v9h-6v-6H9v6H3z"/></svg></span><span>ACCUEIL</span></button>
+      <button type="button" id="cdNavConversation"><span class="cd-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 14a7 7 0 0 1 14 0v4h-3v-4a4 4 0 0 0-8 0v4H5zM3 14h3v5H3zm15 0h3v5h-3z"/></svg></span><span>CONVERSATION</span></button>
+      <button type="button" id="cdNavVehicle"><span class="cd-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 11 2-5h10l2 5 2 1v6h-2v2h-3v-2H8v2H5v-2H3v-6zm3-3-1 3h10l-1-3zm-2 6a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m12 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/></svg></span><span>COMMANDE<br>VÉHICULE</span></button>
+      <button type="button" class="active" aria-current="page"><span class="cd-nav-icon">♫</span><span>LECTEUR CD</span></button>
+      <button type="button" id="cdNavRadio"><span class="cd-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14a2 2 0 0 1 2 2v9H3V9a2 2 0 0 1 2-2m0-3h14l-2 3H7zm3 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6m0 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2m6-1h4v2h-4z"/></svg></span><span>RADIO</span></button>
+      <button type="button" id="cdNavVideo"><span class="cd-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h12a2 2 0 0 1 2 2v1l4-2v10l-4-2v1a2 2 0 0 1-2 2H3zM9 9v6l5-3z"/></svg></span><span>VIDÉO</span></button>
+      <button type="button" id="cdNavCamera"><span class="cd-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l1.5-2h5L16 7h4v12H4zm8 2.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4"/></svg></span><span>CAMÉRA</span></button>
+      <button type="button" id="cdNavSettings"><span class="cd-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 3 .5 2a7 7 0 0 1 4 0l.5-2 2 .8-.7 2a7 7 0 0 1 2.8 2.8l2-.7.8 2-2 .5a7 7 0 0 1 0 4l2 .5-.8 2-2-.7a7 7 0 0 1-2.8 2.8l.7 2-2 .8-.5-2a7 7 0 0 1-4 0l-.5 2-2-.8.7-2A7 7 0 0 1 4.7 16l-2 .7-.8-2 2-.5a7 7 0 0 1 0-4l-2-.5.8-2 2 .7A7 7 0 0 1 7.5 5l-.7-2zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6"/></svg></span><span>PARAMÈTRES</span></button>
+    </nav>
+    <section class="cd-telemetry" aria-label="Informations système en temps réel">
+      <div class="cd-clock" aria-live="polite">
+        <strong id="cdClockTime">--:--:--</strong>
+        <span id="cdClockDate">--- -- --- ----</span>
+        <span id="cdClockTemp">-- °C</span>
+      </div>
+      <div class="cd-stats" aria-label="État du système">
+        <span>CPU <b id="cdCpu">--%</b></span>
+        <span>GPU <b id="cdGpu">--%</b></span>
+        <span>RAM <b id="cdRam">--%</b></span>
+      </div>
+    </section>
+    <div class="cd-disc" id="cdDisc" aria-hidden="true"></div>
+    <section class="cd-display" aria-live="polite">
+      <div class="cd-trackline" id="cdTrackIndex">Piste 00 / 00</div><div class="cd-time"><span id="cdElapsed">00:00</span> / <span id="cdTotal">00:00</span></div>
+      <div class="cd-title" id="cdTitle">Aucun CD chargé</div><div class="cd-artist" id="cdArtist">Bibliothèque locale</div>
+      <div class="cd-meta"><div>Album : <b id="cdAlbum">Lecteur CD virtuel</b></div><div>Année : <b id="cdYear">—</b></div><div>Format : <b id="cdFormat">—</b></div></div>
+    </section>
+    <section class="cd-playlist" id="cdPlaylist" aria-label="Liste des pistes"><h2>LISTE DES PISTES</h2></section><input id="cdUpload" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/flac,.mp3,.wav,.ogg,.m4a,.flac" multiple hidden><button class="cd-hit cd-import" id="cdImport" data-hitbox="IMPORT MP3" type="button">↥ AJOUTER DES MP3</button>
+    <button class="cd-hit cd-control cd-prev" id="cdPrev" data-hitbox="PREVIOUS" type="button" aria-label="Piste précédente"><span class="cd-symbol">◀◀</span><span class="cd-caption">PRÉCÉDENT</span></button><button class="cd-hit cd-control cd-stop" id="cdStop" data-hitbox="STOP" type="button" aria-label="Stop"><span class="cd-symbol">■</span><span class="cd-caption">STOP</span></button><button class="cd-hit cd-control cd-play" id="cdPlay" data-hitbox="PLAY" type="button" aria-label="Lecture"><span class="cd-symbol">▶</span><span class="cd-caption">LECTURE</span></button><button class="cd-hit cd-control cd-pause" id="cdPause" data-hitbox="PAUSE" type="button" aria-label="Pause"><span class="cd-symbol">Ⅱ</span><span class="cd-caption">PAUSE</span></button><button class="cd-hit cd-control cd-next" id="cdNext" data-hitbox="NEXT" type="button" aria-label="Piste suivante"><span class="cd-symbol">▶▶</span><span class="cd-caption">SUIVANT</span></button>
+    <button class="cd-hit cd-control cd-eject" id="cdEject" data-hitbox="EJECT" type="button" aria-label="Éjecter"><span class="cd-symbol">△</span><span class="cd-caption">ÉJECTER</span></button><button class="cd-hit cd-control cd-repeat" id="cdRepeat" data-hitbox="REPEAT" type="button" aria-label="Répétition"><span class="cd-symbol">⟳</span><span class="cd-caption">RÉPÉTITION</span></button><button class="cd-hit cd-control cd-shuffle" id="cdShuffle" data-hitbox="SHUFFLE" type="button" aria-label="Lecture aléatoire"><span class="cd-symbol">⤨</span><span class="cd-caption">ALÉATOIRE</span></button><button class="cd-hit cd-control cd-list" id="cdList" data-hitbox="LIST" type="button" aria-label="Liste des pistes"><span class="cd-symbol">☷</span><span class="cd-caption">LISTE</span></button><button class="cd-hit cd-control cd-audio" id="cdAudio" data-hitbox="AUDIO" type="button" aria-label="Recharger la bibliothèque"><span class="cd-symbol">⚙</span><span class="cd-caption">AUDIO</span></button>
+    <label class="cd-volume" data-hitbox="VOLUME">🔊 <input id="cdVolume" type="range" min="0" max="100" step="1" aria-label="Volume musique"><output id="cdVolumeValue">80%</output></label>
+    <div class="cd-state" id="cdState">PRÊT</div><div class="cd-equalizer" id="cdEqualizer" aria-hidden="true"></div><div class="cd-scanner" aria-hidden="true"></div><div class="cd-signature" aria-label="Signature du projet">By Manix <span>pour Pascal Fairon</span></div>
+  </div>
+</section>
+
+<section class="media-hub" id="mediaHub" aria-hidden="true" aria-label="Radio et vidéo KYRONEXT">
+  <div class="media-shell">
+    <header class="media-header"><button type="button" id="mediaBack">← RETOUR</button><h2 id="mediaTitle">RADIO KYRONEXT</h2><span id="mediaStatus">PRÊT</span></header>
+    <div class="media-tabs"><button type="button" id="mediaRadioTab" class="active">▣ RADIO</button><button type="button" id="mediaVideoTab">▶ VIDÉO</button></div>
+    <section class="media-view" id="radioView">
+      <div class="media-card"><h3>RADIOS / FLUX AUDIO</h3><p>Ajoute l’adresse HTTPS d’un flux radio. Les stations enregistrées restent locales sur cet appareil.</p><div class="radio-form"><input id="radioName" type="text" placeholder="Nom de la radio"><input id="radioUrl" type="url" inputmode="url" placeholder="https://adresse-du-flux"><button type="button" id="radioAdd">AJOUTER</button></div><div id="radioStations" class="radio-stations"></div><audio id="radioAudio" controls preload="none"></audio></div>
+    </section>
+    <section class="media-view" id="videoView" hidden>
+      <div class="media-card"><h3>VIDÉOS LOCALES</h3><p>Sélectionne une vidéo présente sur l’appareil ; elle est lue directement dans KYRONEXT.</p><input id="videoFile" type="file" accept="video/*"><video id="videoPlayer" controls playsinline preload="metadata"></video><div id="videoStatus" class="media-note">Aucune vidéo chargée.</div></div>
+    </section>
+  </div>
+</section>
 
 <div class="system-panel" id="obdPanel" role="dialog" aria-modal="true" aria-labelledby="obdTitle">
   <div class="system-card">
@@ -665,7 +1041,43 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
   <div class="system-card"><h2 id="navTitle">NAVIGATION GPS</h2><p>Indiquez une destination.</p><div class="panel-actions"><input id="navDestination" type="text" placeholder="Adresse ou ville"><button type="button" onclick="startNavigation()">DÉMARRER</button><button type="button" onclick="closePanel('navPanel')">FERMER</button></div></div>
 </div>
 <div class="system-panel" id="vigilancePanel" role="dialog" aria-modal="true" aria-labelledby="vigilanceTitle">
-  <div class="system-card red"><h2 id="vigilanceTitle">MODE VIGILANCE</h2><video id="vigilanceVideo" autoplay playsinline muted></video><div class="panel-actions"><button type="button" onclick="stopVigilance()">DÉSACTIVER</button></div></div>
+  <div class="system-card red"><h2 id="vigilanceTitle">MODE VIGILANCE</h2><p id="vigilanceStatus">CAMÉRA : INACTIVE · REC : —</p><img id="vigilanceVideo" alt="Aperçu caméra vigilance" style="width:100%;max-height:55vh;object-fit:contain;background:#050505"><div class="panel-actions"><button type="button" onclick="stopVigilance()">DÉSACTIVER</button></div></div>
+</div>
+<div class="system-panel horn-panel" id="hornPanel" role="dialog" aria-modal="true" aria-labelledby="hornTitle">
+  <div class="system-card"><h2 id="hornTitle">📯 KLAXONS KITT</h2>
+    <p>Choisis l’un des motifs déjà configurés. La durée reste limitée par le service véhicule.</p>
+    <div class="horn-grid">
+      <button type="button" data-horn-command="Joue le klaxon normal">NORMAL<br><small>impulsion courte</small></button>
+      <button type="button" data-horn-command="Joue le double klaxon">DOUBLE<br><small>deux bips</small></button>
+      <button type="button" data-horn-command="Joue le klaxon amical">AMICAL<br><small>deux impulsions douces</small></button>
+      <button type="button" data-horn-command="Joue le klaxon mariage">MARIAGE<br><small>motif festif</small></button>
+      <button type="button" data-horn-command="Joue le klaxon mission">MISSION<br><small>motif KITT</small></button>
+      <button type="button" data-horn-command="Joue le klaxon d'alerte">ALERTE<br><small>avertissement</small></button>
+      <button type="button" data-horn-command="Joue le klaxon SOS">SOS<br><small>séquence SOS</small></button>
+      <button type="button" data-horn-command="Joue le klaxon KITT">SIGNATURE KITT<br><small>signature sonore</small></button>
+    </div>
+    <div class="panel-actions"><button type="button" onclick="closePanel('hornPanel')">FERMER</button></div>
+  </div>
+</div>
+<div class="system-panel settings-panel" id="settingsPanel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="system-card"><h2 id="settingsTitle">PARAMÈTRES QIRONEX</h2>
+    <div class="settings-grid">
+      <label class="settings-field">Volume <output id="settingsVolumeValue">75 %</output><input id="settingsVolume" type="range" min="0" max="100" step="1" value="75"></label>
+      <label class="settings-field">Intensité de l’affichage <output id="settingsIntensityValue">80 %</output><input id="settingsIntensity" type="range" min="20" max="100" step="1" value="80"></label>
+      <label class="settings-field">Résolution / taille d’interface <select id="settingsResolution"><option value="auto">Auto</option><option value="800x480">800 × 480</option><option value="1024x600">1024 × 600</option><option value="1280x720">1280 × 720</option><option value="1280x800">1280 × 800</option><option value="1366x768">1366 × 768</option><option value="1920x1080">1920 × 1080</option><option value="custom">Personnalisée</option></select></label>
+      <label class="settings-field">Taille de l’interface <output id="settingsScaleValue">125 %</output><input id="settingsScale" type="range" min="75" max="175" step="5" value="125"></label>
+      <label class="settings-check"><input id="settingsTouch" type="checkbox" checked> Mode tactile 10 pouces</label>
+      <label class="settings-check"><input id="settingsSystemResolution" type="checkbox" disabled> Appliquer également cette résolution à l’écran <span>(indisponible sur cet environnement, aucune résolution physique ne sera modifiée)</span></label>
+      <p class="settings-note">La résolution choisie est virtuelle : elle adapte l’interface sans modifier l’écran physique. Le volume agit immédiatement sur la lecture vocale Qironex. La luminosité matérielle n’est pas modifiée.</p>
+    </div>
+    <p class="settings-saved" id="settingsSaved" aria-live="polite"></p>
+    <div class="settings-actions"><button type="button" id="settingsPreview">PRÉVISUALISER</button><button type="button" id="settingsApply">APPLIQUER</button><button type="button" id="settingsBack">RETOUR</button></div>
+  </div>
+</div>
+<div class="system-panel" id="themePanel" role="dialog" aria-modal="true" aria-labelledby="themeTitle">
+  <div class="system-card"><h2 id="themeTitle">BRANCHES KYRONEX</h2><p>Active une branche ciblée pour la session. Le bouton NORMAL revient au routage automatique.</p><div class="panel-actions" id="themeButtons">
+    <button type="button" data-theme="kitt">KITT</button><button type="button" data-theme="karr">KARR</button><button type="button" data-theme="k4000">K-4000</button><button type="button" data-theme="berger">BERGER AUSTRALIEN</button><button type="button" data-theme="hifi90">HI-FI ANNÉES 90</button><button type="button" data-theme="consoles">CONSOLES DE JEUX</button><button type="button" data-theme="charleroi">CHARLEROI</button><button type="button" data-theme="pontiac">PONTIAC / MOTEURS</button><button type="button" data-theme="voiture">VOITURE</button><button type="button" data-theme="series80">SÉRIES 80</button><button type="button" data-theme="musique8090">MUSIQUE</button><button type="button" data-theme="blagues">BLAGUES</button><button type="button" data-theme="">NORMAL</button><button type="button" onclick="closePanel('themePanel')">FERMER</button>
+  </div></div>
 </div>
 
 <div class="status-bar">
@@ -679,6 +1091,7 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
       <button class="voice-btn" id="voice-guy" onclick="setVoice('guy')">Manix | Kyronext Studio</button>
       <button class="voice-btn" id="voice-manix" onclick="setVoice('manix')">Manix</button>
       <button class="voice-btn" id="voice-english" onclick="setVoice('english')">English</button>
+      <button class="voice-btn" id="elevenBtn" onclick="openElevenLabs()" title="Configurer la voix ElevenLabs">ELEVENLABS API</button>
     </div>
   </div>
   <label class="control-group" for="voiceEffect">
@@ -710,20 +1123,34 @@ let micContext = null;
 let pcmChunks = [];
 const micBtn = document.getElementById('mic');
 const autoBtn = document.getElementById('automic');
+const cpuStat = document.getElementById('cpuStat'), gpuStat = document.getElementById('gpuStat'), ramStat = document.getElementById('ramStat');
+async function refreshSystemStats(){ try { const d=await (await fetch('/api/system/stats',{cache:'no-store'})).json(); cpuStat.textContent=(d.cpu??'--')+'%'; gpuStat.textContent=(d.gpu==null?'N/D':d.gpu+'%'); ramStat.textContent=d.ram_total?`${d.ram_used}/${d.ram_total}M`:'--/--'; systemClock.dataset.temperature=d.temperature==null?'--':d.temperature+' °C'; } catch(e){} }
+refreshSystemStats(); setInterval(refreshSystemStats,2000);
+const systemClock=document.getElementById('systemClock'), clockTime=document.getElementById('clockTime'), clockDate=document.getElementById('clockDate'), clockTemp=document.getElementById('clockTemp');
+function refreshClock(){ const n=new Date(); clockTime.textContent=n.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); clockDate.textContent=n.toLocaleDateString('fr-BE',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); clockTemp.textContent=systemClock.dataset.temperature||'-- °C'; }
+refreshClock(); setInterval(refreshClock,1000);
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+document.getElementById('optionsBackBtn')?.addEventListener('click', () => {
+  document.body.classList.remove('mobile-options-open');
+  mobileMenuToggle?.setAttribute('aria-expanded', 'false');
+  if (mobileMenuToggle) mobileMenuToggle.textContent = '☰ OPTIONS';
+});
 mobileMenuToggle?.addEventListener('click', () => {
   const open = document.body.classList.toggle('mobile-options-open');
   mobileMenuToggle.setAttribute('aria-expanded', String(open));
+  mobileMenuToggle.textContent = open ? '✕ FERMER' : '☰ OPTIONS';
 });
 document.addEventListener('click', (event) => {
   if (!document.body.classList.contains('mobile-options-open')) return;
   if (event.target.closest('#mobileMenuToggle, #commandBar, .audio-controls')) return;
   document.body.classList.remove('mobile-options-open');
   mobileMenuToggle?.setAttribute('aria-expanded', 'false');
+  if (mobileMenuToggle) mobileMenuToggle.textContent = '☰ OPTIONS';
 });
 const cmdObd = document.getElementById('cmdObd');
 const cmdVol = document.getElementById('cmdVol');
 const cmdVigilance = document.getElementById('cmdVigilance');
+const cmdHorn = document.getElementById('cmdHorn');
 const cmdEqualizer = document.getElementById('cmdEqualizer');
 const cmdCommandMode = document.getElementById('cmdCommandMode');
 const cmdTechnicalMode = document.getElementById('cmdTechnicalMode');
@@ -739,7 +1166,66 @@ let landscapeFullscreenDismissed = false;
 let equalizerEnabled = localStorage.getItem('k4000.equalizer') !== 'off';
 let obdAutoEnabled = localStorage.getItem('k4000.obdAuto') === 'on';
 let playbackVolume = Number(localStorage.getItem('k4000.volume') || '1');
-let vigilanceStream = null;
+let vigilanceActive = false;
+const cmdSettings = document.getElementById('cmdSettings');
+const settingsPanel = document.getElementById('settingsPanel');
+const settingsVolume = document.getElementById('settingsVolume');
+const settingsIntensity = document.getElementById('settingsIntensity');
+const settingsScale = document.getElementById('settingsScale');
+const settingsResolution = document.getElementById('settingsResolution');
+const settingsTouch = document.getElementById('settingsTouch');
+const settingsSystemResolution = document.getElementById('settingsSystemResolution');
+
+function effectiveUiScale(resolution, requested, touch) {
+  // La résolution virtuelle et l'échelle sont deux réglages indépendants.
+  // Auto choisit le cadre, mais ne doit jamais neutraliser le curseur.
+  return touch ? Math.max(requested, 1.15) : requested;
+}
+function applyUiSettings(data) {
+  const volume = Math.max(0, Math.min(100, Number(data.volume ?? 75)));
+  const intensity = Math.max(20, Math.min(100, Number(data.display_intensity ?? 80)));
+  const requested = Math.max(.75, Math.min(1.75, Number(data.ui_scale ?? 1.25)));
+  const touch = Boolean(data.touch_10inch);
+  settingsVolume.value = volume; settingsIntensity.value = intensity; settingsScale.value = Math.round(requested * 100);
+  settingsResolution.value = data.ui_resolution || 'auto'; settingsTouch.checked = touch; settingsSystemResolution.checked = Boolean(data.system_resolution_change);
+  document.documentElement.style.setProperty('--ui-scale', effectiveUiScale(settingsResolution.value, requested, touch));
+  const virtualWidth = settingsResolution.value === 'auto' ? '1000px' : `${settingsResolution.value.split('x')[0]}px`;
+  document.documentElement.style.setProperty('--virtual-width', virtualWidth);
+  document.documentElement.style.setProperty('--display-intensity', intensity / 100);
+  document.body.classList.toggle('touch-10', touch);
+  playbackVolume = volume / 100; localStorage.setItem('k4000.volume', String(playbackVolume));
+  localStorage.setItem('qironex.uiSettings', JSON.stringify({ui_resolution:settingsResolution.value, ui_scale:requested, touch_10inch:touch, system_resolution_change:false, volume, display_intensity:intensity}));
+  voiceDisplay?.setOutputVolume?.(playbackVolume); updateCommandButtons();
+  document.getElementById('settingsVolumeValue').textContent = `${volume} %`;
+  document.getElementById('settingsIntensityValue').textContent = `${intensity} %`;
+  document.getElementById('settingsScaleValue').textContent = `${Math.round(requested * 100)} %`;
+}
+let uiSettings = {ui_resolution:'auto', ui_scale:1.25, touch_10inch:true, system_resolution_change:false, volume:75, display_intensity:80};
+async function saveUiSettings() {
+  uiSettings = {ui_resolution:settingsResolution.value, ui_scale:Number(settingsScale.value)/100, touch_10inch:settingsTouch.checked, system_resolution_change:false, volume:Number(settingsVolume.value), display_intensity:Number(settingsIntensity.value)};
+  applyUiSettings(uiSettings);
+  try {
+    const response = await fetch('/api/ui-settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(uiSettings)});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    document.getElementById('settingsSaved').textContent = 'Réglages appliqués et enregistrés.';
+  } catch(e) {
+    localStorage.setItem('qironex.uiSettings', JSON.stringify(uiSettings));
+    document.getElementById('settingsSaved').textContent = 'Réglages appliqués localement. Serveur indisponible.';
+  }
+}
+async function loadUiSettings() {
+  try { const r=await fetch('/api/ui-settings'); if(r.ok) uiSettings=await r.json(); } catch(e) { try { uiSettings=JSON.parse(localStorage.getItem('qironex.uiSettings')) || uiSettings; } catch(_) {} }
+  applyUiSettings(uiSettings);
+}
+cmdSettings?.addEventListener('click', () => settingsPanel.classList.add('open'));
+document.getElementById('settingsBack')?.addEventListener('click', () => settingsPanel.classList.remove('open'));
+document.getElementById('settingsPreview')?.addEventListener('click', () => { statusEl.innerHTML='<span class="online">Prévisualisation appliquée immédiatement.</span>'; });
+[settingsVolume, settingsIntensity, settingsScale, settingsResolution, settingsTouch].forEach(el => {
+  el?.addEventListener('input', () => applyUiSettings({ui_resolution:settingsResolution.value, ui_scale:Number(settingsScale.value)/100, touch_10inch:settingsTouch.checked, system_resolution_change:false, volume:Number(settingsVolume.value), display_intensity:Number(settingsIntensity.value)}));
+  el?.addEventListener('change', saveUiSettings);
+});
+document.getElementById('settingsApply')?.addEventListener('click', async () => { await saveUiSettings(); });
+loadUiSettings();
 
 function displayIsFullscreen() {
   return document.fullscreenElement === voiceDisplayContainer ||
@@ -829,8 +1315,8 @@ function closeObdPanel(disable) {
 }
 function closePanel(id) { document.getElementById(id).classList.remove('open'); }
 
-function toggleEqualizer() {
-  equalizerEnabled = !equalizerEnabled;
+function setEqualizer(enabled) {
+  equalizerEnabled = Boolean(enabled);
   localStorage.setItem('k4000.equalizer', equalizerEnabled ? 'on' : 'off');
   voiceDisplayContainer.classList.toggle('display-disabled', !equalizerEnabled);
   if (!equalizerEnabled) {
@@ -839,6 +1325,10 @@ function toggleEqualizer() {
   }
   updateCommandButtons();
   syncLandscapeFullscreen();
+}
+
+function toggleEqualizer() {
+  setEqualizer(!equalizerEnabled);
 }
 
 function cycleVolume() {
@@ -851,23 +1341,39 @@ function cycleVolume() {
 }
 
 async function toggleVigilance() {
-  if (vigilanceStream) { stopVigilance(); return; }
+  const next = !vigilanceActive;
   try {
-    vigilanceStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
-    document.getElementById('vigilanceVideo').srcObject = vigilanceStream;
-    document.getElementById('vigilancePanel').classList.add('open');
-    cmdVigilance.classList.add('active');
+    const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message: next ? 'Active le mode vigilance' : 'Désactive le mode vigilance', session_id:sessionId, audio:true})});
+    const d = await r.json();
+    if (!r.ok || d.action === 'vigilance_error') throw Error(d.reply || 'Caméra indisponible');
+    if (d.audio_url) await playAudio(d.audio_url);
+    vigilanceActive = next;
+    renderVigilance({active: next, recording: next, fps: next ? 5 : 0});
+    document.getElementById('vigilanceVideo').src = next ? `/api/vigilance/frame?t=${Date.now()}` : '';
+    if (next) document.getElementById('vigilancePanel').classList.add('open');
   } catch (error) {
     statusEl.innerHTML = `<span class="offline">Caméra indisponible: ${error.message}</span>`;
+    renderVigilance({active:false, recording:false});
   }
 }
-function stopVigilance() {
-  if (vigilanceStream) vigilanceStream.getTracks().forEach(track => track.stop());
-  vigilanceStream = null;
-  document.getElementById('vigilanceVideo').srcObject = null;
+async function stopVigilance() {
+  if (!vigilanceActive) return;
+  try {
+    const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:'Désactive le mode vigilance', session_id:sessionId, audio:true})});
+    const d = await r.json(); if (d.audio_url) await playAudio(d.audio_url);
+  } catch(e) { statusEl.innerHTML = `<span class="offline">Arrêt vigilance: ${e.message}</span>`; }
+  vigilanceActive = false; renderVigilance({active:false, recording:false});
+  document.getElementById('vigilanceVideo').src = '';
   document.getElementById('vigilancePanel').classList.remove('open');
-  cmdVigilance.classList.remove('active');
 }
+function renderVigilance(d) {
+  const active = !!d.active, rec = !!d.recording;
+  cmdVigilance.classList.toggle('active', active); cmdVigilance.setAttribute('aria-pressed', String(active));
+  cmdVigilance.textContent = active ? 'VIG ACTIF' : 'VIG';
+  const el = document.getElementById('vigilanceStatus');
+  if (el) el.textContent = active ? `VIGILANCE : ACTIVE · CAMÉRA : ACTIVE · REC : ${rec ? '●' : '—'} · ${d.fps || 5} FPS` : 'CAMÉRA : INACTIVE · REC : —';
+}
+async function refreshVigilance() { try { const d=await (await fetch('/api/vigilance')).json(); vigilanceActive=!!d.active; renderVigilance(d); if (vigilanceActive) document.getElementById('vigilanceVideo').src = `/api/vigilance/frame?t=${Date.now()}`; } catch(e) {} }
 function startNavigation() {
   const destination = document.getElementById('navDestination').value.trim();
   if (!destination) return;
@@ -876,15 +1382,56 @@ function startNavigation() {
 
 document.getElementById('cmdObd').addEventListener('click', () => setObdAuthorization(!obdAutoEnabled));
 document.getElementById('cmdMnx').addEventListener('click', () => { window.location.href = '/mnx'; });
-document.getElementById('cmdDadoo').addEventListener('click', () => { window.location.href = '/dadoo'; });
 document.getElementById('cmdNav').addEventListener('click', () => document.getElementById('navPanel').classList.add('open'));
 document.getElementById('cmdVol').addEventListener('click', cycleVolume);
 document.getElementById('cmdVigilance').addEventListener('click', toggleVigilance);
+cmdHorn?.addEventListener('click', () => document.getElementById('hornPanel').classList.add('open'));
+document.getElementById('cmdCdPlayer')?.addEventListener('click', () => window.openCdPlayer?.());
+document.querySelectorAll('[data-horn-command]').forEach(btn => btn.addEventListener('click', async () => {
+  const command = btn.dataset.hornCommand;
+  try {
+    btn.disabled = true;
+    const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:command, session_id:sessionId, audio:true})});
+    const d = await r.json();
+    if (!r.ok || d.action === 'vehicle_error') throw new Error(d.reply || 'Commande klaxon refusée');
+    if (d.reply) addMessage(d.reply, 'kitt');
+    if (d.audio_url) await playAudio(d.audio_url);
+  } catch (e) { statusEl.innerHTML = `<span class="offline">Klaxon : ${e.message}</span>`; }
+  finally { btn.disabled = false; }
+}));
+refreshVigilance();
+setInterval(refreshVigilance, 1000);
 document.getElementById('cmdEqualizer').addEventListener('click', toggleEqualizer);
 document.getElementById('cmdVehicle').addEventListener('click', () => { window.location.href = '/vehicle-control'; });
+document.getElementById('cmdShutdown').addEventListener('click', () => {
+  if (!confirm('Demander l’extinction de KITT ? Un code de sécurité sera requis.')) return;
+  const input = document.getElementById('input');
+  input.value = 'Je demande l\'extinction du système';
+  sendMessage();
+});
 cmdCommandMode.addEventListener('click', toggleManualCommandMode);
 cmdTechnicalMode.addEventListener('click', toggleTechnicalMode);
 cmdCulinaryMode.addEventListener('click', toggleCulinaryMode);
+const cmdApi = document.getElementById('cmdApi');
+async function refreshApiButton(){ try { const d = await (await fetch('/api/elevenlabs/status')).json(); cmdApi.textContent = d.enabled ? 'API ON' : 'API OFF'; cmdApi.classList.toggle('active', !!d.enabled); cmdApi.title = d.configured ? 'API ElevenLabs configurée : activer ou désactiver' : 'Aucune clé API enregistrée : ouvrir le panneau ElevenLabs'; } catch(e) { cmdApi.textContent='API ?'; } }
+cmdApi.addEventListener('click', async () => { try { const st=await (await fetch('/api/elevenlabs/status')).json(); if(!st.configured){ openElevenLabs(); return; } const d=await (await fetch('/api/elevenlabs/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!st.enabled})})).json(); if(!d.ok) throw Error(d.error||'Échec'); refreshApiButton(); statusEl.innerHTML=`<span class="online">API ElevenLabs ${d.enabled?'activée':'désactivée'}.</span>`; } catch(e){ statusEl.innerHTML='<span class="offline">API: '+e.message+'</span>'; } });
+refreshApiButton();
+document.querySelectorAll('#themeButtons [data-theme], #themeInline [data-theme]').forEach(btn => btn.addEventListener('click', async () => {
+  const theme = btn.dataset.theme || '';
+  try {
+    const res = await fetch('/api/theme/mode', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({session_id:sessionId, theme})});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    document.querySelectorAll('#themeInline [data-theme]').forEach(other => other.classList.toggle('active', other === btn));
+    document.querySelectorAll('#themeButtons [data-theme]').forEach(other => other.classList.toggle('active', other.dataset.theme === theme));
+    document.getElementById('themePanel').classList.remove('open');
+    statusEl.innerHTML = `<span class="online">Branche ${theme || 'automatique'} active.</span>`;
+    if (theme === 'charleroi') {
+      document.getElementById('input').value = 'Affiche le tableau de Charleroi';
+      await sendMessage();
+    }
+  } catch (error) { statusEl.innerHTML = '<span class="offline">Thème: ' + error.message + '</span>'; }
+}));
 voiceDisplayContainer.classList.toggle('display-disabled', !equalizerEnabled);
 updateCommandButtons();
 refreshVehicleMode();
@@ -1019,6 +1566,9 @@ let autoContext = null;
 let autoProcessor = null;
 let autoAnalyser = null;
 let autoPcmChunks = [];
+// Pré-enregistrement pour conserver les premières syllabes avant le seuil VAD.
+let autoPreRollChunks = [];
+const AUTO_PREROLL_MAX_CHUNKS = 8; // environ 0,5 à 0,8 s selon le navigateur
 let isSpeaking = false;
 let silenceStart = 0;
 const VAD_THRESHOLD = 0.015;
@@ -1094,11 +1644,27 @@ async function sendMessage() {
 
 const audioQueue = [];
 let isPlayingAudio = false;
+// Cache de buffers audio : le fetch + décodage du chunk N+1 se fait pendant
+// la lecture du chunk N -> suppression du gap HTTP entre les phrases.
+const audioBufferCache = new Map();
+function loadAudioBuffer(url) {
+  if (!audioBufferCache.has(url)) {
+    audioBufferCache.set(url, (async () => {
+      const ctx = ensurePlaybackCtx();
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('Audio HTTP ' + r.status);
+      return ctx.decodeAudioData(await r.arrayBuffer());
+    })());
+  }
+  return audioBufferCache.get(url);
+}
 
 async function playNextAudio() {
   if (isPlayingAudio || audioQueue.length === 0) return;
   isPlayingAudio = true;
   const url = audioQueue.shift();
+  // Précharge le chunk suivant pendant que le courant est encore en file/lecture.
+  if (audioQueue.length) loadAudioBuffer(audioQueue[0]).catch(() => {});
   try {
     // Un onglet masque ne doit jamais doubler la voix de l onglet visible.
     if (document.hidden) return;
@@ -1120,6 +1686,63 @@ async function playNextAudio() {
   }
 }
 
+let debatAbort = null;
+function debateLine(evt){addMessage(evt.name+' : '+evt.text, evt.speaker==='local'?'kitt':'user');const n=document.querySelector('#chat .message:last-child');if(n)n.classList.add('debate-bubble','debate-'+(evt.who|| (evt.speaker==='local'?'manix':evt.speaker==='dadoo'?'dadoo':'pascal')));if(/^\s*(non|pas exactement|je ne suis pas d'accord)\b/i.test(evt.text||''))debateRage();}
+function debateRage(){document.body.classList.remove('debate-rage');void document.body.offsetWidth;document.body.classList.add('debate-rage');setTimeout(()=>document.body.classList.remove('debate-rage'),700);try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.type='sawtooth';o.frequency.setValueAtTime(190,c.currentTime);o.frequency.exponentialRampToValueAtTime(75,c.currentTime+.22);g.gain.setValueAtTime(.045,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.24);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+.25);}catch(_){} }
+if(!document.getElementById('debateBubbleStyles')){const s=document.createElement('style');s.id='debateBubbleStyles';s.textContent='.debate-bubble{border-left:5px solid!important}.debate-manix{border-color:#ff3030!important;background:rgba(100,0,0,.22)!important}.debate-pascal{border-color:#35a8ff!important;background:rgba(0,50,100,.22)!important}.debate-dadoo{border-color:#b46cff!important;background:rgba(65,0,95,.25)!important}.debate-rage .message:last-child{filter:brightness(1.65);box-shadow:0 0 22px #ff3030!important}.debate-rage #chat{animation:debateRageShake .08s linear 7}@keyframes debateRageShake{50%{transform:translateX(4px)}}';document.head.appendChild(s)}
+async function startDebat() {
+  const btn = document.getElementById('cmdDebat');
+  if (debatAbort) { debatAbort.abort(); return; }
+  const input = document.getElementById('input');
+  const topic = (input.value || '').trim();
+  input.value = '';
+  debatAbort = new AbortController();
+  btn.textContent = 'ARRÊTER';
+    addMessage(`\u{1F916} Débat à trois : KITT AGX, KITT de Pascal et KARR de Dadoo${topic ? ' — ' + topic : ''}`, 'kitt');
+  try {
+    const res = await fetch('https://192.168.129.24:3000/api/debat/stream?topic=' + encodeURIComponent(topic), { signal: debatAbort.signal });
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const evt = JSON.parse(line.slice(6));
+          if (evt.text) debateLine(evt);
+          if (evt.audio) { audioQueue.push(evt.audio.startsWith('/') ? 'https://192.168.129.24:3000' + evt.audio : evt.audio); playNextAudio(); }
+          if (evt.error) addMessage('Débat interrompu : ' + evt.error, 'user');
+        } catch {}
+      }
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') console.error('Débat:', e);
+  } finally {
+    debatAbort = null;
+    btn.textContent = 'DÉBAT';
+  }
+}
+
+// ── Miroir débat : débat hébergé par l'AGX, affiché sur cet écran ──
+(function() {
+  const es = new EventSource('/api/debat/mirror');
+  es.onmessage = (m) => {
+    if (debatAbort) return;
+    try {
+      const evt = JSON.parse(m.data);
+      if (evt.kind === 'info') addMessage('\u{1F916} Débat reçu de KITT de Manix — ' + evt.text, 'kitt');
+      else if (evt.kind === 'line') debateLine({name:evt.name,text:evt.text,who:evt.who});
+      else if (evt.kind === 'done') addMessage('Débat terminé.', 'kitt');
+      else if (evt.kind === 'error') addMessage('Débat interrompu : ' + evt.error, 'user');
+    } catch {}
+  };
+})();
+
 async function streamChat(msg) {
   const div = document.createElement('div');
   div.className = 'message kitt';
@@ -1130,7 +1753,15 @@ async function streamChat(msg) {
     const res = await fetch('/api/chat/stream', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ message: msg, session_id: sessionId, audio: true, obd_auto: obdAutoEnabled })
+      body: JSON.stringify({
+        message: msg,
+        session_id: sessionId,
+        audio: true,
+        obd_auto: obdAutoEnabled,
+        // Le lecteur CD est une vue plein écran : ses ordres courts doivent
+        // être routés avant les autres intentions côté serveur.
+        cd_context: !!document.getElementById('cdPlayer')?.classList.contains('open')
+      })
     });
 
     const reader = res.body.getReader();
@@ -1160,10 +1791,43 @@ async function streamChat(msg) {
             if (data.done && data.timing) {
               div.innerHTML = text + `<div class="timing">LLM: ${data.timing.llm_ms}ms | TTS: ${data.timing.tts_ms || 0}ms</div>`;
               if (data.action === 'obd_fullscreen' && obdAutoEnabled) openObdPanel();
+              if (data.action === 'equalizer_on') setEqualizer(true);
+              if (data.action === 'equalizer_off') setEqualizer(false);
+              if (data.action === 'equalizer_toggle') setEqualizer(!equalizerEnabled);
+              window.handleCdPlayerAction?.(data.action);
+              if (data.action === 'media_radio_open') window.openMediaHub?.('radio');
+              if (data.action === 'media_video_open') window.openMediaHub?.('video');
+              if (data.action === 'media_close') window.closeMediaHub?.();
+              if (data.action === 'theme_panel') document.getElementById('themePanel').classList.add('open');
+              if (data.action && data.action.startsWith('theme_selected_')) {
+                const selectedTheme = data.action.replace('theme_selected_', '');
+                document.querySelectorAll('#themeInline [data-theme], #themeButtons [data-theme]').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === selectedTheme));
+              }
+              if (data.action === 'theme_cleared') {
+                document.querySelectorAll('#themeInline [data-theme], #themeButtons [data-theme]').forEach(btn => btn.classList.toggle('active', btn.dataset.theme === ''));
+              }
               if (data.action === 'bonnie_unlock') playBonnieUnlockSound();
               if (data.action === 'mode_activated' || data.action === 'mode_deactivated') refreshVehicleMode();
               if (data.action === 'technical_mode_activated' || data.action === 'technical_mode_deactivated') { refreshTechnicalMode(); refreshCulinaryMode(); }
               if (data.action === 'culinary_mode_activated' || data.action === 'culinary_mode_deactivated') { refreshCulinaryMode(); refreshTechnicalMode(); }
+              if (data.action === 'vigilance_deactivated') {
+                vigilanceActive = false;
+                renderVigilance({active:false, recording:false});
+                document.getElementById('vigilanceVideo').src = '';
+                document.getElementById('vigilancePanel').classList.remove('open');
+              }
+              if (data.action === 'vigilance_activated') {
+                vigilanceActive = true;
+                renderVigilance({active:true, recording:true, fps:5});
+                document.getElementById('vigilanceVideo').src = `/api/vigilance/frame?t=${Date.now()}`;
+                document.getElementById('vigilancePanel').classList.add('open');
+              }
+              if (data.action === 'vigilance_fullscreen_on') {
+                document.getElementById('vigilancePanel').classList.add('open', 'vigilance-fullscreen');
+              }
+              if (data.action === 'vigilance_fullscreen_off') {
+                document.getElementById('vigilancePanel').classList.remove('vigilance-fullscreen');
+              }
               if (data.action === 'repeated_question_impatient') triggerImpatientMode();
               if (data.action === 'repeated_question_warning') triggerAngryMode();
               if (data.action === 'repeated_question_reconciled') clearMoodEffects();
@@ -1174,6 +1838,11 @@ async function streamChat(msg) {
     }
   } catch (e) {
     div.innerHTML = 'Erreur de connexion au serveur.';
+    const _scErr = document.getElementById('scanner');
+    if (_scErr) {
+      _scErr.classList.add('error');
+      setTimeout(() => _scErr.classList.remove('error'), 2400);
+    }
   }
   sendBtn.disabled = false;
   input.focus();
@@ -1333,22 +2002,20 @@ function triggerAngryMode() {
 
 function playAudio(url) {
   return new Promise((resolve) => {
+    window.cdPlayerDucking?.(true);
     scanner.classList.add('speaking');
     let finished = false;
     const finish = () => {
       if (finished) return;
       finished = true;
       scanner.classList.remove('speaking');
+      audioBufferCache.delete(url);
+      window.cdPlayerDucking?.(false);
       resolve();
     };
 
     const ctx = ensurePlaybackCtx();
-    fetch(url)
-      .then(r => {
-        if (!r.ok) throw new Error('Audio HTTP ' + r.status);
-        return r.arrayBuffer();
-      })
-      .then(buf => ctx.decodeAudioData(buf))
+    loadAudioBuffer(url)
       .then(decoded => {
         const src = ctx.createBufferSource();
         src.buffer = decoded;
@@ -1410,6 +2077,11 @@ async function handleSTTResult(data) {
   if (data.text && data.text.trim()) {
     const text = data.text.trim();
     addMessage(text, 'user', null);
+    if (typeof data.confidence === 'number' && data.confidence < 0.28) {
+      statusEl.innerHTML = `<span class="online">Confiance vocale faible (${Math.round(data.confidence * 100)} %). Répète, s’il te plaît.</span>`;
+      addMessage('Je n’ai pas assez bien compris. Peux-tu répéter plus clairement ?', 'assistant', null);
+      return false;
+    }
     statusEl.innerHTML = `<span class="online">STT: ${data.stt_ms}ms</span>`;
     sendBtn.disabled = true;
     await streamChat(text);
@@ -1451,6 +2123,7 @@ async function toggleMic() {
     micStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true } });
 
     micContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+    if (micContext.state === 'suspended') await micContext.resume();
     const source = micContext.createMediaStreamSource(micStream);
     micProcessor = micContext.createScriptProcessor(4096, 1, 1);
     pcmChunks = [];
@@ -1496,6 +2169,7 @@ async function processAutoSpeech() {
 
   const chunks = autoPcmChunks.slice();
   autoPcmChunks = [];
+  autoPreRollChunks = [];
 
   try {
     const data = await sendToSTT(chunks, 16000);
@@ -1539,6 +2213,7 @@ async function toggleAutoListen() {
     autoStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true } });
 
     autoContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+    if (autoContext.state === 'suspended') await autoContext.resume();
     const source = autoContext.createMediaStreamSource(autoStream);
 
     autoAnalyser = autoContext.createAnalyser();
@@ -1547,6 +2222,7 @@ async function toggleAutoListen() {
 
     autoProcessor = autoContext.createScriptProcessor(4096, 1, 1);
     autoPcmChunks = [];
+    autoPreRollChunks = [];
     isSpeaking = false;
     silenceStart = 0;
     speechStart = 0;
@@ -1564,7 +2240,9 @@ async function toggleAutoListen() {
         if (!isSpeaking) {
           isSpeaking = true;
           speechStart = now;
-          autoPcmChunks = [];
+          // Réinjecte le début capturé juste avant le franchissement du seuil.
+          autoPcmChunks = autoPreRollChunks.slice();
+          autoPreRollChunks = [];
           autoBtn.classList.remove('waiting');
           autoBtn.classList.add('hearing');
           scanner.classList.remove('auto-listening');
@@ -1589,6 +2267,9 @@ async function toggleAutoListen() {
             statusEl.innerHTML = '<span class="online">Auto-ecoute: en attente...</span>';
           }
         }
+      } else if (!isSpeaking) {
+        autoPreRollChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+        if (autoPreRollChunks.length > AUTO_PREROLL_MAX_CHUNKS) autoPreRollChunks.shift();
       }
     };
 
@@ -1611,7 +2292,7 @@ async function checkHealth() {
     const res = await fetch('/api/health');
     const data = await res.json();
     if (data.llm_server) {
-      statusEl.innerHTML = '<span class="online">K-4000 EN LIGNE</span>';
+      statusEl.innerHTML = '<span class="online">KITT EN LIGNE</span>';
     } else {
       statusEl.innerHTML = '<span class="offline">LLM HORS LIGNE — Démarrez llama-server</span>';
     }
@@ -1625,7 +2306,23 @@ loadVoices();
 loadVoiceEffects();
 setInterval(checkHealth, 10000);
 
-addMessage("Bonjour. Je suis la K-4000. Frank, alias KR-95, est mon propriétaire. Comment puis-je t’aider ?", "kitt");
+addMessage("Bonjour. Je suis KITT, l’intelligence de Pascal Fairon. Comment puis-je t’aider ?", "kitt");
 </script>
-</body>
+<section id="elevenPanel" hidden style="position:fixed;inset:0;z-index:9999;background:#000c;display:grid;place-items:center;padding:18px"><div style="position:relative;width:min(440px,100%);padding:25px;background:#100608;border:1px solid #d22;color:#fff;font-family:monospace"><button onclick="document.getElementById('elevenPanel').hidden=true" style="position:absolute;right:8px;top:5px;background:none;border:0;color:#f66;font-size:24px">×</button><small style="color:#f66">KITT PASCAL FAIRON // API WEB</small><h2>ELEVENLABS</h2><p>La clé reste stockée sur KITT et n'est jamais exposée au navigateur.</p><input id="elevenKey" type="password" placeholder="Coller la clé API" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px;background:#080204;border:1px solid #744;color:#fff"><div style="display:flex;gap:8px;margin-top:12px"><button onclick="saveElevenKey()" style="flex:1;padding:11px">ENREGISTRER</button><button onclick="testEleven()" style="flex:1;padding:11px">TESTER</button></div><div id="elevenState" style="margin-top:12px;color:#9f9"></div></div></section><script>
+function openElevenLabs(){const p=document.getElementById('elevenPanel');p.hidden=false;document.getElementById('elevenKey').value='';fetch('/api/elevenlabs/status').then(r=>r.json()).then(d=>document.getElementById('elevenState').textContent=d.configured?'Clé configurée sur KITT.':'Aucune clé configurée.').catch(()=>{});}async function saveElevenKey(){const s=document.getElementById('elevenState'),k=document.getElementById('elevenKey').value.trim();if(!k){s.textContent='Collez une clé API.';return}s.textContent='Enregistrement…';const r=await fetch('/api/elevenlabs/key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k})});const d=await r.json();s.textContent=d.ok?'Clé enregistrée côté serveur.':(d.error||'Échec');if(d.ok)document.getElementById('elevenKey').value='';}async function testEleven(){const s=document.getElementById('elevenState');s.textContent='Test audio…';try{const r=await fetch('/api/tts-eleven',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:'Test ElevenLabs réussi. KITT Pascal Fairon vous répond.'})});if(!r.ok)throw Error((await r.json()).error||'Test impossible');const a=new Audio(URL.createObjectURL(await r.blob()));await a.play();s.textContent='Test audio réussi.'}catch(e){s.textContent=e.message}}
+</script><script>window.addEventListener('load',()=>setTimeout(()=>document.getElementById('kxSplash')?.classList.add('is-hidden'),900));</script>
+<script>
+// Messages automatiques de veille de KITT Pascal.
+(function connectProactive(){
+  try {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${proto}//${location.host}/api/proactive/ws`);
+    ws.onmessage = ev => { try { const d = JSON.parse(ev.data); if (d.type !== 'proactive') return;
+      if (typeof addMessage === 'function') addMessage(d.message, 'proactive');
+      if (d.audio_url) { const a = new Audio(d.audio_url); a.play().catch(()=>{}); }
+    } catch (_) {} };
+    ws.onclose = () => setTimeout(connectProactive, 10000);
+  } catch (_) { setTimeout(connectProactive, 10000); }
+})();
+</script><script src="/static/cd-player.js?v=20260910-9"></script><script src="/static/media-hub.js?v=20260910-4"></script></body>
 </html>

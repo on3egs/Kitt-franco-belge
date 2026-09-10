@@ -1,0 +1,27 @@
+{
+  "title": "Charleroi, histoire et patrimoine",
+  "sections": [
+    {
+      "title": "Origines et développement",
+      "keywords": ["charleroi", "charnoy", "charles ii", "forteresse", "histoire de charleroi", "ville haute", "ville basse"],
+      "facts": [
+        "Charleroi naît officiellement en 1666 lorsque la forteresse établie à Charnoy reçoit le nom de Charleroi en l'honneur de Charles II d'Espagne.",
+        "La Place Charles II et les rues rayonnantes de la Ville-Haute gardent la trace de l'ancien plan fortifié.",
+        "Le développement de Charleroi a été profondément lié au charbon, à la sidérurgie, au verre et aux industries mécaniques.",
+        "Charleroi est traversée par la Sambre, autour de laquelle la Ville-Basse et les quais ont été réaménagés."
+      ]
+    },
+    {
+      "title": "Patrimoine et lieux connus",
+      "keywords": ["bois du cazier", "marcinelle", "beffroi", "hotel de ville", "passage de la bourse", "musee photographie", "bps22", "spirou", "dupuis", "monument", "statue", "musee"],
+      "facts": [
+        "Le Bois du Cazier, à Marcinelle, est un ancien charbonnage et un lieu de mémoire de la catastrophe du 8 août 1956 qui fit 262 victimes.",
+        "Le beffroi de l'Hôtel de Ville de Charleroi appartient à l'ensemble des beffrois de Belgique et de France inscrit au patrimoine mondial de l'UNESCO.",
+        "Le Passage de la Bourse est une galerie commerçante couverte construite à la fin du XIXe siècle.",
+        "Le Musée de la Photographie est installé à Mont-sur-Marchienne dans un ancien carmel.",
+        "Le BPS22 est un musée d'art contemporain installé dans une ancienne halle industrielle.",
+        "Charleroi est associée à l'école de Marcinelle et aux éditions Dupuis, maison historique de Spirou."
+      ]
+    }
+  ]
+}

@@ -137,20 +137,20 @@ def vehicle_spec_result(user_message: str, technical_mode: bool = False) -> dict
     if mentions_k4000:
         if asks_dimensions:
             parts.append(
-                "K-4000 de Frank : environ 5,33 mètres de long et 2,05 mètres de large hors rétroviseurs. "
+                "K-4000 de Pascal Fairon : environ 5,33 mètres de long et 2,05 mètres de large hors rétroviseurs. "
                 "Sa hauteur n'est pas enregistrée avec suffisamment de certitude."
             )
         if asks_pressure:
             parts.append(
-                "K-4000 de Frank : la pression doit être déterminée à partir de la monte réellement installée, des charges par essieu et de la plaque du véhicule donneur, puis validée pour les modifications. "
+                "K-4000 de Pascal Fairon : la pression doit être déterminée à partir de la monte réellement installée, des charges par essieu et de la plaque du véhicule donneur, puis validée pour les modifications. "
                 "Sans taille de pneus et plaque, je ne donne pas de nombre au hasard."
             )
         if asks_oil:
             parts.append(
-                "K-4000 de Frank : son moteur est un V6 3,4 litres, mais son année et la préconisation constructeur exacte doivent encore être confirmées avant de recommander une huile."
+                "K-4000 de Pascal Fairon : son moteur est un V6 3,4 litres, mais son année et la préconisation constructeur exacte doivent encore être confirmées avant de recommander une huile."
             )
         if asks_engine:
-            parts.append("K-4000 de Frank : moteur V6 3,4 litres avec boîte automatique.")
+            parts.append("K-4000 de Pascal Fairon : moteur V6 3,4 litres avec boîte automatique.")
 
     if not parts:
         return None

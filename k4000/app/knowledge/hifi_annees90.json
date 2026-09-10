@@ -1,0 +1,16 @@
+{
+  "title": "Hi-Fi et vidéo des années 1990",
+  "sections": [
+    {
+      "title": "Formats et appareils",
+      "keywords": ["hifi", "hi fi", "annees 90", "dat", "dcc", "philips", "lecteur enregistreur", "videodisque", "disque laser", "laserdisc"],
+      "facts": [
+        "Le DAT, Digital Audio Tape, est une cassette numérique utilisée pour l'enregistrement et la lecture haute fidélité.",
+        "Le DCC, Digital Compact Cassette, était le format numérique de Philips : il pouvait aussi lire les anciennes cassettes compactes analogiques.",
+        "Le MiniDisc de Sony utilisait un disque magnéto-optique réinscriptible et une compression ATRAC.",
+        "Le LaserDisc ou vidéodisque stockait l'image et le son sur un disque optique lu par un appareil dédié ; ce n'était pas un DVD.",
+        "Les chaînes hi-fi des années 1990 associaient souvent amplificateur, lecteur CD, double platine cassette, tuner et parfois DAT, DCC ou MiniDisc."
+      ]
+    }
+  ]
+}

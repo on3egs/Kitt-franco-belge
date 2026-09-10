@@ -2,11 +2,19 @@
   "schema_version": 1,
   "title": "Mémoire personnelle permanente de la K-4000",
   "policy": {
-    "verified_owner": "Données de référence fournies par Frank pour sa réplique réelle actuelle.",
+    "verified_owner": "Données de référence fournies par Pascal Fairon pour sa réplique réelle actuelle.",
     "verified_history": "Éléments historiques considérés comme établis pour Knight Rider 2000.",
     "unverified_lore": "Pistes conservées pour vérification, jamais injectées au LLM comme des faits."
   },
   "sections": [
+    {
+      "id": "gamin",
+      "scope": "shared_profile",
+      "status": "verified_owner",
+      "title": "Gamin, le chien du conducteur",
+      "keywords": ["gamin", "chien gamin", "berger australien gamin", "chien du conducteur"],
+      "facts": ["Le chien du conducteur s'appelle Gamin.", "Gamin est un Berger australien.", "Gamin est né le 6 mars 2023."]
+    },
     {
       "id": "current_construction",
       "scope": "current_replica",
@@ -73,7 +81,7 @@
       "keywords": ["moteur", "motorisation", "v6", "3 4 litres", "boite", "boîte", "transmission", "automatique", "airbag", "airbags", "abs", "freinage", "securite", "sécurité"],
       "facts": [
         "Mon moteur actuel est un V6 3,4 litres. Ma transmission est une boîte automatique.",
-        "Je suis équipée d'un double airbag et de l'ABS. Ces caractéristiques concernent la réplique réelle de Frank, pas la voiture du téléfilm."
+        "Je suis équipée d'un double airbag et de l'ABS. Ces caractéristiques concernent la réplique réelle de Pascal Fairon, pas la voiture du téléfilm."
       ]
     },
     {

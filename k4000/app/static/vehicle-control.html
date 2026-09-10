@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-4000 — CONTRÔLE VÉHICULE</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  /* Fond partagé avec l'interface DADOO/Knight Rider du projet Pascal. */
+  background: #050505 url('/static/k4000-wallpaper-relais.jpeg?v=kitt-4vues-1') center center / cover fixed no-repeat;
+  color: #ff4444;
+  font-family: 'Courier New', monospace;
+  overflow-y: auto;
+}
+body {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr 320px;
+  grid-template-areas:
+    "header header"
+    "main   panel"
+    "status status";
+}
+@media (max-width: 900px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto auto;
+    grid-template-areas:
+      "header"
+      "main"
+      "panel"
+      "status";
+  }
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.35) 2px,
+    rgba(0, 0, 0, 0.35) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Header */
+.header {
+  grid-area: header;
+  position: relative;
+  display: flex; align-items: center; justify-content: flex-start;
+  padding: 12px 20px;
+  background: rgba(10, 0, 0, 0.85);
+  border-bottom: 1px solid #ff3030;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+  z-index: 10;
+}
+.header-logo {
+  display: block;
+  width: clamp(220px, 36vw, 371px);
+  max-width: calc(100% - 150px);
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+}
+.header > .btn { position: absolute; right: 20px; }
+.header h1 {
+  font-size: 1.2em;
+  letter-spacing: 4px;
+  text-shadow: 0 0 12px #ff0000;
+}
+.header .subtitle {
+  font-size: 0.65em;
+  color: #884444;
+  letter-spacing: 2px;
+}
+/* Titre K4000 — rétro-futuriste 80s, balayage lumineux droite/gauche (CSS pur) */
+.k4000-title {
+  font-size: 1.7em;
+  letter-spacing: 10px;
+  font-weight: bold;
+  background: linear-gradient(100deg,
+    #c41e1e 0%, #ff3030 38%, #ffe0e0 50%, #ff3030 62%, #c41e1e 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(255, 30, 30, 0.55));
+  animation: k4000-sweep 4.5s ease-in-out infinite;
+}
+@keyframes k4000-sweep {
+  0%   { background-position: 115% 0; }
+  50%  { background-position: -15% 0; }
+  100% { background-position: 115% 0; }
+}
+.btn {
+  background: rgba(20, 4, 8, 0.8);
+  border: 1px solid #ff4444;
+  color: #ffb3b3;
+  padding: 8px 16px;
+  font: bold 12px 'Courier New', monospace;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.btn:hover { background: rgba(120, 0, 0, 0.7); color: #fff; box-shadow: 0 0 12px rgba(255, 0, 0, 0.5); }
+.btn.danger { border-color: #ff0000; color: #fff; background: rgba(120, 0, 0, 0.7); }
+.btn.danger:hover { background: rgba(200, 0, 0, 0.9); box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+
+/* Main SVG area */
+.main {
+  grid-area: main;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(ellipse at center, rgba(30, 0, 0, 0.25), transparent 70%),
+    linear-gradient(180deg, rgba(8,8,8,.78) 0%, rgba(5,5,5,.86) 100%);
+  overflow: auto;
+}
+.vehicle-svg {
+  width: 100%;
+  height: 100%;
+  max-width: 1100px;
+  max-height: 800px;
+}
+.vehicle-svg .view-label {
+  fill: #884444;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.vehicle-svg .car-line {
+  fill: none;
+  stroke: #cc3333;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+.vehicle-svg .car-fill {
+  fill: rgba(20, 4, 4, 0.35);
+  stroke: #cc3333;
+  stroke-width: 1;
+}
+.vehicle-svg .interactive-zone {
+  fill: rgba(255, 50, 50, 0.08);
+  stroke: #ff6666;
+  stroke-width: 1;
+  stroke-dasharray: 4 2;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.vehicle-svg .interactive-zone:hover {
+  fill: rgba(255, 50, 50, 0.25);
+  stroke: #ffaaaa;
+  filter: drop-shadow(0 0 6px rgba(255, 80, 80, 0.6));
+}
+.vehicle-svg .interactive-zone.active {
+  fill: rgba(255, 100, 100, 0.4);
+  stroke: #ffcccc;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 10px rgba(255, 100, 100, 0.9));
+  animation: pulse-zone 1s ease-in-out infinite;
+}
+.vehicle-svg .zone-label {
+  fill: #ff8888;
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.vehicle-svg .scanner-bar {
+  fill: none;
+  stroke: #00ffff;
+  stroke-width: 1.5;
+  opacity: 0.6;
+  filter: drop-shadow(0 0 5px #00ffff);
+}
+
+@keyframes pulse-zone {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Side panel */
+.panel {
+  grid-area: panel;
+  display: flex; flex-direction: column;
+  background: rgba(8, 0, 0, 0.9);
+  border-left: 1px solid #ff3030;
+  box-shadow: -5px 0 20px rgba(255, 0, 0, 0.15);
+  z-index: 10;
+  overflow-y: auto;
+}
+.panel-section {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 48, 48, 0.25);
+}
+.panel-section h2 {
+  font-size: 0.85em;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  color: #ff6666;
+  text-transform: uppercase;
+}
+.control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.control-grid.full { grid-template-columns: 1fr; }
+.ctrl-btn {
+  background: rgba(20, 4, 8, 0.8);
+  border: 1px solid #ff4444;
+  color: #ffb3b3;
+  padding: 10px 6px;
+  font: 11px 'Courier New', monospace;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.ctrl-btn:hover { background: rgba(120, 0, 0, 0.6); color: #fff; }
+.ctrl-btn:active { transform: scale(0.97); }
+.ctrl-btn.active { background: rgba(200, 50, 50, 0.5); color: #fff; box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
+.ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Diagnostic log */
+.diagnostic-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  font-size: 10px;
+  background: rgba(0, 0, 0, 0.5);
+}
+.log-entry {
+  margin-bottom: 6px;
+  padding: 6px;
+  border-left: 2px solid #444;
+  background: rgba(20, 4, 4, 0.4);
+  color: #ccc;
+}
+.log-entry.sent { border-color: #ffaa00; }
+.log-entry.active { border-color: #00ffff; }
+.log-entry.completed { border-color: #00ff66; }
+.log-entry.error { border-color: #ff0000; color: #ff9999; }
+.log-entry .ts { color: #666; margin-right: 6px; }
+.log-entry .fn { color: #ff8888; font-weight: bold; }
+.log-entry .relay { color: #ffcc66; }
+
+/* Status bar */
+.status-bar {
+  grid-area: status;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px;
+  background: rgba(5, 0, 0, 0.9);
+  border-top: 1px solid #ff3030;
+  font-size: 0.7em;
+  color: #884444;
+  z-index: 10;
+}
+.status-bar .online { color: #44ff44; text-shadow: 0 0 8px #00ff00; }
+.status-bar .offline { color: #ff4444; text-shadow: 0 0 8px #ff0000; }
+.status-bar .warning { color: #ffaa00; text-shadow: 0 0 8px #ffaa00; }
+.status-bar .signature {
+  color: #6b3d3d;
+  letter-spacing: 3px;
+  font-size: 0.85em;
+}
+
+/* Modal confirmation */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: none; align-items: center; justify-content: center;
+  z-index: 2000;
+}
+.modal-overlay.open { display: flex; }
+.modal-card {
+  width: min(90%, 360px);
+  background: linear-gradient(180deg, #1a0505, #0a0202);
+  border: 1px solid #ff4444;
+  padding: 24px;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.4);
+  text-align: center;
+}
+.modal-card h3 { font-size: 1em; letter-spacing: 2px; margin-bottom: 12px; }
+.modal-card p { font-size: 0.8em; color: #cc8888; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 12px; justify-content: center; }
+
+/* Deux pages tactiles horizontales */
+html, body { overflow: hidden; }
+body { display: grid; grid-template: auto minmax(0, 1fr) auto / 1fr; grid-template-areas: "header" "pages" "status"; }
+.pages-viewport { grid-area: pages; min-width: 0; min-height: 0; overflow: hidden; touch-action: pan-y; }
+.pages-track { width: 200%; height: 100%; display: flex; transform: translate3d(0,0,0); transition: transform 280ms cubic-bezier(.22,.75,.2,1); will-change: transform; }
+.pages-track.show-controls { transform: translate3d(-50%,0,0); }
+.ui-page { position: relative; width: 50%; height: 100%; min-width: 0; min-height: 0; overflow: hidden; }
+.page-vehicle { display: flex; }
+.page-vehicle .main { width: 100%; height: 100%; padding: clamp(6px, 1.5vw, 18px) clamp(54px, 7vw, 82px) clamp(6px, 1.5vw, 18px) clamp(8px, 2vw, 22px); }
+.vehicle-reference-stage {
+     position: relative; width: min(100%, calc((100vh - 112px) * 1.665));
+     aspect-ratio: 1390 / 835; max-height: 100%; margin: auto; flex: 0 1 auto;
+}
+.vehicle-reference-image { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; pointer-events: none; }
+.vehicle-hotspot {
+  position: absolute; z-index: 4; border: 1px solid transparent; border-radius: 12px;
+  background: transparent; color: transparent; cursor: pointer; touch-action: manipulation;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+.vehicle-hotspot:hover { border-color: rgba(255,90,90,.42); background: rgba(255,0,0,.06); }
+.vehicle-hotspot.tap-feedback, .vehicle-hotspot.active {
+  border-color: rgba(255,235,235,.9); background: rgba(255,35,35,.2);
+  box-shadow: 0 0 16px rgba(255,20,20,.9), inset 0 0 12px rgba(255,80,80,.3);
+}
+   .hotspot-top-driver { left: 19%; top: 35%; width: 12%; height: 8%; }
+   .hotspot-top-passenger { left: 19%; top: 11%; width: 12%; height: 8%; }
+   .hotspot-side-driver-window { left: 66%; top: 15%; width: 16%; height: 8%; }
+   .hotspot-side-driver-door { left: 66%; top: 22%; width: 18%; height: 15%; }
+   .hotspot-side-passenger-door { left: 84%; top: 22%; width: 12%; height: 15%; }
+   .hotspot-headlight-left { left: 10%; top: 72%; width: 11%; height: 8%; }
+   .hotspot-headlight-right { left: 31%; top: 72%; width: 12%; height: 8%; }
+   .hotspot-horn { left: 21%; top: 68%; width: 9%; height: 7%; }
+   .hotspot-trunk { left: 59%; top: 56%; width: 29%; height: 12%; }
+.vehicle-page-signature {
+  position: absolute; right: clamp(58px, 7vw, 86px); bottom: 8px; z-index: 8;
+  width: clamp(145px, 17vw, 230px); height: auto; max-height: 12%;
+  object-fit: contain; pointer-events: none; user-select: none;
+}
+.page-controls { overflow: hidden; background: radial-gradient(circle at 50% 0, rgba(70,0,0,.2), transparent 55%), #050505; padding: 6px 60px 42px; }
+.page-controls .panel {
+  width: min(1500px, 100%); height: 100%; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: minmax(0, .95fr) minmax(0, 1.05fr) 34px;
+  gap: 7px; background: transparent; border: 0; box-shadow: none; overflow: hidden;
+}
+.page-controls .panel-section { border: 1px solid rgba(255,48,48,.42); border-radius: 7px; padding: 7px; background: rgba(15,2,4,.82); overflow: hidden; }
+.page-controls .panel-section h2 { font-size: clamp(11px, 1.45vw, 17px); margin-bottom: 5px; }
+.page-controls .diagnostic-section { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(210px, 30%) 1fr; grid-template-rows: auto minmax(0, 1fr); column-gap: 8px; }
+.page-controls .diagnostic-section > h2 { grid-column: 1 / -1; }
+.diagnostic-actions, .diagnostic-relays { min-width: 0; min-height: 0; overflow: hidden; }
+.diagnostic-actions .control-grid.full { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.diagnostic-actions .function-test-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.diagnostic-relays { display: flex; flex-direction: column; }
+.page-controls .diagnostic-log { grid-column: 1 / -1; min-height: 0; max-height: none; padding: 3px 8px; overflow: hidden; border: 1px solid rgba(255,48,48,.28); border-radius: 7px; }
+.page-controls .diagnostic-log .log-entry { margin: 0; padding: 3px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.control-grid { gap: 5px; }
+.ctrl-btn { min-height: clamp(30px, 4.7vh, 44px); padding: 4px 5px; border-radius: 5px; font-size: clamp(9px, 1.15vw, 14px); font-weight: bold; touch-action: manipulation; }
+.ctrl-btn.danger { min-height: clamp(32px, 5vh, 46px); border-width: 2px; background: rgba(155,0,0,.75); box-shadow: 0 0 14px rgba(255,0,0,.35); }
+.relay-grid { flex: 1; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+.relay-grid .ctrl-btn { min-height: 0; line-height: 1.05; white-space: pre-line; }
+.controls-page-signature { position: absolute; right: 60px; bottom: 3px; z-index: 8; width: clamp(145px, 16vw, 233px); height: 34px; object-fit: contain; pointer-events: none; user-select: none; }
+.page-arrow { position: absolute; top: 50%; z-index: 30; width: 52px; height: 92px; transform: translateY(-50%); border: 2px solid #ff3030; border-radius: 9px; color: #fff; background: rgba(45,0,3,.86); box-shadow: 0 0 18px rgba(255,0,0,.5); font: bold 42px/1 Arial,sans-serif; cursor: pointer; touch-action: manipulation; }
+.page-arrow:hover, .page-arrow:active { background: rgba(150,0,5,.9); }
+.page-arrow.next { right: 8px; }
+.page-arrow.prev { left: 8px; position: absolute; }
+.page-indicator { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); color: #a66; font-size: 11px; letter-spacing: 3px; pointer-events: none; }
+.page-controls > .page-indicator { display: none; }
+.vehicle-svg .interactive-zone.tap-feedback { fill: rgba(255,120,120,.7); stroke: #fff; filter: drop-shadow(0 0 12px #ff3030); }
+@media (max-width: 720px), (max-height: 520px) {
+  .header { padding: 5px 10px; } .header-logo { width: clamp(180px, 32vw, 260px); } .header > .btn { right: 10px; }
+  .btn { min-height: 42px; padding: 6px 12px; } .status-bar { padding: 5px 9px; font-size: .58em; }
+  .page-controls { padding: 4px 52px 35px; } .page-controls .panel { gap: 4px; grid-template-rows: minmax(0, .9fr) minmax(0, 1.1fr) 27px; } .page-controls .panel-section { padding: 4px; }
+  .page-controls .panel-section h2 { font-size: 10px; margin-bottom: 2px; }
+  .control-grid { gap: 3px; } .ctrl-btn { min-height: 27px; padding: 2px 3px; font-size: 8px; }
+  .ctrl-btn.danger { min-height: 28px; } .diagnostic-section { column-gap: 4px; }
+  .controls-page-signature { right: 52px; bottom: 2px; height: 29px; width: 145px; }
+  .page-arrow { width: 46px; height: 82px; font-size: 36px; }
+}
+/* 800 × 600 et formats proches : deux colonnes pour préserver les libellés. */
+@media (max-width: 900px) and (min-height: 521px) {
+  .page-controls { padding: 5px 58px 40px; }
+  .page-controls .panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, .82fr) minmax(0, .82fr) minmax(0, 1.05fr) 32px;
+    gap: 5px;
+  }
+  .page-controls .panel-section { padding: 5px; }
+  .page-controls .panel-section h2 { font-size: 12px; margin-bottom: 3px; }
+  .page-controls .diagnostic-section, .page-controls .diagnostic-log { grid-column: 1 / -1; }
+  .control-grid { gap: 3px; }
+  .ctrl-btn { min-height: 24px; padding: 2px 4px; font-size: 9px; }
+  .ctrl-btn.danger { min-height: 26px; }
+  .controls-page-signature { right: 58px; bottom: 2px; height: 31px; width: 150px; }
+}
+@media (orientation: portrait), (max-width: 560px) {
+  .page-controls .panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .page-controls .diagnostic-section, .page-controls .diagnostic-log { grid-column: 1 / -1; }
+  .relay-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); } .page-vehicle .main { padding-right: 52px; }
+}
+@media (prefers-reduced-motion: reduce) { .pages-track { transition-duration: 1ms; } .vehicle-svg .interactive-zone { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img class="header-logo" src="/static/k2000-vehicle-header.png?v=20260810" alt="K2000 — Contrôle véhicule — Pontiac Firebird">
+  <button class="btn" onclick="goBack()">← RETOUR</button>
+</div>
+
+<div class="pages-viewport" id="pagesViewport">
+  <div class="pages-track" id="pagesTrack">
+    <section class="ui-page page-vehicle" id="vehiclePage" aria-label="Véhicule interactif">
+<div class="main">
+  <div class="vehicle-reference-stage" aria-label="Vues interactives de la Pontiac Firebird">
+    <img class="vehicle-reference-image" src="/static/vehicle-reference-k2000-4vues.png?v=20260905-1" alt="Pontiac Firebird : vues de dessus, de profil, de face et arrière">
+    <button class="interactive-zone vehicle-hotspot hotspot-top-driver" type="button" data-fn="window_driver_down" data-side="driver" data-dir="down" aria-label="Descendre la vitre conducteur"></button>
+    <button class="interactive-zone vehicle-hotspot hotspot-top-passenger" type="button" data-fn="window_passenger_down" data-side="passenger" data-dir="down" aria-label="Descendre la vitre passager"></button>
+    <button class="interactive-zone vehicle-hotspot hotspot-side-driver-window" type="button" data-fn="window_driver_down" data-side="driver" data-dir="down" aria-label="Descendre la vitre conducteur"></button>
+    <button class="interactive-zone vehicle-hotspot hotspot-side-driver-door" type="button" data-fn="doors_unlock" data-action="unlock" aria-label="Déverrouiller les portes"></button>
+    <button class="interactive-zone vehicle-hotspot hotspot-side-passenger-door" type="button" data-fn="doors_unlock" data-action="unlock" aria-label="Ouvrir les portes"></button>
+    <button class="interactive-zone vehicle-hotspot hotspot-headlight-left" type="button" data-fn="headlights" aria-label="Commander les phares gauches"></button>
+    <button class="interactive-zone vehicle-hotspot hotspot-headlight-right" type="button" data-fn="headlights" aria-label="Commander les phares droits"></button>
+    <button class="interactive-zone vehicle-hotspot hotspot-horn" type="button" data-fn="horn" aria-label="Klaxon"></button>
+    <button class="interactive-zone vehicle-hotspot hotspot-trunk" type="button" data-fn="trunk" aria-label="Ouvrir le coffre"></button>
+  </div>
+</div>
+      <img class="vehicle-page-signature" src="/static/k2000-knight-rider-france.png?v=20260809" alt="K2000 Knight Rider France">
+      <button class="page-arrow next" type="button" onclick="showPage(1)" aria-label="Ouvrir le panneau de commandes">›</button>
+      <div class="page-indicator">VÉHICULE · 1/2</div>
+    </section>
+    <section class="ui-page page-controls" id="controlsPage" aria-label="Panneau de commandes">
+      <button class="page-arrow prev" type="button" onclick="showPage(0)" aria-label="Revenir au véhicule">‹</button>
+
+<div class="panel">
+  <div class="panel-section">
+    <h2>Moteur</h2>
+    <div class="control-grid full">
+      <button class="ctrl-btn" id="btn-engine-start" onclick="sendCommand('engine', {action:'start'}, this)">DÉMARRER MOTEUR</button>
+      <button class="ctrl-btn" id="btn-engine-stop" onclick="sendCommand('engine', {action:'stop'}, this)">ARRÊTER MOTEUR</button>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <h2>Vitres</h2>
+    <div class="control-grid">
+      <button class="ctrl-btn" onmousedown="startWindow('driver','up')" onmouseup="stopWindow('driver')" onmouseleave="stopWindow('driver')" ontouchstart="startWindow('driver','up')" ontouchend="stopWindow('driver')">C ↑</button>
+      <button class="ctrl-btn" onmousedown="startWindow('passenger','up')" onmouseup="stopWindow('passenger')" onmouseleave="stopWindow('passenger')" ontouchstart="startWindow('passenger','up')" ontouchend="stopWindow('passenger')">P ↑</button>
+      <button class="ctrl-btn" onmousedown="startWindow('driver','down')" onmouseup="stopWindow('driver')" onmouseleave="stopWindow('driver')" ontouchstart="startWindow('driver','down')" ontouchend="stopWindow('driver')">C ↓</button>
+      <button class="ctrl-btn" onmousedown="startWindow('passenger','down')" onmouseup="stopWindow('passenger')" onmouseleave="stopWindow('passenger')" ontouchstart="startWindow('passenger','down')" ontouchend="stopWindow('passenger')">P ↓</button>
+      <button class="ctrl-btn" onmousedown="startWindow('both','up')" onmouseup="stopWindow('both')" onmouseleave="stopWindow('both')" ontouchstart="startWindow('both','up')" ontouchend="stopWindow('both')">TOUT ↑</button>
+      <button class="ctrl-btn" onmousedown="startWindow('both','down')" onmouseup="stopWindow('both')" onmouseleave="stopWindow('both')" ontouchstart="startWindow('both','down')" ontouchend="stopWindow('both')">TOUT ↓</button>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <h2>Éclairage &amp; Accès</h2>
+    <div class="control-grid">
+      <button class="ctrl-btn" onclick="sendCommand('headlights',{state:true}, this)">PHARES ON</button>
+      <button class="ctrl-btn" onclick="sendCommand('headlights',{state:false}, this)">PHARES OFF</button>
+      <button class="ctrl-btn" onclick="sendCommand('doors',{action:'lock'}, this)">VERROUILLER</button>
+      <button class="ctrl-btn" onclick="sendCommand('doors',{action:'unlock'}, this)">DÉVERROUILLER</button>
+      <button class="ctrl-btn" onclick="sendCommand('trunk',{}, this)">COFFRE</button>
+      <button class="ctrl-btn" onclick="sendCommand('honk',{}, this)">KLAXON</button>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <h2>Équipements</h2>
+    <div class="control-grid">
+      <button class="ctrl-btn" data-state-function="scanner" onclick="sendStateCommand('scanner', true, this)">SCANNER ON</button>
+      <button class="ctrl-btn" data-state-function="scanner" onclick="sendStateCommand('scanner', false, this)">SCANNER OFF</button>
+      <button class="ctrl-btn" data-state-function="fog_lights" onclick="sendStateCommand('fog_lights', true, this)">ANTIBROUILLARDS ON</button>
+      <button class="ctrl-btn" data-state-function="fog_lights" onclick="sendStateCommand('fog_lights', false, this)">ANTIBROUILLARDS OFF</button>
+      <button class="ctrl-btn" data-state-function="laser" onclick="sendStateCommand('laser', true, this)">LASER 5 S</button>
+      <button class="ctrl-btn" data-state-function="laser" onclick="sendStateCommand('laser', false, this)">LASER / ACCESSOIRE OFF</button>
+    </div>
+  </div>
+
+  <div class="panel-section diagnostic-section">
+    <h2>Diagnostic</h2>
+    <div class="diagnostic-actions">
+      <div class="control-grid full">
+        <button class="ctrl-btn danger" onclick="sendCommand('stop-all',{}, this)">STOP ALL RELAYS</button>
+        <button class="ctrl-btn" onclick="refreshHistory()">RAFRAÎCHIR LOG</button>
+      </div>
+      <div style="margin-top:4px; font-size:9px; color:#aa6666; text-transform:uppercase; letter-spacing:1px;">Test par fonction</div>
+      <div class="control-grid function-test-grid">
+        <button class="ctrl-btn" onclick="sendCommand('trunk',{}, this)">Coffre</button>
+        <button class="ctrl-btn" onclick="sendCommand('engine',{action:'start'}, this)">Moteur</button>
+        <button class="ctrl-btn" onclick="sendCommand('headlights',{state:true}, this)">Phares ON</button>
+        <button class="ctrl-btn" onclick="sendCommand('headlights',{state:false}, this)">Phares OFF</button>
+        <button class="ctrl-btn" onclick="sendCommand('doors',{action:'lock'}, this)">Verrou</button>
+        <button class="ctrl-btn" onclick="sendCommand('doors',{action:'unlock'}, this)">Déverrou</button>
+      </div>
+    </div>
+    <div class="diagnostic-relays">
+      <div style="font-size:9px; color:#aa6666; text-transform:uppercase; letter-spacing:1px;">Test relais brut — R1 à R16</div>
+      <div class="control-grid relay-grid" id="rawRelayGrid"></div>
+    </div>
+  </div>
+
+  <div class="diagnostic-log" id="diagLog">
+    <div class="log-entry">Initialisation du panneau de contrôle...</div>
+  </div>
+</div>
+      <img class="controls-page-signature" src="/static/k2000-knight-rider-france-controls.png?v=20260810" alt="K2000 Knight Rider France">
+      <div class="page-indicator">COMMANDES · 2/2</div>
+    </section>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span id="statusText">Connexion au service...</span>
+  <span id="relayInfo">—</span>
+  <span class="signature">By MANIX</span>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-card">
+    <h3>CONFIRMATION REQUISE</h3>
+    <p id="confirmText">Action critique sur le véhicule.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="confirmAction(true)">CONFIRMER</button>
+      <button class="btn" onclick="confirmAction(false)">ANNULER</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/vehicle-control.js?v=20260809-reference-image"></script>
+</body>
+</html>

@@ -18,12 +18,18 @@ class ShutdownGuard:
 
     REQUESTS = {
         "extinction du systeme",
+        "je demande l extinction du systeme",
+        "demande d extinction du systeme",
         "coupe toi",
         "arrete toi",
         "eteins toi",
         "stop",
     }
-    PASSWORD = "attention voila la police"
+    REQUEST_PATTERN = re.compile(
+        r"^(?:(?:je|on)\s+)?(?:demande\s+)?(?:l\s+)?extinction\s+(?:du\s+)?(?:systeme|kitt|qironex)$"
+        r"|^(?:eteins|eteindre|arrete|arreter|coupe|couper)\s+(?:le\s+)?(?:systeme|kitt|qironex|ordinateur|jetson)$"
+    )
+    PASSWORD = "macron"
 
     def __init__(self, timeout_seconds: int = 90) -> None:
         self.timeout_seconds = timeout_seconds
@@ -44,7 +50,7 @@ class ShutdownGuard:
             return "Mot de passe incorrect. Dites annulation pour abandonner.", False
 
         self._pending.pop(session_id, None)
-        if normalized in self.REQUESTS:
+        if normalized in self.REQUESTS or self.REQUEST_PATTERN.fullmatch(normalized):
             self._pending[session_id] = now + self.timeout_seconds
             return "Commande d'extinction reçue. Donnez le mot de passe.", False
         return None, False

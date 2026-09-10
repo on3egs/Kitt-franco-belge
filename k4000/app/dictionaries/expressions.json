@@ -1,6 +1,6 @@
 {
   "category": "expressions",
-  "priority": 1,
+  "priority": 20,
   "description": "Expressions anglaises complètes à prononcer naturellement.",
   "entries": [
     {
@@ -38,6 +38,33 @@
     {
       "pattern": "General Motors",
       "replacement": "Djénéral Motors"
+    },
+    {
+      "pattern": "l’écoute",
+      "replacement": "elle é-koute"
+    },
+    {
+      "pattern": "l ecoute",
+      "replacement": "elle é-koute"
+    },
+    {
+      "pattern": "(?<!l[ ’'])écoute",
+      "replacement": "é-koute",
+      "use_word_boundaries": false
+    },
+    {
+      "pattern": "(?<!l[ ’'])ecoute",
+      "replacement": "é-koute",
+      "use_word_boundaries": false
+    },
+    {
+      "pattern": "K[- ]?2000",
+      "replacement": "K deux mille",
+      "use_word_boundaries": false
+    },
+    {
+      "pattern": "Virginie",
+      "replacement": "Vir-ji-nie"
     }
   ]
 }

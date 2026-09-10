@@ -1,0 +1,64 @@
+/* Lecteur CD virtuel : vue isolée, sans lien avec les relais véhicule. */
+#cdPlayer{position:fixed;inset:0;z-index:12000;display:grid;visibility:hidden;pointer-events:none;place-items:center;background:#020306;color:#e8f4ff;opacity:0;transition:opacity .28s ease,visibility 0s linear .28s;overflow:hidden;font-family:Arial,sans-serif}
+#cdPlayer.open{visibility:visible;pointer-events:auto;opacity:1;transition:opacity .28s ease}.cd-stage{position:relative;width:min(100vw,150vh);aspect-ratio:3/2;max-height:100vh;overflow:hidden;background:#080b10 url('/static/cd-player-reference.png') center/cover no-repeat;box-shadow:0 0 38px #f00 inset}
+.cd-stage:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.08),transparent 34%,transparent 70%,rgba(0,0,0,.16));}
+.cd-hit{position:absolute;z-index:2;isolation:isolate;overflow:hidden;touch-action:manipulation;border:1px solid rgba(255,90,90,.58);background:linear-gradient(145deg,#363a3d 0%,#111419 17%,#020407 58%,#2c3032 100%);color:#ffcaca;text-shadow:0 0 7px #f11;box-shadow:inset 1px 1px 1px rgba(255,255,255,.25),inset -2px -3px 5px #000,0 0 0 2px #040506,0 0 7px rgba(255,0,0,.32);cursor:pointer;transition:transform .14s ease,filter .14s ease,box-shadow .14s ease,border-color .14s ease;border-radius:5px;font-weight:700}
+.cd-hit:before{content:'';position:absolute;z-index:-1;inset:2px 3px 55%;border-radius:3px;background:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0));pointer-events:none}.cd-hit:hover,.cd-hit:focus-visible{filter:brightness(1.38);border-color:#ff9c9c;box-shadow:inset 1px 1px 2px rgba(255,255,255,.35),inset 0 0 13px #5d0000,0 0 15px #ff1010;outline:0}.cd-hit:active{transform:translateY(2px) scale(.96);filter:brightness(1.75);box-shadow:inset 0 3px 9px #000,0 0 18px #f22}.cd-hit.active{border-color:#ffb0b0;background:linear-gradient(145deg,#8b1518,#280105 54%,#530408);box-shadow:inset 1px 1px 2px rgba(255,255,255,.25),inset 0 0 16px #ff1a1a,0 0 18px #ff1212;color:#fff}
+.cd-telemetry{position:absolute;z-index:6;right:1.4%;top:1.1%;width:31%;height:8.6%;display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:3%;padding:0 1.2%;box-sizing:border-box;overflow:hidden;background:#020305;border:1px solid #283945;border-radius:10px;box-shadow:inset 0 0 14px #000,0 0 8px rgba(255,0,0,.45)}.cd-clock{display:grid;justify-items:end;line-height:1.05;white-space:nowrap}.cd-clock strong{color:#ff3038;font-family:'Courier New',monospace;font-size:clamp(14px,2.3vw,34px);letter-spacing:.06em;text-shadow:0 0 8px #f00}.cd-clock span{color:#ff5252;font-size:clamp(6px,.7vw,11px);letter-spacing:.12em}.cd-clock span:last-child{color:#c6d7e3;letter-spacing:.03em}.cd-stats{display:grid;gap:2px;color:#9db8c9;font-size:clamp(6px,.66vw,10px);line-height:1.05;white-space:nowrap}.cd-stats span{display:flex;justify-content:space-between;gap:5px}.cd-stats b{color:#ff6b6b;font-weight:700;min-width:3.4em;text-align:right}
+.cd-back{left:1.5%;top:2%;width:9%;height:5%;font-size:clamp(8px,1vw,16px)}
+.cd-disc{position:absolute;z-index:1;left:17.7%;top:20.9%;width:29.5%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at center,#06080a 0 7%,#e11 7.5% 8%,#16191b 8.5% 11%,transparent 11.5%),conic-gradient(from 25deg,#8fa0ad,#fafefe,#91e8fa,#d6b4ee,#a9f0df,#e0d9ca,#9ca9b4,#fff,#7b8791,#a8efff,#c7a7d5,#8fa0ad);box-shadow:inset 0 0 30px rgba(255,255,255,.7),inset 0 0 70px #000,0 0 10px #e11;transform:rotate(0deg)}
+.cd-disc:before{content:'KYRONEXT';position:absolute;inset:36% 18%;display:grid;place-items:center;border-radius:50%;color:#07090c;font-size:clamp(9px,1.9vw,28px);font-weight:900;letter-spacing:.08em;background:radial-gradient(circle,#0b0d0f 0 31%,#333 32% 34%,#000 35% 43%,#a11 44% 46%,#111 47% 100%);text-shadow:0 1px #fff}.cd-disc.spinning{animation:cdSpin 2.8s linear infinite}.cd-disc.stopping{animation:none;transition:transform .42s ease-out}@keyframes cdSpin{to{transform:rotate(360deg)}}
+.cd-display{position:absolute;z-index:3;left:49.5%;top:20%;width:27%;height:27%;padding:1.5% 2%;box-sizing:border-box;border:1px solid rgba(130,180,215,.36);border-radius:7px;background:rgba(1,5,9,.84);box-shadow:inset 0 0 22px #000,0 0 7px #000}.cd-trackline{color:#ff5757;font-size:clamp(10px,1.6vw,25px)}.cd-time{margin:.7% 0;color:#f7e9e9;font-size:clamp(16px,2.1vw,34px)}.cd-time span{color:#ff4242}.cd-title{font-size:clamp(15px,2vw,29px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cd-artist{color:#c3d6e9;font-size:clamp(10px,1.45vw,21px);margin:.6% 0}.cd-meta{border-top:1px solid #33424c;padding-top:1%;display:grid;gap:2px;color:#c8ddf0;font-size:clamp(8px,1vw,15px)}.cd-meta b{color:#a9c8e5;font-weight:400}
+.cd-playlist{position:absolute;z-index:3;left:79.2%;top:16.5%;width:19%;height:43%;overflow:auto;background:#05080c;border:1px solid rgba(140,190,225,.72);border-radius:8px;box-shadow:inset 0 0 18px #000,0 0 7px #000;scrollbar-color:#f22 #090d10}.cd-playlist h2{font-size:clamp(9px,1.35vw,20px);font-weight:400;letter-spacing:.1em;margin:5% 5% 3%;color:#cce5f6}.cd-track{width:100%;min-height:clamp(25px,3.25vw,44px);display:grid;grid-template-columns:16% 1fr 20%;gap:3px;padding:0 4%;align-items:center;box-sizing:border-box;text-align:left;color:#d4e6f4;border:0;border-top:1px solid #263b49;background:#05080c;font-size:clamp(8px,1.05vw,16px);cursor:pointer}.cd-track:hover,.cd-track.active{background:linear-gradient(90deg,#7f090b,#370105);color:white;box-shadow:inset 0 0 11px #e11}.cd-empty{padding:10%;font-size:clamp(9px,1.1vw,16px);color:#b7c8d5;line-height:1.4}
+.cd-import{left:79.2%;top:61.5%;width:19%;height:5%;font-size:clamp(7px,1vw,15px);letter-spacing:.06em}
+.cd-control{width:4.8%;height:7.4%;font-size:clamp(10px,1.9vw,29px)}.cd-control small{display:block;font-size:clamp(5px,.55vw,9px);margin-top:2px}.cd-prev{left:47.5%;top:51.4%}.cd-stop{left:53.3%;top:51.4%}.cd-play{left:59.2%;top:49.5%;width:7.2%;height:10.7%;border-radius:50%;font-size:clamp(18px,3.2vw,48px)}.cd-pause{left:67.2%;top:51.4%}.cd-next{left:73.1%;top:51.4%}.cd-eject{left:46.1%;top:63%}.cd-repeat{left:51.9%;top:63%}.cd-shuffle{left:58.6%;top:63%}.cd-list{left:65.3%;top:63%}.cd-audio{left:71.9%;top:63%}
+.cd-volume{position:absolute;z-index:3;left:16.2%;top:74.5%;width:30%;height:6%;display:flex;align-items:center;gap:3%;padding:0 1.5%;box-sizing:border-box;border:1px solid #64717b;border-radius:9px;background:rgba(2,6,10,.85);font-size:clamp(9px,1.1vw,17px)}.cd-volume input{width:72%;accent-color:#ff2020}.cd-volume output{min-width:11%;color:#eaf4ff}.cd-state{position:absolute;z-index:3;left:50%;top:69.5%;width:25%;text-align:center;color:#ff9c9c;font-size:clamp(7px,.85vw,13px);letter-spacing:.08em;text-shadow:0 0 7px #f11}
+.cd-equalizer{position:absolute;z-index:2;left:53%;top:74%;width:24%;height:7%;display:flex;align-items:end;justify-content:space-between;gap:2px;padding:0 1%;box-sizing:border-box}.cd-equalizer i{display:block;flex:1;min-height:4%;height:5%;background:linear-gradient(to top,#8b0000 0%,#f11 55%,#ffb0b0 100%);box-shadow:0 0 5px #f11;transition:height .07s linear}.cd-equalizer.simulated i{animation:eqPulse .55s ease-in-out infinite alternate;animation-delay:var(--d)}@keyframes eqPulse{from{height:8%}to{height:var(--h)}}
+.cd-scanner{position:absolute;z-index:3;left:80%;top:62%;width:16%;height:2%;overflow:hidden}.cd-scanner:before{content:'';position:absolute;top:0;bottom:0;width:27%;background:linear-gradient(90deg,transparent,#f11,#fff,#f11,transparent);box-shadow:0 0 14px #f11;animation:cdScan 2.2s ease-in-out infinite alternate}@keyframes cdScan{from{left:-27%}to{left:100%}}
+.cd-player.show-hitboxes .cd-hit,.cd-player.show-hitboxes .cd-volume{outline:2px solid rgba(0,220,255,.9);background-color:rgba(0,130,255,.28)}.cd-player.show-hitboxes .cd-hit:after{content:attr(data-hitbox);position:absolute;left:0;top:100%;font-size:8px;color:#7ff;white-space:nowrap}
+/* Les panneaux fonctionnels masquent complètement la maquette sous-jacente. */
+.cd-display{background:#010509}
+.cd-volume{background:#02060a;width:36%}
+.cd-track span:nth-child(2){min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* La télémétrie recouvre toute l'ancienne bulle de la maquette et reprend sa forme. */
+.cd-telemetry{right:1.2%;top:.7%;width:31.5%;height:12%;padding:0 1%;gap:2%;background:#020305;border:1px solid #35151c;border-radius:13px;box-shadow:inset 0 0 16px #000,0 0 9px rgba(255,0,0,.45)}
+.cd-clock{height:86%;min-width:62%;padding:2% 3%;box-sizing:border-box;background:#020305;border:1px solid #6b2028;border-radius:9px;box-shadow:inset 0 0 12px #000,0 0 6px rgba(255,0,0,.34)}
+.cd-clock strong{font-size:clamp(18px,2.5vw,34px)}.cd-clock span{font-size:clamp(8px,.85vw,12px)}
+.cd-stats{height:86%;min-width:25%;padding:2% 3%;box-sizing:border-box;background:#020305;border:1px solid #4b1d25;border-radius:8px;box-shadow:inset 0 0 9px #000;font-size:clamp(8px,.9vw,13px);gap:3px;line-height:1.15}.cd-stats b{font-size:1.05em}
+.cd-signature{position:absolute;z-index:5;right:2.3%;bottom:2.2%;color:#f2e9ee;font:italic clamp(10px,1.25vw,19px) Georgia,serif;letter-spacing:.02em;transform:rotate(-4deg);text-shadow:0 0 5px #000,0 0 8px rgba(255,0,0,.3);white-space:nowrap}.cd-signature span{display:block;color:#ff7777;font-size:.78em;text-align:right;margin-top:2px}
+#cdPlayer.no-transition{transition:none!important}
+.cd-equalizer{top:73.4%}
+.cd-control{overflow:visible;padding:0;border-radius:7px;background:linear-gradient(145deg,#4c5153 0%,#161a1d 16%,#020406 58%,#303538 100%);box-shadow:inset 2px 2px 2px rgba(255,255,255,.28),inset -3px -4px 6px #000,0 0 0 2px #050608,0 0 9px rgba(255,0,0,.4)}
+.cd-control .cd-symbol{position:absolute;inset:0;display:grid;place-items:center;color:#ffb0b0;text-shadow:0 0 8px #f11;line-height:1}
+.cd-control .cd-caption{position:absolute;z-index:4;top:calc(100% + 4px);left:50%;transform:translateX(-50%);padding:1px 4px;border:1px solid #1b2730;border-radius:2px;background:#020406;font:700 clamp(5px,.68vw,10px) Arial,sans-serif;letter-spacing:.02em;white-space:nowrap;color:#e4e8ed;text-shadow:0 1px 3px #000}
+.cd-control:hover .cd-symbol,.cd-control:focus-visible .cd-symbol,.cd-control.active .cd-symbol{color:#fff;text-shadow:0 0 12px #f22}
+.cd-control .cd-caption{display:none}
+.cd-control.cd-play{border-radius:50%!important}
+/* Les commandes recouvrent uniquement les faces de la maquette : ses textes restent visibles. */
+.cd-control:not(.cd-play){width:5%;height:6.3%}
+.cd-control.cd-eject,.cd-control.cd-repeat,.cd-control.cd-shuffle,.cd-control.cd-list,.cd-control.cd-audio{height:5%}
+.cd-state{display:none}
+/* La maquette porte déjà les dessins et les libellés : ces boutons sont des hitboxes vivantes. */
+.cd-control{background:transparent;border-color:transparent;box-shadow:none;color:transparent;text-shadow:none}
+.cd-control::before{display:none}.cd-control .cd-symbol{display:none}
+.cd-control:hover,.cd-control:focus-visible{background:rgba(255,0,0,.08);border-color:rgba(255,125,125,.75);box-shadow:inset 0 0 10px rgba(255,0,0,.25),0 0 12px rgba(255,0,0,.8)}
+.cd-control.active{background:rgba(255,0,0,.12);border-color:rgba(255,130,130,.9);box-shadow:inset 0 0 13px rgba(255,0,0,.35),0 0 16px rgba(255,0,0,.9)}
+/* Le halo doit reprendre exactement la géométrie de la face imprimée. */
+.cd-control:not(.cd-play){border-radius:6px}
+.cd-control.cd-play{aspect-ratio:1/1;border-radius:50%!important}
+.cd-control.cd-play:hover,.cd-control.cd-play:focus-visible{border-radius:50%!important;background:radial-gradient(circle,rgba(255,0,0,.24) 0 52%,rgba(255,0,0,.08) 68%,transparent 74%);box-shadow:inset 0 0 12px rgba(255,0,0,.3),0 0 12px rgba(255,0,0,.9),0 0 24px rgba(255,0,0,.35)}
+.cd-control.cd-play.active{border-radius:50%!important;background:radial-gradient(circle,rgba(255,0,0,.28) 0 54%,rgba(255,0,0,.1) 70%,transparent 76%);box-shadow:inset 0 0 15px rgba(255,0,0,.38),0 0 17px rgba(255,0,0,.95),0 0 28px rgba(255,0,0,.35)}
+.cd-control.cd-play:active{transform:scale(.93);border-radius:50%!important}
+/* Repères mesurés sur le gabarit 1536×1024 : les hitboxes suivent les
+   boutons imprimés, afin que le contour lumineux ne déborde pas à droite. */
+.cd-control.cd-prev{left:47.2%;width:4.9%}
+.cd-control.cd-stop{left:53.1%;width:4.9%}
+.cd-control.cd-play{left:59%;width:7.2%;height:10.7%}
+.cd-control.cd-pause{left:66.6%;width:4.9%}
+.cd-control.cd-next{left:72.6%;width:4.9%}
+.cd-control.cd-eject{left:45.7%;height:4.5%}
+.cd-control.cd-repeat{left:51.7%;height:4.5%}
+.cd-control.cd-shuffle{left:58.2%;height:4.5%}
+.cd-control.cd-list{left:65.2%;height:4.5%}
+.cd-control.cd-audio{left:71.7%;height:4.5%}
+@media (max-aspect-ratio:4/3){.cd-stage{width:100vw;max-height:66.66vw}.cd-back{width:12%;height:7%}.cd-control{width:6.5%;height:9%}.cd-play{width:9%;height:13%}.cd-track{min-height:32px}.cd-playlist{height:45%}}
