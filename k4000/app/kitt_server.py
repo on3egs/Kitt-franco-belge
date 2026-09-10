@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 import html
 import mimetypes
+import random
 import re
 import os
 import ssl
@@ -1820,6 +1821,58 @@ def _joke_catalog_result(user_msg: str) -> dict | None:
     return {"reply": reply, "tts_reply": "Voici le tableau des blagues disponibles. Choisis une catégorie pour en entendre une.", "action": "joke_catalog"}
 
 
+_TOILET_HUMOR_RESPONSES = (
+    # Phrases courtes : Piper garde une diction naturelle et ne crée pas de
+    # pause artificielle au milieu de la formule.
+    "Chie dur ou chie mou, mais chie dans le trou !",
+    "Bon passage aux toilettes ! Chie dur ou chie mou, mais chie dans le trou !",
+    "Mission toilettes autorisée. Chie dur ou chie mou, mais chie dans le trou !",
+    "Je te laisse faire. Chie dur ou chie mou, mais chie dans le trou !",
+    "Va donc, champion ! Chie dur ou chie mou, mais chie dans le trou !",
+    "Que la force soit avec toi ! Chie dur ou chie mou, mais chie dans le trou !",
+)
+_TOILET_HUMOR_LAST: dict[str, str] = {}
+
+
+def _toilet_humor_result(user_msg: str, session_id: str = "default") -> dict | None:
+    """Réponse humoristique locale aux départs aux toilettes de Pascal.
+
+    Le déclencheur reste volontairement contextuel : « crotte » dans une
+    question générale ne suffit pas, alors que « je vais faire ma crotte » ou
+    « je reviens, je vais aux toilettes » est reconnu sans solliciter le LLM.
+    """
+    norm = _normalize_memory_text(user_msg)
+    if not norm:
+        return None
+
+    toilet_words = (
+        "crotte", "crottes", "crot", "crote", "caca", "toilette", "toilettes", "wc", "selles",
+        "besoin", "pipi", "popo", "chier", "chie", "chiotte", "chiottes",
+    )
+    explicit_toilet_phrase = any(marker in norm for marker in (
+        "faire ma crotte", "faire caca", "faire popo", "aller aux toilettes", "vais aux toilettes",
+        "aux toilettes", "au toilette", "faire mes besoins", "faire besoin",
+        "je vais chier", "je vais faire pipi", "je reviens des toilettes",
+        "aller au petit coin", "vais au petit coin", "faire la grosse commission",
+    ))
+    if not any(word in norm.split() for word in toilet_words) and not explicit_toilet_phrase:
+        return None
+
+    departure_context = bool(re.search(
+        r"\b(?:je|j|moi)\b.*\b(?:vais|va|reviens|revient|pars|part|fais|faire|aller|aux|a)\b|"
+        r"\b(?:vais|va|reviens|revient|pars|part)\b.*\b(?:caca|crotte|toilette|toilettes|wc|besoin|pipi|chier|chie|chiotte|chiottes)\b",
+        norm,
+    ))
+    if not departure_context and not explicit_toilet_phrase:
+        return None
+
+    previous = _TOILET_HUMOR_LAST.get(session_id)
+    choices = [reply for reply in _TOILET_HUMOR_RESPONSES if reply != previous]
+    reply = random.choice(choices or list(_TOILET_HUMOR_RESPONSES))
+    _TOILET_HUMOR_LAST[session_id] = reply
+    return {"reply": reply, "tts_reply": reply, "action": "toilet_humor"}
+
+
 def _horn_styles_result(user_msg: str) -> dict | None:
     norm = _normalize_memory_text(user_msg)
     horn_words = (
@@ -2990,7 +3043,8 @@ def _kr95_vehicle_info_result(user_msg: str) -> dict | None:
 
 def _special_memory_result(user_msg: str, user_display: str, session_id: str, explicit_user_display: bool = False) -> dict | None:
     return (
-        _kr95_vehicle_info_result(user_msg)
+        _toilet_humor_result(user_msg, session_id)
+        or _kr95_vehicle_info_result(user_msg)
         or _kitt_info_result(user_msg)
         or _kitt_identity_guard(user_msg)
         or _vehicle_help_result(user_msg)
