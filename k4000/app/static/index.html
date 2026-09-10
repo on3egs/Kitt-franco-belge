@@ -1242,6 +1242,41 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   #statusTelemetry span { gap: 1px; }
 }
 </style>
+<style id="titleClockDateLayout">
+/* L'heure et la date encadrent le titre ; la charge reste dans la barre basse. */
+.header-telemetry {
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  transform: none;
+  pointer-events: none;
+}
+.header-telemetry #systemClock {
+  display: contents !important;
+}
+.header-telemetry #systemStats { display: none !important; }
+.header-telemetry #clockTime,
+.header-telemetry #clockDate {
+  position: absolute;
+  top: 50%;
+  margin: 0 !important;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+.header-telemetry #clockTime {
+  left: 12px;
+  font-size: clamp(12px, 1.25vw, 18px) !important;
+}
+.header-telemetry #clockDate {
+  right: 12px;
+  font-size: clamp(7px, .72vw, 10px) !important;
+}
+.header-telemetry #clockTemp { display: none !important; }
+@media (max-width: 700px) {
+  .header-telemetry #clockTime { left: 7px; font-size: 11px !important; }
+  .header-telemetry #clockDate { right: 7px; font-size: 7px !important; }
+}
+</style>
 <link rel="stylesheet" href="/static/cd-player.css?v=20260910-13">
 <link rel="stylesheet" href="/static/media-hub.css?v=20260910-4">
 </head>
@@ -1254,7 +1289,7 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   <div class="subtitle">SYSTÈME PASCAL FAIRON</div>
   <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-expanded="false" aria-controls="mobileOptions">OPTIONS</button>
   <div class="header-telemetry" aria-label="État du système">
-    <div id="systemClock" aria-label="Heure, date et température réelles"><strong id="clockTime">--:--:--</strong><span id="clockDate">--- -- --- ----</span><span id="clockTemp">-- °C</span></div>
+    <div id="systemClock" aria-label="Heure et date réelles"><strong id="clockTime">--:--:--</strong><span id="clockDate">--- -- --- ----</span><span id="clockTemp" hidden>-- °C</span></div>
     <div id="systemStats" aria-label="Charge matérielle en temps réel"><span>CPU <b id="cpuStat">--%</b></span><span class="gpu">GPU <b id="gpuStat">--%</b></span><span>RAM <b id="ramStat">--/--</b></span></div>
   </div>
 </div>
