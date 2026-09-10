@@ -479,13 +479,13 @@ def _manual_download_voice_result(user_msg: str, session_id: str) -> dict | None
     )
     cancellations = ("non", "annule", "annuler", "pas maintenant", "laisse tomber")
     if session_id in _manual_download_pending_sessions:
-        if any(marker in norm for marker in confirmations):
+        if any(re.search(rf"\b{re.escape(marker)}\b", norm) for marker in confirmations):
             _manual_download_pending_sessions.discard(session_id)
             return {
                 "reply": "Oui. Le téléchargement du manuel PDF commence maintenant.",
                 "action": "manual_download_confirmed",
             }
-        if any(marker in norm for marker in cancellations):
+        if any(re.search(rf"\b{re.escape(marker)}\b", norm) for marker in cancellations):
             _manual_download_pending_sessions.discard(session_id)
             return {
                 "reply": "D'accord, je n'engage pas le téléchargement.",
@@ -1392,6 +1392,7 @@ def _theme_voice_select_result(user_msg: str, session_id: str) -> dict | None:
     aliases = (("blague", "blagues"), ("blagues", "blagues"), ("temps blague", "blagues"), ("theme blague", "blagues"), ("musique 80 90", "musique8090"), ("musiques 80 90", "musique8090"), ("musique annees 80", "musique8090"), ("musiques annees 80", "musique8090"), ("musique", "musique8090"), ("music", "musique8090")) + aliases
     aliases = (("voiture", "voiture"), ("vehicule", "voiture"), ("véhicule", "voiture"), ("v kul", "voiture"), ("v-kul", "voiture"), ("v hicule", "voiture"), ("v-hicule", "voiture"), ("remote vehicle", "voiture"), ("remote vehicule", "voiture"), ("temps voiture", "voiture"), ("theme voiture", "voiture")) + aliases
     aliases = (("charleroi", "charleroi"), ("charle roi", "charleroi"), ("chaque roi", "charleroi"), ("theme charleroi", "charleroi"), ("bouton charleroi", "charleroi"), ("pontiac moteur", "pontiac"), ("moteurs pontiac", "pontiac"), ("moteur pontiac", "pontiac"), ("pontiaque", "pontiac"), ("pontiak", "pontiac"), ("pont yac", "pontiac"), ("pon tiac", "pontiac"), ("pontiac", "pontiac")) + aliases
+    aliases = (("consoles", "consoles"), ("console", "consoles"), ("console de jeux", "consoles"), ("consoles de jeux", "consoles"), ("jeux video", "consoles"), ("nintendo", "consoles"), ("playstation", "consoles")) + aliases
     # Désactivation : phrases explicites uniquement (« désactive le thème »,
     # « mode normal », « bouton normal », « désactive le mode commande »).
     # Reset global : on efface les overrides thème/technique/cuisine ET on
@@ -1734,8 +1735,18 @@ def _hifi_catalog_result(session_id: str = "default") -> dict:
 def _active_theme_catalog_result(user_msg: str, session_id: str) -> dict | None:
     """Résout « affiche le tableau » selon la branche actuellement sélectionnée."""
     norm = _normalize_memory_text(user_msg)
-    if not any(x in norm for x in ("tableau", "liste", "affiche", "montre")):
+    asks_catalog = any(x in norm for x in ("tableau", "tablo", "liste", "affiche", "montre", "infos", "information", "informations", "ouvre", "ouvrir"))
+    if not asks_catalog:
         return None
+    hifi_query = any(x in norm for x in (
+        "hifi 90", "hi fi 90", "iffi 90", "ifi 90", "i fi 90",
+        "iski 90", "isky 90", "ici 90", "ici nonante",
+        "efi 90", "e fi 90", "effi 90", "effi nonante",
+        "efi nonante", "iffy 90", "iffy nonante", "tablo iffy",
+        "ifinodente", "il fit dans l arbre", "il fait nonante",
+    ))
+    if hifi_query:
+        return _hifi_catalog_result(session_id)
     # Avec un sujet explicite, les catalogues spécialisés ont priorité.
     if any(x in norm for x in (
         "moteur", "moteurs", "console", "nintendo", "playstation", "musique", "serie",
@@ -1749,6 +1760,10 @@ def _active_theme_catalog_result(user_msg: str, session_id: str) -> dict | None:
         return _music_catalog_result("affiche le tableau de musique", session_id)
     if theme == "hifi90":
         return _hifi_catalog_result(session_id)
+    if theme == "k4000":
+        # Une demande générique (« affiche le tableau ») doit rester dans
+        # la branche K-4000 au lieu de repartir vers le LLM généraliste.
+        return _k4000_parts_table_result("affiche le tableau des pièces K-4000", session_id)
     if theme == "charleroi":
         return _charleroi_catalog_result("affiche le tableau de Charleroi", session_id, force=True)
     if theme == "pontiac":
