@@ -904,6 +904,96 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   #clockTime { font-size:14px; letter-spacing:.5px; } #clockDate { font-size:6px; margin-top:2px; letter-spacing:.1px; } #clockTemp { display:none; }
 }
 </style>
+<style id="compactTelemetryLayout">
+/* Télémétrie compacte : une seule barre lisible, sans empiler CPU/GPU/RAM. */
+.header-telemetry {
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  width: min(54vw, 390px);
+  max-width: min(54vw, 390px);
+}
+.header-telemetry #systemClock {
+  width: 224px;
+  min-width: 0;
+  min-height: 0;
+  padding: 5px 8px;
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "time date" "temp temp";
+  column-gap: 7px;
+  row-gap: 2px;
+  align-items: center;
+  overflow: hidden;
+}
+.header-telemetry #clockTime { grid-area: time; }
+.header-telemetry #clockDate { grid-area: date; margin-top: 0; align-self: end; }
+.header-telemetry #clockTemp { grid-area: temp; margin-top: 0; text-align: center; }
+.header-telemetry #systemStats {
+  min-width: 0;
+  padding: 5px 7px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.header-telemetry #systemStats span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+@media (max-width: 700px) {
+  .header-telemetry {
+    left: 5px;
+    right: 5px;
+    top: 4px;
+    max-width: none;
+    width: auto;
+    gap: 3px;
+  }
+  .header-telemetry #systemClock {
+    width: auto;
+    padding: 3px 5px;
+    column-gap: 4px;
+    flex: 0 0 auto;
+  }
+  .header-telemetry #systemStats {
+    min-width: 0;
+    padding: 3px 5px;
+    gap: 4px;
+    flex: 1 1 auto;
+    font-size: 8px;
+    overflow: hidden;
+  }
+  .header-telemetry #systemStats span { gap: 1px; }
+  #clockTime { font-size: 14px; }
+  #clockDate { font-size: 6px; }
+  #clockTemp { display: block; font-size: 7px; }
+}
+@media (orientation: portrait) and (max-width: 700px) {
+  .header-telemetry {
+    /* Deux zones horizontales compactes : le titre reste dégagé au centre. */
+    align-items: flex-start;
+  }
+  .header-telemetry #systemClock { max-width: 42%; }
+  .header-telemetry #systemStats { max-width: 54%; }
+  .header-telemetry #systemStats span { font-size: 7px; }
+  .header-telemetry #systemStats b { font-size: 8px; }
+}
+@media (orientation: landscape) and (max-height: 700px) {
+  .header-telemetry #systemClock { padding: 2px 5px; }
+  .header-telemetry #systemStats { padding: 2px 5px; }
+  .header-telemetry #clockTime { font-size: 12px; }
+  .header-telemetry #clockDate,
+  .header-telemetry #clockTemp,
+  .header-telemetry #systemStats { font-size: 7px; }
+}
+</style>
 <link rel="stylesheet" href="/static/cd-player.css?v=20260910-13">
 <link rel="stylesheet" href="/static/media-hub.css?v=20260910-4">
 </head>
@@ -1124,7 +1214,7 @@ let pcmChunks = [];
 const micBtn = document.getElementById('mic');
 const autoBtn = document.getElementById('automic');
 const cpuStat = document.getElementById('cpuStat'), gpuStat = document.getElementById('gpuStat'), ramStat = document.getElementById('ramStat');
-async function refreshSystemStats(){ try { const d=await (await fetch('/api/system/stats',{cache:'no-store'})).json(); cpuStat.textContent=(d.cpu??'--')+'%'; gpuStat.textContent=(d.gpu==null?'N/D':d.gpu+'%'); ramStat.textContent=d.ram_total?`${d.ram_used}/${d.ram_total}M`:'--/--'; systemClock.dataset.temperature=d.temperature==null?'--':d.temperature+' °C'; } catch(e){} }
+async function refreshSystemStats(){ try { const d=await (await fetch('/api/system/stats',{cache:'no-store'})).json(); cpuStat.textContent=(d.cpu??'--')+'%'; gpuStat.textContent=(d.gpu==null?'N/D':d.gpu+'%'); const ramPercent=d.ram_total?Math.round(Number(d.ram_used)/Number(d.ram_total)*100):null; ramStat.textContent=ramPercent==null?'--%':ramPercent+'%'; ramStat.title=d.ram_total?`RAM utilisée : ${d.ram_used}/${d.ram_total}M`:'RAM indisponible'; systemClock.dataset.temperature=d.temperature==null?'--':d.temperature+' °C'; } catch(e){} }
 refreshSystemStats(); setInterval(refreshSystemStats,2000);
 const systemClock=document.getElementById('systemClock'), clockTime=document.getElementById('clockTime'), clockDate=document.getElementById('clockDate'), clockTemp=document.getElementById('clockTemp');
 function refreshClock(){ const n=new Date(); clockTime.textContent=n.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); clockDate.textContent=n.toLocaleDateString('fr-BE',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); clockTemp.textContent=systemClock.dataset.temperature||'-- °C'; }
