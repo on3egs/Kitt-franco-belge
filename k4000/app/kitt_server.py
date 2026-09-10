@@ -575,6 +575,12 @@ def _cd_player_voice_result(user_msg: str, *, context_active: bool = False) -> d
         "ouvre le lecteur cd", "ouvre lecteur cd", "affiche le lecteur cd",
         "ouvre la musique", "lecteur cd", "lecteur musique",
         "lecteur de musique", "affiche le lecteur de musique",
+        "ouvre le lecteur audio", "ouvre lecteur audio",
+        "affiche le lecteur audio", "active le lecteur audio",
+        "actif le lecteur audio", "active lecteur audio",
+        "lecteur audio", "lecteur sonore",
+        "active le vecteur audio", "actif le vecteur audio",
+        "active vecteur audio", "vector audio", "vecteur audio",
         "active le lecteur musique", "actif le lecteur musique",
         "active lecteur musique", "actif lecteur musique",
         # Repli phonétique STT fréquent pour « le lecteur musique ».
@@ -650,8 +656,12 @@ def _cd_player_voice_result(user_msg: str, *, context_active: bool = False) -> d
         return {"reply": "Lecture en pause.", "action": "cd_pause"}
     if any(phrase in norm for phrase in (
         "joue la musique", "jouer la musique", "lance la musique", "demarre la musique",
+        "joue de la musique", "jouer de la musique", "lance de la musique",
+        "active la musique", "activer la musique",
         "demarre la lecture", "ecoute la musique", "ecouter la musique",
         "ecoute de la musique", "ecouter de la musique", "ecoute musique", "ecouter musique", "mets de la musique",
+        "mets moi de la musique", "met moi de la musique", "mettre moi de la musique",
+        "mets-moi de la musique", "met-moi de la musique",
         "met de la musique", "mettre de la musique", "mets la musique", "met la musique",
         "mets musique", "met musique", "mettre musique", "lire la musique", "lis la musique",
         "reprends la musique", "reprend la musique", "continue la musique", "play musique",
