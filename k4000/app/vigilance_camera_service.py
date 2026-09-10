@@ -11,6 +11,10 @@ PIDFILE = RECORDINGS / ".vigilance.pid"
 STATUSFILE = RECORDINGS / ".vigilance.json"
 DEVICE = os.getenv("KYRONEXT_VIGILANCE_DEVICE", "/dev/video0")
 MAX_BYTES = int(float(os.getenv("KYRONEXT_VIGILANCE_MAX_GB", "10")) * 1024**3)
+try:
+    TARGET_FPS = max(1, min(30, int(os.getenv("KYRONEXT_VIGILANCE_FPS", "24"))))
+except ValueError:
+    TARGET_FPS = 24
 
 
 def _pid():
@@ -56,14 +60,14 @@ def start():
     preview = str(RECORDINGS / "latest.jpg")
     cmd = ["ffmpeg", "-hide_banner", "-loglevel", "warning", "-nostdin", "-y",
            "-f", "v4l2", "-input_format", "mjpeg", "-video_size", "640x480", "-framerate", "30", "-i", DEVICE,
-           "-filter_complex", "[0:v]fps=5,split=2[rec][preview]",
+           "-filter_complex", f"[0:v]fps={TARGET_FPS},split=2[rec][preview]",
            "-map", "[rec]", "-c:v", "libx264", "-preset", "ultrafast", "-tune", "zerolatency", "-b:v", "700k",
            "-pix_fmt", "yuv420p", "-f", "segment", "-segment_time", "300", "-segment_format_options", "movflags=+frag_keyframe+empty_moov+default_base_moof", "-reset_timestamps", "1", "-strftime", "1", output,
            "-map", "[preview]", "-c:v", "mjpeg", "-q:v", "7", "-f", "image2", "-update", "1", preview]
     log = open(RECORDINGS / "vigilance_ffmpeg.log", "ab", buffering=0)
     proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True)
     PIDFILE.write_text(str(proc.pid), encoding="ascii")
-    _write_status(active=True, recording=True, pid=proc.pid, device=DEVICE, width=640, height=480, fps=5, encoder="libx264-ultrafast", preview=preview)
+    _write_status(active=True, recording=True, pid=proc.pid, device=DEVICE, width=640, height=480, fps=TARGET_FPS, encoder="libx264-ultrafast", preview=preview)
     return status()
 
 
@@ -102,7 +106,7 @@ def status():
     if not alive and pid:
         try: PIDFILE.unlink()
         except OSError: pass
-    data = {"active": alive, "recording": alive, "device": DEVICE, "fps": 5, "width": 640, "height": 480, "encoder": "libx264-ultrafast"}
+    data = {"active": alive, "recording": alive, "device": DEVICE, "fps": TARGET_FPS, "width": 640, "height": 480, "encoder": "libx264-ultrafast"}
     if STATUSFILE.exists():
         try: data.update(json.loads(STATUSFILE.read_text(encoding="utf-8")))
         except (OSError, ValueError): pass

@@ -105,6 +105,11 @@ LLAMA_SERVER = os.getenv("KYRONEXT_LLM_URL", "http://127.0.0.1:8080")
 STATIC_DIR = BASE_DIR / "static"
 AUDIO_DIR = BASE_DIR / "audio_cache"
 AUDIO_DIR.mkdir(exist_ok=True)
+MANUAL_PDF_PATH = Path(os.getenv(
+    "KYRONEXT_MANUAL_PDF",
+    Path.home() / "Manuel_KYRONEX_Pascal_Fairon.pdf",
+)).expanduser()
+MANUAL_DOWNLOAD_URL = "/download/manuel-kyronex.pdf"
 # Le lecteur CD ne scanne ces emplacements qu'à l'ouverture de sa page.
 # Déposer uniquement des albums musicaux locaux dans media/cd. Les histoires,
 # voix de synthèse, messages et effets de l'application ne sont jamais inclus.
@@ -408,6 +413,7 @@ _secret_owner_unlocks: dict[str, float] = {}
 _tech_knowledge_session_overrides: dict[str, bool] = {}
 _culinary_session_overrides: dict[str, bool] = {}
 _repeated_question_sessions: dict[str, tuple[str, int]] = {}
+_manual_download_pending_sessions: set[str] = set()
 _banshee_topic_sessions: set[str] = set()
 _banshee_pending_engine_sessions: set[str] = set()
 _tech_knowledge_sections_cache: list[dict] = []
@@ -459,6 +465,53 @@ async def _explicit_web_search_result(user_msg: str) -> dict | None:
     except Exception as exc:
         print(f"[WEB SEARCH] {exc}", flush=True)
         return {"reply": f"Je n’ai pas pu effectuer la recherche Web sur {html.escape(query)}. La connexion Internet ou la source est indisponible.", "action": "web_search_error"}
+
+
+def _manual_download_voice_result(user_msg: str, session_id: str) -> dict | None:
+    """Commande locale de téléchargement du manuel, avec confirmation explicite."""
+    norm = _normalize_memory_text(user_msg)
+    if not norm:
+        return None
+
+    confirmations = (
+        "oui", "oui je veux", "oui je veux le telecharger",
+        "confirme", "confirmer", "lance le telechargement",
+    )
+    cancellations = ("non", "annule", "annuler", "pas maintenant", "laisse tomber")
+    if session_id in _manual_download_pending_sessions:
+        if any(marker in norm for marker in confirmations):
+            _manual_download_pending_sessions.discard(session_id)
+            return {
+                "reply": "Oui. Le téléchargement du manuel PDF commence maintenant.",
+                "action": "manual_download_confirmed",
+            }
+        if any(marker in norm for marker in cancellations):
+            _manual_download_pending_sessions.discard(session_id)
+            return {
+                "reply": "D'accord, je n'engage pas le téléchargement.",
+                "action": "manual_download_cancelled",
+            }
+
+    document = any(marker in norm for marker in (
+        "manuel", "manuel qironex", "guide qironex", "guide kyronex",
+    ))
+    pdf = "pdf" in norm
+    download = any(marker in norm for marker in (
+        "telecharge", "telecharger", "telechargement",
+        "donne moi le lien", "lien de telechargement",
+    ))
+    if (document or pdf) and download:
+        if MANUAL_PDF_PATH.is_file():
+            _manual_download_pending_sessions.add(session_id)
+            return {
+                "reply": "Le manuel PDF est prêt. Veux-tu que je lance le téléchargement ?",
+                "action": "manual_download_offer",
+            }
+        return {
+            "reply": "Le manuel PDF est momentanément indisponible sur ce système.",
+            "action": "manual_download_unavailable",
+        }
+    return None
 
 
 def _cd_library_files() -> list[Path]:
@@ -1296,6 +1349,15 @@ def _theme_panel_result(user_msg: str) -> dict | None:
 
 def _theme_voice_select_result(user_msg: str, session_id: str) -> dict | None:
     norm = _normalize_memory_text(user_msg)
+    hifi_aliases = (
+        "hifi 90", "hi fi 90", "hi fi des annees 90",
+        "hifi des annees 90", "iffi 90", "ifi 90", "i fi 90",
+        "iski 90", "i ski 90", "isky 90",
+        "ici 90", "ici nonante", "hifi nonante", "hi fi nonante",
+        "iffi nonante", "ifi nonante",
+        "hi fi", "hifi",
+    )
+    hifi_word = any(re.search(rf"\b{re.escape(alias)}\b", norm) for alias in hifi_aliases)
     pontiac_word = any(x in norm for x in (
         "pontiac", "pontiak", "pontia", "pontiaque", "pont yac", "pon tiac", "pontiac moteur",
     ))
@@ -1304,6 +1366,10 @@ def _theme_voice_select_result(user_msg: str, session_id: str) -> dict | None:
     bare_branch = norm in {
         "pontiac", "pontiak", "pontia", "pontiaque", "pont yac", "pon tiac",
         "serie 80", "series 80", "s erie 80", "musique", "musique 80 90",
+        "hifi 90", "hi fi 90", "iffi 90", "ifi 90", "i fi 90",
+        "iski 90", "i ski 90", "isky 90",
+        "ici 90", "ici nonante", "hifi nonante", "hi fi nonante",
+        "iffi nonante", "ifi nonante", "hi fi", "hifi",
     }
     if not bare_branch and not any(x in norm for x in ("active", "activer", "bouton", "theme", "tem", "branche", "passe", "selectionne", "choisis")):
         return None
@@ -1352,7 +1418,7 @@ def _theme_voice_select_result(user_msg: str, session_id: str) -> dict | None:
             # déterministe plutôt qu'une invention du LLM.
             return {"reply": "Nous sommes déjà en mode normal. Conversation normale.",
                     "tts_reply": "Nous sommes déjà en mode normal.", "action": "theme_cleared"}
-    selected = next((theme for alias, theme in aliases if alias in norm), None)
+    selected = "hifi90" if hifi_word else next((theme for alias, theme in aliases if alias in norm), None)
     if selected is None:
         return None
     _theme_session_overrides[session_id] = selected
@@ -3670,6 +3736,14 @@ async def handle_chat(request: web.Request) -> web.Response:
         _remember_exchange(session_id, user_msg, memory_command["reply"])
         return await _direct_json_result(memory_command["reply"], session_id, want_audio, action=memory_command.get("action"))
 
+    manual_download = _manual_download_voice_result(user_msg, session_id)
+    if manual_download is not None:
+        _remember_exchange(session_id, user_msg, manual_download["reply"])
+        return await _direct_json_result(
+            manual_download["reply"], session_id, want_audio,
+            action=manual_download.get("action"),
+        )
+
     vigilance_fullscreen = _vigilance_fullscreen_voice_result(user_msg)
     if vigilance_fullscreen is not None:
         _remember_exchange(session_id, user_msg, vigilance_fullscreen["reply"])
@@ -4256,6 +4330,14 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         _remember_exchange(session_id, user_msg, memory_command["reply"])
         return await _direct_stream_result(request, memory_command["reply"], want_audio, action=memory_command.get("action"))
 
+    manual_download = _manual_download_voice_result(user_msg, session_id)
+    if manual_download is not None:
+        _remember_exchange(session_id, user_msg, manual_download["reply"])
+        return await _direct_stream_result(
+            request, manual_download["reply"], want_audio,
+            action=manual_download.get("action"),
+        )
+
     vigilance_fullscreen = _vigilance_fullscreen_voice_result(user_msg)
     if vigilance_fullscreen is not None:
         _remember_exchange(session_id, user_msg, vigilance_fullscreen["reply"])
@@ -4669,6 +4751,7 @@ async def handle_reset(request: web.Request) -> web.Response:
     session_id = body.get("session_id", "default")
     conversations.pop(session_id, None)
     _tech_knowledge_session_overrides.pop(session_id, None)
+    _manual_download_pending_sessions.discard(session_id)
     _banshee_topic_sessions.discard(session_id)
     _banshee_pending_engine_sessions.discard(session_id)
     return web.json_response({"status": "conversation réinitialisée"})
@@ -4678,6 +4761,19 @@ async def handle_index(request: web.Request) -> web.Response:
     response = web.FileResponse(STATIC_DIR / "index.html")
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     response.headers["Pragma"] = "no-cache"
+    return response
+
+
+async def handle_manual_pdf(request: web.Request) -> web.FileResponse:
+    """Téléchargement local du manuel PDF, sans dépendance externe."""
+    if not MANUAL_PDF_PATH.is_file():
+        raise web.HTTPNotFound(text="Manuel PDF indisponible")
+    response = web.FileResponse(MANUAL_PDF_PATH)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = (
+        'attachment; filename="Manuel_KYRONEX_Pascal_Fairon.pdf"'
+    )
+    response.headers["Cache-Control"] = "no-store"
     return response
 
 
@@ -5515,6 +5611,7 @@ def create_app() -> web.Application:
     app = web.Application(client_max_size=CD_UPLOAD_MAX_BYTES)
 
     app.router.add_get("/", handle_index)
+    app.router.add_get(MANUAL_DOWNLOAD_URL, handle_manual_pdf)
     app.router.add_get("/mnx", handle_mnx)
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_get("/dadoo", handle_dadoo)

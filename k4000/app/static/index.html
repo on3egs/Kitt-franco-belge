@@ -711,6 +711,14 @@ body.impatient-mode .header h1{color:#ff5260;text-shadow:0 0 20px #ef1b2d}body.i
 .settings-check { grid-column:1/-1; min-height:52px; display:flex; align-items:center; gap:12px; font-size:15px; }
 .settings-check input { width:26px; height:26px; accent-color:#ef1b2d; }
 .settings-note { color:#c99494; font-size:12px; line-height:1.4; grid-column:1/-1; }
+.manual-download { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:12px; border:1px solid #3f2830; border-radius:8px; background:#050609; }
+.manual-download button { min-height:48px; border-color:#ff4050; color:#fff; }
+.manual-download small { color:#aeb7c1; }
+.manual-download-prompt { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:12px; border:1px solid #ff4050; border-radius:8px; background:#16070b; box-shadow:0 0 18px rgba(239,27,45,.32); }
+.manual-download-prompt[hidden] { display:none; }
+.manual-download-prompt strong { color:#fff; flex:1 1 220px; }
+.manual-download-prompt button { min-width:90px; min-height:48px; }
+.manual-download-prompt #manualDownloadYes { border-color:#55ff88; color:#d9ffe4; }
 .settings-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:18px; }
 .settings-actions button { min-height:52px; padding:10px 18px; font-size:14px; }
 .settings-actions #settingsApply { color:#fff; border-color:#45ff72; box-shadow:0 0 15px rgba(40,255,90,.45); }
@@ -1462,7 +1470,7 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   <div class="system-card"><h2 id="navTitle">NAVIGATION GPS</h2><p>Indiquez une destination.</p><div class="panel-actions"><input id="navDestination" type="text" placeholder="Adresse ou ville"><button type="button" onclick="startNavigation()">DÉMARRER</button><button type="button" onclick="closePanel('navPanel')">FERMER</button></div></div>
 </div>
 <div class="system-panel" id="vigilancePanel" role="dialog" aria-modal="true" aria-labelledby="vigilanceTitle">
-  <div class="system-card red"><h2 id="vigilanceTitle">MODE VIGILANCE</h2><p id="vigilanceStatus">CAMÉRA : INACTIVE · REC : —</p><img id="vigilanceVideo" alt="Aperçu caméra vigilance" style="width:100%;max-height:55vh;object-fit:contain;background:#050505"><div class="panel-actions"><button type="button" onclick="stopVigilance()">DÉSACTIVER</button></div></div>
+  <div class="system-card red"><h2 id="vigilanceTitle">MODE VIGILANCE</h2><p id="vigilanceStatus">CAMÉRA : INACTIVE · REC : —</p><img id="vigilanceVideo" alt="Aperçu caméra vigilance" style="width:100%;max-height:55vh;object-fit:contain;background:#050505"><div class="panel-actions"><button type="button" id="vigilanceFullscreenBtn" onclick="toggleVigilanceFullscreen()">PLEIN ÉCRAN</button><button type="button" onclick="stopVigilance()">DÉSACTIVER</button></div></div>
 </div>
 <div class="system-panel horn-panel" id="hornPanel" role="dialog" aria-modal="true" aria-labelledby="hornTitle">
   <div class="system-card"><h2 id="hornTitle">📯 KLAXONS KITT</h2>
@@ -1490,6 +1498,8 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
       <label class="settings-check"><input id="settingsTouch" type="checkbox" checked> Mode tactile 10 pouces</label>
       <label class="settings-check"><input id="settingsSystemResolution" type="checkbox" disabled> Appliquer également cette résolution à l’écran <span>(indisponible sur cet environnement, aucune résolution physique ne sera modifiée)</span></label>
       <p class="settings-note">La résolution choisie est virtuelle : elle adapte l’interface sans modifier l’écran physique. Le volume agit immédiatement sur la lecture vocale Qironex. La luminosité matérielle n’est pas modifiée.</p>
+      <div class="manual-download"><button type="button" id="downloadManualBtn">⬇ MANUEL PDF</button><small>Documentation KYRONEX pour Pascal Fairon · téléchargement local</small></div>
+      <div class="manual-download-prompt" id="manualDownloadPrompt" hidden><strong>Le manuel PDF est prêt. Télécharger maintenant&nbsp;?</strong><button type="button" id="manualDownloadYes">OUI, TÉLÉCHARGER</button><button type="button" id="manualDownloadNo">NON</button></div>
     </div>
     <p class="settings-saved" id="settingsSaved" aria-live="polite"></p>
     <div class="settings-actions"><button type="button" id="settingsPreview">PRÉVISUALISER</button><button type="button" id="settingsApply">APPLIQUER</button><button type="button" id="settingsBack">RETOUR</button></div>
@@ -1603,6 +1613,32 @@ const settingsScale = document.getElementById('settingsScale');
 const settingsResolution = document.getElementById('settingsResolution');
 const settingsTouch = document.getElementById('settingsTouch');
 const settingsSystemResolution = document.getElementById('settingsSystemResolution');
+const manualDownloadPrompt = document.getElementById('manualDownloadPrompt');
+const MANUAL_DOWNLOAD_URL = '/download/manuel-kyronex.pdf';
+
+function downloadManualPdf() {
+  const link = document.createElement('a');
+  link.href = MANUAL_DOWNLOAD_URL;
+  link.download = 'Manuel_KYRONEX_Pascal_Fairon.pdf';
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  manualDownloadPrompt?.setAttribute('hidden', '');
+  if (typeof statusEl !== 'undefined' && statusEl) {
+    statusEl.innerHTML = '<span class="online">Téléchargement du manuel PDF lancé.</span>';
+  }
+}
+
+function handleManualDownloadAction(action) {
+  if (action === 'manual_download_offer') {
+    manualDownloadPrompt?.removeAttribute('hidden');
+  } else if (action === 'manual_download_confirmed') {
+    downloadManualPdf();
+  } else if (action === 'manual_download_cancelled' || action === 'manual_download_unavailable') {
+    manualDownloadPrompt?.setAttribute('hidden', '');
+  }
+}
 
 function effectiveUiScale(resolution, requested, touch) {
   // La résolution virtuelle et l'échelle sont deux réglages indépendants.
@@ -1648,6 +1684,9 @@ async function loadUiSettings() {
 cmdSettings?.addEventListener('click', () => settingsPanel.classList.add('open'));
 document.getElementById('settingsBack')?.addEventListener('click', () => settingsPanel.classList.remove('open'));
 document.getElementById('settingsPreview')?.addEventListener('click', () => { statusEl.innerHTML='<span class="online">Prévisualisation appliquée immédiatement.</span>'; });
+document.getElementById('downloadManualBtn')?.addEventListener('click', downloadManualPdf);
+document.getElementById('manualDownloadYes')?.addEventListener('click', downloadManualPdf);
+document.getElementById('manualDownloadNo')?.addEventListener('click', () => manualDownloadPrompt?.setAttribute('hidden', ''));
 [settingsVolume, settingsIntensity, settingsScale, settingsResolution, settingsTouch].forEach(el => {
   el?.addEventListener('input', () => applyUiSettings({ui_resolution:settingsResolution.value, ui_scale:Number(settingsScale.value)/100, touch_10inch:settingsTouch.checked, system_resolution_change:false, volume:Number(settingsVolume.value), display_intensity:Number(settingsIntensity.value)}));
   el?.addEventListener('change', saveUiSettings);
@@ -1776,7 +1815,7 @@ async function toggleVigilance() {
     if (!r.ok || d.action === 'vigilance_error') throw Error(d.reply || 'Caméra indisponible');
     if (d.audio_url) await playAudio(d.audio_url);
     vigilanceActive = next;
-    renderVigilance({active: next, recording: next, fps: next ? 5 : 0});
+    renderVigilance({active: next, recording: next, fps: next ? 24 : 0});
     document.getElementById('vigilanceVideo').src = next ? `/api/vigilance/frame?t=${Date.now()}` : '';
     if (next) document.getElementById('vigilancePanel').classList.add('open');
   } catch (error) {
@@ -1791,15 +1830,36 @@ async function stopVigilance() {
     const d = await r.json(); if (d.audio_url) await playAudio(d.audio_url);
   } catch(e) { statusEl.innerHTML = `<span class="offline">Arrêt vigilance: ${e.message}</span>`; }
   vigilanceActive = false; renderVigilance({active:false, recording:false});
-  document.getElementById('vigilanceVideo').src = '';
+document.getElementById('vigilanceVideo').src = '';
   document.getElementById('vigilancePanel').classList.remove('open');
 }
+function syncVigilanceFullscreenButton() {
+  const panel = document.getElementById('vigilancePanel');
+  const button = document.getElementById('vigilanceFullscreenBtn');
+  if (!panel || !button) return;
+  const active = panel.classList.contains('vigilance-fullscreen') || document.fullscreenElement === panel;
+  button.textContent = active ? 'QUITTER PLEIN ÉCRAN' : 'PLEIN ÉCRAN';
+  button.setAttribute('aria-pressed', String(active));
+}
+async function toggleVigilanceFullscreen() {
+  const panel = document.getElementById('vigilancePanel');
+  if (!panel) return;
+  const active = panel.classList.toggle('vigilance-fullscreen');
+  if (active && panel.requestFullscreen) {
+    try { await panel.requestFullscreen(); } catch (_) { /* mode viewport conservé */ }
+  } else if (!active && document.fullscreenElement && document.exitFullscreen) {
+    try { await document.exitFullscreen(); } catch (_) {}
+  }
+  syncVigilanceFullscreenButton();
+}
+document.addEventListener('fullscreenchange', syncVigilanceFullscreenButton);
 function renderVigilance(d) {
   const active = !!d.active, rec = !!d.recording;
   cmdVigilance.classList.toggle('active', active); cmdVigilance.setAttribute('aria-pressed', String(active));
   cmdVigilance.textContent = active ? 'VIG ACTIF' : 'VIG';
   const el = document.getElementById('vigilanceStatus');
-  if (el) el.textContent = active ? `VIGILANCE : ACTIVE · CAMÉRA : ACTIVE · REC : ${rec ? '●' : '—'} · ${d.fps || 5} FPS` : 'CAMÉRA : INACTIVE · REC : —';
+  if (el) el.textContent = active ? `VIGILANCE : ACTIVE · CAMÉRA : ACTIVE · REC : ${rec ? '●' : '—'} · ${d.fps || 24} FPS` : 'CAMÉRA : INACTIVE · REC : —';
+  syncVigilanceFullscreenButton();
 }
 async function refreshVigilance() { try { const d=await (await fetch('/api/vigilance')).json(); vigilanceActive=!!d.active; renderVigilance(d); if (vigilanceActive) document.getElementById('vigilanceVideo').src = `/api/vigilance/frame?t=${Date.now()}`; } catch(e) {} }
 function startNavigation() {
@@ -2218,6 +2278,7 @@ async function streamChat(msg) {
             }
             if (data.done && data.timing) {
               div.innerHTML = text + `<div class="timing">LLM: ${data.timing.llm_ms}ms | TTS: ${data.timing.tts_ms || 0}ms</div>`;
+              handleManualDownloadAction(data.action);
               if (data.action === 'obd_fullscreen' && obdAutoEnabled) openObdPanel();
               if (data.action === 'equalizer_on') setEqualizer(true);
               if (data.action === 'equalizer_off') setEqualizer(false);
@@ -2246,15 +2307,17 @@ async function streamChat(msg) {
               }
               if (data.action === 'vigilance_activated') {
                 vigilanceActive = true;
-                renderVigilance({active:true, recording:true, fps:5});
+                renderVigilance({active:true, recording:true, fps:24});
                 document.getElementById('vigilanceVideo').src = `/api/vigilance/frame?t=${Date.now()}`;
                 document.getElementById('vigilancePanel').classList.add('open');
               }
               if (data.action === 'vigilance_fullscreen_on') {
                 document.getElementById('vigilancePanel').classList.add('open', 'vigilance-fullscreen');
+                syncVigilanceFullscreenButton();
               }
               if (data.action === 'vigilance_fullscreen_off') {
                 document.getElementById('vigilancePanel').classList.remove('vigilance-fullscreen');
+                syncVigilanceFullscreenButton();
               }
               if (data.action === 'repeated_question_impatient') triggerImpatientMode();
               if (data.action === 'repeated_question_warning') triggerAngryMode();
