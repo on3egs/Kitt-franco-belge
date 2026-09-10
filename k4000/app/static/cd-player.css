@@ -62,3 +62,32 @@
 .cd-control.cd-list{left:65.2%;height:4.5%}
 .cd-control.cd-audio{left:71.7%;height:4.5%}
 @media (max-aspect-ratio:4/3){.cd-stage{width:100vw;max-height:66.66vw}.cd-back{width:12%;height:7%}.cd-control{width:6.5%;height:9%}.cd-play{width:9%;height:13%}.cd-track{min-height:32px}.cd-playlist{height:45%}}
+
+/* Volume : libellé et valeur réservés explicitement pour éviter tout rognage
+   sur le téléphone, tout en gardant le panneau compact sur l'écran voiture. */
+.cd-volume{display:grid;grid-template-rows:auto minmax(0,1fr);gap:1px;overflow:hidden;min-width:0;white-space:nowrap;padding:.8% 1.5% .6%;line-height:1;}
+.cd-volume-title{display:block;min-width:0;overflow:hidden;color:#cbd9e3;font-size:clamp(7px,.85vw,13px);font-weight:700;letter-spacing:.08em;text-overflow:ellipsis;}
+.cd-volume-controls{display:flex;align-items:center;min-width:0;gap:2%;}
+.cd-volume-icon{flex:0 0 auto;font-size:clamp(8px,1vw,15px);line-height:1;}
+.cd-volume input{flex:1 1 auto;width:auto;min-width:0;height:clamp(7px,1.1vw,14px);margin:0;}
+.cd-volume output{flex:0 0 auto;width:auto;min-width:3ch;margin-left:auto;color:#eaf4ff;font-size:clamp(8px,1vw,15px);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+
+@media (max-aspect-ratio:4/3){
+  /* Le stage est réduit en mode portrait : on lui redonne assez de hauteur
+     pour que VOLUME, le curseur et 100 % restent lisibles. */
+  .cd-volume{top:72.5%;height:10%;width:38%;padding:1.5% 2% 1%;gap:2px;}
+  .cd-volume-title{font-size:clamp(7px,2.2vw,12px);letter-spacing:.05em;}
+  .cd-volume-controls{gap:2%;}
+  .cd-volume-icon{font-size:clamp(8px,2.4vw,13px);}
+  .cd-volume input{height:clamp(7px,2vw,11px);}
+  .cd-volume output{font-size:clamp(8px,2.2vw,12px);}
+}
+
+/* Sur le gabarit large, le mot VOLUME est déjà imprimé dans la maquette :
+   garder la nouvelle structure uniquement pour le responsive mobile évite un
+   doublon tout en conservant le curseur et le pourcentage fonctionnels. */
+@media (min-aspect-ratio:4/3){
+  .cd-volume{display:flex;gap:3%;padding:0 1.5%;}
+  .cd-volume-title{display:none;}
+  .cd-volume-controls{flex:1 1 auto;}
+}
