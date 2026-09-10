@@ -1365,6 +1365,8 @@ def _theme_voice_select_result(user_msg: str, session_id: str) -> dict | None:
         "iski 90", "i ski 90", "isky 90",
         "ici 90", "ici nonante", "hifi nonante", "hi fi nonante",
         "iffi nonante", "ifi nonante",
+        "efi 90", "e fi 90", "h i fi 90", "h i fi espace 90",
+        "hi fi espace 90", "hifi espace 90",
         "hi fi", "hifi",
     )
     hifi_word = any(re.search(rf"\b{re.escape(alias)}\b", norm) for alias in hifi_aliases)
@@ -1380,6 +1382,8 @@ def _theme_voice_select_result(user_msg: str, session_id: str) -> dict | None:
         "iski 90", "i ski 90", "isky 90",
         "ici 90", "ici nonante", "hifi nonante", "hi fi nonante",
         "iffi nonante", "ifi nonante", "hi fi", "hifi",
+        "efi 90", "e fi 90", "h i fi 90", "h i fi espace 90",
+        "hi fi espace 90", "hifi espace 90",
     }
     if not bare_branch and not any(x in norm for x in ("active", "activer", "bouton", "theme", "tem", "branche", "passe", "selectionne", "choisis")):
         return None
