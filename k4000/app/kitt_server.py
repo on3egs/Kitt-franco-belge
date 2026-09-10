@@ -107,7 +107,7 @@ AUDIO_DIR = BASE_DIR / "audio_cache"
 AUDIO_DIR.mkdir(exist_ok=True)
 MANUAL_PDF_PATH = Path(os.getenv(
     "KYRONEXT_MANUAL_PDF",
-    Path.home() / "Manuel_KYRONEX_Pascal_Fairon.pdf",
+    Path.home() / "Manuel_Exhaustif_KYRONEX_Pascal_Fairon_2026-09-10.pdf",
 )).expanduser()
 MANUAL_DOWNLOAD_URL = "/download/manuel-complet-kyronex-20260910.pdf"
 MANUAL_DOWNLOAD_LEGACY_URL = "/download/manuel-kyronex.pdf"
@@ -4831,7 +4831,7 @@ async def handle_manual_pdf(request: web.Request) -> web.FileResponse:
     response = web.FileResponse(MANUAL_PDF_PATH)
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = (
-        'attachment; filename="Manuel_Complet_KYRONEX_Pascal_Fairon_2026-09-10.pdf"'
+        'attachment; filename="Manuel_Exhaustif_KYRONEX_Pascal_Fairon_2026-09-10.pdf"'
     )
     response.headers["Cache-Control"] = "no-store"
     return response
