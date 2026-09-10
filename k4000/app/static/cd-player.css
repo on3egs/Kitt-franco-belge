@@ -72,6 +72,15 @@
 .cd-volume input{flex:1 1 auto;width:auto;min-width:0;height:clamp(7px,1.1vw,14px);margin:0;}
 .cd-volume output{flex:0 0 auto;width:auto;min-width:3ch;margin-left:auto;color:#eaf4ff;font-size:clamp(8px,1vw,15px);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
 
+/* Curseur tactile : la piste visuelle reste fine, mais la zone de pression et
+   le bouton rouge sont assez grands pour un doigt sur un GSM ou un écran 10\". */
+.cd-volume input{appearance:none;-webkit-appearance:none;display:block;box-sizing:border-box;height:24px;padding:0;border:0;border-radius:999px;background:transparent;cursor:pointer;touch-action:manipulation;}
+.cd-volume input::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(90deg,#f21b24 0 var(--volume-level,80%),#cbd3d8 var(--volume-level,80%) 100%);box-shadow:inset 0 1px 3px #000,0 0 5px rgba(255,0,0,.35);}
+.cd-volume input::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin-top:-7px;border:2px solid #ffd7d7;border-radius:50%;background:#e5222b;box-shadow:0 0 0 2px #5d080b,0 0 10px #f00;}
+.cd-volume input::-moz-range-track{height:6px;border-radius:999px;background:linear-gradient(90deg,#f21b24 0 var(--volume-level,80%),#cbd3d8 var(--volume-level,80%) 100%);box-shadow:inset 0 1px 3px #000,0 0 5px rgba(255,0,0,.35);}
+.cd-volume input::-moz-range-thumb{width:16px;height:16px;border:2px solid #ffd7d7;border-radius:50%;background:#e5222b;box-shadow:0 0 0 2px #5d080b,0 0 10px #f00;}
+.cd-volume input:focus-visible{outline:2px solid #ff7777;outline-offset:2px;}
+
 @media (max-aspect-ratio:4/3){
   /* Le stage est réduit en mode portrait : on lui redonne assez de hauteur
      pour que VOLUME, le curseur et 100 % restent lisibles. */
@@ -79,7 +88,9 @@
   .cd-volume-title{font-size:clamp(7px,2.2vw,12px);letter-spacing:.05em;}
   .cd-volume-controls{gap:2%;}
   .cd-volume-icon{font-size:clamp(8px,2.4vw,13px);}
-  .cd-volume input{height:clamp(7px,2vw,11px);}
+  .cd-volume{top:70.5%;height:14%;grid-template-rows:10px 24px;gap:1px;padding:2px 2% 1%;}
+  .cd-volume input{height:24px;}
+  .cd-volume-title{line-height:10px;}
   .cd-volume output{font-size:clamp(8px,2.2vw,12px);}
 }
 
