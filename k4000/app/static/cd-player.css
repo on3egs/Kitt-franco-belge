@@ -81,6 +81,12 @@
 .cd-volume input::-moz-range-thumb{width:16px;height:16px;border:2px solid #ffd7d7;border-radius:50%;background:#e5222b;box-shadow:0 0 0 2px #5d080b,0 0 10px #f00;}
 .cd-volume input:focus-visible{outline:2px solid #ff7777;outline-offset:2px;}
 
+/* Le libellé VOLUME appartient au gabarit de la platine. Le panneau actif
+   reste donc sous ce libellé au lieu de le recouvrir. */
+.cd-volume-title{display:none;}
+.cd-volume{top:76%;height:clamp(28px,5.3%,40px);display:flex;gap:3%;padding:0 1.5%;}
+.cd-volume-controls{flex:1 1 auto;}
+
 @media (max-aspect-ratio:4/3){
   /* Le stage est réduit en mode portrait : on lui redonne assez de hauteur
      pour que VOLUME, le curseur et 100 % restent lisibles. */
@@ -88,9 +94,9 @@
   .cd-volume-title{font-size:clamp(7px,2.2vw,12px);letter-spacing:.05em;}
   .cd-volume-controls{gap:2%;}
   .cd-volume-icon{font-size:clamp(8px,2.4vw,13px);}
-  .cd-volume{top:70.5%;height:14%;grid-template-rows:10px 24px;gap:1px;padding:2px 2% 1%;}
+  .cd-volume{top:76%;height:clamp(28px,8%,40px);gap:2%;padding:0 2%;}
   .cd-volume input{height:24px;}
-  .cd-volume-title{line-height:10px;}
+  .cd-volume-title{display:none;}
   .cd-volume output{font-size:clamp(8px,2.2vw,12px);}
 }
 
@@ -99,6 +105,5 @@
    doublon tout en conservant le curseur et le pourcentage fonctionnels. */
 @media (min-aspect-ratio:4/3){
   .cd-volume{display:flex;gap:3%;padding:0 1.5%;}
-  .cd-volume-title{display:none;}
   .cd-volume-controls{flex:1 1 auto;}
 }
