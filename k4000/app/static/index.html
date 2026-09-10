@@ -1103,6 +1103,49 @@ body.touch-10 .mic-btn, body.touch-10 .auto-btn, body.touch-10 #send { min-heigh
   .header-telemetry #clockDate { display: none !important; }
 }
 </style>
+<style id="flatTitleBar">
+/* En-tête aplati : le titre ne réserve qu'une bande utile à l'écran. */
+.header {
+  min-height: 70px;
+  padding: 23px 8px 4px;
+  box-sizing: border-box;
+}
+.header h1 {
+  margin: 0 auto;
+  font-size: calc(1.12em * var(--ui-scale));
+  line-height: .9;
+  letter-spacing: 3px;
+}
+.header .subtitle {
+  margin-top: 2px;
+  font-size: calc(.56em * var(--ui-scale));
+  line-height: 1;
+}
+.scanner-container { padding: 4px 0; }
+.scanner { height: 5px; }
+@media (max-width: 700px) {
+  .header {
+    min-height: 62px;
+    padding: 29px 4px 3px;
+  }
+  .header h1 {
+    font-size: calc(1em * var(--ui-scale));
+    letter-spacing: 2px;
+  }
+  .header .subtitle {
+    margin-top: 1px;
+    font-size: calc(.48em * var(--ui-scale));
+  }
+  .scanner-container { padding: 2px 0; }
+  .scanner { height: 4px; }
+}
+@media (orientation: landscape) and (max-height: 700px) {
+  .header { min-height: 56px; padding-top: 25px; }
+  .header h1 { font-size: calc(.94em * var(--ui-scale)); }
+  .header .subtitle { display: none; }
+  .scanner-container { padding: 2px 0; }
+}
+</style>
 <link rel="stylesheet" href="/static/cd-player.css?v=20260910-13">
 <link rel="stylesheet" href="/static/media-hub.css?v=20260910-4">
 </head>
