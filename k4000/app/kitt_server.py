@@ -4646,6 +4646,15 @@ async def _vigilance_command(action: str) -> dict:
     except json.JSONDecodeError: return {"active": False, "recording": False, "error": "réponse caméra invalide"}
 
 
+def _vigilance_is_active() -> bool:
+    """Lit l'état réel du service caméra pour router les ordres courts."""
+    try:
+        data = json.loads((VIGILANCE_RECORDINGS / ".vigilance.json").read_text(encoding="utf-8"))
+        return bool(data.get("active"))
+    except (OSError, ValueError, TypeError):
+        return False
+
+
 def _vigilance_voice_result(user_msg: str):
     norm = _normalize_memory_text(user_msg)
     subject = any(x in norm for x in ("vigilance", "surveillance", "survaillence", "camera", "caméra"))
@@ -4663,7 +4672,10 @@ def _vigilance_fullscreen_voice_result(user_msg: str):
     norm = _normalize_memory_text(user_msg)
     if not any(x in norm for x in ("plein ecran", "grand ecran", "plein écran")):
         return None
-    if not any(x in norm for x in ("camera", "caméra", "surveillance", "survaillence", "vigilance")):
+    camera_context = any(x in norm for x in (
+        "camera", "caméra", "surveillance", "survaillence", "vigilance",
+    )) or _vigilance_is_active()
+    if not camera_context:
         return None
     if any(x in norm for x in ("desactive", "quitte", "enleve", "retire", "ferme", "reviens")):
         return {"reply": "Plein écran de surveillance désactivé.", "action": "vigilance_fullscreen_off"}
