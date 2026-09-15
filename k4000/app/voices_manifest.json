@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "voices": [
+    {
+      "id": "kitt",
+      "name": "KITT",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "custom",
+      "gender": null,
+      "path": "kitt.onnx"
+    },
+    {
+      "id": "guy",
+      "name": "Manix | Kyronext Studio",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "custom",
+      "gender": null,
+      "path": "guy_chapelier.onnx"
+    },
+    {
+      "id": "manix",
+      "name": "Manix",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "custom",
+      "gender": null,
+      "path": "manix.onnx"
+    },
+    {
+      "id": "english",
+      "name": "English",
+      "engine": "piper",
+      "language": "en-US",
+      "quality": "custom",
+      "gender": null,
+      "path": "english.onnx"
+    },
+    {
+      "id": "fr_fr_gilles_low",
+      "name": "Gilles",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "low",
+      "gender": null,
+      "path": "piper/fr_FR-gilles-low.onnx",
+      "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/gilles/low"
+    },
+    {
+      "id": "fr_fr_mls_medium",
+      "name": "MLS",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "medium",
+      "gender": null,
+      "path": "piper/fr_FR-mls-medium.onnx",
+      "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/mls/medium"
+    },
+    {
+      "id": "fr_fr_mls_1840_low",
+      "name": "MLS 1840",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "low",
+      "gender": null,
+      "path": "piper/fr_FR-mls_1840-low.onnx",
+      "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/mls_1840/low"
+    },
+    {
+      "id": "fr_fr_siwis_low",
+      "name": "Siwis",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "low",
+      "gender": null,
+      "path": "piper/fr_FR-siwis-low.onnx",
+      "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/siwis/low"
+    },
+    {
+      "id": "fr_fr_siwis_medium",
+      "name": "Siwis",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "medium",
+      "gender": null,
+      "path": "piper/fr_FR-siwis-medium.onnx",
+      "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/siwis/medium"
+    },
+    {
+      "id": "fr_fr_tom_medium",
+      "name": "Tom",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "medium",
+      "gender": null,
+      "path": "piper/fr_FR-tom-medium.onnx",
+      "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/tom/medium"
+    },
+    {
+      "id": "fr_fr_upmc_medium",
+      "name": "UPMC",
+      "engine": "piper",
+      "language": "fr-FR",
+      "quality": "medium",
+      "gender": null,
+      "path": "piper/fr_FR-upmc-medium.onnx",
+      "source": "https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/upmc/medium"
+    }
+  ]
+}

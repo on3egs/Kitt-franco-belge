@@ -54,13 +54,43 @@ except Exception as _vehicle_service_import_exc:
 BASE_DIR = Path(__file__).parent
 PROJECT_DIR = BASE_DIR.parent
 PIPER_PYTHON = Path(os.getenv("KYRONEXT_PIPER_PYTHON", PROJECT_DIR / ".venv" / "bin" / "python"))
-VOICE_MODELS = {
-    "kitt": BASE_DIR / "models" / "voices" / "kitt.onnx",
-    "guy": BASE_DIR / "models" / "voices" / "guy_chapelier.onnx",
-    "manix": BASE_DIR / "models" / "voices" / "manix.onnx",
-    "english": BASE_DIR / "models" / "voices" / "english.onnx",
-}
-VOICE_DISPLAY_NAMES = {"guy": "Manix | Kyronext Studio"}
+VOICE_ROOT = Path(os.getenv("KYRONEXT_VOICE_DIR", BASE_DIR / "models" / "voices"))
+VOICE_MANIFEST = BASE_DIR / "voices_manifest.json"
+
+
+def _load_voice_catalog() -> dict[str, dict]:
+    """Charge le catalogue versionné; un manifeste invalide ne bloque jamais KITT."""
+    fallback = [
+        {"id": "kitt", "name": "KITT", "engine": "piper", "language": "fr-FR", "quality": "custom", "path": "kitt.onnx"},
+        {"id": "guy", "name": "Manix | Kyronext Studio", "engine": "piper", "language": "fr-FR", "quality": "custom", "path": "guy_chapelier.onnx"},
+        {"id": "manix", "name": "Manix", "engine": "piper", "language": "fr-FR", "quality": "custom", "path": "manix.onnx"},
+        {"id": "english", "name": "English", "engine": "piper", "language": "en-US", "quality": "custom", "path": "english.onnx"},
+    ]
+    try:
+        data = json.loads(VOICE_MANIFEST.read_text(encoding="utf-8"))
+        voices = data.get("voices", [])
+        if not isinstance(voices, list):
+            raise ValueError("voices doit être une liste")
+    except Exception as exc:
+        print(f"[WARN] Catalogue des voix indisponible, valeurs intégrées utilisées: {exc}", flush=True)
+        voices = fallback
+    catalog = {}
+    for voice in voices:
+        if not isinstance(voice, dict):
+            continue
+        voice_id = str(voice.get("id", "")).strip().lower()
+        relative_path = voice.get("path")
+        if not voice_id or not isinstance(relative_path, str) or Path(relative_path).is_absolute() or ".." in Path(relative_path).parts:
+            continue
+        entry = dict(voice)
+        entry["path"] = VOICE_ROOT / relative_path
+        catalog[voice_id] = entry
+    return catalog
+
+
+VOICE_CATALOG = _load_voice_catalog()
+VOICE_MODELS = {voice_id: entry["path"] for voice_id, entry in VOICE_CATALOG.items() if entry.get("engine") == "piper"}
+VOICE_DISPLAY_NAMES = {voice_id: str(entry.get("name", voice_id)) for voice_id, entry in VOICE_CATALOG.items()}
 VOICE_EFFECTS = {
     "none": {"display_name": "Aucun", "sox": []},
     "kitt_classic": {"display_name": "KITT Classic", "sox": [
@@ -2271,8 +2301,27 @@ async def cleanup_audio(app):
 async def handle_list_voices(request: web.Request) -> web.Response:
     """GET /api/voices — Liste les voix disponibles."""
     voices = {}
-    for name, path in VOICE_MODELS.items():
-        voices[name] = {"available": path.exists(), "path": str(path), "display_name": VOICE_DISPLAY_NAMES.get(name, name)}
+    for name, entry in VOICE_CATALOG.items():
+        path = entry["path"]
+        config_path = Path(str(path) + ".json")
+        available = entry.get("engine") == "piper" and path.is_file() and config_path.is_file()
+        reason = None
+        if not available:
+            if entry.get("engine") != "piper":
+                reason = "moteur non pris en charge par cette installation"
+            elif not path.is_file():
+                reason = "modèle ONNX absent"
+            else:
+                reason = "configuration .onnx.json absente"
+        voices[name] = {
+            "available": available,
+            "reason": reason,
+            "display_name": VOICE_DISPLAY_NAMES.get(name, name),
+            "engine": entry.get("engine", "unknown"),
+            "language": entry.get("language", "und"),
+            "quality": entry.get("quality", "unknown"),
+            "gender": entry.get("gender"),
+        }
     return web.json_response({"current_voice": current_voice, "voices": voices})
 
 
@@ -2305,10 +2354,12 @@ async def handle_set_voice(request: web.Request) -> web.Response:
     except Exception:
         return web.json_response({"error": "JSON invalide"}, status=400)
     voice = body.get("voice", "").lower().strip()
-    if voice not in VOICE_MODELS:
-        return web.json_response({"error": f"Voix inconnue: {voice}", "available": list(VOICE_MODELS.keys())}, status=400)
-    if not VOICE_MODELS[voice].exists():
-        return web.json_response({"error": f"Fichier voix manquant pour {voice}"}, status=404)
+    if voice not in VOICE_CATALOG:
+        return web.json_response({"error": f"Voix inconnue: {voice}", "available": list(VOICE_CATALOG.keys())}, status=400)
+    entry = VOICE_CATALOG[voice]
+    model_path = entry["path"]
+    if entry.get("engine") != "piper" or not model_path.is_file() or not Path(str(model_path) + ".json").is_file():
+        return web.json_response({"error": f"Voix indisponible: {voice}"}, status=404)
     current_voice = voice
     print(f"[VOIX] Voix active: {voice}", flush=True)
     return web.json_response({"status": "ok", "current_voice": current_voice})
@@ -2426,7 +2477,7 @@ async def handle_tts(request: web.Request) -> web.Response:
     model = VOICE_MODELS.get(voice)
     if model is None:
         return web.json_response({"error": f"Voix {voice} inconnue", "available": list(VOICE_MODELS.keys())}, status=400)
-    if not model.exists():
+    if not model.exists() or not Path(str(model) + ".json").is_file():
         return web.json_response({"error": f"Voix {voice} introuvable"}, status=404)
     try:
         audio_path = await text_to_speech(text, model)

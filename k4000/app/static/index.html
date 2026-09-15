@@ -674,12 +674,7 @@ body.impatient-mode .voice-display-container { border-color:#ffb329; box-shadow:
 <div class="audio-controls">
   <div class="control-group">
     <span class="control-label">Voix</span>
-    <div class="voice-selector" id="voiceSelector">
-      <button class="voice-btn" id="voice-kitt" onclick="setVoice('kitt')">KITT</button>
-      <button class="voice-btn" id="voice-guy" onclick="setVoice('guy')">Manix | Kyronext Studio</button>
-      <button class="voice-btn" id="voice-manix" onclick="setVoice('manix')">Manix</button>
-      <button class="voice-btn" id="voice-english" onclick="setVoice('english')">English</button>
-    </div>
+    <div class="voice-selector" id="voiceSelector" aria-live="polite"></div>
   </div>
   <label class="control-group" for="voiceEffect">
     <span class="control-label">Effet vocal</span>
@@ -1033,9 +1028,27 @@ async function loadVoices() {
   try {
     const res = await fetch('/api/voices');
     const data = await res.json();
-    document.querySelectorAll('.voice-btn').forEach(b => b.classList.remove('active'));
-    const active = document.getElementById('voice-' + data.current_voice);
-    if (active) active.classList.add('active');
+    const selector = document.getElementById('voiceSelector');
+    selector.replaceChildren();
+    for (const [id, voice] of Object.entries(data.voices || {})) {
+      const button = document.createElement('button');
+      button.className = 'voice-btn' + (id === data.current_voice ? ' active' : '');
+      button.id = 'voice-' + id;
+      button.disabled = !voice.available;
+      const details = [voice.engine, voice.language, voice.quality, voice.gender].filter(Boolean).join(' · ');
+      button.textContent = `${voice.display_name} (${details})`;
+      button.title = voice.available ? details : `Indisponible : ${voice.reason || 'raison inconnue'}`;
+      button.onclick = () => setVoice(id);
+      selector.appendChild(button);
+      if (voice.available) {
+        const preview = document.createElement('button');
+        preview.className = 'voice-btn';
+        preview.textContent = '▶';
+        preview.title = `Préécouter ${voice.display_name}`;
+        preview.onclick = () => previewVoice(id, preview);
+        selector.appendChild(preview);
+      }
+    }
   } catch (e) { console.error('loadVoices', e); }
 }
 
@@ -1050,6 +1063,24 @@ async function setVoice(voice) {
       statusEl.innerHTML = '<span class="offline">' + (data.error || 'Erreur voix') + '</span>';
     }
   } catch (e) { statusEl.innerHTML = '<span class="offline">Erreur voix: ' + e.message + '</span>'; }
+}
+
+async function previewVoice(voice, button) {
+  const sample = 'Bonjour Manix. Ceci est un essai de ma voix française dans le système Kyronext.';
+  button.disabled = true;
+  try {
+    const res = await fetch('/api/tts/' + encodeURIComponent(voice), { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({text: sample}) });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+    const url = URL.createObjectURL(await res.blob());
+    const audio = new Audio(url);
+    audio.onended = () => URL.revokeObjectURL(url);
+    await audio.play();
+  } catch (e) {
+    statusEl.innerHTML = '<span class="offline">Préécoute indisponible : ' + e.message + '</span>';
+  } finally { button.disabled = false; }
 }
 
 async function loadVoiceEffects() {

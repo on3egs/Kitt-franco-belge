@@ -26,6 +26,10 @@ export TUNNEL_FILE="${TUNNEL_FILE:-tunnel_kitt.json}"
 export GITHUB_REPO="${GITHUB_REPO:-on3egs/Kitt-franco-belge}"
 export GITHUB_BRANCH="${GITHUB_BRANCH:-main}"
 export SECRET_VALUE_REVOKED
+if [[ -z "$GITHUB_TOKEN" ]]; then
+    echo "[ERR] GITHUB_TOKEN absent : le définir dans $ENV_FILE (fichier local ignoré)." >&2
+    exit 2
+fi
 export UPDATER_SCRIPT="${UPDATER_SCRIPT:-/home/karr/kitt-ai/tunnel_updater.py}"
 
 # ── Nettoyage ─────────────────────────────────────────────────────

@@ -13,6 +13,7 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.tunnel
 
 # IDE and editor files
 .vscode/
@@ -115,3 +116,15 @@ index.html.bak-*
 index.html.gemini.bak
 **/__pycache__/
 *.py[cod]
+
+# Local TTS assets and diagnostic state (reproducible from the voice manifest)
+k4000/app/models/
+k4000/app/audio_cache/
+k4000/app/backups/
+state/
+server/public
+Kyronext-Studio-linux-aarch64.1
+kyronex/index-full-backup.html
+test_gauge.py
+test_led.py
+test_radio_led.py
