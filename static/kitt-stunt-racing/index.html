@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KITT STUNT RACING - By Manix</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="css/style.css?v=25-mobile-hud-layout">
+</head>
+<body>
+    <!-- Canvas WebGL -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Effets d'écran (vignette + lignes de vitesse) -->
+    <div id="screen-vignette"></div>
+    <div id="speed-lines"></div>
+    <div id="damage-flash"></div>
+
+    <!-- Écran de chargement -->
+    <div id="loading-screen">
+        <div class="loader-box">
+            <div class="kitt-scanner">
+                <div class="scanner-led"></div>
+            </div>
+            <h1>KITT STUNT RACING</h1>
+            <p>Chargement du moteur...</p>
+            <div class="loading-bar"><div class="loading-fill"></div></div>
+            <div class="credits">Un hommage au groupe <span>KITT FRANCO BELGE</span></div>
+            <div class="creator">By Manix</div>
+        </div>
+    </div>
+
+    <!-- Menu principal -->
+    <div id="main-menu" class="hidden">
+        <div class="menu-box">
+            <h1>KITT STUNT RACING</h1>
+            <p class="subtitle">Simulation 3D - Style Stunt Car Racer</p>
+            <p class="menu-best hidden" id="menu-best"></p>
+            <button id="btn-level1" class="menu-btn">▶ NIVEAU 1 — Classique</button>
+            <button id="btn-level2" class="menu-btn">🌃 NIVEAU 2 — Nuit rapide</button>
+            <button id="btn-level3" class="menu-btn">🔁 NIVEAU 3 — Looping</button>
+            <button id="btn-custom" class="menu-btn">🛠️ CIRCUIT PERSONNALISÉ</button>
+            <button id="btn-editor" class="menu-btn">🧱 CONSTRUCTION DE CIRCUIT</button>
+            <button id="btn-scores" class="menu-btn">🏆 SCORES</button>
+            <div class="menu-row">
+                <button id="btn-music" class="mini-btn" title="Musique (P)">🎵 MUSIQUE : OFF</button>
+            </div>
+            <div class="controls-help">
+                <p><strong>Flèches / WASD</strong> : conduire &nbsp;•&nbsp; <strong>Espace</strong> : turbo</p>
+                <p><strong>Q</strong> : transformation SPM &nbsp;•&nbsp; <strong>F</strong> : tir KITT &nbsp;•&nbsp; <strong>X</strong> : scanner &nbsp;•&nbsp; <strong>R</strong> : retour checkpoint</p>
+                <p><strong>P</strong> : musique &nbsp;•&nbsp; <strong>Échap</strong> : pause</p>
+            </div>
+            <div class="credits">Un hommage au groupe <span>KITT FRANCO BELGE</span></div>
+            <div class="creator">By Manix</div>
+        </div>
+    </div>
+
+    <!-- Sélection du pilote : affichée avant chaque nouvelle course. -->
+    <div id="driver-select" class="hidden">
+        <div class="driver-select-shell">
+            <div class="driver-select-header">
+                <div class="driver-kicker">KYRONEXT // RACING SYSTEM</div>
+                <h1>CHOISIS TON PILOTE</h1>
+                <p>Sélectionne un profil pour charger son véhicule.</p>
+            </div>
+            <div class="driver-select-layout">
+                <div id="driver-grid" class="driver-grid"></div>
+                <aside class="driver-detail-panel">
+                    <div id="driver-detail"></div>
+                    <div class="driver-3d-hint">VÉHICULE PRÊT // PROFIL VISUEL CHARGÉ</div>
+                    <button type="button" id="driver-start" class="driver-start">▶ DÉMARRER LA COURSE</button>
+                    <button type="button" id="driver-back" class="driver-back">← RETOUR AU MENU</button>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+        <div class="hud-left">
+            <div id="driver-hud-badge" class="driver-hud-badge" aria-live="polite"></div>
+            <div class="hud-panel">
+                <div class="hud-label">VITESSE</div>
+                <div class="hud-value" id="speed-value">0</div>
+                <div class="hud-unit">km/h</div>
+                <div class="turbo-bar"><div class="turbo-fill" id="turbo-fill"></div></div>
+                <div class="hud-label turbo-label">TURBO [ESPACE]</div>
+                <button type="button" id="spm-toggle" class="spm-toggle">SPM [Q]</button>
+                <button type="button" id="fire-toggle" class="fire-toggle">◉ TIR KITT [F]</button>
+                <div id="karr-status" class="karr-status">KARR // EN ATTENTE</div>
+            </div>
+        </div>
+        <div class="hud-center">
+            <div class="hud-time" id="timer">00:00.00</div>
+            <div class="hud-level" id="hud-level">NIVEAU 1</div>
+        </div>
+        <div class="hud-right">
+            <div class="hud-panel small">
+                <div class="hud-label">CHECKPOINT</div>
+                <div class="hud-value" id="checkpoint-info">0/3</div>
+            </div>
+        </div>
+        <div class="hud-bottom">
+            <div id="hud-messages"></div>
+            <div id="hud-debug" class="hud-debug"></div>
+        </div>
+    </div>
+
+    <!-- Compte à rebours -->
+    <div id="countdown" class="hidden">3</div>
+    <div id="spm-cinematic" class="hidden" aria-live="polite"><span>SUPER PURSUIT MODE</span><b>TRANSFORMATION 3D</b></div>
+
+    <!-- Commandes tactiles/gyroscope : visibles uniquement pendant la course sur mobile. -->
+    <div id="mobile-race-controls" class="mobile-race-controls" aria-label="Commandes mobiles de course">
+        <div class="mobile-steering-pad" aria-label="Direction">
+            <span class="mobile-pad-label">DIRECTION</span>
+            <button type="button" class="mobile-drive-btn mobile-steer-left" data-drive="left" aria-label="Tourner à gauche">◀</button>
+            <button type="button" class="mobile-drive-btn mobile-steer-right" data-drive="right" aria-label="Tourner à droite">▶</button>
+        </div>
+        <div class="mobile-pedals" aria-label="Accélération et freinage">
+            <button type="button" class="mobile-drive-btn mobile-accelerate" data-drive="accelerate" aria-label="Accélérer">▲</button>
+            <button type="button" class="mobile-drive-btn mobile-brake" data-drive="brake" aria-label="Freiner">▼</button>
+        </div>
+        <button type="button" id="mobile-control-mode" class="mobile-control-mode" aria-pressed="false">GYRO</button>
+        <span id="mobile-control-status" class="mobile-control-status">TACTILE</span>
+    </div>
+
+    <!-- Pause -->
+    <div id="pause-menu" class="hidden">
+        <div class="menu-box">
+            <h1>PAUSE</h1>
+            <button id="btn-resume" class="menu-btn">▶ REPRENDRE</button>
+            <button id="btn-music-pause" class="mini-btn">🎵 MUSIQUE : OFF</button>
+            <button id="btn-quit" class="menu-btn">☰ QUITTER LA COURSE</button>
+            <div class="credits">Un hommage au groupe <span>KITT FRANCO BELGE</span></div>
+            <div class="creator">By Manix</div>
+        </div>
+    </div>
+
+    <!-- Résultats -->
+    <div id="results-screen" class="hidden">
+        <div class="menu-box">
+            <h1>🏁 ARRIVÉE !</h1>
+            <div class="results-time" id="results-time">00:00.00</div>
+            <div class="results-line" id="results-record"></div>
+            <div class="results-line">Meilleur temps : <span id="results-best">--</span></div>
+            <div class="results-line">Vitesse max : <span id="results-speed">--</span> km/h</div>
+            <div class="results-line" id="results-rank"></div>
+            <button id="btn-restart" class="menu-btn">↻ REJOUER (R)</button>
+            <button id="btn-menu" class="menu-btn">☰ MENU PRINCIPAL (M)</button>
+            <div class="credits">Un hommage au groupe <span>KITT FRANCO BELGE</span></div>
+            <div class="creator">By Manix</div>
+        </div>
+    </div>
+
+    <!-- Hall of fame / scores (rempli par js/scores.js) -->
+    <div id="scores-screen" class="hidden">
+        <div class="scores-box">
+            <h1>🏆 HALL OF FAME</h1>
+            <div id="scores-content"></div>
+            <button id="btn-scores-close" class="menu-btn">← RETOUR (M)</button>
+            <button id="btn-scores-reset" class="mini-btn danger">🗑️ EFFACER LES SCORES</button>
+            <div class="credits">Un hommage au groupe <span>KITT FRANCO BELGE</span></div>
+            <div class="creator">By Manix</div>
+        </div>
+    </div>
+
+    <!-- Éditeur de circuit (rempli par js/editor.js) -->
+    <div id="editor-screen" class="hidden">
+        <div id="editor-toolbar"></div>
+        <div id="editor-help">
+            <p><strong>GLISSER</strong> : orbiter la caméra &nbsp;•&nbsp; <strong>MOLETTE</strong> : zoom</p>
+            <p>Le circuit personnalisé est aussi jouable depuis le menu (🛠️ CIRCUIT PERSONNALISÉ)</p>
+        </div>
+    </div>
+
+    <!-- Affichage des erreurs JS -->
+    <div id="js-errors" class="hidden"></div>
+    <script>
+        window.addEventListener('error', function(e) {
+            const box = document.getElementById('js-errors');
+            if (!box) return;
+            box.classList.remove('hidden');
+            box.innerHTML += '<p><strong>JS ERROR:</strong> ' + e.message + ' (' + (e.filename || '').split('/').pop() + ':' + e.lineno + ')</p>';
+        });
+    </script>
+
+    <!-- Scripts locaux -->
+    <script src="lib/three.min.js"></script>
+    <script src="lib/cannon.min.js"></script>
+    <script src="js/audio.js?v=8-studio"></script>
+    <script src="js/scores.js?v=7"></script>
+    <script src="js/editor.js?v=8-studio"></script>
+    <script src="main.js?v=24-mobile-arcade-drivers"></script>
+</body>
+</html>
