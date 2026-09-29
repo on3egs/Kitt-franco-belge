@@ -58,6 +58,10 @@ button:active{background:#450805}
 .boot-scan i{position:absolute;top:1px;bottom:1px;width:38%;background:linear-gradient(90deg,transparent 0%,rgba(255,46,32,.12) 30%,#ff3b24 78%,#ffe4d4 96%);box-shadow:0 0 26px rgba(255,46,32,.5);-webkit-mask:repeating-linear-gradient(90deg,#000 0 7px,transparent 7px 11px);mask:repeating-linear-gradient(90deg,#000 0 7px,transparent 7px 11px);animation:bootScan 1.9s ease-in-out infinite alternate,bootFlip 3.8s linear infinite}
 @keyframes bootScan{from{left:-40%}to{left:100%}}
 @keyframes bootFlip{0%,49.9%{transform:scaleX(1)}50%,100%{transform:scaleX(-1)}}
+.boot-badge{position:absolute;top:max(10px,env(safe-area-inset-top));right:14px;z-index:2;display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.bb-glyph{font-family:"Segoe UI Symbol","Apple Symbols","Noto Sans Symbols 2","DejaVu Sans",serif;font-size:clamp(30px,6vw,52px);line-height:1;color:#ff4938;text-shadow:0 0 9px rgba(255,45,30,.8),0 0 24px rgba(255,45,30,.4);animation:bbGlow 2.8s ease-in-out infinite}
+@keyframes bbGlow{0%,100%{text-shadow:0 0 9px rgba(255,45,30,.8),0 0 24px rgba(255,45,30,.4)}50%{text-shadow:0 0 13px rgba(255,45,30,1),0 0 34px rgba(255,45,30,.55)}}
+.bb-txt{font-size:7px;letter-spacing:1.5px;line-height:1.3;color:#a1483f;text-align:center;font-weight:700;margin-top:2px}
 #editor{display:none;position:fixed;inset:4%;z-index:280;background:#020000;border:2px solid #8b170f;padding:0;box-shadow:0 0 35px rgba(255,40,25,.18);font-family:"Courier New",monospace}
 #editor.show{display:flex;flex-direction:column}
 .edtitle{font-weight:900;padding:6px 8px;background:#7b130d;color:#ffe2de;letter-spacing:1px}
@@ -256,6 +260,7 @@ html,body { overflow-x:hidden; }
   </div>
   <div id="bootlog"></div>
   <div class="roll"></div>
+  <div class="boot-badge" aria-hidden="true"><span class="bb-glyph">&#9822;</span><span class="bb-txt">KNIGHT<br>INDUSTRIES</span></div>
   <div id="coreStage" aria-label="Mise sous tension du microprocesseur central KITT">
     <div class="cstSub">MISE SOUS TENSION — MICROPROCESSEUR CENTRAL</div>
     <svg id="cstSvg" viewBox="0 0 800 540" preserveAspectRatio="xMidYMid meet" role="img">
