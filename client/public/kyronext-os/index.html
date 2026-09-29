@@ -627,7 +627,7 @@ function command(raw){
  if(cmd==='INFO'||cmd==='SYSINFO'){print('Chargement KINFO.KXE...');sfx.ok();openKinfo();return}
  if(cmd==='MAN'){let q=norm(args).replace(/^K/,'');let d={'DIR':'KDIR [chemin] — affiche un répertoire.','MD':'KMD <nom> — crée un répertoire.','RD':'KRD <nom> — supprime un répertoire vide.','DEL':'KDEL <fichier> — supprime un fichier.','EDIT':'KEDIT <fichier> — éditeur texte/code Kyronext.','XMEM':'KXMEM <Ko> — règle la mémoire étendue.','TTY':'KTTY — terminal direct 80x25.','RUN':'KRUN <jeu.KXE> — lance un exécutable.','VOLUME':'KVOLUME <0-100> — règle le volume.','MSD':'KMSD — ouvre Kyronext Machine/System Diagnostics, inspiré de MSD.EXE.','INFO':'KINFO — alias de KMSD.','SYSINFO':'KSYSINFO — alias de KMSD.','DEMO':'KDEMO — démonstration automatique des fonctions Kyronext à vitesse humaine.','COMPILE':'KCOMPILE <source.KXA> — compile un script Kyronext en .KXE.','CODE':'KCODE <fichier.KXA> — ouvre l’éditeur de code Kyronext.','INFO':'KINFO — ouvre Kyronext Information & Diagnostics, inspiré des utilitaires de diagnostic DOS.'};if(!q){print('Syntaxe : KMAN <commande>');sfx.err();return}print(d[q]||('Pas de page KMAN pour K'+q+'.'));sfx.ok();return}
  if(cmd==='VOLUME'){let n=parseInt(args,10);if(!Number.isFinite(n)){print('Volume Kyronext : '+volumePct+'%\\nSyntaxe : KVOLUME <0-100>');sfx.ok();return}volumePct=Math.max(0,Math.min(100,n));if(master)master.gain.value=(volumePct/100)*0.6;print('Volume Kyronext réglé à '+volumePct+'%.');sfx.ok();return}
- if(cmd==='BOOTLOG'){print('KNIGHT INDUSTRIES 2000 BOOT ROM V1.6 - POST PASSED\nMEMORY TEST : 640 Ko OK\nKXMEM EXTENDED MEMORY : 32768 Ko OK\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\n\n[KXD] MEMORY.KXD\n[KXD] KXMEM.KXD\n[KXD] DISPLAY.KXD\n[KXD] AUDIO.KXD\n[KXD] INPUT.KXD\n[KXD] STORAGE.KXD\n[KXD] CDROM.KXD\n[KXD] NETLINK.KXD\n[KXE] KXEDIT.KXE\n[KXE] KMSD.KXE\n[KXE] KCOMPILER.KXE\n[KXE] KDEMO.KXE\n[KXE] KINFO.KXE\n[KXM] CUDA.KXM\n[KXM] RELAIS.KXM\n[KXS] KITTCORE.KXS\n[KXS] VOICE.KXS\n[KXA] STARTUP.KXA\n\nTous les modules : OK');sfx.scan();return}
+ if(cmd==='BOOTLOG'){print('KNIGHT INDUSTRIES 2000 BOOT ROM V1.6 - POST PASSED\nMEMORY TEST : 640 Ko OK\nKXMEM EXTENDED MEMORY : '+kxMemKB+' Ko '+(kxMemEnabled?'OK':'OFF')+'\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\n\n[KXD] MEMORY.KXD\n[KXD] KXMEM.KXD\n[KXD] DISPLAY.KXD\n[KXD] AUDIO.KXD\n[KXD] INPUT.KXD\n[KXD] STORAGE.KXD\n[KXD] CDROM.KXD\n[KXD] NETLINK.KXD\n[KXE] KXEDIT.KXE\n[KXE] KMSD.KXE\n[KXE] KCOMPILER.KXE\n[KXE] KDEMO.KXE\n[KXE] KINFO.KXE\n[KXM] CUDA.KXM\n[KXM] RELAIS.KXM\n[KXS] KITTCORE.KXS\n[KXS] VOICE.KXS\n[KXA] STARTUP.KXA\n\nTous les modules : OK');sfx.scan();return}
  if(cmd==='RUN'){
   let raw=args.trim(),e=norm(raw).replace(/^K/,'').replace(/\.KXE$/,'');let m={PACMAN:'PACMAN',TETRIS:'TETRIS',SPACEKR:'SPACEKR',TRONKR:'TRONKR'};
   if(m[e]){print('KRUN : chargement '+e+'.KXE...');sfx.ok();launchGame(m[e]);return}
@@ -654,7 +654,7 @@ function command(raw){
  if(cmd==='DEVICES'){print('KDEVICE 00  KITT CORE\nKDEVICE 01  VECTOR DISPLAY\nKDEVICE 02  AUDIO SYNTH\nKDEVICE 03  INPUT MATRIX\nKDEVICE 04  CD-ROM\nKDEVICE 05  KX-LINK\nKDEVICE 06  VEHICLE BUS');sfx.ok();return}
  if(cmd==='IRQ'){print('KIRQ 01 INPUT\nKIRQ 05 DISPLAY\nKIRQ 07 AUDIO\nKIRQ 11 CYBERNETIC CORE\nKIRQ 15 VEHICLE CONTROL');sfx.ok();return}
  if(cmd==='PORTS'){print('KPORT 00 VOICE\nKPORT 01 DISPLAY\nKPORT 02 SCANNER\nKPORT 03 VEHICLE\nKPORT 04 VIGILANCE\nKPORT 05 KX-LINK');sfx.ok();return}
- if(cmd==='BIOS'){print('KNIGHT INDUSTRIES 2000 BOOT ROM 1.6\nVendor : Kyronext Systems™\nMachine : Knight Industries 2000\nPOST : PASSED\nMemoire : 640 Ko + 32768 Ko KXMEM\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\nBoot volume : K:');sfx.ok();return}
+ if(cmd==='BIOS'){print('KNIGHT INDUSTRIES 2000 BOOT ROM 1.6\nVendor : Kyronext Systems™\nMachine : Knight Industries 2000\nPOST : PASSED\nMemoire : 640 Ko + '+kxMemKB+' Ko KXMEM '+(kxMemEnabled?'ACTIF':'ARRÊT')+'\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\nBoot volume : K:');sfx.ok();return}
  if(cmd==='UPTIME'){let sec=Math.floor(performance.now()/1000);print('Temps système : '+Math.floor(sec/3600)+'h '+Math.floor((sec%3600)/60)+'m '+(sec%60)+'s');sfx.ok();return}
  if(cmd==='TASKS'){print('PID 01 KITTCORE.KXS  RUNNING\nPID 02 VOICE.KXS     WAIT\nPID 03 KX-LINK       RUNNING\nPID 04 DISPLAY       RUNNING\nPID 05 COMMAND       RUNNING');sfx.ok();return}
  if(cmd==='LOG'){print('K:\\KYRONEXT\\SYSTEM.LOG\n[OK] BOOT COMPLETE\n[OK] KITT CORE ONLINE\n[OK] AUDIO READY\n[OK] KX-LINK READY\n[OK] COMMAND SHELL ACTIVE');sfx.ok();return}
@@ -1067,7 +1067,7 @@ async function powerOn(){
  const ok=async(label,d=420)=>{line(pad(label));await sleep(d);setLast(pad(label)+' OK');sfx.tick()};
  line('KNIGHT INDUSTRIES 2000 BOOT ROM  V1.6');await sleep(460);
  line('KYRONEXT SYSTEMS (C) 2026 - ALL RIGHTS RESERVED');await sleep(340);
- line('K.I.T.T. MICROPROCESSOR : KYRONEXT KX-82 / 8 MHZ');await sleep(460);
+ line('KNIGHT INDUSTRIES 2000 MICROPROCESSOR');await sleep(460);
  line('');
  await ok('K.I.T.T. MICROPROCESSOR INITIALIZATION',540);
  await ok('ALPHA CIRCUIT CHECK',520);
@@ -1119,7 +1119,7 @@ async function powerOn(){
  line('');
  line('KYRONEXT OS PRET.');sfx.boot();await sleep(900);
  B.classList.add('hide');
- print('KYRONEXT™ OS 1.4\nCopyright © 2026 Kyronext Systems™\nK.I.T.T. SYSTEM ONLINE\nTape KAIDE pour les commandes ou KTTY pour le terminal plein écran.');
+ print('KYRONEXT™ OS 1.6\nCopyright © 2026 Kyronext Systems™\nK.I.T.T. SYSTEM ONLINE\nTape KAIDE pour les commandes ou KTTY pour le terminal plein écran.');
  setTimeout(()=>I.focus(),120);sfx.ok()
 }
 document.getElementById('bootpower').addEventListener('click',powerOn);
