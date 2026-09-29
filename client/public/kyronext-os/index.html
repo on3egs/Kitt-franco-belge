@@ -515,7 +515,7 @@ function demoHud(step,total,label){
  DH.classList.add('show');DS.textContent=step+'/'+total;DP.style.width=Math.round((step/total)*100)+'%';DL.textContent=label
 }
 function hideDemoHud(){DH.classList.remove('show')}
-async function humanType(target,text,speed=34){
+async function humanType(target,text,speed=52){
  for(const ch of text){
   if(demoStop)break;
   if(target==='tty')setTtyText(ttyBuffer+ch);else editorTextInsert(ch);
@@ -525,7 +525,7 @@ async function humanType(target,text,speed=34){
 }
 async function demoCommand(text,wait=560){
  if(demoStop)return;
- ttyBuffer='';renderTTY();await sleep(120);await humanType('tty',text,32);await sleep(140);submitTTY();await sleep(wait)
+ ttyBuffer='';renderTTY();await sleep(120);await humanType('tty',text,52);await sleep(260);submitTTY();await sleep(Math.round(wait*1.65))
 }
 async function demoEditor(){
  if(demoStop)return;
@@ -533,25 +533,25 @@ async function demoEditor(){
  const ea=document.getElementById('editarea');
  ea.value='';ea.setSelectionRange(0,0);updateEditorUI();
  const src='; KYRONEXT DEMO PROGRAM\\nKECHO BONJOUR DEPUIS KYRONEXT\\nKMEM\\nKVER';
- await humanType('editor',src,22);
+ await humanType('editor',src,38);
  await sleep(450);document.getElementById('saveEdit').click();await sleep(450)
 }
 async function demoKMSD(){
  if(demoStop)return;
- await demoCommand('KMSD',300);await sleep(650);
+ await demoCommand('KMSD',300);await sleep(1050);
  for(const sec of ['computer','memory','display','sensors','vehicle','drivers']){
-  if(demoStop)break;renderKMSD(sec);sfx.tick();await sleep(520)
+  if(demoStop)break;renderKMSD(sec);sfx.tick();await sleep(900)
  }
  if(KMSDO.classList.contains('show'))closeKMSD();await sleep(350)
 }
 async function demoGame(name,moves=[]){
  if(demoStop)return;
- await demoCommand('K'+name,250);await sleep(420);
+ await demoCommand('K'+name,250);await sleep(700);
  for(const [key,dur] of moves){
   if(demoStop||!game)break;
   gameAction(key,true);await sleep(dur);gameAction(key,false);await sleep(120)
  }
- await sleep(350);if(game)closeGame();await sleep(280)
+ await sleep(850);if(game)closeGame();await sleep(520)
 }
 async function runDemo(){
  if(demoRunning){print('KDEMO est déjà en cours.');return}
@@ -559,7 +559,7 @@ async function runDemo(){
  if(!tty)setTTY(true);
  hideKb();
  const total=10;
- print('\\n╔════════════════════════════════════════════╗\\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\\n║  Mode automatique — Created by Manix      ║\\n╚════════════════════════════════════════════╝\\n');
+ print('\\n╔════════════════════════════════════════════╗\\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\\n║  Mode lecture humaine — Created by Manix      ║\\n╚════════════════════════════════════════════╝\\n');
  try{
   demoHud(1,total,'Identité et version du système');
   await demoCommand('KVER',600);await demoCommand('KABOUT',500);
