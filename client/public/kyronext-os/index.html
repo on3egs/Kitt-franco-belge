@@ -50,6 +50,9 @@ button:active{background:#450805}
 .boot.post #bootlog{display:block}
 .crt-flash{position:absolute;inset:0;z-index:2;background:rgba(255,240,235,.85);pointer-events:none;transform-origin:center;animation:crtOn .5s ease-out forwards}
 @keyframes crtOn{0%{transform:scaleY(.004);opacity:1}55%{transform:scaleY(1);opacity:.28}100%{transform:scaleY(1);opacity:0}}
+.boot-scan{position:absolute;bottom:16%;left:0;right:0;height:30px;z-index:2;overflow:hidden;pointer-events:none}
+.boot-scan i{position:absolute;top:0;bottom:0;width:30%;background:linear-gradient(90deg,transparent,#ff2e20,transparent);box-shadow:0 0 24px rgba(255,46,32,.55);animation:bootScan 1.08s linear infinite}
+@keyframes bootScan{from{left:-32%}to{left:100%}}
 #editor{display:none;position:fixed;inset:4%;z-index:280;background:#020000;border:2px solid #8b170f;padding:0;box-shadow:0 0 35px rgba(255,40,25,.18);font-family:"Courier New",monospace}
 #editor.show{display:flex;flex-direction:column}
 .edtitle{font-weight:900;padding:6px 8px;background:#7b130d;color:#ffe2de;letter-spacing:1px}
@@ -159,8 +162,83 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
 .demoTrack{height:5px;border:1px solid #4e0b07;margin-top:6px;background:#120100}
 #demoProgress{height:100%;width:0;background:#ff3b2f;box-shadow:0 0 8px #ff2c1e;transition:width .3s ease}
 #demoLabel{font-size:10px;color:#b86158;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#demoStopBtn{padding:5px 7px;font-size:9px}
+#demoStopBtn{padding:5px 7px;font-size:11px;min-height:44px;min-width:76px}
 
+/* --- ETAPE FORTE BOOT : MICROPROCESSEUR CENTRAL KNIGHT 2000 --- */
+#coreStage{display:none;position:fixed;inset:0;z-index:110;background:#000;align-items:center;justify-content:center;flex-direction:column;gap:6px;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom));transition:opacity .38s ease}
+#coreStage.show{display:flex}
+#coreStage.fade{opacity:0}
+#coreStage svg{width:100%;height:min(70vh,540px);max-width:920px}
+.cstSub{font-size:clamp(10px,2.3vw,14px);letter-spacing:3px;color:#ff8b80;text-align:center;font-weight:900}
+.cstLbl{font-family:"Courier New",monospace;font-weight:900;fill:#ffb4a9;letter-spacing:2px}
+.cstLblA{fill:#ffb53f}
+.cstBox{fill:#0b0100;stroke:#571009}
+.cstBoxTxt{font-family:"Courier New",monospace;font-weight:700;fill:#ff8b80;letter-spacing:1px;text-anchor:middle}
+.cstTrace{stroke:#2c0805;fill:none;stroke-width:4}
+.cstCirc{fill:#200604;stroke:#571009;transition:fill .18s,stroke .18s}
+.cstCirc.lit{fill:#ff3b2f;stroke:#ff6f62}
+
+/* --- KAPPS : KCENTRAL / KRADAR / KMISSION / KCOMLINK --- */
+#kappsOverlay{display:none;position:fixed;inset:0;z-index:265;background:#000;padding:max(6px,env(safe-area-inset-top)) 6px max(6px,env(safe-area-inset-bottom));color:#ff6f62;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#kappsOverlay.show{display:flex;align-items:center;justify-content:center}
+.kappShell{width:min(900px,100%);height:min(96vh,780px);border:2px solid #8a170f;background:#050000;display:flex;flex-direction:column;box-shadow:0 0 42px rgba(255,30,20,.22)}
+.kappHead{display:flex;align-items:center;gap:8px;background:#35100b;border-bottom:1px solid #8a170f;padding:6px 8px;font-weight:900;letter-spacing:1px;font-size:clamp(10px,2vw,12px)}
+.kappHead .grow{flex:1}
+.kappTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:5px;background:#080000;border-bottom:1px solid #45100c}
+.kappTabs button{min-height:44px;padding:6px 4px;font-size:clamp(9px,2vw,12px)}
+.kappTabs button.active{background:#4d0a06;color:#ffd9d3;border-color:#c12c20}
+.kappBody{flex:1;min-height:0;overflow:auto;padding:10px;-webkit-overflow-scrolling:touch}
+.kappPane{display:none}
+.kappPane.active{display:block}
+.kappBtn{min-height:44px;font-size:12px;padding:8px 10px}
+.kappControls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.kappControls button{flex:1;min-width:120px}
+.kappOut{border:1px solid #571009;background:#020000;padding:8px;margin-top:8px;white-space:pre-wrap;font-size:12px;line-height:1.45;overflow:auto;max-height:190px}
+.kappFoot{border-top:1px solid #4b0c08;padding:6px 8px;font-size:10px;color:#81423c;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+#kcSvg{display:block;margin:0 auto;max-width:100%;width:min(560px,100%)}
+.kcTrace{stroke:#2c0805;fill:none;stroke-width:3}
+.kcBox{fill:#0b0100;stroke:#571009}
+.kcReadout{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;margin-top:8px}
+.kcCell{border:1px solid #571009;background:#020000;padding:6px;font-size:12px}
+.kcCell b{display:block;color:#ffc44e;font-size:10px;letter-spacing:1px}
+.kcCell span{color:#ff8a7e}
+#krCanvas{display:block;margin:0 auto;max-width:100%;width:min(320px,92vw)}
+.krList{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.krRow{display:flex;justify-content:space-between;gap:8px;border:1px solid #571009;background:#020000;padding:6px 8px;font-size:11px}
+.krRow span:first-child{color:#ffc44e}
+.missList{display:flex;flex-direction:column;gap:6px}
+.missItem{border:1px solid #571009;background:#020000;padding:8px;cursor:pointer;min-height:44px;text-align:left;width:100%}
+.missItem.active{border-color:#c12c20;background:#0b0100}
+.missBar{height:10px;border:1px solid #4e0b07;background:#120100;margin-top:6px}
+.missFill{height:100%;background:#ff3b2f;box-shadow:0 0 8px #ff2c1e;transition:width .25s ease}
+.comLog{border:1px solid #571009;background:#020000;padding:8px;height:230px;overflow:auto;font-size:12px;line-height:1.5;white-space:pre-wrap}
+.comLog div{border-bottom:1px dotted #1c0604;padding:2px 0}
+.comTx{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.comTx input{flex:1;min-width:150px;background:#080000;border:1px solid #71140d;color:#ff7467;padding:10px;font:inherit;font-size:16px;min-height:44px;outline:none}
+.comTx button{min-height:44px}
+.comPresets{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.comPresets button{min-height:44px;font-size:10px;flex:1;min-width:110px}
+@media(max-width:620px){.kappTabs{grid-template-columns:repeat(2,1fr)}.kappShell{height:98vh}}
+
+
+/* Mobile boot: keep the core schematic and its labels inside the viewport. */
+#coreStage { width:100vw; max-width:100vw; overflow:hidden; }
+#coreStage > * { min-width:0; max-width:100%; }
+#coreStage .cstSub { width:100%; white-space:normal; overflow-wrap:break-word; }
+#coreStage svg { display:block; flex:0 1 auto; height:auto; max-height:calc(100dvh - 120px); }
+@media(max-width:620px) { #coreStage .cstSub { letter-spacing:1.4px; line-height:1.6; } }
+
+/* Fixed overlays must not enlarge a mobile browser's layout viewport. */
+html,body { overflow-x:hidden; }
+#kappsOverlay { width:100vw; max-width:100vw; overflow:hidden; }
+.kappShell { min-width:0; max-width:100%; }
+.kappHead { display:grid; grid-template-columns:minmax(0,1fr) auto; }
+.kappHead .grow { display:none; }
+.kappHead > span { min-width:0; overflow-wrap:anywhere; }
+.kappHead > span:first-child { grid-column:1; grid-row:1; }
+.kappHead > span:nth-child(3) { grid-column:1; grid-row:2; font-size:10px; }
+#kappClose { grid-column:2; grid-row:1 / 3; min-width:80px; }
+.kappControls button { min-width:0; flex:1 1 120px; }
 </style>
 </head>
 <body><div id="app">
@@ -172,6 +250,57 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
     <div class="pw-cr">KNIGHT INDUSTRIES 2000 · KYRONEXT™ OS · Created by Manix</div>
   </div>
   <div id="bootlog"></div>
+  <div id="coreStage" aria-label="Mise sous tension du microprocesseur central KITT">
+    <div class="cstSub">MISE SOUS TENSION — MICROPROCESSEUR CENTRAL</div>
+    <svg id="cstSvg" viewBox="0 0 800 540" preserveAspectRatio="xMidYMid meet" role="img">
+      <path id="cstPT" class="cstTrace" d="M400 110 V160"/>
+      <path id="cstPA" class="cstTrace" d="M148 250 H300"/>
+      <path id="cstPB" class="cstTrace" d="M630 210 H500"/>
+      <path id="cstPM" class="cstTrace" d="M400 440 V340"/>
+      <rect class="cstBox" x="330" y="60" width="140" height="46"/>
+      <text class="cstBoxTxt" x="400" y="88" font-size="15">SCANNER / VOIX</text>
+      <rect class="cstBox" x="630" y="185" width="150" height="50"/>
+      <text class="cstBoxTxt" x="705" y="215" font-size="15">BUS DONNÉES</text>
+      <rect class="cstBox" x="330" y="440" width="140" height="46"/>
+      <text class="cstBoxTxt" x="400" y="468" font-size="15">MÉMOIRE</text>
+      <circle cx="120" cy="250" r="28" fill="none" stroke="#571009" stroke-width="2"/>
+      <circle id="cstGlow" cx="120" cy="250" r="10" fill="#ffb53f" opacity="0"/>
+      <text class="cstBoxTxt" x="120" y="305" font-size="15">ALIMENTATION</text>
+      <g fill="#200604" stroke="#571009">
+        <rect x="290" y="176" width="10" height="8"/><rect x="290" y="196" width="10" height="8"/><rect x="290" y="216" width="10" height="8"/><rect x="290" y="236" width="10" height="8"/><rect x="290" y="256" width="10" height="8"/><rect x="290" y="276" width="10" height="8"/><rect x="290" y="296" width="10" height="8"/>
+        <rect x="500" y="176" width="10" height="8"/><rect x="500" y="196" width="10" height="8"/><rect x="500" y="216" width="10" height="8"/><rect x="500" y="236" width="10" height="8"/><rect x="500" y="256" width="10" height="8"/><rect x="500" y="276" width="10" height="8"/><rect x="500" y="296" width="10" height="8"/>
+      </g>
+      <rect id="cstChip" x="300" y="160" width="200" height="180" rx="4" fill="#0b0100" stroke="#571009" stroke-width="2"/>
+      <rect x="388" y="152" width="24" height="8" fill="#0b0100" stroke="#571009"/>
+      <text class="cstLbl cstLblA" x="400" y="196" font-size="21" text-anchor="middle">KNIGHT 2000</text>
+      <text class="cstLbl" x="400" y="224" font-size="15" text-anchor="middle">KITT CENTRAL CORE</text>
+      <g id="cstCoreG" opacity="0.12">
+        <rect x="330" y="240" width="140" height="82" fill="#ff3b2f" opacity="0.22"/>
+        <rect x="344" y="252" width="112" height="6" fill="#ff6f62" opacity="0.5"/>
+        <rect x="344" y="266" width="112" height="6" fill="#ff6f62" opacity="0.35"/>
+        <rect x="344" y="280" width="112" height="6" fill="#ff6f62" opacity="0.5"/>
+        <rect x="344" y="294" width="112" height="6" fill="#ff6f62" opacity="0.3"/>
+        <rect x="344" y="308" width="74" height="6" fill="#ff6f62" opacity="0.45"/>
+      </g>
+      <g id="cstCircG">
+        <rect class="cstCirc" x="236" y="120" width="20" height="12"/>
+        <rect class="cstCirc" x="292" y="84" width="20" height="12"/>
+        <rect class="cstCirc" x="508" y="84" width="20" height="12"/>
+        <rect class="cstCirc" x="564" y="120" width="20" height="12"/>
+        <rect class="cstCirc" x="566" y="250" width="20" height="12"/>
+        <rect class="cstCirc" x="566" y="366" width="20" height="12"/>
+        <rect class="cstCirc" x="508" y="410" width="20" height="12"/>
+        <rect class="cstCirc" x="292" y="410" width="20" height="12"/>
+        <rect class="cstCirc" x="234" y="366" width="20" height="12"/>
+        <rect class="cstCirc" x="234" y="254" width="20" height="12"/>
+        <rect class="cstCirc" x="386" y="26" width="20" height="12"/>
+        <rect class="cstCirc" x="500" y="452" width="20" height="12"/>
+      </g>
+      <g id="cstPulse"></g>
+      <text id="cstLoad" class="cstLbl cstLblA" x="400" y="525" font-size="24" text-anchor="middle">CHARGEMENT 0%</text>
+    </svg>
+    <div class="cstSub" id="cstStatus">ALIMENTATION : ARRIVÉE ÉNERGIE</div>
+  </div>
 </div>
 
 <header><div><div class="brand">KYRONEXT™ OS // K.I.T.T.</div><div class="sub">SYSTEM SHELL 1.6 — BUILD 1982/2026 · © KYRONEXT SYSTEMS™</div></div><div class="scanner"><span></span></div></header>
@@ -195,6 +324,10 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
 <button data-run="kdiagnostic">KDIAG</button><button data-run="kscanner">KSCAN</button>
 <button data-run="ksysteme">KSYSTÈME</button><button data-run="kvehicule">KVÉHICULE</button>
 <button data-run="kcore">KCORE IA</button><button data-run="kson test">KSON TEST</button><button data-run="kdemo">▶ KDEMO</button>
+</div></div>
+<div class="panel"><div class="ph">SYSTÈME CENTRAL</div><div class="quick">
+<button data-run="kcentral">KCENTRAL</button><button data-run="kradar">KRADAR</button>
+<button data-run="kmission">KMISSION</button><button data-run="kcomlink">KCOMLINK</button>
 </div></div>
 <div class="panel status">TTY = terminal plein écran style micro-ordinateur 1980.<br><br>Historique : ↑ / ↓<br>Complétion : TAB<br>Retour : KINTERFACE</div>
 </aside>
@@ -268,6 +401,96 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
  </div>
 </div>
 
+<div id="kappsOverlay" aria-label="Programmes interactifs Kyronext">
+ <div class="kappShell">
+  <div class="kappHead"><span>KYRONEXT™ PROGRAMMES — SYSTÈME CENTRAL K.I.T.T.</span><span class="grow"></span><span style="color:#ffc44e">F.L.A.G. / KNIGHT INDUSTRIES</span><button id="kappClose" class="kappBtn">QUITTER</button></div>
+  <div class="kappTabs" id="kappTabs">
+   <button data-kapp="central">KCENTRAL</button>
+   <button data-kapp="radar">KRADAR</button>
+   <button data-kapp="mission">KMISSION</button>
+   <button data-kapp="comlink">KCOMLINK</button>
+  </div>
+  <div class="kappBody">
+   <div class="kappPane" data-pane="central">
+    <svg id="kcSvg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet" role="img">
+     <path id="kcPA" class="kcTrace" d="M126 186 H230"/>
+     <path id="kcPB" class="kcTrace" d="M514 186 H410"/>
+     <path id="kcPM" class="kcTrace" d="M320 300 V240"/>
+     <path id="kcPV" class="kcTrace" d="M320 60 V120"/>
+     <rect class="kcBox" x="16" y="164" width="110" height="44"/>
+     <text class="cstBoxTxt" x="71" y="190" font-size="14">ALIMENTATION</text>
+     <rect class="kcBox" x="514" y="164" width="110" height="44"/>
+     <text class="cstBoxTxt" x="569" y="190" font-size="14">BUS DONNÉES</text>
+     <rect class="kcBox" x="265" y="300" width="110" height="44"/>
+     <text class="cstBoxTxt" x="320" y="326" font-size="14">MÉMOIRE</text>
+     <rect class="kcBox" x="265" y="16" width="110" height="44"/>
+     <text class="cstBoxTxt" x="320" y="42" font-size="14">SCANNER / VOIX</text>
+     <g fill="#200604" stroke="#571009">
+      <rect x="220" y="150" width="10" height="8"/><rect x="220" y="170" width="10" height="8"/><rect x="220" y="190" width="10" height="8"/><rect x="220" y="210" width="10" height="8"/><rect x="220" y="230" width="10" height="8"/>
+      <rect x="410" y="150" width="10" height="8"/><rect x="410" y="170" width="10" height="8"/><rect x="410" y="190" width="10" height="8"/><rect x="410" y="210" width="10" height="8"/><rect x="410" y="230" width="10" height="8"/>
+     </g>
+     <rect x="230" y="120" width="180" height="120" rx="4" fill="#0b0100" stroke="#571009" stroke-width="2"/>
+     <text class="cstLbl cstLblA" x="320" y="146" font-size="18" text-anchor="middle">KNIGHT 2000</text>
+     <text class="cstLbl" x="320" y="164" font-size="11" text-anchor="middle">KITT CENTRAL CORE</text>
+     <g id="kcCoreG" opacity="0.25">
+      <rect x="250" y="172" width="140" height="58" fill="#ff3b2f" opacity="0.2"/>
+      <rect x="260" y="180" width="120" height="5" fill="#ff6f62" opacity="0.5"/>
+      <rect x="260" y="192" width="120" height="5" fill="#ff6f62" opacity="0.35"/>
+      <rect x="260" y="204" width="120" height="5" fill="#ff6f62" opacity="0.5"/>
+      <rect x="260" y="216" width="82" height="5" fill="#ff6f62" opacity="0.45"/>
+     </g>
+     <g id="kcPulse"></g>
+    </svg>
+    <div class="kcReadout">
+     <div class="kcCell"><b>CŒUR</b><span id="kcCore">EN LIGNE</span></div>
+     <div class="kcCell"><b>MÉMOIRE</b><span id="kcMem">640 Ko + KXMEM</span></div>
+     <div class="kcCell"><b>BUS K-BUS 2000</b><span id="kcBus">64 VOIES</span></div>
+     <div class="kcCell"><b>FRÉQUENCE</b><span id="kcFreq">— MHz</span></div>
+    </div>
+    <div class="kappControls">
+     <button class="kappBtn" id="kcBtnMem">TEST MÉMOIRE</button>
+     <button class="kappBtn" id="kcBtnBus">TEST BUS</button>
+     <button class="kappBtn" id="kcBtnCore">ANALYSE CŒUR</button>
+    </div>
+    <div class="kappOut" id="kcOut">KCENTRAL.KXE — schéma animé du microprocesseur central K.I.T.T.
+Prêt pour tests. Aucun appareil réel n'est commandé [SIMULATION].</div>
+   </div>
+   <div class="kappPane" data-pane="radar">
+    <canvas id="krCanvas" width="320" height="320"></canvas>
+    <div class="kappControls">
+     <button class="kappBtn" id="krBtnSweep">ARRÊTER LE BALAYAGE</button>
+     <button class="kappBtn" id="krBtnContacts">NOUVEAUX CONTACTS</button>
+    </div>
+    <div class="krList" id="krList"></div>
+    <div class="kappOut" id="krOut">KRADAR.KXE — scanner radar du système central.
+Contacts entièrement fictifs [SIMULATION].</div>
+   </div>
+   <div class="kappPane" data-pane="mission">
+    <div class="missList" id="kmList"></div>
+    <div class="kappControls">
+     <button class="kappBtn" id="kmPrev">◀ PRÉCÉDENTE</button>
+     <button class="kappBtn" id="kmNext">SUIVANTE ▶</button>
+     <button class="kappBtn" id="kmProg">SIMULER AVANCEMENT</button>
+     <button class="kappBtn" id="kmRapport">RAPPORT</button>
+    </div>
+    <div class="kappOut" id="kmDossier"></div>
+   </div>
+   <div class="kappPane" data-pane="comlink">
+    <div class="comLog" id="comLog"></div>
+    <div class="comTx">
+     <input id="comInput" placeholder="Message pour F.L.A.G. — 40 car. max" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false">
+     <button class="kappBtn" id="comSend">TRANSMETTRE</button>
+     <button class="kappBtn" id="comCancel">ANNULER</button>
+    </div>
+    <div class="comPresets" id="comPresets"></div>
+    <div class="kappOut" id="comOut">KCOMLINK.KXE — liaison F.L.A.G. sur canal SEMAPHORE [SIMULATION].
+Transmission animée, annulation à tout moment.</div>
+   </div>
+  </div>
+  <div class="kappFoot"><span>Commandes : KCENTRAL · KRADAR · KMISSION · KCOMLINK</span><span>KYRONEXT™ OS · Created by Manix</span></div>
+ </div>
+</div>
+
 </div>
 
 <script>
@@ -277,42 +500,80 @@ const ttySide=document.getElementById('ttySide'),audioSide=document.getElementBy
 let ctx=null,master=null,sound=true,mode='NORMAL',tty=false,cwd='K:\\KYRONEXT',hist=[],histIndex=0,editFile=null,ttyBuffer='',kbShift=false,kbNums=false,kbAccs=false,kxMemKB=32768,kxMemEnabled=true,volumePct=70,game=null,gameRAF=0,fallbackAudio=null,audioUnlocked=false,demoRunning=false,demoStop=false,editorInsert=true;
 
 const fs={
- 'K:\\KYRONEXT':{type:'dir',children:['SYSTEME','KITT','VEHICULE','VIGILANCE','AUDIO','JEUX','KYRONEXT.KXK','SYSTEM.KXC','STARTUP.KXA','DEMO.KXA','README.KXT']},
- 'K:\\KYRONEXT\\SYSTEME':{type:'dir',children:['MEMORY.KXD','KXMEM.KXD','DISPLAY.KXD','AUDIO.KXD','INPUT.KXD','NETLINK.KXD','STORAGE.KXD','CDROM.KXD','CUDA.KXM','KXEDIT.KXE','KMSD.KXE','KDEMO.KXE','KCOMPILER.KXE']},
+ 'K:\\KYRONEXT':{type:'dir',children:['SYSTEME','KITT','CENTRAL','FLAG','MISSIONS','COMMUNICATION','DIAGNOSTIC','ARCHIVES','VEHICULE','VIGILANCE','AUDIO','JEUX','KYRONEXT.KXK','SYSTEM.KXC','STARTUP.KXA','DEMO.KXA','README.KXT']},
+ 'K:\\KYRONEXT\\SYSTEME':{type:'dir',children:['MEMORY.KXD','KXMEM.KXD','DISPLAY.KXD','AUDIO.KXD','INPUT.KXD','NETLINK.KXD','STORAGE.KXD','CDROM.KXD','CUDA.KXM','KXEDIT.KXE','KMSD.KXE','KDEMO.KXE','KCOMPILER.KXE','KINFO.KXE','KCENTRAL.KXE','KRADAR.KXE','KMISSION.KXE','KCOMLINK.KXE']},
  'K:\\KYRONEXT\\KITT':{type:'dir',children:['KITTCORE.KXS','VOICE.KXS','COMMAND.KXC']},
  'K:\\KYRONEXT\\VEHICULE':{type:'dir',children:['RELAIS.KXM','CAPTEURS.KXM','AUTOCRUISE.KXM']},
  'K:\\KYRONEXT\\VIGILANCE':{type:'dir',children:['CAMERA.KXM','EVENTS.KXL']},
  'K:\\KYRONEXT\\AUDIO':{type:'dir',children:['SFX.KXP','VOICE.KXP']},
  'K:\\KYRONEXT\\JEUX':{type:'dir',children:['PACMAN.KXE','TETRIS.KXE','SPACEKR.KXE','TRONKR.KXE']},
- 'K:\\KYRONEXT\\KYRONEXT.KXK':{type:'file',text:'KYRONEXT KERNEL IMAGE\\nVERSION=1.2\\nMODE=EMBEDDED'},
- 'K:\\KYRONEXT\\SYSTEM.KXC':{type:'file',text:'LANG=FR\\nTTY=80x25\\nAUDIO=ON\\nNETWORK=KX-LINK\\nCORE=ACTIVE'},
- 'K:\\KYRONEXT\\STARTUP.KXA':{type:'file',text:'LOAD SYSTEM.KXC\\nSTART KITTCORE.KXS\\nSTART VOICE.KXS\\nSTART WEBUI.KXS\\nREADY'},
- 'K:\\KYRONEXT\\DEMO.KXA':{type:'file',text:'; KYRONEXT SYSTEM DEMONSTRATION\\nKVER\\nKDIR\\nKMEM\\nKMSD\\nKJEUX\\n; Lancer avec KDEMO'},
- 'K:\\KYRONEXT\\README.KXT':{type:'file',text:'KYRONEXT OS\\nSystème K.I.T.T.\\nTape KAIDE pour les commandes.'},
- 'K:\\KYRONEXT\\SYSTEME\\MEMORY.KXD':{type:'file',text:'DRIVER=MEMORY\\nSTATE=ACTIVE'},
- 'K:\\KYRONEXT\\SYSTEME\\KXMEM.KXD':{type:'file',text:'DRIVER=KXMEM EXTENDED MEMORY MANAGER\\nSTATE=ACTIVE\\nDEFAULT=32768KB\\nCOMMAND=KXMEM'},
- 'K:\\KYRONEXT\\SYSTEME\\KXEDIT.KXE':{type:'file',text:'PROGRAM=KYRONEXT CODE EDITOR\\nMODE=TEXT/CODE\\nSTATE=READY'},
- 'K:\\KYRONEXT\\SYSTEME\\KMSD.KXE':{type:'file',text:'PROGRAM=KYRONEXT MACHINE/SYSTEM DIAGNOSTICS\\nPROFILE=KNIGHT INDUSTRIES 2000\\nSTATE=READY'},
- 'K:\\KYRONEXT\\SYSTEME\\KDEMO.KXE':{type:'file',text:'PROGRAM=KYRONEXT AUTOMATED SYSTEM DEMONSTRATION\\nSPEED=HUMAN\\nSTATE=READY'},
- 'K:\\KYRONEXT\\SYSTEME\\KCOMPILER.KXE':{type:'file',text:'PROGRAM=KYRONEXT SCRIPT COMPILER\\nSOURCE=.KXA\\nTARGET=.KXE'},
- 'K:\\KYRONEXT\\SYSTEME\\KINFO.KXE':{type:'file',text:'PROGRAM=KYRONEXT INFORMATION & DIAGNOSTICS\\nCOMMAND=KINFO\\nSTATE=READY'},
- 'K:\\KYRONEXT\\SYSTEME\\DISPLAY.KXD':{type:'file',text:'DRIVER=DISPLAY\\nMODE=CRT-1982'},
- 'K:\\KYRONEXT\\SYSTEME\\AUDIO.KXD':{type:'file',text:'DRIVER=AUDIO\\nSYNTH=ACTIVE'},
- 'K:\\KYRONEXT\\SYSTEME\\INPUT.KXD':{type:'file',text:'DRIVER=INPUT\\nKEYBOARD=ACTIVE\\nPOINTER=ACTIVE'},
- 'K:\\KYRONEXT\\SYSTEME\\NETLINK.KXD':{type:'file',text:'DRIVER=NETWORK\\nPROTOCOL=KX-LINK'},
- 'K:\\KYRONEXT\\SYSTEME\\STORAGE.KXD':{type:'file',text:'DRIVER=STORAGE\\nVOLUME=K:'},
- 'K:\\KYRONEXT\\SYSTEME\\CDROM.KXD':{type:'file',text:'DRIVER=OPTICAL\\nDEVICE=KYRONEXT-CD'},
- 'K:\\KYRONEXT\\SYSTEME\\CUDA.KXM':{type:'file',text:'MODULE=CUDA\\nACCELERATION=ACTIVE'},
- 'K:\\KYRONEXT\\KITT\\KITTCORE.KXS':{type:'file',text:'SERVICE=KITT CORE\\nSTATE=READY'},
- 'K:\\KYRONEXT\\KITT\\VOICE.KXS':{type:'file',text:'SERVICE=VOICE\\nSTT=READY\\nTTS=READY'},
- 'K:\\KYRONEXT\\KITT\\COMMAND.KXC':{type:'file',text:'COMMANDS=EXTENDED\\nLANGUAGE=FR'},
- 'K:\\KYRONEXT\\VEHICULE\\RELAIS.KXM':{type:'file',text:'MODULE=RELAIS\\nSTATE=SIMULATION'},
- 'K:\\KYRONEXT\\VEHICULE\\CAPTEURS.KXM':{type:'file',text:'MODULE=CAPTEURS\\nSTATE=STANDBY'},
- 'K:\\KYRONEXT\\VEHICULE\\AUTOCRUISE.KXM':{type:'file',text:'MODULE=AUTOCRUISE\\nSTATE=STANDBY'},
- 'K:\\KYRONEXT\\VIGILANCE\\CAMERA.KXM':{type:'file',text:'MODULE=CAMERA\\nDETECTION=ON'},
+ 'K:\\KYRONEXT\\KYRONEXT.KXK':{type:'file',text:'KYRONEXT KERNEL IMAGE\nVERSION=1.2\nMODE=EMBEDDED'},
+ 'K:\\KYRONEXT\\SYSTEM.KXC':{type:'file',text:'LANG=FR\nTTY=80x25\nAUDIO=ON\nNETWORK=KX-LINK\nCORE=ACTIVE'},
+ 'K:\\KYRONEXT\\STARTUP.KXA':{type:'file',text:'LOAD SYSTEM.KXC\nSTART KITTCORE.KXS\nSTART VOICE.KXS\nSTART WEBUI.KXS\nREADY'},
+ 'K:\\KYRONEXT\\DEMO.KXA':{type:'file',text:'; KYRONEXT SYSTEM DEMONSTRATION\nKVER\nKDIR\nKMEM\nKMSD\nKJEUX\n; Lancer avec KDEMO'},
+ 'K:\\KYRONEXT\\README.KXT':{type:'file',text:'KYRONEXT OS\nSystème K.I.T.T.\nTape KAIDE pour les commandes.'},
+ 'K:\\KYRONEXT\\SYSTEME\\MEMORY.KXD':{type:'file',text:'DRIVER=MEMORY\nSTATE=ACTIVE'},
+ 'K:\\KYRONEXT\\SYSTEME\\KXMEM.KXD':{type:'file',text:'DRIVER=KXMEM EXTENDED MEMORY MANAGER\nSTATE=ACTIVE\nDEFAULT=32768KB\nCOMMAND=KXMEM'},
+ 'K:\\KYRONEXT\\SYSTEME\\KXEDIT.KXE':{type:'file',text:'PROGRAM=KYRONEXT CODE EDITOR\nMODE=TEXT/CODE\nSTATE=READY'},
+ 'K:\\KYRONEXT\\SYSTEME\\KMSD.KXE':{type:'file',text:'PROGRAM=KYRONEXT MACHINE/SYSTEM DIAGNOSTICS\nPROFILE=KNIGHT INDUSTRIES 2000\nSTATE=READY'},
+ 'K:\\KYRONEXT\\SYSTEME\\KDEMO.KXE':{type:'file',text:'PROGRAM=KYRONEXT AUTOMATED SYSTEM DEMONSTRATION\nSPEED=HUMAN\nSTATE=READY'},
+ 'K:\\KYRONEXT\\SYSTEME\\KCOMPILER.KXE':{type:'file',text:'PROGRAM=KYRONEXT SCRIPT COMPILER\nSOURCE=.KXA\nTARGET=.KXE'},
+ 'K:\\KYRONEXT\\SYSTEME\\KINFO.KXE':{type:'file',text:'PROGRAM=KYRONEXT INFORMATION & DIAGNOSTICS\nCOMMAND=KINFO\nSTATE=READY'},
+ 'K:\\KYRONEXT\\SYSTEME\\DISPLAY.KXD':{type:'file',text:'DRIVER=DISPLAY\nMODE=CRT-1982'},
+ 'K:\\KYRONEXT\\SYSTEME\\AUDIO.KXD':{type:'file',text:'DRIVER=AUDIO\nSYNTH=ACTIVE'},
+ 'K:\\KYRONEXT\\SYSTEME\\INPUT.KXD':{type:'file',text:'DRIVER=INPUT\nKEYBOARD=ACTIVE\nPOINTER=ACTIVE'},
+ 'K:\\KYRONEXT\\SYSTEME\\NETLINK.KXD':{type:'file',text:'DRIVER=NETWORK\nPROTOCOL=KX-LINK'},
+ 'K:\\KYRONEXT\\SYSTEME\\STORAGE.KXD':{type:'file',text:'DRIVER=STORAGE\nVOLUME=K:'},
+ 'K:\\KYRONEXT\\SYSTEME\\CDROM.KXD':{type:'file',text:'DRIVER=OPTICAL\nDEVICE=KYRONEXT-CD'},
+ 'K:\\KYRONEXT\\SYSTEME\\CUDA.KXM':{type:'file',text:'MODULE=CUDA\nACCELERATION=ACTIVE'},
+ 'K:\\KYRONEXT\\KITT\\KITTCORE.KXS':{type:'file',text:'SERVICE=KITT CORE\nSTATE=READY'},
+ 'K:\\KYRONEXT\\KITT\\VOICE.KXS':{type:'file',text:'SERVICE=VOICE\nSTT=READY\nTTS=READY'},
+ 'K:\\KYRONEXT\\KITT\\COMMAND.KXC':{type:'file',text:'COMMANDS=EXTENDED\nLANGUAGE=FR'},
+ 'K:\\KYRONEXT\\VEHICULE\\RELAIS.KXM':{type:'file',text:'MODULE=RELAIS\nSTATE=SIMULATION'},
+ 'K:\\KYRONEXT\\VEHICULE\\CAPTEURS.KXM':{type:'file',text:'MODULE=CAPTEURS\nSTATE=STANDBY'},
+ 'K:\\KYRONEXT\\VEHICULE\\AUTOCRUISE.KXM':{type:'file',text:'MODULE=AUTOCRUISE\nSTATE=STANDBY'},
+ 'K:\\KYRONEXT\\VIGILANCE\\CAMERA.KXM':{type:'file',text:'MODULE=CAMERA\nDETECTION=ON'},
  'K:\\KYRONEXT\\VIGILANCE\\EVENTS.KXL':{type:'file',text:'AUCUN EVENEMENT'},
- 'K:\\KYRONEXT\\AUDIO\\SFX.KXP':{type:'file',text:'PACK=SFX\\nPROFILE=RETRO-1982'},
- 'K:\\KYRONEXT\\AUDIO\\VOICE.KXP':{type:'file',text:'PACK=VOICE\\nPROFILE=KITT'}
+ 'K:\\KYRONEXT\\AUDIO\\SFX.KXP':{type:'file',text:'PACK=SFX\nPROFILE=RETRO-1982'},
+ 'K:\\KYRONEXT\\AUDIO\\VOICE.KXP':{type:'file',text:'PACK=VOICE\nPROFILE=KITT'},
+ 'K:\\KYRONEXT\\JEUX\\PACMAN.KXE':{type:'file',text:'PROGRAM=PACMAN KYRONEXT\nFONCTION=Labyrinthe — mange tous les points\nCOMMAND=KPACMAN\nETAT=JOUABLE'},
+ 'K:\\KYRONEXT\\JEUX\\TETRIS.KXE':{type:'file',text:'PROGRAM=TETRIS KYRONEXT\nFONCTION=Pieces descendantes — lignes completes\nCOMMAND=KTETRIS\nETAT=JOUABLE'},
+ 'K:\\KYRONEXT\\JEUX\\SPACEKR.KXE':{type:'file',text:'PROGRAM=SPACE KNIGHT RIDER\nFONCTION=Tir spatial — vagues ennemies\nCOMMAND=KSPACEKR\nETAT=JOUABLE'},
+ 'K:\\KYRONEXT\\JEUX\\TRONKR.KXE':{type:'file',text:'PROGRAM=TRON KNIGHT RIDER\nFONCTION=Trace lumineuse — eviter murs et traces\nCOMMAND=KTRONKR\nETAT=JOUABLE'},
+'K:\\KYRONEXT\\CENTRAL':{type:'dir',children:['SCHEMA.KXT','K-BUS.KXT','ALPHA-CIRCUIT.KXT','FREQUENCES.KXT','SELFTEST.KXL']},
+ 'K:\\KYRONEXT\\FLAG':{type:'dir',children:['IDENTITE.KXT','CONTACT.KXT','SEMAPHORE.KXC','SECURITE.KXT']},
+ 'K:\\KYRONEXT\\MISSIONS':{type:'dir',children:['INDEX.KXT','M-82001.KXT','M-82002.KXT','M-82003.KXT','M-82004.KXT']},
+ 'K:\\KYRONEXT\\COMMUNICATION':{type:'dir',children:['PROTOCOLE.KXT','JOURNAL.KXL','ALPHABET.KXT']},
+ 'K:\\KYRONEXT\\DIAGNOSTIC':{type:'dir',children:['SELFTEST.KXL','MEMTEST.KXL','BUSTEST.KXL','ANOMALIES.KXL']},
+ 'K:\\KYRONEXT\\ARCHIVES':{type:'dir',children:['PROTO.KXT','REGISTRE-1982.KXT','DOSSIER-K2000.KXT']},
+ 'K:\\KYRONEXT\\SYSTEME\\KCENTRAL.KXE':{type:'file',text:'PROGRAM=KCENTRAL — MICROPROCESSEUR CENTRAL\nFONCTION=SCHEMA ANIME + TESTS MEMOIRE/BUS/CŒUR\nSOURCE=K:\\KYRONEXT\\CENTRAL\\SCHEMA.KXT\nCOMMAND=KCENTRAL\nNOTE=SIMULATION TOTALE'},
+ 'K:\\KYRONEXT\\SYSTEME\\KRADAR.KXE':{type:'file',text:'PROGRAM=KRADAR — SCANNER RADAR\nFONCTION=BALAYAGE 360° + CONTACTS FICTIFS\nCOMMAND=KRADAR\nNOTE=SIMULATION TOTALE — AUCUN APPAREIL REEL'},
+ 'K:\\KYRONEXT\\SYSTEME\\KMISSION.KXE':{type:'file',text:'PROGRAM=KMISSION — DOSSIERS DE MISSION\nSOURCE=K:\\KYRONEXT\\MISSIONS\nCOMMAND=KMISSION\nFONCTION=CONSULTATION + AVANCEMENT SIMULE'},
+ 'K:\\KYRONEXT\\SYSTEME\\KCOMLINK.KXE':{type:'file',text:'PROGRAM=KCOMLINK — LIAISON F.L.A.G.\nCANAL=SEMAPHORE 7\nCONFIG=K:\\KYRONEXT\\FLAG\\SEMAPHORE.KXC\nCOMMAND=KCOMLINK\nNOTE=SIMULATION TOTALE — AUCUNE LIAISON REELLE'},
+ 'K:\\KYRONEXT\\CENTRAL\\SCHEMA.KXT':{type:'file',text:'SCHEMA DU MICROPROCESSEUR CENTRAL\nCOMPOSANT : KNIGHT 2000\nSOUS-ENSEMBLE : CIRCUIT LOGIQUE CYBERNETIQUE\n\nBLOC ALIMENTATION : CONVENTIONNELLE + KXMEM\nBLOC MEMOIRE : 640 Ko + MEMOIRE ETENDUE\nBUS DONNÉES : 64 VOIES PARALLÈLES\nENTREE SCANNER / VOIX : CANAL PRIORITAIRE\n\nVISUALISATION INTERACTIVE : KCENTRAL'},
+ 'K:\\KYRONEXT\\CENTRAL\\K-BUS.KXT':{type:'file',text:'BUS INTERNE K-BUS 2000\nLARGEUR : 64 VOIES\nARBITRAGE : CIRCUIT ALPHA (PRIORITE)\nDEBIT NOMINAL : 6.144 MHZ\nTEST INTERACTIF : KCENTRAL (BOUTON TEST BUS)\nJOURNAL : K:\\KYRONEXT\\DIAGNOSTIC\\BUSTEST.KXL'},
+ 'K:\\KYRONEXT\\CENTRAL\\ALPHA-CIRCUIT.KXT':{type:'file',text:'CIRCUIT ALPHA — CONTROLEUR DE PRIORITES\nROLE : ARBITRAGE DU BUS + SURVEILLANCE DU CŒUR\nETAT : NOMINAL\nREFERENCE DIAGNOSTIC : K:\\KYRONEXT\\DIAGNOSTIC\\SELFTEST.KXL'},
+ 'K:\\KYRONEXT\\CENTRAL\\FREQUENCES.KXT':{type:'file',text:'HORLOGE SYSTEME : 6.144 MHZ\nBALAYAGE SCANNER : 1.0 s / CYCLE\nCANAL SEMAPHORE : 7 (F.L.A.G.)\nMISE A JOUR : AUTOMATIQUE'},
+ 'K:\\KYRONEXT\\CENTRAL\\SELFTEST.KXL':{type:'file',text:'AUTO-TEST INITIAL — MICROPROCESSEUR CENTRAL\nREGISTRES R0-R15 : OK\nHORLOGE : OK\nBUS : OK\nMEMOIRE : OK\nINTERRUPTIONS : OK\nRESULTAT : AUCUN DEFAUT'},
+ 'K:\\KYRONEXT\\FLAG\\IDENTITE.KXT':{type:'file',text:'F.L.A.G.\nFOUNDATION FOR LAW AND GOVERNMENT\nFONDATION POUR LA LOI ET L\'ORDRE\n\nMANDAT : ASSISTER LES ORGANISMES DE LUTTE CONTRE LE CRIME\nLIAISON KYRONEXT : CANAL SEMAPHORE 7\nPROGRAMME DE COMMUNICATION : KCOMLINK'},
+ 'K:\\KYRONEXT\\FLAG\\CONTACT.KXT':{type:'file',text:'DIRECTEUR : DEVON MILES (F.L.A.G.)\nAGENT DE TERRAIN : MICHAEL KNIGHT\nUNITE CENTRALE : K.I.T.T. — UNITÉ 2000\nCONTACT KYRONEXT : KCOMLINK / CANAL SEMAPHORE 7'},
+ 'K:\\KYRONEXT\\FLAG\\SEMAPHORE.KXC':{type:'file',text:'CANAL=7\nNOM=SEMAPHORE\nPROTECTION=CIPHER KNIGHT\nETAT=OUVERT\nPROGRAMME=KCOMLINK'},
+ 'K:\\KYRONEXT\\FLAG\\SECURITE.KXT':{type:'file',text:'NIVEAU DE PROTECTION : MAXIMAL\nCHIFFREMENT : CIPHER KNIGHT\nACCES : DIRECTEUR F.L.A.G. UNIQUEMENT\nTOUTE TRANSMISSION EST JOURNALISEE\nJOURNAL : K:\\KYRONEXT\\COMMUNICATION\\JOURNAL.KXL'},
+ 'K:\\KYRONEXT\\MISSIONS\\INDEX.KXT':{type:'file',text:'DOSSIERS DE MISSION F.L.A.G.\nM-82001.KXT  CONVOI PROTEGE\nM-82002.KXT  TRANSMISSION SEMAPHORE\nM-82003.KXT  REPERAGE RURAL\nM-82004.KXT  EXERCICE DE FORMATION\n\nCONSULTATION INTERACTIVE : KMISSION'},
+ 'K:\\KYRONEXT\\MISSIONS\\M-82001.KXT':{type:'file',text:'CODE=M-82001\nTITRE=CONVOI PROTEGE\nSTATUS=EN COURS\nPROGRES=45\nLIEU=CORRIDOR AUTOROUTIER 7\nOPERATEUR=MK\n---\nOBJECTIF : ESCORTER LE CONVOI DE LA FONDATION JUSQU\'AU DEPOT CENTRAL.\nREMARQUE : BALAYAGE RADAR EN CONTINU (KRADAR).\nCONTACT F.L.A.G. : CANAL SEMAPHORE 7.'},
+ 'K:\\KYRONEXT\\MISSIONS\\M-82002.KXT':{type:'file',text:'CODE=M-82002\nTITRE=TRANSMISSION SEMAPHORE\nSTATUS=EN COURS\nPROGRES=70\nLIEU=BASE KYRONEXT\nOPERATEUR=KITT\n---\nOBJECTIF : ETABLIR LA LIAISON CHIFFREE AVEC LE DIRECTEUR.\nREMARQUE : UTILISER KCOMLINK — ANNULATION POSSIBLE A TOUT MOMENT.'},
+ 'K:\\KYRONEXT\\MISSIONS\\M-82003.KXT':{type:'file',text:'CODE=M-82003\nTITRE=REPERAGE RURAL\nSTATUS=EN COURS\nPROGRES=15\nLIEU=SECTEUR ROUTE 12\nOPERATEUR=MK\n---\nOBJECTIF : CARTOGRAPHIER LES CONTACTS DU SECTEUR.\nREMARQUE : CONTACTS ENTIÈREMENT FICTIFS (KRADAR).'},
+ 'K:\\KYRONEXT\\MISSIONS\\M-82004.KXT':{type:'file',text:'CODE=M-82004\nTITRE=EXERCICE DE FORMATION\nSTATUS=TERMINE\nPROGRES=100\nLIEU=PISTE D\'ESSAI F.L.A.G.\nOPERATEUR=MK\n---\nOBJECTIF : VALIDER LES AUTO-TESTS DU MICROPROCESSEUR.\nRESULTAT : SUCCES — AUCUN DEFAUT (DIAGNOSTIC\\SELFTEST.KXL).'},
+ 'K:\\KYRONEXT\\COMMUNICATION\\PROTOCOLE.KXT':{type:'file',text:'PROTOCOLE SEMAPHORE\nETAPES : OUVERTURE DU CANAL / TRANSMISSION / ACCUSE / FERMETURE\nANNULATION : A TOUT MOMENT (KCOMLINK — BOUTON ANNULER)\nSIMULATION : AUCUNE LIAISON REELLE N\'EST ETABLIE'},
+ 'K:\\KYRONEXT\\COMMUNICATION\\JOURNAL.KXL':{type:'file',text:'JOURNAL DES TRANSMISSIONS — CANAL SEMAPHORE 7\n[08:12] OUVERTURE DU CANAL — TEST INITIAL\n[08:13] F.L.A.G. : MESSAGE REÇU\n[08:14] FERMETURE DU CANAL\n\nLES TRANSMISSIONS KCOMLINK SONT AJOUTEES ICI.'},
+ 'K:\\KYRONEXT\\COMMUNICATION\\ALPHABET.KXT':{type:'file',text:'CODE SEMAPHORE — EPELLEMENT LUMINEUX\nMESSAGE TYPE : K-N-I-G-H-T\nUTILISATION : SIGNATURE DE FIN DE TRANSMISSION KCOMLINK'},
+ 'K:\\KYRONEXT\\DIAGNOSTIC\\SELFTEST.KXL':{type:'file',text:'AUTO-TEST GENERAL\nCŒUR : OK\nBUS : OK\nMEMOIRE : OK\nAUDIO : OK\nAFFICHAGE : OK\nRESULTAT : AUCUN DEFAUT'},
+ 'K:\\KYRONEXT\\DIAGNOSTIC\\MEMTEST.KXL':{type:'file',text:'TEST MEMOIRE DETAILLE\n640 Ko CONVENTIONNELLE : OK\n32768 Ko KXMEM : OK\nZONE HAUTE KX-HMA : OK\nTOTAL TESTE : 33472 Ko\nMISE A JOUR PAR : KCENTRAL'},
+ 'K:\\KYRONEXT\\DIAGNOSTIC\\BUSTEST.KXL':{type:'file',text:'TEST BUS 64 VOIES\nVOIES 01-32 : OK\nVOIES 33-64 : OK\nARBITRAGE CIRCUIT ALPHA : OK\nMISE A JOUR PAR : KCENTRAL'},
+ 'K:\\KYRONEXT\\DIAGNOSTIC\\ANOMALIES.KXL':{type:'file',text:'REGISTRE DES ANOMALIES\nAUCUNE ANOMALIE ACTIVE.\nDERNIERE VERIFICATION : POST INITIAL'},
+ 'K:\\KYRONEXT\\ARCHIVES\\PROTO.KXT':{type:'file',text:'DOSSIER KYRONEXT — PROGRAMME KNIGHT\n1982 : MISE EN SERVICE DE L\'UNITE 2000\n1982 : ADAPTATION DU SYSTEME CENTRAL DE KITT\n2026 : DEMONSTRATION KYRONEXT OS (SIMULATION)'},
+ 'K:\\KYRONEXT\\ARCHIVES\\REGISTRE-1982.KXT':{type:'file',text:'REGISTRE 1982\nENTREE 001 : PREMIERE MISE SOUS TENSION DU MICROPROCESSEUR\nENTREE 002 : PREMIER AUTO-TEST NOMINAL\nENTREE 003 : LIAISON SEMAPHORE ETABLIE\nENTREE 004 : SYSTEME DECLARE OPERATIONNEL'},
+ 'K:\\KYRONEXT\\ARCHIVES\\DOSSIER-K2000.KXT':{type:'file',text:'FICHE TECHNIQUE — UNITÉ 2000\nMICROPROCESSEUR : KNIGHT 2000\nMEMOIRE : 640 Ko + KXMEM\nCORE MEMORY : 1000 MEGABITS / ACCES 1 ns\nSCHEMA : K:\\KYRONEXT\\CENTRAL\\SCHEMA.KXT'}
 };
 
 function ensureAudio(){
@@ -405,7 +666,7 @@ function prompt(){P.textContent=cwd+'>';I.placeholder='Commande…';renderTTY()}
 function resolve(name){if(!name)return cwd;name=name.replaceAll('/','\\');if(/^K:\\/i.test(name))return name.toUpperCase();if(name==='..'){let p=cwd.split('\\');if(p.length>1)p.pop();return p.join('\\')}if(name==='.')return cwd;return (cwd+'\\'+name).toUpperCase()}
 function setTTY(on){
  tty=on;document.body.classList.toggle('tty',on);ttySide.textContent=on?'ON':'OFF';ttyBuffer='';renderTTY();
- if(on){I.blur();print('KYRONEXT™ TTY MODE — 80x25 EMULATION\\nTerminal direct actif. Tape KINTERFACE pour revenir.');showKb()}
+ if(on){I.blur();print('KYRONEXT™ TTY MODE — 80x25 EMULATION\nTerminal direct actif. Tape KINTERFACE pour revenir.');showKb()}
  else{hideKb();print('Retour interface Kyronext.');I.focus()}
  sfx.ok()
 }
@@ -458,15 +719,15 @@ function kbPress(k){
 }
 
 function help(){
- print('KYRONEXT™ K-COMMAND — AIDE ÉTENDUE\nToutes les commandes Kyronext commencent par K.\n\nSYSTÈME / FICHIERS\n KAIDE, KHELP, KVER, KVERSION, KCLS, KEFFACER\n KDIR [chemin], KTREE, KCD [dossier], KCD.., KPWD\n KTYPE <fichier>, KEDIT <fichier>, KCODE <fichier>\n KCOPY <src> <dst>, KMOVE <src> <dst>, KDEL <fichier>, KREN <src> <dst>\n KMD <nom>, KRD <nom>, KTOUCH <fichier>\n KWRITE <fichier> <texte>, KAPPEND <fichier> <texte>\n KFIND <texte> <fichier>, KFC <f1> <f2>, KMORE <fichier>\n KHEAD <fichier>, KTAIL <fichier>, KATTRIB <fichier>, KFILES\n KDATE, KHEURE, KMEM, KCHKDSK, KSET, KPATH, KHISTORY, KWHOAMI\n KXMEM, KXMEM <Ko>, KXMEM /MAX, KXMEM /RESET\n KTTY, KINTERFACE, KGUI, KEXIT\n\nDIAGNOSTIC / MATÉRIEL\n KMSD, KINFO, KSYSINFO, KBIOS, KDRIVERS, KDEVICES\n KIRQ, KPORTS, KUPTIME, KTASKS, KLOG\n KCPU, KGPU, KRAM, KCUDA, KCORE, KIA, KLLM\n KDIAGNOSTIC, KTEST, KSYSTEME, KSTATUS, KETAT\n\nRÉSEAU\n KIPCONFIG, KIFCONFIG, KPING <hôte>, KARP, KNETSTAT\n KRESEAU, KXLINK, KSSH, KDNS\n\nK.I.T.T. / VÉHICULE\n KSTT, KTTS, KVOIX, KMICRO, KAUDIO, KSON TEST\n KSCANNER, KVIGILANCE, KCAMERA, KVEHICULE, KRELAIS\n KCAPTEURS, KAUTODIAG, KMODE NORMAL, KMODE POURSUITE, KMODE SHOW\n KRADIO, KMUSIQUE, KCD, KVIDEO\n\nJEUX / PROGRAMMES\n KJEUX, KPACMAN, KTETRIS, KSPACEKR, KTRONKR\n KCOMPILE <source.KXA>, KRUN <programme.KXE>\n KDEMO — démonstration complète à vitesse humaine\n KDEMO STOP — arrête la démonstration\n\nOUTILS\n KMAN <commande>, KABOUT, KVOLUME <0-100>, KCOLOR RED|AMBER|GREEN\n KBOOTLOG, KPARLE <texte>, KREBOOT, KSHUTDOWN');
+ print('KYRONEXT™ K-COMMAND — AIDE ÉTENDUE\nToutes les commandes Kyronext commencent par K.\n\nSYSTÈME / FICHIERS\n KAIDE, KHELP, KVER, KVERSION, KCLS, KEFFACER\n KDIR [chemin], KTREE, KCD [dossier], KCD.., KPWD\n KTYPE <fichier>, KEDIT <fichier>, KCODE <fichier>\n KCOPY <src> <dst>, KMOVE <src> <dst>, KDEL <fichier>, KREN <src> <dst>\n KMD <nom>, KRD <nom>, KTOUCH <fichier>\n KWRITE <fichier> <texte>, KAPPEND <fichier> <texte>\n KFIND <texte> <fichier>, KFC <f1> <f2>, KMORE <fichier>\n KHEAD <fichier>, KTAIL <fichier>, KATTRIB <fichier>, KFILES\n KDATE, KHEURE, KMEM, KCHKDSK, KSET, KPATH, KHISTORY, KWHOAMI\n KXMEM, KXMEM <Ko>, KXMEM /MAX, KXMEM /RESET\n KTTY, KINTERFACE, KGUI, KEXIT\n\nDIAGNOSTIC / MATÉRIEL\n KMSD, KINFO, KSYSINFO, KBIOS, KDRIVERS, KDEVICES\n KIRQ, KPORTS, KUPTIME, KTASKS, KLOG\n KCPU, KGPU, KRAM, KCUDA, KCORE, KIA, KLLM\n KDIAGNOSTIC, KTEST, KSYSTEME, KSTATUS, KETAT\n\nRÉSEAU\n KIPCONFIG, KIFCONFIG, KPING <hôte>, KARP, KNETSTAT\n KRESEAU, KXLINK, KSSH, KDNS\n\nK.I.T.T. / VÉHICULE\n KSTT, KTTS, KVOIX, KMICRO, KAUDIO, KSON TEST\n KSCANNER, KVIGILANCE, KCAMERA, KVEHICULE, KRELAIS\n KCAPTEURS, KAUTODIAG, KMODE NORMAL, KMODE POURSUITE, KMODE SHOW\n KRADIO, KMUSIQUE, KCD, KVIDEO\n\nJEUX / PROGRAMMES\n KJEUX, KPACMAN, KTETRIS, KSPACEKR, KTRONKR\n KCOMPILE <source.KXA>, KRUN <programme.KXE>\n KDEMO — démonstration complète à vitesse humaine\n KDEMO STOP — arrête la démonstration\n\nPROGRAMMES SYSTÈME CENTRAL (interactifs)\n KCENTRAL — schéma animé du microprocesseur + tests mémoire/bus/cœur\n KRADAR — scanner radar, balayage et contacts fictifs\n KMISSION — dossiers de mission K:\\KYRONEXT\\MISSIONS et progression\n KCOMLINK — liaison F.L.A.G., transmission animée et annulation\n\nFICHIERS SYSTÈME\n CENTRAL · FLAG · MISSIONS · COMMUNICATION · DIAGNOSTIC · ARCHIVES\n KDIR / KCD / KTYPE pour naviguer, KMAN pour les pages d\'aide\n\nOUTILS\n KMAN <commande>, KABOUT, KVOLUME <0-100>, KCOLOR RED|AMBER|GREEN\n KBOOTLOG, KPARLE <texte>, KREBOOT, KSHUTDOWN');
  sfx.ok()
 }
 function dirCmd(arg){
  let p=arg?resolve(arg):cwd,e=fs[p];if(!e){print('Chemin introuvable.');sfx.err();return}
  if(e.type==='file'){print((arg||p)+'    '+e.text.length+' octets');sfx.ok();return}
- print(' Volume dans le lecteur K : KYRONEXT\\n Répertoire de '+p+'\\n');
+ print(' Volume dans le lecteur K : KYRONEXT\n Répertoire de '+p+'\n');
  (e.children||[]).forEach(n=>{let q=p+'\\'+n,o=fs[q];print((o&&o.type==='dir'?'<DIR>       ':'            ')+n)});
- print('\\n'+(e.children||[]).length+' élément(s).');sfx.ok()
+ print('\n'+(e.children||[]).length+' élément(s).');sfx.ok()
 }
 function tree(){let e=fs[cwd];if(!e||e.type!=='dir')return;print(cwd);(e.children||[]).forEach((n,i)=>print((i===e.children.length-1?'└── ':'├── ')+n));sfx.ok()}
 function edit(path){
@@ -514,6 +775,7 @@ function editorTextInsert(text){
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 const DH=document.getElementById('demoHud'),DS=document.getElementById('demoStep'),DP=document.getElementById('demoProgress'),DL=document.getElementById('demoLabel');
 function demoHud(step,total,label){
+ if(demoStop)return;
  DH.classList.add('show');DS.textContent=step+'/'+total;DP.style.width=Math.round((step/total)*100)+'%';DL.textContent=label
 }
 function hideDemoHud(){DH.classList.remove('show')}
@@ -534,9 +796,9 @@ async function demoEditor(){
  await demoCommand('KCODE DEMO\\HELLO.KXA',500);
  const ea=document.getElementById('editarea');
  ea.value='';ea.setSelectionRange(0,0);updateEditorUI();
- const src='; KYRONEXT DEMO PROGRAM\\nKECHO BONJOUR DEPUIS KYRONEXT\\nKMEM\\nKVER';
- await humanType('editor',src,55);
- await sleep(1200);document.getElementById('saveEdit').click();await sleep(1100)
+ const src='; KYRONEXT DEMO PROGRAM\nKECHO BONJOUR DEPUIS KYRONEXT\nKMEM\nKVER';
+ await humanType('editor',src,55);if(demoStop)return;
+ await sleep(1200);if(demoStop)return;document.getElementById('saveEdit').click();await sleep(1100)
 }
 async function demoKMSD(){
  if(demoStop)return;
@@ -560,8 +822,8 @@ async function runDemo(){
  demoRunning=true;demoStop=false;
  if(!tty)setTTY(true);
  hideKb();
- const total=10;
- print('\\n╔════════════════════════════════════════════╗\\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\\n║  Mode lecture confortable — Created by Manix      ║\\n╚════════════════════════════════════════════╝\\n');
+ const total=12;
+ print('\n╔════════════════════════════════════════════╗\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\n║  Mode lecture confortable — Created by Manix      ║\n╚════════════════════════════════════════════╝\n');
  try{
   demoHud(1,total,'Identité et version du système');
   await demoCommand('KVER',600);await demoCommand('KABOUT',500);
@@ -589,29 +851,49 @@ async function runDemo(){
   demoHud(8,total,'Réseau et cœur Kyronext');
   await demoCommand('KRESEAU',450);await demoCommand('KIPCONFIG',450);await demoCommand('KCORE',450);await demoCommand('KCUDA',400);
 
-  demoHud(9,total,'Audio et jeux exécutables');
+  demoHud(9,total,'Dossiers du système central : CENTRAL / FLAG / MISSIONS');
+  await demoCommand('KTYPE CENTRAL\\SCHEMA.KXT',380);await demoCommand('KTYPE MISSIONS\\INDEX.KXT',360);
+  await demoCommand('KTYPE FLAG\\IDENTITE.KXT',360);await demoCommand('KTYPE COMMUNICATION\\PROTOCOLE.KXT',340);
+  await demoCommand('KTYPE DIAGNOSTIC\\SELFTEST.KXL',340);await demoCommand('KTYPE ARCHIVES\\PROTO.KXT',340);
+
+  demoHud(10,total,'Programmes interactifs : KCENTRAL / KRADAR / KMISSION / KCOMLINK');
+  await demoKapps();
+
+  demoHud(11,total,'Audio et jeux exécutables');
   await demoCommand('KSON TEST',500);
   await demoGame('PACMAN',[['right',600],['down',450]]);
   await demoGame('TETRIS',[['action',120],['left',280],['down',650]]);
   await demoGame('SPACEKR',[['action',120],['right',520],['action',120],['left',420]]);
   await demoGame('TRONKR',[['down',120],['right',120],['up',120]]);
 
-  demoHud(10,total,'Résumé et nettoyage');
+  demoHud(12,total,'Résumé et nettoyage');
   await demoCommand('KCHKDSK',500);await demoCommand('KBOOTLOG',650);
   await demoCommand('KDEL DEMO\\NOTES.KXT',250);await demoCommand('KDEL DEMO\\HELLO.KXA',250);await demoCommand('KDEL DEMO\\HELLO.KXE',250);await demoCommand('KRD DEMO',300);
   if(!demoStop){
-   print('\\n╔════════════════════════════════════════════╗\\n║  DÉMONSTRATION TERMINÉE                   ║\\n║  KAIDE = toutes les commandes             ║\\n║  KDEMO = relancer la démonstration        ║\\n╚════════════════════════════════════════════╝');
+   print('\n╔════════════════════════════════════════════╗\n║  DÉMONSTRATION TERMINÉE                   ║\n║  KAIDE = toutes les commandes             ║\n║  KDEMO = relancer la démonstration        ║\n╚════════════════════════════════════════════╝');
    sfx.scan();await sleep(900)
   }
  }catch(e){
-  print('\\nKDEMO : erreur interne — '+(e&&e.message?e.message:String(e)));sfx.err()
+  print('\nKDEMO : erreur interne — '+(e&&e.message?e.message:String(e)));sfx.err()
  }finally{
   if(game)closeGame();
+  if(kappOpen())closeKapps();
   if(KMSDO&&KMSDO.classList.contains('show'))closeKMSD();
+  if(KIO&&KIO.classList.contains('show'))closeKinfo();
   const ed=document.getElementById('editor');if(ed&&ed.classList.contains('show'))ed.classList.remove('show');
-  if(demoStop)print('\\nDémonstration interrompue.');
+  if(demoStop)print('\nDémonstration interrompue.');
   demoRunning=false;demoStop=false;hideDemoHud();renderTTY();showKb()
  }
+}
+function requestDemoStop(){
+ if(!demoRunning)return;
+ demoStop=true;
+ if(game)closeGame();
+ if(kappOpen())closeKapps();
+ if(KMSDO?.classList.contains('show'))closeKMSD();
+ if(KIO?.classList.contains('show'))closeKinfo();
+ document.getElementById('editor')?.classList.remove('show');
+ hideDemoHud();DL.textContent='Arrêt demandé…';sfx.err()
 }
 function command(raw){
  let shown=raw.trim();if(!shown)return;hist.push(shown);histIndex=hist.length;print(cwd+'>'+shown);
@@ -621,20 +903,20 @@ function command(raw){
  let upper=norm(line),parts=line.trim().split(/\s+/),cmd=norm(parts.shift()||''),args=parts.join(' ');
  if(['AIDE','HELP','?'].includes(cmd)){help();return}
  if(['CLS','EFFACER'].includes(cmd)){H.textContent='';return}
- if(['VER','VERSION'].includes(cmd)){print('KYRONEXT™ OS [Version 1.6.1982]\\nKyronext Systems™ — K.I.T.T. Environment\\nCreated by Manix\\nCopyright © 2026 Kyronext Systems™');sfx.ok();return}
- if(cmd==='ABOUT'){print('KYRONEXT™ OS\\nK.I.T.T. Terminal Operating Environment\\nVersion 1.6.1982\\nCreated by Manix\\nCopyright © 2026 Kyronext Systems™');sfx.ok();return}
- if(['MSD','INFO','SYSINFO'].includes(cmd)){openKMSD('computer');sfx.scan();return}
+ if(['VER','VERSION'].includes(cmd)){print('KYRONEXT™ OS [Version 1.6.1982]\nKyronext Systems™ — K.I.T.T. Environment\nCreated by Manix\nCopyright © 2026 Kyronext Systems™');sfx.ok();return}
+ if(cmd==='ABOUT'){print('KYRONEXT™ OS\nK.I.T.T. Terminal Operating Environment\nVersion 1.6.1982\nCreated by Manix\nCopyright © 2026 Kyronext Systems™');sfx.ok();return}
+ if(cmd==='MSD'){openKMSD('computer');sfx.scan();return}
  if(cmd==='INFO'||cmd==='SYSINFO'){print('Chargement KINFO.KXE...');sfx.ok();openKinfo();return}
- if(cmd==='MAN'){let q=norm(args).replace(/^K/,'');let d={'DIR':'KDIR [chemin] — affiche un répertoire.','MD':'KMD <nom> — crée un répertoire.','RD':'KRD <nom> — supprime un répertoire vide.','DEL':'KDEL <fichier> — supprime un fichier.','EDIT':'KEDIT <fichier> — éditeur texte/code Kyronext.','XMEM':'KXMEM <Ko> — règle la mémoire étendue.','TTY':'KTTY — terminal direct 80x25.','RUN':'KRUN <jeu.KXE> — lance un exécutable.','VOLUME':'KVOLUME <0-100> — règle le volume.','MSD':'KMSD — ouvre Kyronext Machine/System Diagnostics, inspiré de MSD.EXE.','INFO':'KINFO — alias de KMSD.','SYSINFO':'KSYSINFO — alias de KMSD.','DEMO':'KDEMO — démonstration automatique des fonctions Kyronext à vitesse humaine.','COMPILE':'KCOMPILE <source.KXA> — compile un script Kyronext en .KXE.','CODE':'KCODE <fichier.KXA> — ouvre l’éditeur de code Kyronext.','INFO':'KINFO — ouvre Kyronext Information & Diagnostics, inspiré des utilitaires de diagnostic DOS.'};if(!q){print('Syntaxe : KMAN <commande>');sfx.err();return}print(d[q]||('Pas de page KMAN pour K'+q+'.'));sfx.ok();return}
- if(cmd==='VOLUME'){let n=parseInt(args,10);if(!Number.isFinite(n)){print('Volume Kyronext : '+volumePct+'%\\nSyntaxe : KVOLUME <0-100>');sfx.ok();return}volumePct=Math.max(0,Math.min(100,n));if(master)master.gain.value=(volumePct/100)*0.6;print('Volume Kyronext réglé à '+volumePct+'%.');sfx.ok();return}
- if(cmd==='BOOTLOG'){print('KNIGHT INDUSTRIES 2000 BOOT ROM V1.6 - POST PASSED\nMEMORY TEST : 640 Ko OK\nKXMEM EXTENDED MEMORY : '+kxMemKB+' Ko '+(kxMemEnabled?'OK':'OFF')+'\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\n\n[KXD] MEMORY.KXD\n[KXD] KXMEM.KXD\n[KXD] DISPLAY.KXD\n[KXD] AUDIO.KXD\n[KXD] INPUT.KXD\n[KXD] STORAGE.KXD\n[KXD] CDROM.KXD\n[KXD] NETLINK.KXD\n[KXE] KXEDIT.KXE\n[KXE] KMSD.KXE\n[KXE] KCOMPILER.KXE\n[KXE] KDEMO.KXE\n[KXE] KINFO.KXE\n[KXM] CUDA.KXM\n[KXM] RELAIS.KXM\n[KXS] KITTCORE.KXS\n[KXS] VOICE.KXS\n[KXA] STARTUP.KXA\n\nTous les modules : OK');sfx.scan();return}
+ if(cmd==='MAN'){let q=norm(args).replace(/^K/,'');let d={'DIR':'KDIR [chemin] — affiche un répertoire.','MD':'KMD <nom> — crée un répertoire.','RD':'KRD <nom> — supprime un répertoire vide.','DEL':'KDEL <fichier> — supprime un fichier.','EDIT':'KEDIT <fichier> — éditeur texte/code Kyronext.','XMEM':'KXMEM <Ko> — règle la mémoire étendue.','TTY':'KTTY — terminal direct 80x25.','RUN':'KRUN <jeu.KXE> — lance un exécutable.','VOLUME':'KVOLUME <0-100> — règle le volume.','MSD':'KMSD — ouvre Kyronext Machine/System Diagnostics, inspiré de MSD.EXE.','INFO':'KINFO — alias de KMSD.','SYSINFO':'KSYSINFO — alias de KMSD.','DEMO':'KDEMO — démonstration automatique des fonctions Kyronext à vitesse humaine.','COMPILE':'KCOMPILE <source.KXA> — compile un script Kyronext en .KXE.','CENTRAL':'KCENTRAL — schéma animé du microprocesseur central + tests mémoire/bus/cœur.','RADAR':'KRADAR — scanner radar interactif, contacts fictifs [SIMULATION].','MISSION':'KMISSION — dossiers de mission (K:\\KYRONEXT\\MISSIONS) et progression.','COMLINK':'KCOMLINK — liaison F.L.A.G., transmission animée et annulation.','CODE':'KCODE <fichier.KXA> — ouvre l’éditeur de code Kyronext.','INFO':'KINFO — ouvre Kyronext Information & Diagnostics, inspiré des utilitaires de diagnostic DOS.'};if(!q){print('Syntaxe : KMAN <commande>');sfx.err();return}print(d[q]||('Pas de page KMAN pour K'+q+'.'));sfx.ok();return}
+ if(cmd==='VOLUME'){let n=parseInt(args,10);if(!Number.isFinite(n)){print('Volume Kyronext : '+volumePct+'%\nSyntaxe : KVOLUME <0-100>');sfx.ok();return}volumePct=Math.max(0,Math.min(100,n));if(master)master.gain.value=(volumePct/100)*0.6;print('Volume Kyronext réglé à '+volumePct+'%.');sfx.ok();return}
+ if(cmd==='BOOTLOG'){print('KNIGHT INDUSTRIES 2000 BOOT ROM V1.6 - POST PASSED\nMEMORY TEST : 640 Ko OK\nKXMEM EXTENDED MEMORY : '+kxMemKB+' Ko '+(kxMemEnabled?'OK':'OFF')+'\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\n\n[KXD] MEMORY.KXD\n[KXD] KXMEM.KXD\n[KXD] DISPLAY.KXD\n[KXD] AUDIO.KXD\n[KXD] INPUT.KXD\n[KXD] STORAGE.KXD\n[KXD] CDROM.KXD\n[KXD] NETLINK.KXD\n[KXE] KXEDIT.KXE\n[KXE] KMSD.KXE\n[KXE] KCOMPILER.KXE\n[KXE] KDEMO.KXE\n[KXE] KCENTRAL.KXE\n[KXE] KRADAR.KXE\n[KXE] KMISSION.KXE\n[KXE] KCOMLINK.KXE\n[KXE] KINFO.KXE\n[KXM] CUDA.KXM\n[KXM] RELAIS.KXM\n[KXS] KITTCORE.KXS\n[KXS] VOICE.KXS\n[KXA] STARTUP.KXA\n\nTous les modules : OK');sfx.scan();return}
  if(cmd==='RUN'){
   let raw=args.trim(),e=norm(raw).replace(/^K/,'').replace(/\.KXE$/,'');let m={PACMAN:'PACMAN',TETRIS:'TETRIS',SPACEKR:'SPACEKR',TRONKR:'TRONKR'};
   if(m[e]){print('KRUN : chargement '+e+'.KXE...');sfx.ok();launchGame(m[e]);return}
   let p=resolve(raw);if(fs[p]&&fs[p].type==='file'&&p.endsWith('.KXE')){runScriptFile(raw);return}
   print('Exécutable introuvable. Exemple : KRUN PACMAN.KXE ou KRUN PROGRAMME.KXE');sfx.err();return
  }
- if(cmd==='DEMO'){if(norm(args)==='STOP'){demoStop=true;print('Arrêt de KDEMO demandé.');sfx.ok()}else runDemo();return}
+ if(cmd==='DEMO'){if(norm(args)==='STOP'){requestDemoStop();print('Arrêt de KDEMO demandé.');sfx.ok()}else runDemo();return}
  if(cmd==='COMPILE'){if(args)compileKXA(args);else{print('Syntaxe : KCOMPILE <source.KXA>');sfx.err()}return}
  if(cmd==='TOUCH'){if(!args){print('Syntaxe : KTOUCH <fichier>');sfx.err();return}if(addFile(args,'')){print('Fichier créé : '+resolve(args));sfx.ok()}else{print('Chemin invalide.');sfx.err()}return}
  if(cmd==='WRITE'||cmd==='APPEND'){
@@ -676,10 +958,10 @@ function command(raw){
  if(cmd==='ECHO'){print(line.replace(/^echo\s*/i,''));sfx.ok();return}
  if(cmd==='DATE'){print(new Date().toLocaleDateString('fr-BE'));sfx.ok();return}
  if(['HEURE','TIME'].includes(cmd)){print(new Date().toLocaleTimeString('fr-BE'));sfx.ok();return}
- if(cmd==='MEM'){print('Mémoire conventionnelle Kyronext : 640 Ko\\nKXMEM étendue : '+kxMemKB+' Ko '+(kxMemEnabled?'[ACTIVE]':'[OFF]')+'\\nMémoire haute KX-HMA : '+(kxMemEnabled?'64 Ko':'0 Ko')+' [SIMULATION]');sfx.ok();return}
+ if(cmd==='MEM'){print('Mémoire conventionnelle Kyronext : 640 Ko\nKXMEM étendue : '+kxMemKB+' Ko '+(kxMemEnabled?'[ACTIVE]':'[OFF]')+'\nMémoire haute KX-HMA : '+(kxMemEnabled?'64 Ko':'0 Ko')+' [SIMULATION]');sfx.ok();return}
  if(cmd==='KXMEM'){
   let a=norm(args);
-  if(!a||a==='/STATUS'){print('KXMEM.KXD — KYRONEXT EXTENDED MEMORY MANAGER\\nÉtat : '+(kxMemEnabled?'ACTIF':'ARRÊT')+'\\nMémoire étendue : '+kxMemKB+' Ko\\nHMA Kyronext : '+(kxMemEnabled?'64 Ko':'0 Ko')+'\\nSyntaxe : KXMEM <Ko> | /MAX | /RESET | /OFF | /ON');sfx.ok();return}
+  if(!a||a==='/STATUS'){print('KXMEM.KXD — KYRONEXT EXTENDED MEMORY MANAGER\nÉtat : '+(kxMemEnabled?'ACTIF':'ARRÊT')+'\nMémoire étendue : '+kxMemKB+' Ko\nHMA Kyronext : '+(kxMemEnabled?'64 Ko':'0 Ko')+'\nSyntaxe : KXMEM <Ko> | /MAX | /RESET | /OFF | /ON');sfx.ok();return}
   if(a==='/MAX'){kxMemKB=262144;kxMemEnabled=true;print('KXMEM : mémoire étendue portée à '+kxMemKB+' Ko [SIMULATION].');sfx.scan();return}
   if(a==='/RESET'){kxMemKB=32768;kxMemEnabled=true;print('KXMEM : configuration restaurée à 32768 Ko.');sfx.ok();return}
   if(a==='/OFF'){kxMemEnabled=false;print('KXMEM : gestion mémoire étendue désactivée.');sfx.ok();return}
@@ -688,23 +970,23 @@ function command(raw){
   if(Number.isFinite(n)&&n>=1024&&n<=262144){kxMemKB=n;kxMemEnabled=true;print('KXMEM : '+kxMemKB+' Ko de mémoire étendue disponibles [SIMULATION].');sfx.scan();return}
   print('Valeur invalide. Plage : 1024 à 262144 Ko.');sfx.err();return
  }
- if(cmd==='CHKDSK'){print('Analyse du lecteur K:...\\n0 secteur défectueux.\\nSystème de fichiers KX-FS : OK [SIMULATION]');sfx.scan();return}
+ if(cmd==='CHKDSK'){print('Analyse du lecteur K:...\n0 secteur défectueux.\nSystème de fichiers KX-FS : OK [SIMULATION]');sfx.scan();return}
  if(['WHOAMI','IDENTITE'].includes(cmd)){print('K.I.T.T. / KYRONEXT SYSTEM');sfx.ok();return}
- if(['SET','ENV'].includes(cmd)){print('LANG=FR\\nSYSTEM=KYRONEXT\\nMODE='+mode+'\\nTTY='+(tty?'ON':'OFF')+'\\nCORE=SIMULATION');sfx.ok();return}
+ if(['SET','ENV'].includes(cmd)){print('LANG=FR\nSYSTEM=KYRONEXT\nMODE='+mode+'\nTTY='+(tty?'ON':'OFF')+'\nCORE=SIMULATION');sfx.ok();return}
  if(cmd==='PATH'){print('K:\\KYRONEXT;K:\\KYRONEXT\\SYSTEME;K:\\KYRONEXT\\KITT');sfx.ok();return}
  if(cmd==='HISTORY'){hist.forEach((x,i)=>print(String(i+1).padStart(3,' ')+'  '+x));sfx.ok();return}
  if(cmd==='TTY'||upper==='MODE TTY'){setTTY(true);return}
  if(['INTERFACE','GUI','EXIT'].includes(cmd)){setTTY(false);return}
- if(['IPCONFIG','IFCONFIG','RESEAU','KXLINK'].includes(cmd)){print('KX-LINK ADAPTER\\nIPv4........ 192.168.129.10 [SIMULATION]\\nCORE........ 192.168.129.24 [SIMULATION]\\nMASQUE...... 255.255.255.0\\nÉTAT........ CONNECTÉ');sfx.ok();return}
- if(cmd==='PING'){print('Envoi vers '+(parts[0]||'CORE')+' : réponse 2 ms\\n4 envoyés, 4 reçus, 0 perdu [SIMULATION]');sfx.ok();return}
+ if(['IPCONFIG','IFCONFIG','RESEAU','KXLINK'].includes(cmd)){print('KX-LINK ADAPTER\nIPv4........ 192.168.129.10 [SIMULATION]\nCORE........ 192.168.129.24 [SIMULATION]\nMASQUE...... 255.255.255.0\nÉTAT........ CONNECTÉ');sfx.ok();return}
+ if(cmd==='PING'){print('Envoi vers '+(parts[0]||'CORE')+' : réponse 2 ms\n4 envoyés, 4 reçus, 0 perdu [SIMULATION]');sfx.ok();return}
  if(cmd==='ARP'){print('192.168.129.24   CORE-KYRONEXT   DYNAMIQUE [SIMULATION]');sfx.ok();return}
- if(cmd==='NETSTAT'){print('TCP  KX-LINK:ACTIVE  ESTABLISHED [SIMULATION]\\nUDP  VOICE:READY     LISTENING');sfx.ok();return}
+ if(cmd==='NETSTAT'){print('TCP  KX-LINK:ACTIVE  ESTABLISHED [SIMULATION]\nUDP  VOICE:READY     LISTENING');sfx.ok();return}
  if(cmd==='SSH'){print('Client SSH disponible. Connexion réelle désactivée dans ce prototype.');sfx.ok();return}
  if(cmd==='DNS'){print('Résolveur Kyronext : PRÊT [SIMULATION]');sfx.ok();return}
 
- if(['SYSTEME','STATUS','ETAT'].includes(cmd)){print('KYRONEXT OS ACTIF\\nMODE='+mode+'\\nTTY='+(tty?'ON':'OFF')+'\\nAUDIO='+(ctx?ctx.state.toUpperCase():'NON INITIALISÉ')+'\\nCORE IA=PRÊT [SIMULATION]');sfx.ok();return}
- if(['DIAGNOSTIC','TEST'].includes(cmd)){print('DIAGNOSTIC COMPLET\\nCPU........ OK\\nGPU........ OK\\nMÉMOIRE.... OK\\nAUDIO...... '+(ctx?ctx.state.toUpperCase():'NON INITIALISÉ')+'\\nRÉSEAU..... OK [SIMULATION]\\nCORE IA.... OK [SIMULATION]\\nVIGILANCE.. VEILLE');sfx.scan();return}
- if(['CORE','IA','LLM'].includes(cmd)){print('KYRONEXT CORE IA\\nÉtat : PRÊT [SIMULATION]\\nLLM : ACTIF\\nPipeline : STT > LLM > TTS');sfx.ok();return}
+ if(['SYSTEME','STATUS','ETAT'].includes(cmd)){print('KYRONEXT OS ACTIF\nMODE='+mode+'\nTTY='+(tty?'ON':'OFF')+'\nAUDIO='+(ctx?ctx.state.toUpperCase():'NON INITIALISÉ')+'\nCORE IA=PRÊT [SIMULATION]');sfx.ok();return}
+ if(['DIAGNOSTIC','TEST'].includes(cmd)){print('DIAGNOSTIC COMPLET\nCPU........ OK\nGPU........ OK\nMÉMOIRE.... OK\nAUDIO...... '+(ctx?ctx.state.toUpperCase():'NON INITIALISÉ')+'\nRÉSEAU..... OK [SIMULATION]\nCORE IA.... OK [SIMULATION]\nVIGILANCE.. VEILLE');sfx.scan();return}
+ if(['CORE','IA','LLM'].includes(cmd)){print('KYRONEXT CORE IA\nÉtat : PRÊT [SIMULATION]\nLLM : ACTIF\nPipeline : STT > LLM > TTS');sfx.ok();return}
  if(cmd==='CUDA'){print('CUDA ACCELERATION MODULE : ACTIVE [SIMULATION]');sfx.ok();return}
  if(cmd==='GPU'){print('GPU : 34% / TEMP 48°C [SIMULATION]');sfx.ok();return}
  if(cmd==='CPU'){print('CPU : 18% / TEMP 43°C [SIMULATION]');sfx.ok();return}
@@ -713,7 +995,7 @@ function command(raw){
  if(['TTS','VOIX'].includes(cmd)){print('TTS / VOIX K.I.T.T. : PRÊT [SIMULATION]');sfx.ok();return}
  if(cmd==='AUDIO'){print('AUDIO ENGINE : '+(ensureAudio()?'RUNNING':'ERREUR'));sfx.ok();return}
  if(upper==='SON TEST'){print('TEST AUDIO KYRONEXT : 4 BIPS');sfx.boot();return}
- if(cmd==='SCANNER'){print('[■■□□□□□□□□] 20%\\n[■■■■■□□□□□] 50%\\n[■■■■■■■■□□] 80%\\n[■■■■■■■■■■] 100%\\nAUCUNE ANOMALIE.');sfx.scan();return}
+ if(cmd==='SCANNER'){print('[■■□□□□□□□□] 20%\n[■■■■■□□□□□] 50%\n[■■■■■■■■□□] 80%\n[■■■■■■■■■■] 100%\nAUCUNE ANOMALIE.');sfx.scan();return}
  if(['VIGILANCE','CAMERA'].includes(cmd)){print('VIGILANCE : CAMÉRA EN VEILLE / DÉTECTION ACTIVE [SIMULATION]');sfx.scan();return}
  if(cmd==='VEHICULE'){print('K2000 : MOTEUR HORS LIGNE / VIGILANCE VEILLE / AUTOCRUISE VEILLE [SIMULATION]');sfx.ok();return}
  if(cmd==='RELAIS'){print('RELAIS VÉHICULE : MODE DÉMONSTRATION [SIMULATION]');sfx.ok();return}
@@ -727,6 +1009,10 @@ function command(raw){
  if(cmd==='CD'){print('KYRONEXT CD-ROM : LECTEUR PRÊT / AUCUN DISQUE [SIMULATION]');sfx.ok();return}
  if(cmd==='VIDEO'){print('MODULE VIDÉO : PRÊT [SIMULATION]');sfx.ok();return}
  if(cmd==='JEUX'){print('JEUX EXÉCUTABLES KYRONEXT™\nPACMAN.KXE   — tape KPACMAN\nTETRIS.KXE   — tape KTETRIS\nSPACEKR.KXE  — tape KSPACEKR\nTRONKR.KXE   — tape KTRONKR\n\nTous les jeux sont réellement jouables.');sfx.ok();return}
+ if(cmd==='CENTRAL'){print('LANCEMENT KCENTRAL.KXE — microprocesseur central [SIMULATION]');sfx.scan();openKapps('central');return}
+ if(cmd==='RADAR'){print('LANCEMENT KRADAR.KXE — scanner radar [SIMULATION]');sfx.scan();openKapps('radar');return}
+ if(cmd==='MISSION'){print('LANCEMENT KMISSION.KXE — dossiers de mission.');sfx.ok();openKapps('mission');return}
+ if(cmd==='COMLINK'){print('LANCEMENT KCOMLINK.KXE — liaison F.L.A.G. canal SEMAPHORE [SIMULATION]');sfx.scan();openKapps('comlink');return}
  if(cmd==='PACMAN'){print('LANCEMENT PACMAN.KXE...');sfx.ok();launchGame('PACMAN');return}
  if(cmd==='TETRIS'){print('LANCEMENT TETRIS.KXE...');sfx.ok();launchGame('TETRIS');return}
  if(cmd==='SPACEKR'){print('LANCEMENT SPACEKR.KXE...');sfx.ok();launchGame('SPACEKR');return}
@@ -1052,6 +1338,256 @@ document.querySelectorAll('[data-gk]').forEach(b=>{const k=b.dataset.gk;b.addEve
 document.addEventListener('keydown',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(e.key==='Escape'){e.preventDefault();closeGame();return}if(m[e.key]){e.preventDefault();gameAction(m[e.key],true)}});
 document.addEventListener('keyup',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(m[e.key])gameAction(m[e.key],false)});
 
+
+/* ── ETAPE FORTE BOOT : MISE SOUS TENSION DU MICROPROCESSEUR (SVG ANIME) ── */
+const SVGNS='http://www.w3.org/2000/svg';
+async function coreStageSequence(){
+ const CS=document.getElementById('coreStage'),glow=document.getElementById('cstGlow'),coreG=document.getElementById('cstCoreG'),pulse=document.getElementById('cstPulse'),load=document.getElementById('cstLoad'),status=document.getElementById('cstStatus');
+ const circs=Array.from(document.querySelectorAll('#cstCircG .cstCirc'));
+ const paths=['cstPT','cstPA','cstPB','cstPM'].map(id=>document.getElementById(id)).filter(Boolean);
+ CS.classList.add('show');CS.classList.remove('fade');
+ status.textContent='ALIMENTATION : ARRIVÉE ÉNERGIE';
+ for(let i=1;i<=12;i++){glow.setAttribute('opacity',String(i/14));glow.setAttribute('r',String(9+i));tone(150+i*16,.03,'sine',.2);await sleep(80)}
+ pulse.innerHTML='';const dots=[];
+ paths.forEach((p,i)=>{const c=document.createElementNS(SVGNS,'circle');c.setAttribute('r','5');c.setAttribute('fill',i===1?'#ffb53f':'#ff3b2f');c.setAttribute('opacity','0');pulse.appendChild(c);dots.push({p,c,len:(p.getTotalLength?p.getTotalLength():1),t:-(i*0.24)})});
+ let run=true,raf=0;
+ const step=()=>{if(!run)return;dots.forEach(d=>{d.t+=0.014;if(d.t>1)d.t-=1.35;if(d.t>=0&&d.t<=1&&d.p.getPointAtLength){const pt=d.p.getPointAtLength(d.len*d.t);d.c.setAttribute('cx',pt.x);d.c.setAttribute('cy',pt.y);d.c.setAttribute('opacity','0.95')}});coreG.setAttribute('opacity',String(0.12+0.34*(0.5+0.5*Math.sin(performance.now()/150))));raf=requestAnimationFrame(step)};
+ raf=requestAnimationFrame(step);
+ for(let n=0;n<=100;n+=5){if(n%25===0)sfx.tick();load.textContent='CHARGEMENT '+n+'%';
+  const k=Math.min(circs.length-1,Math.floor(n/9));
+  if(circs[k]&&!circs[k].classList.contains('lit'))circs[k].classList.add('lit');
+  status.textContent=n<35?'ALIMENTATION : ARRIVÉE ÉNERGIE':(n<70?'BUS DONNÉES : FLUX ÉTABLI':(n<100?'MÉMOIRE : VERROUILLÉE':'CŒUR CENTRAL : EN LIGNE'));
+  await sleep(110)}
+ run=false;cancelAnimationFrame(raf);pulse.innerHTML='';glow.setAttribute('opacity','0.9');
+ status.textContent='KITT CENTRAL CORE : EN LIGNE';load.textContent='CHARGEMENT 100%';sfx.boot();
+ await sleep(560);
+ CS.classList.add('fade');await sleep(430);
+ CS.classList.remove('show','fade');
+ circs.forEach(c=>c.classList.remove('lit'));glow.setAttribute('opacity','0');glow.setAttribute('r','10');
+ coreG.setAttribute('opacity','0.12');load.textContent='CHARGEMENT 0%';status.textContent='ALIMENTATION : ARRIVÉE ÉNERGIE'
+}
+
+/* ── KAPPS : KCENTRAL / KRADAR / KMISSION / KCOMLINK ─────────── */
+const KAPPO=document.getElementById('kappsOverlay');
+const kcOut=document.getElementById('kcOut'),kcPulse=document.getElementById('kcPulse'),kcCoreG=document.getElementById('kcCoreG');
+const kcCore=document.getElementById('kcCore'),kcMemEl=document.getElementById('kcMem'),kcBusEl=document.getElementById('kcBus'),kcFreq=document.getElementById('kcFreq');
+const krCanvas=document.getElementById('krCanvas'),krListEl=document.getElementById('krList'),krOut=document.getElementById('krOut');
+const kmListEl=document.getElementById('kmList'),kmDossier=document.getElementById('kmDossier');
+const comLogEl=document.getElementById('comLog'),comInput=document.getElementById('comInput'),comPresets=document.getElementById('comPresets');
+let kappTab='central',kcRAF=0,krRAF=0,krAngle=0,krSweep=true,krContacts=[],krCtx=null,kmIndex=0,comTimers=[],comBusy=false,comSeq=0,kcSeq=0,kcDots=[],comSeeded=false;
+function kappOpen(){return KAPPO.classList.contains('show')}
+function kappLater(fn,ms){const id=setTimeout(fn,ms);comTimers.push(id);return id}
+function kappClearTimers(){comTimers.forEach(clearTimeout);comTimers=[]}
+function kcAppend(t){kcOut.textContent+=(kcOut.textContent?'\n':'')+t;kcOut.scrollTop=kcOut.scrollHeight}
+function krAppend(t){krOut.textContent+=(krOut.textContent?'\n':'')+t;krOut.scrollTop=krOut.scrollHeight}
+function comAppend(t){const d=document.createElement('div');d.textContent=t;comLogEl.appendChild(d);comLogEl.scrollTop=comLogEl.scrollHeight}
+function kcStartPulse(){
+ kcStopPulse();
+ const defs=[['kcPA','#ffb53f'],['kcPB','#ff3b2f'],['kcPM','#ff3b2f'],['kcPV','#ffb53f']];
+ kcDots=defs.map(d=>{const p=document.getElementById(d[0]);if(!p)return null;const c=document.createElementNS(SVGNS,'circle');c.setAttribute('r','4');c.setAttribute('fill',d[1]);c.setAttribute('opacity','0');kcPulse.appendChild(c);return{p,c,len:(p.getTotalLength?p.getTotalLength():1),t:Math.random()}}).filter(Boolean);
+ const step=()=>{if(!kappOpen()||kappTab!=='central'){kcStopPulse();return}
+  kcDots.forEach(d=>{d.t+=0.012;if(d.t>1)d.t=0;if(d.p.getPointAtLength){const pt=d.p.getPointAtLength(d.len*d.t);d.c.setAttribute('cx',pt.x);d.c.setAttribute('cy',pt.y);d.c.setAttribute('opacity','0.9')}});
+  kcRAF=requestAnimationFrame(step)};
+ kcRAF=requestAnimationFrame(step)
+}
+function kcStopPulse(){if(kcRAF)cancelAnimationFrame(kcRAF);kcRAF=0;kcPulse.innerHTML='';kcDots=[]}
+function kcTestMem(){
+ if(!kappOpen()||kappTab!=='central')return;
+ const my=++kcSeq;kcOut.textContent='';kcAppend('TEST MÉMOIRE — 640 Ko CONVENTIONNELLE + '+kxMemKB+' Ko KXMEM');
+ let kb=0;
+ const step=()=>{if(!kappOpen()||my!==kcSeq)return;kb+=128;kcMemEl.textContent=kb+' Ko';tone(880,.02,'square',.15);
+  if(kb<640)kappLater(step,140);
+  else{kappAppendMemDone(my)}};
+ kappLater(step,60)
+}
+function kappAppendMemDone(my){
+ kcAppend('BANDE 000-640 Ko ......... OK');
+ kappLater(()=>{if(!kappOpen()||my!==kcSeq)return;
+  kcAppend('BANDE KXMEM 0-'+kxMemKB+' Ko .... OK');
+  kcAppend('VERROUILLAGE PARITE ...... OK');
+  kcMemEl.textContent='640 Ko + KXMEM OK';
+  kcAppend('RESULTAT : MEMOIRE NOMINALE — DIAGNOSTIC\\MEMTEST.KXL');
+  sfx.scan()},700)
+}
+function kcTestBus(){
+ if(!kappOpen()||kappTab!=='central')return;
+ const my=++kcSeq;kcOut.textContent='';kcAppend('TEST BUS — 64 VOIES PARALLÈLES');
+ kcStartPulse();let v=0;
+ const step=()=>{if(!kappOpen()||my!==kcSeq)return;v+=8;kcBusEl.textContent=v+'/64 VOIES';tone(660,.02,'square',.15);
+  if(v<64)kappLater(step,150);
+  else{kcAppend('VOIES 01-64 ............. OK');kcAppend('ARBITRAGE CIRCUIT ALPHA .. OK');kcBusEl.textContent='64 VOIES — VERROUILLÉES';sfx.ok();kappLater(()=>{if(my===kcSeq)kcStopPulse()},2600)}};
+ step()
+}
+function kcTestCore(){
+ if(!kappOpen()||kappTab!=='central')return;
+ const my=++kcSeq;kcOut.textContent='';kcAppend('ANALYSE CŒUR — KNIGHT 2000');
+ let n=0;
+ const fl=()=>{if(!kappOpen()||my!==kcSeq){kcCoreG.setAttribute('opacity','0.25');return}
+  kcCoreG.setAttribute('opacity',n%2?'0.85':'0.18');tone(n%2?520:340,.04,'square',.2);n++;
+  if(n<10)kappLater(fl,160);
+  else{kcCoreG.setAttribute('opacity','0.55');kcAppend('ALPHA CIRCUIT ............ OK');kcAppend('REGISTRES R0-R15 ......... OK');kcAppend('INTERRUPTIONS IRQ0-7 ..... OK');kcFreq.textContent='6.144 MHZ';kcAppend('CŒUR CYBERNETIQUE : EN LIGNE — CENTRAL\\SELFTEST.KXL OK');sfx.scan()}};
+ fl()
+}
+const KR_KINDS=['AUTOMOBILE','CAMION','RELAIS F.L.A.G.','PATROUILLE','DRONE MÉTÉO','SIGNATURE INCONNUE'];
+function krNewContacts(log){
+ krContacts=Array.from({length:4+Math.floor(Math.random()*3)},(_,i)=>({id:'C-'+String(i+1).padStart(2,'0'),kind:KR_KINDS[Math.floor(Math.random()*KR_KINDS.length)],a:Math.random()*Math.PI*2,r:0.3+Math.random()*0.55,sp:(Math.random()*0.4+0.15)*(Math.random()<.5?1:-1)}));
+ krRenderList();
+ if(log!==false){krAppend('CONTACTS REGENERES : '+krContacts.length+' PISTES FICTIVES [SIMULATION]');sfx.scan()}
+}
+function krRenderList(){
+ krListEl.innerHTML='';
+ krContacts.forEach(c=>{const row=document.createElement('div');row.className='krRow';const deg=Math.round(((c.a*57.29578)%360+360)%360);
+  row.innerHTML='<span>'+c.id+' '+c.kind+'</span><span>'+(c.r*12).toFixed(1)+' km · '+deg+'°</span>';
+  krListEl.appendChild(row)})
+}
+function krDraw(){
+ if(!krCtx)krCtx=krCanvas.getContext('2d');
+ const w=krCanvas.width,h=krCanvas.height,cx=w/2,cy=h/2,R=Math.min(w,h)/2-8,g=krCtx;
+ g.fillStyle='#010000';g.fillRect(0,0,w,h);
+ g.strokeStyle='#571009';g.lineWidth=1;
+ [0.25,0.5,0.75,1].forEach(f=>{g.beginPath();g.arc(cx,cy,R*f,0,Math.PI*2);g.stroke()});
+ g.beginPath();g.moveTo(cx-R,cy);g.lineTo(cx+R,cy);g.moveTo(cx,cy-R);g.lineTo(cx,cy+R);g.stroke();
+ g.save();g.translate(cx,cy);g.rotate(krAngle);
+ g.fillStyle='rgba(255,59,47,0.12)';g.beginPath();g.moveTo(0,0);g.arc(0,0,R,-0.5,0);g.closePath();g.fill();
+ g.strokeStyle='#ff3b2f';g.lineWidth=2;g.beginPath();g.moveTo(0,0);g.lineTo(R,0);g.stroke();
+ g.restore();
+ krContacts.forEach(c=>{const x=cx+Math.cos(c.a)*R*c.r,y=cy+Math.sin(c.a)*R*c.r;let dA=((krAngle-c.a)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);const hot=dA<0.6;
+  g.fillStyle=hot?'#ff493a':'#5c1510';g.beginPath();g.arc(x,y,hot?4:3,0,Math.PI*2);g.fill();
+  if(hot){g.fillStyle='#ff8a7e';g.font='9px Courier New';g.fillText(c.id,x+6,y+3)}});
+ g.fillStyle='#ff8b80';g.font='11px Courier New';g.textAlign='center';g.fillText('KRADAR — BALAYAGE 360° [SIMULATION]',cx,h-6);g.textAlign='left'
+}
+function krLoop(){
+ if(!kappOpen()||kappTab!=='radar'){krStop();return}
+ if(krSweep)krAngle=(krAngle+0.035)%(Math.PI*2);
+ krContacts.forEach(c=>{c.a+=c.sp*0.004});
+ krDraw();krRAF=requestAnimationFrame(krLoop)
+}
+function krStop(){if(krRAF)cancelAnimationFrame(krRAF);krRAF=0}
+function krToggleSweep(){krSweep=!krSweep;document.getElementById('krBtnSweep').textContent=krSweep?'ARRÊTER LE BALAYAGE':'REPRENDRE LE BALAYAGE';krAppend(krSweep?'BALAYAGE REPRIS':'BALAYAGE SUSPENDU — CONTACTS FIGÉS')}
+function kmData(){
+ const base='K:\\KYRONEXT\\MISSIONS',d=fs[base];
+ return ((d&&d.children)||[]).filter(n=>/^M-\d+\.KXT$/.test(n)).map(n=>{
+  const e=fs[base+'\\'+n],t=(e&&e.type==='file')?e.text:'';
+  const o={file:n,titre:n,statut:'INCONNU',progres:0,dossier:''};
+  t.split(/[\r\n]+/).forEach(l=>{const m=l.match(/^([A-Z]+)=(.*)$/);if(!m)return;
+   if(m[1]==='TITRE')o.titre=m[2];else if(m[1]==='STATUS')o.statut=m[2];else if(m[1]==='PROGRES')o.progres=Math.max(0,Math.min(100,parseInt(m[2],10)||0))});
+  const i=t.indexOf('---');o.dossier=i>=0?t.slice(i+3).trim():'';
+  return o})
+}
+function kmSave(m){const e=fs['K:\\KYRONEXT\\MISSIONS\\'+m.file];if(e&&e.type==='file'){e.text=e.text.replace(/^PROGRES=\d+$/m,'PROGRES='+m.progres).replace(/^STATUS=.*$/m,'STATUS='+m.statut)}}
+function kmRender(){
+ const data=kmData();if(kmIndex>=data.length)kmIndex=0;
+ kmListEl.innerHTML='';
+ data.forEach((m,i)=>{const b=document.createElement('button');b.className='missItem'+(i===kmIndex?' active':'');
+  b.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px"><span>'+m.file+'</span><span style="color:#ffc44e">'+m.statut+'</span></div><div>'+m.titre+'</div><div class="missBar"><div class="missFill" style="width:'+m.progres+'%"></div></div>';
+  b.addEventListener('click',()=>{kmIndex=i;kmRender();sfx.tick()});kmListEl.appendChild(b)});
+ const m=data[kmIndex];
+ kmDossier.textContent=m?('DOSSIER '+m.file+' — '+m.titre+'\nSTATUT : '+m.statut+'   PROGRES : '+m.progres+'%\n\n'+(m.dossier||'Pas de détail.')+'\n\nSOURCE : K:\\KYRONEXT\\MISSIONS\\'+m.file):'AUCUN DOSSIER DE MISSION.'
+}
+function kmAdvance(){
+ if(!kappOpen()||kappTab!=='mission')return;
+ const data=kmData(),m=data[kmIndex];if(!m)return;
+ if(m.statut==='TERMINE'){kmDossier.textContent='MISSION '+m.file+' DÉJÀ TERMINÉE — AVANCEMENT INUTILE.';sfx.ok();return}
+ m.progres=Math.min(100,m.progres+8+Math.floor(Math.random()*12));
+ if(m.progres>=100){m.progres=100;m.statut='TERMINE';sfx.boot()}else sfx.tick();
+ kmSave(m);kmRender();
+ kmDossier.textContent+='\n\n> AVANCEMENT SIMULE : '+m.progres+'%'+(m.statut==='TERMINE'?' — MISSION CLOSE':'')
+}
+function kmRapport(){
+ if(!kappOpen()||kappTab!=='mission')return;
+ const data=kmData(),m=data[kmIndex];if(!m)return;
+ kmDossier.textContent='RAPPORT DE MISSION — F.L.A.G. [SIMULATION]\nCODE : '+m.file+'\nTITRE : '+m.titre+'\nSTATUT : '+m.statut+'\nPROGRES : '+m.progres+'%\nOPERATEUR : UNITE 2000 / KYRONEXT\n\n'+(m.dossier||'')+'\n\nGÉNÉRÉ PAR KMISSION.KXE — '+new Date().toLocaleTimeString('fr-BE');
+ print('KMISSION : rapport '+m.file+' généré.');sfx.scan()
+}
+function comSeed(){
+ if(comSeeded)return;comSeeded=true;
+ comAppend('KCOMLINK.KXE — LIAISON F.L.A.G. CANAL SEMAPHORE 7 [SIMULATION]');
+ comAppend('CONFIG : K:\\KYRONEXT\\FLAG\\SEMAPHORE.KXC — CHIFFREMENT CIPHER KNIGHT');
+ comAppend('PROTOCOLE : OUVERTURE / TRANSMISSION / ACCUSE / FERMETURE');
+ comAppend('CANAL EN ATTENTE DE MESSAGE...')
+}
+function comTransmit(msg){
+ msg=(msg||'').trim().toUpperCase();
+ if(!msg){comAppend('MESSAGE VIDE — RIEN À TRANSMETTRE.');sfx.err();return}
+ if(comBusy){comAppend('CANAL OCCUPÉ — TRANSMISSION EN COURS.');sfx.err();return}
+ if(!kappOpen()||kappTab!=='comlink')return;
+ comBusy=true;const my=++comSeq;
+ comAppend('TX> '+msg);
+ comAppend('OUVERTURE CANAL SEMAPHORE ...');
+ kappLater(()=>{if(!kappOpen()||my!==comSeq)return;let p=0;
+  const st=()=>{if(!kappOpen()||my!==comSeq)return;p+=25;
+   const bar='█'.repeat(p/25)+'░'.repeat(4-p/25);
+   comAppend('TRANSMISSION '+bar+' '+p+'%');tone(700+p*4,.02,'square',.12);
+   if(p<100)kappLater(st,320);
+   else kappLater(()=>{if(!kappOpen()||my!==comSeq)return;
+    comAppend('F.L.A.G. : MESSAGE REÇU — CANAL 7');
+    comAppend('SIGNATURE : K-N-I-G-H-T — CANAL SEMAPHORE FERMÉ.');
+    try{fs['K:\\KYRONEXT\\COMMUNICATION\\JOURNAL.KXL'].text+='\n['+new Date().toLocaleTimeString('fr-BE')+'] TX : '+msg+'\n['+new Date().toLocaleTimeString('fr-BE')+'] F.L.A.G. : ACCUSE DE RECEPTION'}catch(e){}
+    comBusy=false;sfx.ok()},600)};
+  st()},900)
+}
+function comCancel(){
+ if(!comBusy){comAppend('AUCUNE TRANSMISSION EN COURS.');sfx.ok();return}
+ comSeq++;kappClearTimers();comBusy=false;
+ comAppend('TRANSMISSION ANNULÉE PAR L\'OPÉRATEUR — CANAL FERMÉ.');sfx.err()
+}
+function switchKapp(tab){
+ kappTab=tab;
+ document.querySelectorAll('#kappTabs button').forEach(b=>b.classList.toggle('active',b.dataset.kapp===tab));
+ document.querySelectorAll('.kappPane').forEach(p=>p.classList.toggle('active',p.dataset.pane===tab));
+ kcStopPulse();krStop();
+ if(tab==='central'){kcStartPulse();kcFreq.textContent='6.144 MHZ'}
+ if(tab==='radar'){if(!krContacts.length)krNewContacts(false);krAppend('BALAYAGE ACTIF — '+krContacts.length+' PISTES FICTIVES');krRAF=requestAnimationFrame(krLoop)}
+ if(tab==='mission')kmRender();
+ if(tab==='comlink')comSeed();
+ sfx.tick()
+}
+function openKapps(tab){
+ hideKb();
+ if(game)closeGame();
+ if(KMSDO&&KMSDO.classList.contains('show'))closeKMSD();
+ if(KIO&&KIO.classList.contains('show'))closeKinfo();
+ const ed=document.getElementById('editor');if(ed.classList.contains('show'))ed.classList.remove('show');
+ hideKb();KAPPO.classList.add('show');switchKapp(tab||'central')
+}
+function closeKapps(){
+ kcSeq++;comSeq++;kappClearTimers();kcStopPulse();krStop();
+ KAPPO.classList.remove('show');comBusy=false;kcCoreG.setAttribute('opacity','0.25');
+ if(!demoRunning){if(tty)showKb();else I.focus()}
+ print('Retour au système Kyronext™ — programmes K fermés.');sfx.ok()
+}
+document.getElementById('kappClose').addEventListener('click',closeKapps);
+document.querySelectorAll('#kappTabs button').forEach(b=>b.addEventListener('click',()=>switchKapp(b.dataset.kapp)));
+document.getElementById('kcBtnMem').addEventListener('click',kcTestMem);
+document.getElementById('kcBtnBus').addEventListener('click',kcTestBus);
+document.getElementById('kcBtnCore').addEventListener('click',kcTestCore);
+document.getElementById('krBtnSweep').addEventListener('click',krToggleSweep);
+document.getElementById('krBtnContacts').addEventListener('click',()=>krNewContacts(true));
+document.getElementById('kmPrev').addEventListener('click',()=>{const d=kmData();if(d.length){kmIndex=(kmIndex-1+d.length)%d.length;kmRender();sfx.tick()}});
+document.getElementById('kmNext').addEventListener('click',()=>{const d=kmData();if(d.length){kmIndex=(kmIndex+1)%d.length;kmRender();sfx.tick()}});
+document.getElementById('kmProg').addEventListener('click',kmAdvance);
+document.getElementById('kmRapport').addEventListener('click',kmRapport);
+document.getElementById('comSend').addEventListener('click',()=>{comTransmit(comInput.value);comInput.value=''});
+document.getElementById('comCancel').addEventListener('click',comCancel);
+comInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();comTransmit(comInput.value);comInput.value=''}});
+const COM_PRESETS=[['RAPPORT MISSION','RAPPORT DE MISSION M-82001 : CONVOI PROTEGE EN COURS'],['DEMANDE DE CONSIGNE','DEMANDE DE CONSIGNE AU DIRECTEUR'],['SIGNAL TEST','SIGNAL TEST — UNITE 2000 KYRONEXT']];
+COM_PRESETS.forEach(pr=>{const b=document.createElement('button');b.textContent=pr[0];b.className='kappBtn';b.addEventListener('click',()=>comTransmit(pr[1]));comPresets.appendChild(b)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&kappOpen())closeKapps()});
+async function demoKapps(){
+ const prog=[['KCENTRAL',()=>kcTestMem(),2600],['KRADAR',()=>krNewContacts(true),3000],['KMISSION',()=>kmAdvance(),2400],['KCOMLINK',()=>comTransmit('KYRONEXT — DEMONSTRATION AUTOMATIQUE. SALUTATIONS F.L.A.G.'),3600]];
+ for(const pr of prog){
+  if(demoStop)break;
+  await demoCommand(pr[0],420);
+  if(demoStop)break;
+  await sleep(1200);if(demoStop)break;pr[1]();
+  await sleep(pr[2]);
+  if(demoStop)break;
+  if(kappOpen())closeKapps();
+  await sleep(1000)
+ }
+ if(kappOpen())closeKapps()
+}
+
 let powerOnDone=false;
 function crtFlash(){try{const B=document.getElementById('boot'),f=document.createElement('div');f.className='crt-flash';B.appendChild(f);setTimeout(()=>f.remove(),700)}catch(e){}}
 async function powerOn(){
@@ -1065,9 +1601,28 @@ async function powerOn(){
  const setLast=(t)=>{bl[bl.length-1]=t;log.textContent=bl.join('\n');log.scrollTop=log.scrollHeight};
  const pad=(l)=>{l=l+' ';while(l.length<44)l+='.';return l};
  const ok=async(label,d=420)=>{line(pad(label));await sleep(d);setLast(pad(label)+' OK');sfx.tick()};
+  // --- ALLUMAGE MACHINE IA K.I.T.T. ---
+ const scan=document.createElement('div');scan.className='boot-scan';scan.innerHTML='<i></i>';B.appendChild(scan);
+ line('MISE SOUS TENSION - MACHINE IA K.I.T.T.');await sleep(650);
+ line('KNIGHT INDUSTRIES 2000 - UNITE CENTRALE');await sleep(520);
+ line('');
+ line(pad('RELAIS PRINCIPAL'));tone(150,.045,'square',.6);await sleep(460);setLast(pad('RELAIS PRINCIPAL')+' OK');sfx.tick();
+ line(pad('CIRCUIT ALIMENTATION'));tone(130,.045,'square',.6);await sleep(440);setLast(pad('CIRCUIT ALIMENTATION')+' OK');sfx.tick();
+ line(pad('TABLEAU DE BORD'));tone(150,.045,'square',.55);await sleep(440);setLast(pad('TABLEAU DE BORD')+' OK');sfx.tick();
+ line(pad('BARRE SCANNER')+' ON');sfx.scan();await sleep(1500);
+ line(pad('SYSTEME IA K.I.T.T.')+' EN MARCHE');tone(520,.05,'square',.6);tone(760,.09,'square',.6,.06);await sleep(800);
+ line('');
+ scan.remove();
  line('KNIGHT INDUSTRIES 2000 BOOT ROM  V1.6');await sleep(460);
  line('KYRONEXT SYSTEMS (C) 2026 - ALL RIGHTS RESERVED');await sleep(340);
  line('KNIGHT INDUSTRIES 2000 MICROPROCESSOR');await sleep(460);
+ line('');
+ line('ROM BOOTSTRAP 2.5K — LECTURE SECTEUR 0 DU VOLUME K:');await sleep(420);
+ await ok('MONITEUR ROM 1.6 — SOMMAIRE DES PERIPHERIQUES',420);
+ await ok('CPU K2000 : AUTO-TEST REGISTRES R0-R15',440);
+ await ok('TEST HORLOGE 6.144 MHZ',380);
+ await ok('K-BUS 2000 : 64 VOIES — ARBITRAGE',420);
+ await ok('CONTROLEURS D\'INTERRUPTION IRQ0-IRQ7',420);
  line('');
  await ok('K.I.T.T. MICROPROCESSOR INITIALIZATION',540);
  await ok('ALPHA CIRCUIT CHECK',520);
@@ -1084,14 +1639,26 @@ async function powerOn(){
  line('K.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns');await sleep(640);
  tone(880,.1,'square',.72);await sleep(300);
  line('');
+ line('MISE SOUS TENSION DU MICROPROCESSEUR CENTRAL...');
+ await coreStageSequence();
+ line('MICROPROCESSEUR CENTRAL : CHARGE 100% — CIRCUITS ALIMENTES');
+ await sleep(380);
+ line('');
  await ok('STORAGE K:  KYRONEXT-HDD 32 Mo',520);
  await ok('PARITY CHECK',400);
+ await ok('SUPERBLOC KX-FS : VOLUME K: VERIFIE',460);
+ await ok('LISTE DES BLOCS LIBRES : 4096 BLOCS',400);
+ await ok('MONTAGE K: SUR RACINE — SYSTEME DE FICHIERS PRET',460);
+ await ok('MONTAGE K:\\KYRONEXT\\SYSTEME (LECTURE SEULE)',380);
  line('');
  line('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK');
  for(let n=1;n<=8;n++){let s='[';for(let i=1;i<=8;i++)s+=i<=n?'#':'.';setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  '+s+']');sfx.tick();await sleep(190)}
  setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  OK');await sleep(340);
  await ok('LECTURE K:\\KYRONEXT\\SYSTEM.KXC',420);
  line('EXECUTION K:\\KYRONEXT\\STARTUP.KXA');await sleep(420);
+ await ok('INIT : OUVERTURE TTY0 — CONSOLE KYRONEXT',420);
+ await ok('INIT : PASSAGE EN MODE MULTI-UTILISATEUR',380);
+ line('EXECUTION RC : SERVICES SYSTEME KYRONEXT');
  line('');
  await ok('[KXD] MEMORY.KXD  gestion memoire',380);
  await ok('[KXD] KXMEM.KXD   memoire etendue',380);
@@ -1106,6 +1673,10 @@ async function powerOn(){
  await ok('[KXE] KMSD.KXE    diagnostic machine',380);
  await ok('[KXE] KCOMPILER.KXE compilateur KX',380);
  await ok('[KXE] KDEMO.KXE   demonstration systeme',380);
+ await ok('[KXE] KCENTRAL.KXE  microprocesseur',380);
+ await ok('[KXE] KRADAR.KXE    scanner radar',380);
+ await ok('[KXE] KMISSION.KXE   dossiers mission',380);
+ await ok('[KXE] KCOMLINK.KXE  liaison F.L.A.G.',380);
  await ok('[KXE] KINFO.KXE    information systeme',380);
  await ok('[KXM] CUDA.KXM    acceleration calcul',440);
  await ok('[KXM] RELAIS.KXM  relais vehicule',380);
@@ -1130,24 +1701,24 @@ I.addEventListener('keydown',e=>{
  if(e.key==='Enter'){e.preventDefault();ensureAudio();command(I.value);I.value=''}
  else if(e.key==='ArrowUp'){e.preventDefault();if(histIndex>0){histIndex--;I.value=hist[histIndex]||''}}
  else if(e.key==='ArrowDown'){e.preventDefault();if(histIndex<hist.length-1){histIndex++;I.value=hist[histIndex]||''}else{histIndex=hist.length;I.value=''}}
- else if(e.key==='Tab'){e.preventDefault();let q=norm(I.value);let all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KTTY','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)I.value=m}
+ else if(e.key==='Tab'){e.preventDefault();let q=norm(I.value);let all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KTTY','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)I.value=m}
  else tone(900,.018,'square',.18)
 });
 document.addEventListener('keydown',e=>{
- if(!tty||document.getElementById('editor').classList.contains('show')||document.getElementById('gameOverlay').classList.contains('show'))return;
+ if(!tty||document.getElementById('editor').classList.contains('show')||document.getElementById('gameOverlay').classList.contains('show')||kappOpen())return;
  if(e.ctrlKey||e.metaKey||e.altKey)return;
  if(e.key==='Enter'){e.preventDefault();submitTTY()}
  else if(e.key==='Backspace'){e.preventDefault();setTtyText(ttyBuffer.slice(0,-1))}
  else if(e.key==='ArrowUp'){e.preventDefault();if(histIndex>0){histIndex--;setTtyText(hist[histIndex]||'')}}
  else if(e.key==='ArrowDown'){e.preventDefault();if(histIndex<hist.length-1){histIndex++;setTtyText(hist[histIndex]||'')}else{histIndex=hist.length;setTtyText('')}}
- else if(e.key==='Tab'){e.preventDefault();let q=norm(ttyBuffer),all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KNETSTAT','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)setTtyText(m)}
+ else if(e.key==='Tab'){e.preventDefault();let q=norm(ttyBuffer),all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KNETSTAT','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)setTtyText(m)}
  else if(e.key.length===1){e.preventDefault();setTtyText(ttyBuffer+e.key);tone(900,.018,'square',.18)}
 });
 document.getElementById('keyboard').addEventListener('click',()=>{I.setAttribute('inputmode','none');if(!tty)I.focus({preventScroll:true});showKb()});
 document.getElementById('audioTest').addEventListener('click',async()=>{await unlockAudio();sfx.boot();setTimeout(()=>fallbackBeep(),520)});
 document.getElementById('ttyButton').addEventListener('click',()=>setTTY(!tty));
 document.getElementById('demoButton').addEventListener('click',()=>{ensureAudio();command('KDEMO')});
-document.getElementById('demoStopBtn').addEventListener('click',()=>{demoStop=true;DL.textContent='Arrêt demandé…';sfx.err()});
+document.getElementById('demoStopBtn').addEventListener('click',requestDemoStop);
 document.querySelectorAll('[data-run]').forEach(b=>b.addEventListener('click',()=>{ensureAudio();command(b.dataset.run)}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})});
 document.addEventListener('touchend',()=>{if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})},{passive:true});
