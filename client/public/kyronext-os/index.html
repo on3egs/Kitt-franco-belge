@@ -795,7 +795,7 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 const DH=document.getElementById('demoHud'),DS=document.getElementById('demoStep'),DP=document.getElementById('demoProgress'),DL=document.getElementById('demoLabel');
 function demoHud(step,total,label){
  if(demoStop)return;
- DH.classList.add('show');DS.textContent=step+'/'+total;DP.style.width=Math.round((step/total)*100)+'%';DL.textContent=label
+ DS.textContent=step+'/'+total;DP.style.width=Math.round((step/total)*100)+'%';DL.textContent=label
 }
 function hideDemoHud(){DH.classList.remove('show')}
 async function humanType(target,text,speed=75){
@@ -842,7 +842,7 @@ async function runDemo(){
  if(!tty)setTTY(true);
  hideKb();
  const total=12;
- print('\n╔════════════════════════════════════════════╗\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\n║  Mode lecture confortable — Created by Manix      ║\n╚════════════════════════════════════════════╝\n');
+ print('\n╔════════════════════════════════════════════╗\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\n║  Mode lecture confortable — Created by Manix      \n║  Toucher l\'écran pour interrompre║\n╚════════════════════════════════════════════╝\n');
  try{
   demoHud(1,total,'Identité et version du système');
   await demoCommand('KVER',600);await demoCommand('KABOUT',500);
@@ -1743,8 +1743,10 @@ document.addEventListener('keydown',e=>{
 document.getElementById('keyboard').addEventListener('click',()=>{I.setAttribute('inputmode','none');if(!tty)I.focus({preventScroll:true});showKb()});
 document.getElementById('audioTest').addEventListener('click',async()=>{await unlockAudio();sfx.boot();setTimeout(()=>fallbackBeep(),520)});
 document.getElementById('ttyButton').addEventListener('click',()=>setTTY(!tty));
-document.getElementById('demoButton').addEventListener('click',()=>{ensureAudio();command('KDEMO')});
+document.getElementById('demoButton').addEventListener('click',()=>{ensureAudio();if(demoRunning){requestDemoStop();print('Arrêt de KDEMO demandé.')}else command('KDEMO')});
 document.getElementById('demoStopBtn').addEventListener('click',requestDemoStop);
+document.addEventListener('click',e=>{if(demoRunning&&(e.target.closest('.screen')||e.target.closest('.tty-line'))){requestDemoStop();print('Arrêt de KDEMO demandé.')}},{capture:true});
+document.addEventListener('keydown',e=>{if(demoRunning&&e.key==='Escape'){requestDemoStop();print('Arrêt de KDEMO demandé.')}},{capture:true});
 document.querySelectorAll('[data-run]').forEach(b=>b.addEventListener('click',()=>{ensureAudio();command(b.dataset.run)}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})});
 document.addEventListener('touchend',()=>{if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})},{passive:true});
