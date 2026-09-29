@@ -1,7 +1,8 @@
 {
-  "status": "offline",
-  "url": "",
-  "last_update": "2026-08-15T19:47:15.163973+00:00",
-  "host": "kitt-jetson",
-  "version": "1.0"
+  "status": "online",
+  "url": "https://kitt.kitt-franco-belge.be",
+  "permanent": true,
+  "last_update": "2026-09-29T23:28:38+00:00",
+  "host": "kitt-ajx",
+  "version": "1.1"
 }
