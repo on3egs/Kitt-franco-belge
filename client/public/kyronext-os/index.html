@@ -34,7 +34,7 @@ button{border:1px solid #77150f;background:#170201;color:#ff7669;padding:10px 8p
 button:active{background:#450805}
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .status{font-size:11px;line-height:1.5}
-.bar{position:fixed;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:#000;padding:4px}
+.bar{position:fixed;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;background:#000;padding:4px}
 .boot{position:fixed;inset:0;z-index:100;background:#000;display:flex;align-items:center;justify-content:center;padding:18px}
 .boot.hide{display:none}
 .bootbox{width:min(820px,100%);border:1px solid #77150f;background:#050000;padding:20px;text-align:left;box-shadow:0 0 35px rgba(255,45,30,.14)}
@@ -146,6 +146,17 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
 .kmsdFoot{border-top:1px solid #52100b;padding:6px 8px;font-size:10px;color:#9e514a;display:flex;gap:10px;justify-content:space-between}
 @media(max-width:620px){.kmsdMenu{grid-template-columns:repeat(3,1fr)}.kmsdRow{grid-template-columns:1fr}.kmsdShell{height:98vh}.kmsdBody{padding:8px}}
 
+
+#demoHud{display:none;position:fixed;top:max(8px,env(safe-area-inset-top));right:8px;z-index:420;width:min(360px,calc(100vw - 16px));background:#060000;border:1px solid #8c170f;box-shadow:0 0 24px rgba(255,35,20,.28);padding:8px;-webkit-user-select:none;user-select:none}
+#demoHud.show{display:block}
+.demoTop{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;letter-spacing:1px}
+.demoTop span:first-child{flex:1;color:#ff7568}
+#demoStep{color:#69ff7b}
+.demoTrack{height:5px;border:1px solid #4e0b07;margin-top:6px;background:#120100}
+#demoProgress{height:100%;width:0;background:#ff3b2f;box-shadow:0 0 8px #ff2c1e;transition:width .3s ease}
+#demoLabel{font-size:10px;color:#b86158;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#demoStopBtn{padding:5px 7px;font-size:9px}
+
 </style>
 </head>
 <body><div id="app">
@@ -181,14 +192,15 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
 <button data-run="kaide">KAIDE</button><button data-run="ktty">KTTY</button>
 <button data-run="kdiagnostic">KDIAG</button><button data-run="kscanner">KSCAN</button>
 <button data-run="ksysteme">KSYSTÈME</button><button data-run="kvehicule">KVÉHICULE</button>
-<button data-run="kcore">KCORE IA</button><button data-run="kson test">KSON TEST</button>
+<button data-run="kcore">KCORE IA</button><button data-run="kson test">KSON TEST</button><button data-run="kdemo">▶ KDEMO</button>
 </div></div>
 <div class="panel status">TTY = terminal plein écran style micro-ordinateur 1980.<br><br>Historique : ↑ / ↓<br>Complétion : TAB<br>Retour : KINTERFACE</div>
 </aside>
 </div>
 
-<div class="bar"><button id="keyboard">⌨ CLAVIER</button><button id="audioTest">🔊 AUDIO</button><button id="ttyButton">TTY</button></div>
+<div class="bar"><button id="keyboard">⌨ CLAVIER</button><button id="audioTest">🔊 AUDIO</button><button id="ttyButton">TTY</button><button id="demoButton">▶ DÉMO</button></div>
 
+<div id="demoHud"><div class="demoTop"><span>DÉMONSTRATION KYRONEXT™</span><span id="demoStep">0/0</span><button id="demoStopBtn">STOP</button></div><div class="demoTrack"><div id="demoProgress"></div></div><div id="demoLabel">Préparation…</div></div>
 <div id="kitt-kb" aria-label="Clavier Kyronext"></div>
 <div id="editor">
  <div class="edtitle" id="edtitle">KYRONEXT™ CODE EDITOR</div>
@@ -498,32 +510,107 @@ function editorTextInsert(text){
  const ea=document.getElementById('editarea'),st=ea.selectionStart||0,en=ea.selectionEnd||st;ea.setRangeText(text,st,en,'end');ea.dispatchEvent(new Event('input',{bubbles:true}))
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
-async function humanType(target,text,speed=70){
- for(const ch of text){if(demoStop)break;if(target==='tty')setTtyText(ttyBuffer+ch);else editorTextInsert(ch);tone(900,.012,'square',.09);await sleep(speed+(ch===' '?25:0))}
+const DH=document.getElementById('demoHud'),DS=document.getElementById('demoStep'),DP=document.getElementById('demoProgress'),DL=document.getElementById('demoLabel');
+function demoHud(step,total,label){
+ DH.classList.add('show');DS.textContent=step+'/'+total;DP.style.width=Math.round((step/total)*100)+'%';DL.textContent=label
 }
-async function demoCommand(text,wait=1100){
- if(demoStop)return;ttyBuffer='';renderTTY();await sleep(350);await humanType('tty',text,68);await sleep(420);submitTTY();await sleep(wait)
+function hideDemoHud(){DH.classList.remove('show')}
+async function humanType(target,text,speed=34){
+ for(const ch of text){
+  if(demoStop)break;
+  if(target==='tty')setTtyText(ttyBuffer+ch);else editorTextInsert(ch);
+  tone(900,.01,'square',.07);
+  await sleep(speed+(ch===' '?10:0))
+ }
+}
+async function demoCommand(text,wait=560){
+ if(demoStop)return;
+ ttyBuffer='';renderTTY();await sleep(120);await humanType('tty',text,32);await sleep(140);submitTTY();await sleep(wait)
 }
 async function demoEditor(){
- if(demoStop)return;await demoCommand('KCODE DEMO\\HELLO.KXA',900);
- const ea=document.getElementById('editarea');ea.value='';ea.setSelectionRange(0,0);updateEditorUI();
- const src='; Programme Kyronext créé pendant la démonstration\nKECHO BONJOUR DEPUIS UN PROGRAMME KYRONEXT\nKMEM\nKVER';
- await humanType('editor',src,42);await sleep(900);document.getElementById('saveEdit').click();await sleep(800)
+ if(demoStop)return;
+ await demoCommand('KCODE DEMO\\HELLO.KXA',500);
+ const ea=document.getElementById('editarea');
+ ea.value='';ea.setSelectionRange(0,0);updateEditorUI();
+ const src='; KYRONEXT DEMO PROGRAM\\nKECHO BONJOUR DEPUIS KYRONEXT\\nKMEM\\nKVER';
+ await humanType('editor',src,22);
+ await sleep(450);document.getElementById('saveEdit').click();await sleep(450)
+}
+async function demoKMSD(){
+ if(demoStop)return;
+ await demoCommand('KMSD',300);await sleep(650);
+ for(const sec of ['computer','memory','display','sensors','vehicle','drivers']){
+  if(demoStop)break;renderKMSD(sec);sfx.tick();await sleep(520)
+ }
+ if(KMSDO.classList.contains('show'))closeKMSD();await sleep(350)
+}
+async function demoGame(name,moves=[]){
+ if(demoStop)return;
+ await demoCommand('K'+name,250);await sleep(420);
+ for(const [key,dur] of moves){
+  if(demoStop||!game)break;
+  gameAction(key,true);await sleep(dur);gameAction(key,false);await sleep(120)
+ }
+ await sleep(350);if(game)closeGame();await sleep(280)
 }
 async function runDemo(){
  if(demoRunning){print('KDEMO est déjà en cours.');return}
- demoRunning=true;demoStop=false;if(!tty)setTTY(true);hideKb();
- print('\n--- KYRONEXT™ SYSTEM DEMONSTRATION ---\nDémonstration automatique à vitesse humaine. KDEMO STOP pour interrompre.\n');
- const seq=[['KVER',1200],['KABOUT',1100],['KDIR',1300],['KTREE',1200],['KMEM',1100],['KXMEM',1200],['KCPU',900],['KGPU',900],['KRAM',900],['KBIOS',1100],['KDRIVERS',1300],['KDEVICES',1200],['KMD DEMO',900],['KCD DEMO',700],['KPWD',700],['KTOUCH HELLO.KXT',700],['KWRITE HELLO.KXT Ceci est un fichier créé par Kyronext',800],['KTYPE HELLO.KXT',1000],['KDIR',1000],['KCD..',650]];
- for(const item of seq){if(demoStop)break;await demoCommand(item[0],item[1])}
- if(!demoStop){await demoEditor();await demoCommand('KCOMPILE DEMO\\HELLO.KXA',1300);await demoCommand('KRUN DEMO\\HELLO.KXE',2200)}
- if(!demoStop){await demoCommand('KMSD',700);await sleep(2600);closeKMSD();await sleep(700)}
- if(!demoStop){await demoCommand('KPACMAN',600);await sleep(3000);if(game)closeGame();await sleep(900)}
- if(!demoStop){await demoCommand('KDEL DEMO\\HELLO.KXT',650);await demoCommand('KDEL DEMO\\HELLO.KXA',650);await demoCommand('KDEL DEMO\\HELLO.KXE',650);await demoCommand('KRD DEMO',800);await demoCommand('KCHKDSK',1100);await demoCommand('KBOOTLOG',1500);print('\n--- FIN DE LA DÉMONSTRATION KYRONEXT™ ---\nTape KAIDE pour explorer toutes les commandes.');sfx.scan()}
- else print('\nDémonstration interrompue.');
- demoRunning=false;demoStop=false;renderTTY()
-}
+ demoRunning=true;demoStop=false;
+ if(!tty)setTTY(true);
+ hideKb();
+ const total=10;
+ print('\\n╔════════════════════════════════════════════╗\\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\\n║  Mode automatique — Created by Manix      ║\\n╚════════════════════════════════════════════╝\\n');
+ try{
+  demoHud(1,total,'Identité et version du système');
+  await demoCommand('KVER',600);await demoCommand('KABOUT',500);
 
+  demoHud(2,total,'Shell K-COMMAND et système de fichiers');
+  await demoCommand('KDIR',650);await demoCommand('KTREE',650);
+
+  demoHud(3,total,'Mémoire KXMEM et matériel');
+  await demoCommand('KMEM',520);await demoCommand('KXMEM',520);await demoCommand('KCPU',420);await demoCommand('KGPU',420);await demoCommand('KRAM',420);
+
+  demoHud(4,total,'KMSD — diagnostic Knight Industries');
+  await demoKMSD();
+
+  demoHud(5,total,'Création de fichiers et éditeur de code');
+  await demoCommand('KMD DEMO',350);await demoCommand('KCD DEMO',300);await demoCommand('KTOUCH NOTES.KXT',300);
+  await demoCommand('KWRITE NOTES.KXT Fichier créé automatiquement par Kyronext',400);await demoCommand('KTYPE NOTES.KXT',450);await demoCommand('KCD..',250);
+  await demoEditor();
+
+  demoHud(6,total,'Compilation et exécution KXE');
+  await demoCommand('KCOMPILE DEMO\\HELLO.KXA',650);await demoCommand('KRUN DEMO\\HELLO.KXE',900);
+
+  demoHud(7,total,'K.I.T.T. — véhicule, scanner et vigilance');
+  await demoCommand('KSCANNER',650);await demoCommand('KVEHICULE',550);await demoCommand('KVIGILANCE',550);await demoCommand('KMODE POURSUITE',450);await demoCommand('KMODE NORMAL',350);
+
+  demoHud(8,total,'Réseau et cœur Kyronext');
+  await demoCommand('KRESEAU',450);await demoCommand('KIPCONFIG',450);await demoCommand('KCORE',450);await demoCommand('KCUDA',400);
+
+  demoHud(9,total,'Audio et jeux exécutables');
+  await demoCommand('KSON TEST',500);
+  await demoGame('PACMAN',[['right',600],['down',450]]);
+  await demoGame('TETRIS',[['action',120],['left',280],['down',650]]);
+  await demoGame('SPACEKR',[['action',120],['right',520],['action',120],['left',420]]);
+  await demoGame('TRONKR',[['down',120],['right',120],['up',120]]);
+
+  demoHud(10,total,'Résumé et nettoyage');
+  await demoCommand('KCHKDSK',500);await demoCommand('KBOOTLOG',650);
+  await demoCommand('KDEL DEMO\\NOTES.KXT',250);await demoCommand('KDEL DEMO\\HELLO.KXA',250);await demoCommand('KDEL DEMO\\HELLO.KXE',250);await demoCommand('KRD DEMO',300);
+  if(!demoStop){
+   print('\\n╔════════════════════════════════════════════╗\\n║  DÉMONSTRATION TERMINÉE                   ║\\n║  KAIDE = toutes les commandes             ║\\n║  KDEMO = relancer la démonstration        ║\\n╚════════════════════════════════════════════╝');
+   sfx.scan();await sleep(900)
+  }
+ }catch(e){
+  print('\\nKDEMO : erreur interne — '+(e&&e.message?e.message:String(e)));sfx.err()
+ }finally{
+  if(game)closeGame();
+  if(KMSDO&&KMSDO.classList.contains('show'))closeKMSD();
+  const ed=document.getElementById('editor');if(ed&&ed.classList.contains('show'))ed.classList.remove('show');
+  if(demoStop)print('\\nDémonstration interrompue.');
+  demoRunning=false;demoStop=false;hideDemoHud();renderTTY();showKb()
+ }
+}
 function command(raw){
  let shown=raw.trim();if(!shown)return;hist.push(shown);histIndex=hist.length;print(cwd+'>'+shown);
  let typedUpper=norm(shown);
@@ -1032,6 +1119,8 @@ document.addEventListener('keydown',e=>{
 document.getElementById('keyboard').addEventListener('click',()=>{I.setAttribute('inputmode','none');if(!tty)I.focus({preventScroll:true});showKb()});
 document.getElementById('audioTest').addEventListener('click',async()=>{await unlockAudio();sfx.boot();setTimeout(()=>fallbackBeep(),520)});
 document.getElementById('ttyButton').addEventListener('click',()=>setTTY(!tty));
+document.getElementById('demoButton').addEventListener('click',()=>{ensureAudio();command('KDEMO')});
+document.getElementById('demoStopBtn').addEventListener('click',()=>{demoStop=true;DL.textContent='Arrêt demandé…';sfx.err()});
 document.querySelectorAll('[data-run]').forEach(b=>b.addEventListener('click',()=>{ensureAudio();command(b.dataset.run)}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})});
 document.addEventListener('touchend',()=>{if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})},{passive:true});
