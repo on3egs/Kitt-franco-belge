@@ -35,17 +35,21 @@ button:active{background:#450805}
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .status{font-size:11px;line-height:1.5}
 .bar{position:fixed;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;background:#000;padding:4px}
-.boot{position:fixed;inset:0;z-index:100;background:#000;display:flex;align-items:center;justify-content:center;padding:18px}
+.boot{position:fixed;inset:0;z-index:100;background:#000;display:block;padding:max(10px,env(safe-area-inset-top)) 12px 12px;overflow:hidden}
 .boot.hide{display:none}
-.bootbox{width:min(820px,100%);border:1px solid #77150f;background:#050000;padding:20px;text-align:left;box-shadow:0 0 35px rgba(255,45,30,.14)}
-.boothead{text-align:center}
-.title{font-size:clamp(30px,9vw,58px);font-weight:900;letter-spacing:4px;text-shadow:0 0 15px #ff2e20}
-.desc{margin:10px 0 16px;line-height:1.45;color:#ff8b80}
-.power{width:100%;padding:15px;font-size:17px}
-#bootlog{display:none;white-space:pre-wrap;line-height:1.34;font-size:clamp(12px,2vw,16px);min-height:48vh;max-height:70vh;overflow:auto}
-.booting .boothead{display:none}.booting #bootlog{display:block}
-.progress{height:8px;border:1px solid #5a100b;margin-top:10px;background:#100100}
-.progress i{display:block;height:100%;width:0;background:#d22b1d;transition:width .25s linear}
+.boot:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.032) 0 1px,transparent 2px 4px)}
+.boot:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 110px rgba(255,20,5,.10)}
+#bootpower{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;background:#000;cursor:pointer;outline:none}
+.pw-knight{font-size:clamp(21px,6vw,42px);font-weight:900;letter-spacing:6px;text-shadow:0 0 16px #ff2d20}
+.pw-sub{font-size:clamp(11px,2.6vw,16px);letter-spacing:4px;color:#ff8b80}
+.pw-touch{margin-top:26px;font-size:clamp(12px,3vw,17px);letter-spacing:3px;color:#ff5b4d;font-weight:900;animation:pwBlink 1.06s steps(1) infinite}
+@keyframes pwBlink{50%{opacity:0}}
+.pw-cr{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-size:10px;letter-spacing:1px;color:#6e2a24}
+#bootlog{display:none;white-space:pre;overflow:auto;height:100%;line-height:1.34;font-size:clamp(12px,2.1vw,17px);color:#ff6f62;text-shadow:0 0 6px rgba(255,55,40,.5);padding:2px 2px 12px}
+.boot.post #bootpower{display:none}
+.boot.post #bootlog{display:block}
+.crt-flash{position:absolute;inset:0;z-index:2;background:rgba(255,240,235,.85);pointer-events:none;transform-origin:center;animation:crtOn .5s ease-out forwards}
+@keyframes crtOn{0%{transform:scaleY(.004);opacity:1}55%{transform:scaleY(1);opacity:.28}100%{transform:scaleY(1);opacity:0}}
 #editor{display:none;position:fixed;inset:4%;z-index:280;background:#020000;border:2px solid #8b170f;padding:0;box-shadow:0 0 35px rgba(255,40,25,.18);font-family:"Courier New",monospace}
 #editor.show{display:flex;flex-direction:column}
 .edtitle{font-weight:900;padding:6px 8px;background:#7b130d;color:#ffe2de;letter-spacing:1px}
@@ -67,7 +71,7 @@ body.tty .screen{border:0;min-height:100vh;padding:14px;box-shadow:none}
 body.tty .promptrow{bottom:0}
 body.tty #history{font-size:clamp(14px,2vw,19px)}
 body.tty .screen:before{content:"KYRONEXT TTY 80x25  |  tape KINTERFACE pour quitter";display:block;color:#8c3e38;border-bottom:1px solid #35100d;padding-bottom:7px;margin-bottom:8px;font-size:11px}
-@media(max-width:780px){.layout{grid-template-columns:1fr}aside{display:none}.screen{min-height:70vh}main{padding:9px 9px 122px}.promptrow{bottom:70px}.brand{font-size:18px}.sub{font-size:8px}.bootbox{padding:14px}}
+@media(max-width:780px){.layout{grid-template-columns:1fr}aside{display:none}.screen{min-height:70vh}main{padding:9px 9px 122px}.promptrow{bottom:70px}.brand{font-size:18px}.sub{font-size:8px}}
 
 /* --- KYRONEXT TTY DIRECT + NEURAL KEYBOARD + GAMES --- */
 body.tty .promptrow{display:none!important}
@@ -161,15 +165,13 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
 </head>
 <body><div id="app">
 <div class="boot" id="boot">
-  <div class="bootbox" id="bootbox">
-    <div class="boothead">
-      <div class="title">KYRONEXT™ OS</div>
-      <div class="desc">K.I.T.T. SYSTEM — TERMINAL OPERATING ENVIRONMENT<br>Prototype 1982 / Shell Kyronext Command<br><span style="font-size:11px;opacity:.65">Copyright © 2026 Kyronext Systems™. Tous droits réservés.</span></div>
-      <button class="power" id="power">MISE SOUS TENSION</button>
-    </div>
-    <div id="bootlog"></div>
-    <div class="progress" id="progressWrap" style="display:none"><i id="progress"></i></div>
+  <div id="bootpower" role="button" tabindex="0" aria-label="Mise sous tension Kyronext">
+    <div class="pw-knight">KNIGHT INDUSTRIES</div>
+    <div class="pw-sub">KYRONEXT™ POWER CONTROL — UNITÉ 2000</div>
+    <div class="pw-touch">TOUCHER POUR INITIALISER</div>
+    <div class="pw-cr">KNIGHT INDUSTRIES 2000 · KYRONEXT™ OS · Created by Manix</div>
   </div>
+  <div id="bootlog"></div>
 </div>
 
 <header><div><div class="brand">KYRONEXT™ OS // K.I.T.T.</div><div class="sub">SYSTEM SHELL 1.6 — BUILD 1982/2026 · © KYRONEXT SYSTEMS™</div></div><div class="scanner"><span></span></div></header>
@@ -351,7 +353,7 @@ async function unlockAudio(){
  if(!audioUnlocked){
   try{
    if(!fallbackAudio){
-    fallbackAudio=new Audio('/beep.wav');
+    fallbackAudio=new Audio('beep.wav');
     fallbackAudio.preload='auto';
     fallbackAudio.playsInline=true;
    }
@@ -371,7 +373,7 @@ function fallbackBeep(){
  if(!sound)return;
  try{
   if(!fallbackAudio){
-   fallbackAudio=new Audio('/beep.wav');
+   fallbackAudio=new Audio('beep.wav');
    fallbackAudio.preload='auto';
    fallbackAudio.playsInline=true;
   }
@@ -625,7 +627,7 @@ function command(raw){
  if(cmd==='INFO'||cmd==='SYSINFO'){print('Chargement KINFO.KXE...');sfx.ok();openKinfo();return}
  if(cmd==='MAN'){let q=norm(args).replace(/^K/,'');let d={'DIR':'KDIR [chemin] — affiche un répertoire.','MD':'KMD <nom> — crée un répertoire.','RD':'KRD <nom> — supprime un répertoire vide.','DEL':'KDEL <fichier> — supprime un fichier.','EDIT':'KEDIT <fichier> — éditeur texte/code Kyronext.','XMEM':'KXMEM <Ko> — règle la mémoire étendue.','TTY':'KTTY — terminal direct 80x25.','RUN':'KRUN <jeu.KXE> — lance un exécutable.','VOLUME':'KVOLUME <0-100> — règle le volume.','MSD':'KMSD — ouvre Kyronext Machine/System Diagnostics, inspiré de MSD.EXE.','INFO':'KINFO — alias de KMSD.','SYSINFO':'KSYSINFO — alias de KMSD.','DEMO':'KDEMO — démonstration automatique des fonctions Kyronext à vitesse humaine.','COMPILE':'KCOMPILE <source.KXA> — compile un script Kyronext en .KXE.','CODE':'KCODE <fichier.KXA> — ouvre l’éditeur de code Kyronext.','INFO':'KINFO — ouvre Kyronext Information & Diagnostics, inspiré des utilitaires de diagnostic DOS.'};if(!q){print('Syntaxe : KMAN <commande>');sfx.err();return}print(d[q]||('Pas de page KMAN pour K'+q+'.'));sfx.ok();return}
  if(cmd==='VOLUME'){let n=parseInt(args,10);if(!Number.isFinite(n)){print('Volume Kyronext : '+volumePct+'%\\nSyntaxe : KVOLUME <0-100>');sfx.ok();return}volumePct=Math.max(0,Math.min(100,n));if(master)master.gain.value=(volumePct/100)*0.6;print('Volume Kyronext réglé à '+volumePct+'%.');sfx.ok();return}
- if(cmd==='BOOTLOG'){print('[KXD] MEMORY.KXD\\n[KXD] KXMEM.KXD\\n[KXD] DISPLAY.KXD\\n[KXD] AUDIO.KXD\\n[KXD] INPUT.KXD\\n[KXD] STORAGE.KXD\\n[KXD] CDROM.KXD\\n[KXD] NETLINK.KXD\\n[KXE] KXEDIT.KXE\\n[KXE] KMSD.KXE\\n[KXE] KCOMPILER.KXE\\n[KXE] KDEMO.KXE\\n[KXM] CUDA.KXM\\n[KXS] KITTCORE.KXS\\n[KXS] VOICE.KXS\\n[KXA] STARTUP.KXA\\n\\nTous les modules : OK');sfx.scan();return}
+ if(cmd==='BOOTLOG'){print('KNIGHT INDUSTRIES 2000 BOOT ROM V1.6 - POST PASSED\nMEMORY TEST : 640 Ko OK\nKXMEM EXTENDED MEMORY : 32768 Ko OK\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\n\n[KXD] MEMORY.KXD\n[KXD] KXMEM.KXD\n[KXD] DISPLAY.KXD\n[KXD] AUDIO.KXD\n[KXD] INPUT.KXD\n[KXD] STORAGE.KXD\n[KXD] CDROM.KXD\n[KXD] NETLINK.KXD\n[KXE] KXEDIT.KXE\n[KXE] KMSD.KXE\n[KXE] KCOMPILER.KXE\n[KXE] KDEMO.KXE\n[KXE] KINFO.KXE\n[KXM] CUDA.KXM\n[KXM] RELAIS.KXM\n[KXS] KITTCORE.KXS\n[KXS] VOICE.KXS\n[KXA] STARTUP.KXA\n\nTous les modules : OK');sfx.scan();return}
  if(cmd==='RUN'){
   let raw=args.trim(),e=norm(raw).replace(/^K/,'').replace(/\.KXE$/,'');let m={PACMAN:'PACMAN',TETRIS:'TETRIS',SPACEKR:'SPACEKR',TRONKR:'TRONKR'};
   if(m[e]){print('KRUN : chargement '+e+'.KXE...');sfx.ok();launchGame(m[e]);return}
@@ -652,7 +654,7 @@ function command(raw){
  if(cmd==='DEVICES'){print('KDEVICE 00  KITT CORE\nKDEVICE 01  VECTOR DISPLAY\nKDEVICE 02  AUDIO SYNTH\nKDEVICE 03  INPUT MATRIX\nKDEVICE 04  CD-ROM\nKDEVICE 05  KX-LINK\nKDEVICE 06  VEHICLE BUS');sfx.ok();return}
  if(cmd==='IRQ'){print('KIRQ 01 INPUT\nKIRQ 05 DISPLAY\nKIRQ 07 AUDIO\nKIRQ 11 CYBERNETIC CORE\nKIRQ 15 VEHICLE CONTROL');sfx.ok();return}
  if(cmd==='PORTS'){print('KPORT 00 VOICE\nKPORT 01 DISPLAY\nKPORT 02 SCANNER\nKPORT 03 VEHICLE\nKPORT 04 VIGILANCE\nKPORT 05 KX-LINK');sfx.ok();return}
- if(cmd==='BIOS'){print('KYRONEXT BOOT ROM 1.6\nVendor : Kyronext Systems™\nMachine : Knight Industries 2000\nPOST : PASSED\nBoot volume : K:');sfx.ok();return}
+ if(cmd==='BIOS'){print('KNIGHT INDUSTRIES 2000 BOOT ROM 1.6\nVendor : Kyronext Systems™\nMachine : Knight Industries 2000\nPOST : PASSED\nMemoire : 640 Ko + 32768 Ko KXMEM\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\nBoot volume : K:');sfx.ok();return}
  if(cmd==='UPTIME'){let sec=Math.floor(performance.now()/1000);print('Temps système : '+Math.floor(sec/3600)+'h '+Math.floor((sec%3600)/60)+'m '+(sec%60)+'s');sfx.ok();return}
  if(cmd==='TASKS'){print('PID 01 KITTCORE.KXS  RUNNING\nPID 02 VOICE.KXS     WAIT\nPID 03 KX-LINK       RUNNING\nPID 04 DISPLAY       RUNNING\nPID 05 COMMAND       RUNNING');sfx.ok();return}
  if(cmd==='LOG'){print('K:\\KYRONEXT\\SYSTEM.LOG\n[OK] BOOT COMPLETE\n[OK] KITT CORE ONLINE\n[OK] AUDIO READY\n[OK] KX-LINK READY\n[OK] COMMAND SHELL ACTIVE');sfx.ok();return}
@@ -1050,53 +1052,78 @@ document.querySelectorAll('[data-gk]').forEach(b=>{const k=b.dataset.gk;b.addEve
 document.addEventListener('keydown',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(e.key==='Escape'){e.preventDefault();closeGame();return}if(m[e.key]){e.preventDefault();gameAction(m[e.key],true)}});
 document.addEventListener('keyup',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(m[e.key])gameAction(m[e.key],false)});
 
-document.getElementById('power').addEventListener('click',async()=>{
- await unlockAudio();sfx.boot();
- const box=document.getElementById('bootbox'),log=document.getElementById('bootlog'),bar=document.getElementById('progress'),pw=document.getElementById('progressWrap');
- box.classList.add('booting');pw.style.display='block';log.textContent='';
- const seq=[
-  ['KYRONEXT BOOT ROM 1.2',500],
-  ['Test mémoire principale.................... OK',650],
-  ['Détection stockage K:...................... OK',550],
-  ['Chargement K:\\\\KYRONEXT\\\\KYRONEXT.KXK..... OK',650],
-  ['Lecture K:\\\\KYRONEXT\\\\SYSTEM.KXC.......... OK',520],
-  ['',250],
-  ['[KXD] MEMORY.KXD   gestion mémoire......... OK',520],
-  ['[KXD] KXMEM.KXD    mémoire étendue KX-HMA.... OK',650],
-  ['[KXD] DISPLAY.KXD  pilote graphique CRT.... OK',620],
-  ['[KXD] AUDIO.KXD    pilote audio............. OK',620],
-  ['[KXD] INPUT.KXD    clavier / pointeur....... OK',520],
-  ['[KXD] STORAGE.KXD  contrôleur disque........ OK',520],
-  ['[KXD] CDROM.KXD    lecteur optique.......... OK',700],
-  ['[KXD] NETLINK.KXD  interface KX-LINK........ OK',620],
-  ['',220],
-  ['[KXE] KXEDIT.KXE   éditeur texte / code..... OK',560],
-  ['[KXE] KMSD.KXE     diagnostic machine........ OK',600],
-  ['[KXE] KCOMPILER.KXE compilateur KX............. OK',580],
-  ['[KXE] KDEMO.KXE     démonstrateur système....... OK',520],
-  ['[KXE] KINFO.KXE    information système...... OK',580],
-  ['[KXM] CUDA.KXM     accélération calcul...... OK',700],
-  ['[KXS] KITTCORE.KXS intelligence K.I.T.T..... OK',750],
-  ['[KXS] VOICE.KXS    STT / TTS................ OK',650],
-  ['',220],
-  ['Exécution K:\\\\KYRONEXT\\\\STARTUP.KXA',500],
-  ['  CORE START............................... OK',420],
-  ['  AUDIO START.............................. OK',420],
-  ['  KX-LINK START............................ OK',420],
-  ['  K.I.T.T. ONLINE......................... OK',600],
-  ['',240],
-  ['KYRONEXT OS PRÊT.',800]
- ];
- for(let i=0;i<seq.length;i++){
-   let [t,d]=seq[i];log.textContent+=t+'\\n';log.scrollTop=log.scrollHeight;
-   bar.style.width=Math.round(((i+1)/seq.length)*100)+'%';
-   if(t.includes('OK'))sfx.tick();
-   await new Promise(r=>setTimeout(r,d));
- }
- document.getElementById('boot').classList.add('hide');
- print('KYRONEXT™ OS 1.4\\nCopyright © 2026 Kyronext Systems™\\nK.I.T.T. SYSTEM ONLINE\\nTape KAIDE pour les commandes ou KTTY pour le terminal plein écran.');
+let powerOnDone=false;
+function crtFlash(){try{const B=document.getElementById('boot'),f=document.createElement('div');f.className='crt-flash';B.appendChild(f);setTimeout(()=>f.remove(),700)}catch(e){}}
+async function powerOn(){
+ if(powerOnDone)return;powerOnDone=true;
+ try{await unlockAudio()}catch(e){}
+ sfx.boot();crtFlash();
+ const B=document.getElementById('boot'),log=document.getElementById('bootlog');
+ B.classList.add('post');
+ const bl=[];
+ const line=(t='')=>{bl.push(t);log.textContent=bl.join('\n');log.scrollTop=log.scrollHeight};
+ const setLast=(t)=>{bl[bl.length-1]=t;log.textContent=bl.join('\n');log.scrollTop=log.scrollHeight};
+ const pad=(l)=>{l=l+' ';while(l.length<44)l+='.';return l};
+ const ok=async(label,d=420)=>{line(pad(label));await sleep(d);setLast(pad(label)+' OK');sfx.tick()};
+ line('KNIGHT INDUSTRIES 2000 BOOT ROM  V1.6');await sleep(460);
+ line('KYRONEXT SYSTEMS (C) 2026 - ALL RIGHTS RESERVED');await sleep(340);
+ line('K.I.T.T. MICROPROCESSOR : KYRONEXT KX-82 / 8 MHZ');await sleep(460);
+ line('');
+ await ok('K.I.T.T. MICROPROCESSOR INITIALIZATION',540);
+ await ok('ALPHA CIRCUIT CHECK',520);
+ await ok('K-BUS VEHICLE CONTROL',480);
+ await ok('VOICE / ANHARMONIC SYNTHESIZER',480);
+ await ok('SCANNER / SENSOR INTERFACE',480);
+ line('');
+ line('MEMORY TEST :   0 Ko');
+ for(let kb=64;kb<=640;kb+=64){setLast('MEMORY TEST : '+String(kb).padStart(3,' ')+' Ko');tone(1040,.02,'square',.2);await sleep(95)}
+ setLast('MEMORY TEST : 640 Ko  OK');await sleep(380);
+ line('KXMEM EXTENDED MEMORY :     0 Ko');
+ for(let kb=2048;kb<=kxMemKB;kb+=2048){setLast('KXMEM EXTENDED MEMORY : '+String(kb).padStart(5,' ')+' Ko');tone(760,.03,'square',.2);await sleep(105)}
+ setLast('KXMEM EXTENDED MEMORY : '+kxMemKB+' Ko  OK');await sleep(380);
+ line('K.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns');await sleep(640);
+ tone(880,.1,'square',.72);await sleep(300);
+ line('');
+ await ok('STORAGE K:  KYRONEXT-HDD 32 Mo',520);
+ await ok('PARITY CHECK',400);
+ line('');
+ line('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK');
+ for(let n=1;n<=8;n++){let s='[';for(let i=1;i<=8;i++)s+=i<=n?'#':'.';setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  '+s+']');sfx.tick();await sleep(190)}
+ setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  OK');await sleep(340);
+ await ok('LECTURE K:\\KYRONEXT\\SYSTEM.KXC',420);
+ line('EXECUTION K:\\KYRONEXT\\STARTUP.KXA');await sleep(420);
+ line('');
+ await ok('[KXD] MEMORY.KXD  gestion memoire',380);
+ await ok('[KXD] KXMEM.KXD   memoire etendue',380);
+ await ok('[KXD] DISPLAY.KXD pilote CRT 1982',380);
+ await ok('[KXD] AUDIO.KXD   pilote audio',380);
+ await ok('[KXD] INPUT.KXD   clavier / pointeur',380);
+ await ok('[KXD] STORAGE.KXD controleur disque',380);
+ await ok('[KXD] CDROM.KXD   lecteur optique',440);
+ await ok('[KXD] NETLINK.KXD interface KX-LINK',380);
+ line('');
+ await ok('[KXE] KXEDIT.KXE  editeur texte / code',380);
+ await ok('[KXE] KMSD.KXE    diagnostic machine',380);
+ await ok('[KXE] KCOMPILER.KXE compilateur KX',380);
+ await ok('[KXE] KDEMO.KXE   demonstration systeme',380);
+ await ok('[KXE] KINFO.KXE    information systeme',380);
+ await ok('[KXM] CUDA.KXM    acceleration calcul',440);
+ await ok('[KXM] RELAIS.KXM  relais vehicule',380);
+ await ok('[KXS] KITTCORE.KXS intelligence K.I.T.T.',560);
+ await ok('[KXS] VOICE.KXS    STT / TTS',440);
+ line('');
+ line('  CORE START ............................... OK');sfx.tick();await sleep(400);
+ line('  AUDIO START .............................. OK');sfx.tick();await sleep(400);
+ line('  KX-LINK START ............................ OK');sfx.tick();await sleep(400);
+ line('  K.I.T.T. ONLINE .......................... OK');await sleep(560);
+ line('');
+ line('KYRONEXT OS PRET.');sfx.boot();await sleep(900);
+ B.classList.add('hide');
+ print('KYRONEXT™ OS 1.4\nCopyright © 2026 Kyronext Systems™\nK.I.T.T. SYSTEM ONLINE\nTape KAIDE pour les commandes ou KTTY pour le terminal plein écran.');
  setTimeout(()=>I.focus(),120);sfx.ok()
-});
+}
+document.getElementById('bootpower').addEventListener('click',powerOn);
+document.getElementById('bootpower').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();powerOn()}});
 
 document.getElementById('send').addEventListener('click',()=>{ensureAudio();command(I.value);I.value='';I.focus()});
 I.addEventListener('keydown',e=>{
