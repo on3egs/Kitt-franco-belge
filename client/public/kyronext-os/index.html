@@ -118,9 +118,11 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
 
 #gameOverlay.show{display:flex}
 .gameShell{width:min(760px,100%);height:min(94vh,760px);border:2px solid #7b160f;background:#050000;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(255,35,20,.22)}
-.gameHead{display:flex;align-items:center;gap:8px;border-bottom:1px solid #5d0f0a;padding:7px 8px;font-size:12px}
+.gameHead{display:flex;align-items:center;gap:8px;border-bottom:1px solid #5d0f0a;padding:7px 8px;font-size:12px;flex-wrap:wrap}
 #gameTitle{font-weight:900;letter-spacing:2px;flex:1}
-#gameScore{color:#69ff7b}
+#gameScore{color:#69ff7b;white-space:nowrap}
+#gamePause,#gameRestart{min-width:82px}
+#gamePause.paused{color:#ffc44e;border-color:#ffc44e}
 #gameCanvas{display:block;background:#000;margin:auto;max-width:100%;max-height:calc(94vh - 150px);image-rendering:pixelated;touch-action:none}
 .gameControls{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:7px;border-top:1px solid #3a0906}
 .gameControls button{height:44px;font-size:17px}
@@ -360,10 +362,10 @@ html,body { overflow-x:hidden; }
 </div>
 <div id="gameOverlay">
  <div class="gameShell">
-  <div class="gameHead"><span id="gameTitle">KYRONEXT GAME</span><span id="gameScore">SCORE 000000</span><button id="gameExit">QUITTER</button></div>
+  <div class="gameHead"><span id="gameTitle">KYRONEXT GAME</span><span id="gameScore">SCORE 000000</span><button id="gamePause" type="button">PAUSE</button><button id="gameRestart" type="button">RESTART</button><button id="gameExit">QUITTER</button></div>
   <canvas id="gameCanvas" width="480" height="480"></canvas>
   <div class="gameControls"><button data-gk="left">◀</button><button data-gk="up">▲</button><button data-gk="action">●</button><button data-gk="down">▼</button><button data-gk="right">▶</button></div>
-  <div class="gameHelp" id="gameHelp">Flèches : déplacement · Action : tir/rotation · QUITTER : retour Kyronext</div>
+  <div class="gameHelp" id="gameHelp">Flèches : déplacement · Action : tir/rotation · P : pause · R : restart</div>
  </div>
 </div>
 
@@ -1283,24 +1285,27 @@ document.addEventListener('keydown',e=>{if(KMSDO.classList.contains('show')&&e.k
 
 /* ── KYRONEXT™ EXECUTABLE GAME RUNTIME ───────────────────────── */
 const GO=document.getElementById('gameOverlay'),GC=document.getElementById('gameCanvas'),GX=GC.getContext('2d');
-const GTitle=document.getElementById('gameTitle'),GScore=document.getElementById('gameScore'),GHelp=document.getElementById('gameHelp');
-function gScore(){GScore.textContent='SCORE '+String((game&&game.score)||0).padStart(6,'0')}
-function gameMessage(t){GX.fillStyle='#000';GX.fillRect(0,0,GC.width,GC.height);GX.fillStyle='#ff3b2f';GX.font='bold 22px Courier New';GX.textAlign='center';GX.fillText(t,GC.width/2,GC.height/2);GX.font='14px Courier New';GX.fillText('ACTION pour rejouer · QUITTER pour revenir',GC.width/2,GC.height/2+34)}
+const GTitle=document.getElementById('gameTitle'),GScore=document.getElementById('gameScore'),GHelp=document.getElementById('gameHelp'),GPause=document.getElementById('gamePause'),GRestart=document.getElementById('gameRestart');
+function gScore(){if(game)game.level=1+Math.floor((game.score||0)/500);const s=(game&&game.score)||0,l=(game&&game.lives==null?'':(' · VIES '+game.lives)),lv=(game&&game.level?(' · NIVEAU '+game.level):'');GScore.textContent='SCORE '+String(s).padStart(6,'0')+lv+l;GPause.classList.toggle('paused',!!(game&&game.paused));GPause.textContent=game&&game.paused?'REPRENDRE':'PAUSE'}
+function gSaveScore(){if(!game)return;try{const k='kyronext.game.high.'+game.name,v=Math.max(Number(localStorage.getItem(k)||0),game.score||0);localStorage.setItem(k,String(v))}catch(_){} }
+function gameMessage(t){GX.fillStyle='#000';GX.fillRect(0,0,GC.width,GC.height);GX.fillStyle=t==='PAUSE'?'#ffc44e':'#ff3b2f';GX.font='bold 22px Courier New';GX.textAlign='center';GX.fillText(t,GC.width/2,GC.height/2);GX.font='14px Courier New';GX.fillText(t==='PAUSE'?'P ou PAUSE pour reprendre':'ACTION ou RESTART pour rejouer',GC.width/2,GC.height/2+34)}
+function toggleGamePause(){if(!game||game.over)return;game.paused=!game.paused;game.last=performance.now();sfx.ok();gScore()}
 function closeGame(){cancelAnimationFrame(gameRAF);game=null;GO.classList.remove('show');if(tty)showKb();else I.focus();print('Retour au système Kyronext™.');sfx.ok()}
 function launchGame(name){
  cancelAnimationFrame(gameRAF);hideKb();GO.classList.add('show');
- game={name,keys:{},score:0,over:false,last:performance.now(),acc:0};
+ game={name,keys:{},score:0,over:false,paused:false,last:performance.now(),acc:0,level:1};
  GTitle.textContent='KYRONEXT™ // '+name+'.KXE';gScore();
  if(name==='PACMAN')initPacman(); else if(name==='TETRIS')initTetris(); else if(name==='SPACEKR')initSpace(); else if(name==='TRONKR')initTron();
  gameRAF=requestAnimationFrame(gameLoop);sfx.scan()
 }
 function gameLoop(t){
  if(!game)return;let dt=Math.min(50,t-game.last);game.last=t;
- if(!game.over){if(game.name==='PACMAN')updatePacman(dt);else if(game.name==='TETRIS')updateTetris(dt);else if(game.name==='SPACEKR')updateSpace(dt);else if(game.name==='TRONKR')updateTron(dt)}
+ if(!game.over&&!game.paused){if(game.name==='PACMAN')updatePacman(dt);else if(game.name==='TETRIS')updateTetris(dt);else if(game.name==='SPACEKR')updateSpace(dt);else if(game.name==='TRONKR')updateTron(dt)}
  if(game.name==='PACMAN')drawPacman();else if(game.name==='TETRIS')drawTetris();else if(game.name==='SPACEKR')drawSpace();else if(game.name==='TRONKR')drawTron();
- gScore();gameRAF=requestAnimationFrame(gameLoop)
+ if(game.over&&!game.saved){game.saved=true;gSaveScore()}
+ gScore();if(game.paused)gameMessage('PAUSE');gameRAF=requestAnimationFrame(gameLoop)
 }
-function gameAction(k,on=true){if(!game)return;if(game.over&&on&&k==='action'){launchGame(game.name);return}game.keys[k]=on;if(on&&game.name==='TETRIS'&&k==='action')tRotate();if(on&&game.name==='SPACEKR'&&k==='action')spaceFire()}
+function gameAction(k,on=true){if(!game)return;if(on&&k==='pause'){toggleGamePause();return}if(on&&k==='restart'){launchGame(game.name);return}if(game.over&&on&&k==='action'){launchGame(game.name);return}if(game.paused)return;game.keys[k]=on;if(on&&game.name==='TETRIS'&&k==='action')tRotate();if(on&&game.name==='SPACEKR'&&k==='action')spaceFire()}
 
 /* PAC-MAN */
 const PMAP=['###############','#.............#','#.###.###.###.#','#.............#','#.#.###.###.#.#','#.#.........#.#','#.###.#.#.###.#','#.....#.#.....#','###.#.....#.###','#...#.###.#...#','#.#.........#.#','#.###.###.###.#','#.............#','#.###.#.#.###.#','###############'];
@@ -1358,8 +1363,10 @@ document.addEventListener('selectionchange',()=>{
 });
 
 document.getElementById('gameExit').addEventListener('click',closeGame);
+GPause.addEventListener('click',()=>gameAction('pause'));
+GRestart.addEventListener('click',()=>gameAction('restart'));
 document.querySelectorAll('[data-gk]').forEach(b=>{const k=b.dataset.gk;b.addEventListener('pointerdown',e=>{e.preventDefault();gameAction(k,true)});b.addEventListener('pointerup',e=>{e.preventDefault();gameAction(k,false)});b.addEventListener('pointercancel',()=>gameAction(k,false))});
-document.addEventListener('keydown',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(e.key==='Escape'){e.preventDefault();closeGame();return}if(m[e.key]){e.preventDefault();gameAction(m[e.key],true)}});
+document.addEventListener('keydown',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(e.key==='Escape'){e.preventDefault();closeGame();return}if(e.key.toLowerCase()==='p'){e.preventDefault();gameAction('pause',true);return}if(e.key.toLowerCase()==='r'){e.preventDefault();gameAction('restart',true);return}if(m[e.key]){e.preventDefault();gameAction(m[e.key],true)}});
 document.addEventListener('keyup',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(m[e.key])gameAction(m[e.key],false)});
 
 
