@@ -1,0 +1,28 @@
+# NOM|NAISSANCE|LIEU|SURNOM|LIEN|PLAT|DECES|SERIE|VILLE
+Marie Jeanne|1911-04-10|Calvi|Jeanne|grand-mère de Dadou|soupe de poisson et poisson|1992-12-11||Campitello (Corse)
+André|1948-12-02|Calvi||oncle de Dadou|charcuterie corse|2019-02-02||Campitello (Corse)
+Paule|1945-11-08|Calvi|Oh Baule|mère de Dadou|langouste et aubergine à la tomate|||Aix-en-Provence
+Michel|1939-02-21|Bastia|Michè|père de Dadou|risotto|mai 2022, jour non précisé||Aix-en-Provence
+David|1982-09-13|Salon-de-Provence|Dadou|enfant de Paule et Michel|sushi||K2000; Beverly Hills 90210; DBZ|Aix-en-Provence
+Anais|1992-09-01|Aix-en-Provence|Anna|compagne de Dadou|Castelle||Charmed|Aix-en-Provence
+Alexandra|1970-02-26|Pertuis|Alex|mère d'Anais|boulgour||séries policières|Meyrargues
+Espérance|1995-03-06|Aix-en-Provence|Espé|sœur d'Anais|purée jambon|||Meyrargues
+Stella|1997-04-23|Pertuis|Stellou|sœur d'Anais|bonbon||Harry Potter|Vitrolles
+Manon|1999-12-04|Aix-en-Provence|Manouette|sœur d'Anais||||Meyrargues
+Melissa|2008-01-22|Pertuis|Milou|sœur d'Anais||||Saint-Martin-de-la-Brasque
+Julia|2009-04-08|Aix-en-Provence|Juju|fille de Dadou|épinards de la cantine||Stranger Things|Aix-en-Provence
+Meliane|2011-10-25|Aix-en-Provence|Meme|fille de Dadou|sushi||Qui ment|Aix-en-Provence
+Brian|2013-09-18|Aix-en-Provence|Bibou|fils de Dadou|nouilles sautées||The 8 Shows|Aix-en-Provence
+Emma|2017-06-18|Aix-en-Provence|Nanou|fille de Dadou|sushi||Stich|Aix-en-Provence
+Pierre|1952-11-14|Bastia|Pierrot|oncle de Dadou|poisson|||Marseille
+Stephane|1973-09-02|Bastia|Sté|cousin de Dadou||||Campitello (Corse)
+Maxime|2006-03-18|Bastia||cousin de Dadou||||Campitello (Corse)
+Dora Stella|2012-06-13|Bastia||cousine de Dadou||||Campitello (Corse)
+Vanina|1973-12-09|Bastia||cousine de Dadou||||Campitello (Corse)
+Carine|1977-06-05|Bastia||cousine de Dadou||||Borgo (Corse)
+Jean Laurent|2008-06-18|Bastia||cousin de Dadou||||Borgo (Corse)
+Pierre Antoine|2011-01-31|Bastia||cousin de Dadou||||Borgo (Corse)
+Don Pierre|1971-09-12|Bastia||cousin de Dadou||||Borgo (Corse)
+Marie Therese|1914-09-26|Toulon|Marie The|grand-mère de Dadou|rosebif|||Aix-en-Provence
+Antonia|1946-12-21|Corte||marraine de Dadou||||Campitello (Corse)
+Roseline|1951-06-12|Marseille|Roro|tante de Dadou||||Marseille

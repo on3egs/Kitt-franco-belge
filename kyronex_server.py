@@ -447,7 +447,7 @@ from kyronext_link import setup as setup_kyronext_link, voice_result as kyronext
 # Preload CTranslate2 CUDA-compiled lib avant faster_whisper
 import ctypes as _ct2_ctypes
 import os as _ct2_os
-_ct2_libdir = '/home/karr/kitt-ai/ctranslate2-cuda/lib'
+_ct2_libdir = '/home/karr/CTranslate2_src/build-cuda'
 try:
     _ct2_ctypes.CDLL(
         _ct2_os.path.join(_ct2_libdir, 'libctranslate2.so'),
@@ -1830,6 +1830,8 @@ def _clean_tts_text(text: str) -> str:
     # deux lettres reste une élision française et ne constitue jamais une
     # limite de segment.
     text = normalize_tts_text(text)
+    # Prononcer les séparateurs techniques au lieu de les laisser à eSpeak.
+    text = text.replace('\\', ' anti slash ').replace('/', ' slash ')
     # TKR : prononciation stable pour la voix française Piper.
     # Le texte affiché n'est jamais modifié, uniquement la copie vocale.
     text = re.sub(r"\bTeam\s+Knight\s+Rider\b", "Tim Naïte Raïdeur", text, flags=re.I)
@@ -1841,6 +1843,8 @@ def _clean_tts_text(text: str) -> str:
     # afin que Piper ne prononce pas « over the cast ».
     text = re.sub(r'\bover\s*[- ]?\s*cast\b', 'couvert', text, flags=re.I)
     text = re.sub(r'\bforecast\b', 'prévisions météo', text, flags=re.I)
+    # Forme phonétique française pour Piper : le texte affiché reste inchangé.
+    text = re.sub(r'\bHarry\s+Potter\b', 'Héri Poteur', text, flags=re.I)
     # Les réponses visuelles structurées peuvent contenir un tableau HTML.
     # Transformer ses cellules en pauses avant de retirer les balises empêche
     # la voix de lire le code de présentation.
@@ -2230,6 +2234,8 @@ def _family_normalize(value: str) -> str:
     value = "".join(ch for ch in value if unicodedata.category(ch) != "Mn")
     # Variantes fréquentes de Whisper pour le lieu Borgo.
     value = re.sub(r"\bbon\s+go\b|\bbongo\b", "borgo", value)
+    # Variantes vocales de Stella relevées dans les conversations de Dadoo.
+    value = re.sub(r"\bst[ée]la\b|\bstellah?\b|\bstellae\b", "stella", value)
     # Variantes fréquentes de Whisper pour Meyrargues.
     value = re.sub(r"\bmayr?\s+argue?s?\b|\bme rare\b|\bmerare\b", "meyrargues", value)
     # Variante Whisper observée pour la commande « mode technique ».
@@ -2342,7 +2348,7 @@ def _load_family_data() -> None:
         "anais": "anais", "an ais": "anais", "anna ais": "anais",
         "alexandra": "alexandra", "alex andre": "alexandra",
         "espe": "espérance", "esperance": "espérance", "es perance": "espérance",
-        "stella": "stella", "stellou": "stella", "manouette": "manon",
+        "stela": "stella", "stella": "stella", "stellah": "stella", "stellou": "stella", "manouette": "manon",
         "melisa": "melissa", "melissa": "melissa", "milou": "melissa", "julia": "julia", "juju": "julia",
         "meliane": "meliane", "meliane": "meliane", "meme": "meliane",
         "brian": "brian", "brayan": "brian", "bibou": "brian", "nanou": "emma",

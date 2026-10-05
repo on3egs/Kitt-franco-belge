@@ -1,0 +1,28 @@
+{
+  "category": "media_names_voice",
+  "priority": 7,
+  "description": "Prononciation française des titres et noms propres de séries.",
+  "entries": [
+    {
+      "pattern": "Harry\\s+Potter",
+      "replacement": "Héri Poteur",
+      "use_word_boundaries": false
+    },
+    {
+      "pattern": "Stellou",
+      "replacement": "Sté-lou"
+    },
+    {
+      "pattern": "Stella",
+      "replacement": "Sté-la"
+    },
+    {
+      "pattern": "Milou",
+      "replacement": "Mi-lou"
+    },
+    {
+      "pattern": "(?:Melisa|Melissa|Mélissa)",
+      "replacement": "Mé-li-ssa"
+    }
+  ]
+}
