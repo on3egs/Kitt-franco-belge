@@ -1,0 +1,14 @@
+{
+  "category": "tts_phonetic_dictionary",
+  "priority": 60,
+  "description": "Règles phonétiques prioritaires pour les mots difficiles de la voix Kyronex.",
+  "entries": [
+    {"pattern": "Charmed\\s+OS", "replacement": "Tcharme-de OS"},
+    {"pattern": "(?:Charmed|charmade)", "replacement": "Tcharme-de"},
+    {"pattern": "(?:Melisa|Melissa|Mélissa)", "replacement": "Mé-li-ssa"},
+    {"pattern": "stressé", "replacement": "strès-sé"},
+    {"pattern": "stressante", "replacement": "strès-sante"},
+    {"pattern": "stresser", "replacement": "strès-sé"},
+    {"pattern": "stress", "replacement": "strèss"}
+  ]
+}

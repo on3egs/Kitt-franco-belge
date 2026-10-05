@@ -29,6 +29,9 @@ from typing import Any
 
 
 DEFAULT_DICT_DIR = Path(__file__).resolve().parent / "dictionaries"
+EXTERNAL_DICT_PATH = Path(
+    os.environ.get("KYRONEX_TTS_PHONETIC_DICTIONARY", "/mnt/ssd/tts_phonetic_dictionary.json")
+)
 
 
 @dataclass
@@ -118,23 +121,28 @@ class PronunciationManager:
             )
         return rules
 
+    def _dictionary_paths(self) -> list[Path]:
+        paths = sorted(self.dict_dir.glob("*.json")) if self.dict_dir.is_dir() else []
+        if EXTERNAL_DICT_PATH.is_file() and EXTERNAL_DICT_PATH not in paths:
+            paths.append(EXTERNAL_DICT_PATH)
+        return paths
+
     def reload(self) -> None:
         """Recharge tous les dictionnaires JSON du répertoire."""
         with self._lock:
             rules: list[PronunciationRule] = []
             mtimes: dict[Path, float] = {}
 
-            if self.dict_dir.is_dir():
-                for path in sorted(self.dict_dir.glob("*.json")):
-                    try:
-                        mtime = path.stat().st_mtime
-                        mtimes[path] = mtime
-                        rules.extend(self._load_dictionary(path))
-                    except Exception as exc:
-                        print(
-                            f"[PRONUNCIATION WARNING] Impossible de charger {path}: {exc}",
-                            flush=True,
-                        )
+            for path in self._dictionary_paths():
+                try:
+                    mtime = path.stat().st_mtime
+                    mtimes[path] = mtime
+                    rules.extend(self._load_dictionary(path))
+                except Exception as exc:
+                    print(
+                        f"[PRONUNCIATION WARNING] Impossible de charger {path}: {exc}",
+                        flush=True,
+                    )
 
             # Tri : priorité décroissante, puis ordre alphabétique du fichier
             rules.sort(key=lambda r: (-r.priority, r.category, r.pattern))
@@ -146,9 +154,7 @@ class PronunciationManager:
     def _needs_reload(self) -> bool:
         if not self.auto_reload:
             return False
-        if not self.dict_dir.is_dir():
-            return False
-        current = {p: p.stat().st_mtime for p in self.dict_dir.glob("*.json")}
+        current = {p: p.stat().st_mtime for p in self._dictionary_paths()}
         return current != self._mtimes
 
     # ------------------------------------------------------------------
@@ -168,6 +174,7 @@ class PronunciationManager:
             # listes), mais Piper peut les annoncer littéralement. Ils sont
             # donc retirés uniquement de la copie destinée au TTS.
             result = re.sub(r"[ \t]+", " ", text.replace("*", "")).strip()
+            result = result.replace("\\", " anti slash ").replace("/", " slash ")
             for rule in self._rules:
                 result = rule.compile().sub(rule.replacement, result)
             return result
@@ -204,9 +211,14 @@ def get_manager(dict_dir: str | Path | None = None) -> PronunciationManager:
     return _manager
 
 
-def prepare_text_for_tts(text: str, dict_dir: str | Path | None = None) -> str:
-    """Fonction utilitaire directe."""
+def clean_text_for_tts(text: str, dict_dir: str | Path | None = None) -> str:
+    """Nettoie et phonétise une copie du texte avant toute synthèse vocale."""
     return get_manager(dict_dir=dict_dir).prepare_text(text)
+
+
+def prepare_text_for_tts(text: str, dict_dir: str | Path | None = None) -> str:
+    """Alias historique conservé pour les serveurs Kyronex existants."""
+    return clean_text_for_tts(text, dict_dir)
 
 
 if __name__ == "__main__":
