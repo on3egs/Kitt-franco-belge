@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Kyronext™ OS 1982 v9 - AMÉLIORÉ</title>
+<title>Kyronext™ OS 1982 v9</title>
 <style>
 :root{--r:#ff3b2f;--r2:#8d140e;--g:#69ff7b;--a:#ffc44e;--bg:#000}
 *{box-sizing:border-box}
@@ -16,10 +16,9 @@ body{background:radial-gradient(circle at 50% 18%,rgba(120,0,0,.16),transparent 
 header{height:68px;border-bottom:2px solid var(--r2);display:flex;align-items:center;padding:7px 12px;background:#070000;position:sticky;top:0;z-index:20}
 .brand{font-weight:900;letter-spacing:2px;font-size:clamp(18px,5vw,30px);text-shadow:0 0 12px #ff2d20}
 .sub{font-size:9px;opacity:.68}
-.scanner{margin-left:auto;width:31vw;max-width:300px;height:18px;border:1px solid #69110b;overflow:hidden;position:relative;background:repeating-linear-gradient(90deg,rgba(255,46,32,.13) 0 6px,transparent 6px 9px)}
-.scanner span{position:absolute;top:2px;bottom:2px;width:30%;background:linear-gradient(90deg,transparent 0%,rgba(255,46,32,.15) 30%,#ff3b24 80%,#ffe4d4);-webkit-mask:repeating-linear-gradient(90deg,#000 0 6px,transparent 6px 9px);mask:repeating-linear-gradient(90deg,#000 0 6px,transparent 6px 9px);animation:scan 1.9s ease-in-out infinite alternate,scanFlip 3.8s linear infinite}
-@keyframes scan{from{left:-30%}to{left:100%}}
-@keyframes scanFlip{0%,49.9%{transform:scaleX(1)}50%,100%{transform:scaleX(-1)}}
+.scanner{margin-left:auto;width:31vw;max-width:300px;height:18px;border:1px solid #69110b;overflow:hidden;position:relative}
+.scanner span{position:absolute;top:2px;bottom:2px;width:26%;background:linear-gradient(90deg,transparent,#ff2e20,transparent);animation:scan 1.08s linear infinite}
+@keyframes scan{from{left:-27%}to{left:100%}}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:calc(100vh - 68px)}
 main{padding:12px 12px 118px}
 aside{border-left:2px solid #5f0b07;background:#070000;padding:10px;display:flex;flex-direction:column;gap:9px}
@@ -35,33 +34,22 @@ button{border:1px solid #77150f;background:#170201;color:#ff7669;padding:10px 8p
 button:active{background:#450805}
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .status{font-size:11px;line-height:1.5}
-.bar{position:fixed;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;background:#000;padding:4px}
+.bar{position:fixed;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;background:#000;padding:4px}
 .boot{position:fixed;inset:0;z-index:100;background:#000;display:block;padding:max(10px,env(safe-area-inset-top)) 12px 12px;overflow:hidden}
 .boot.hide{display:none}
 .boot:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.032) 0 1px,transparent 2px 4px)}
-.boot:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 110px rgba(255,20,5,.10),inset 0 0 46px rgba(0,0,0,.85);border-radius:16px/30px}
-.roll{position:absolute;left:0;right:0;height:34%;z-index:1;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(255,235,228,.015) 38%,rgba(255,235,228,.045) 50%,rgba(255,235,228,.015) 62%,transparent);animation:rollDown 8.5s linear infinite}
-@keyframes rollDown{from{top:-40%}to{top:112%}}
-@keyframes crtFlick{0%,100%{opacity:1}3%{opacity:.96}4%{opacity:1}52%{opacity:.98}53%{opacity:1}81%{opacity:.95}82.5%{opacity:1}}
-#bootpower{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;background:#000;cursor:pointer;outline:none;animation:crtFlick 5.3s infinite}
+.boot:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 110px rgba(255,20,5,.10)}
+#bootpower{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;background:#000;cursor:pointer;outline:none}
 .pw-knight{font-size:clamp(21px,6vw,42px);font-weight:900;letter-spacing:6px;text-shadow:0 0 16px #ff2d20}
 .pw-sub{font-size:clamp(11px,2.6vw,16px);letter-spacing:4px;color:#ff8b80}
 .pw-touch{margin-top:26px;font-size:clamp(12px,3vw,17px);letter-spacing:3px;color:#ff5b4d;font-weight:900;animation:pwBlink 1.06s steps(1) infinite}
 @keyframes pwBlink{50%{opacity:0}}
 .pw-cr{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-size:10px;letter-spacing:1px;color:#6e2a24}
-#bootlog{display:none;white-space:pre;overflow:auto;height:100%;line-height:1.34;font-size:clamp(12px,2.1vw,17px);color:#ff6f62;text-shadow:0 0 6px rgba(255,55,40,.55),0 0 14px rgba(255,40,25,.22);padding:2px 2px 12px;animation:crtFlick 3.7s infinite}
+#bootlog{display:none;white-space:pre;overflow:auto;height:100%;line-height:1.34;font-size:clamp(12px,2.1vw,17px);color:#ff6f62;text-shadow:0 0 6px rgba(255,55,40,.5);padding:2px 2px 12px}
 .boot.post #bootpower{display:none}
 .boot.post #bootlog{display:block}
-.crt-flash{position:absolute;inset:0;z-index:2;background:rgba(255,240,235,.85);pointer-events:none;transform-origin:center;animation:crtOn .95s ease-out forwards}
-@keyframes crtOn{0%{transform:scale(.002,.004);opacity:1}28%{transform:scale(1,.004);opacity:.95}58%{transform:scaleY(1);opacity:.3}100%{transform:scaleY(1);opacity:0}}
-.boot-scan{position:absolute;bottom:16%;left:0;right:0;height:30px;z-index:2;overflow:hidden;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,46,32,.13) 0 7px,transparent 7px 11px)}
-.boot-scan i{position:absolute;top:1px;bottom:1px;width:38%;background:linear-gradient(90deg,transparent 0%,rgba(255,46,32,.12) 30%,#ff3b24 78%,#ffe4d4 96%);box-shadow:0 0 26px rgba(255,46,32,.5);-webkit-mask:repeating-linear-gradient(90deg,#000 0 7px,transparent 7px 11px);mask:repeating-linear-gradient(90deg,#000 0 7px,transparent 7px 11px);animation:bootScan 1.9s ease-in-out infinite alternate,bootFlip 3.8s linear infinite}
-@keyframes bootScan{from{left:-40%}to{left:100%}}
-@keyframes bootFlip{0%,49.9%{transform:scaleX(1)}50%,100%{transform:scaleX(-1)}}
-.boot-badge{position:absolute;top:max(10px,env(safe-area-inset-top));right:14px;z-index:2;display:flex;flex-direction:column;align-items:center;pointer-events:none}
-.bb-glyph{font-family:"Segoe UI Symbol","Apple Symbols","Noto Sans Symbols 2","DejaVu Sans",serif;font-size:clamp(30px,6vw,52px);line-height:1;color:#ff4938;text-shadow:0 0 9px rgba(255,45,30,.8),0 0 24px rgba(255,45,30,.4);animation:bbGlow 2.8s ease-in-out infinite}
-@keyframes bbGlow{0%,100%{text-shadow:0 0 9px rgba(255,45,30,.8),0 0 24px rgba(255,45,30,.4)}50%{text-shadow:0 0 13px rgba(255,45,30,1),0 0 34px rgba(255,45,30,.55)}}
-.bb-txt{font-size:7px;letter-spacing:1.5px;line-height:1.3;color:#a1483f;text-align:center;font-weight:700;margin-top:2px}
+.crt-flash{position:absolute;inset:0;z-index:2;background:rgba(255,240,235,.85);pointer-events:none;transform-origin:center;animation:crtOn .5s ease-out forwards}
+@keyframes crtOn{0%{transform:scaleY(.004);opacity:1}55%{transform:scaleY(1);opacity:.28}100%{transform:scaleY(1);opacity:0}}
 #editor{display:none;position:fixed;inset:4%;z-index:280;background:#020000;border:2px solid #8b170f;padding:0;box-shadow:0 0 35px rgba(255,40,25,.18);font-family:"Courier New",monospace}
 #editor.show{display:flex;flex-direction:column}
 .edtitle{font-weight:900;padding:6px 8px;background:#7b130d;color:#ffe2de;letter-spacing:1px}
@@ -76,6 +64,26 @@ button:active{background:#450805}
 @media(max-width:700px){#editor{inset:2%}.edmenubar{gap:8px;font-size:9px}.edstatus{gap:6px;font-size:8px}.edstatus span:nth-child(4){display:none}#edgutter{width:36px;font-size:12px}#editarea{font-size:13px}}
 #editarea{flex:1;background:#000;color:#ff7669;border:1px solid #5e0f0a;padding:10px;font:15px "Courier New";resize:none;outline:none}
 .edbuttons{display:flex;gap:8px;margin-top:8px}.edbuttons button{flex:1}
+
+/* --- KBASIC : interpréteur BASIC Kyronext --- */
+#kbasicOverlay{display:none;position:fixed;inset:0;z-index:310;background:#000;padding:max(6px,env(safe-area-inset-top)) 6px max(6px,env(safe-area-inset-bottom));font-family:"Courier New",monospace;color:#ff7669}
+#kbasicOverlay.show{display:flex;align-items:center;justify-content:center}
+.kbasicShell{width:min(980px,100%);height:min(96vh,780px);border:2px solid #8b170f;background:#050000;display:flex;flex-direction:column;box-shadow:0 0 42px rgba(255,30,20,.24);overflow:hidden}
+.kbasicTitle{display:flex;align-items:center;gap:8px;background:#55100a;border-bottom:1px solid #9c2117;padding:7px 9px;font-weight:900;letter-spacing:1px;font-size:12px}
+.kbasicTitle .grow{flex:1}
+.kbasicMenu{display:flex;gap:14px;padding:4px 8px;border-bottom:1px solid #5a100b;background:#070000;color:#ff9a8f;font-size:10px}
+.kbasicWork{display:grid;grid-template-columns:48px 1fr;flex:1;min-height:0;background:#000}
+#kbasicGutter{padding:8px 5px;text-align:right;white-space:pre;overflow:hidden;border-right:1px solid #32100d;color:#6d3732;line-height:1.45;font-size:13px;user-select:none}
+#kbasicCode{resize:none;border:0;outline:0;background:#000;color:#ff8a7e;padding:8px;font:14px/1.45 "Courier New",monospace;caret-color:#ff493a;tab-size:2;white-space:pre;overflow:auto}
+.kbasicOutputWrap{height:190px;display:flex;flex-direction:column;border-top:1px solid #45100c;background:#020000}
+.kbasicOutputHead{padding:4px 8px;background:#35100b;color:#ffc44e;font-size:10px;letter-spacing:1px}
+#kbasicOutput{flex:1;margin:0;padding:8px;white-space:pre-wrap;overflow:auto;color:#69ff7b;font:13px/1.4 "Courier New",monospace}
+.kbasicStatus{display:flex;gap:12px;align-items:center;padding:4px 8px;background:#ff6b5d;color:#180000;font-size:10px;white-space:nowrap;overflow:hidden}
+.kbasicStatus .grow{flex:1;text-align:center}
+.kbasicButtons{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;padding:6px;background:#030000;border-top:1px solid #260805}
+.kbasicButtons button{padding:7px 4px;font-size:10px}
+@media(max-width:780px){.bar{grid-template-columns:repeat(4,minmax(0,1fr))}.kbasicShell{height:98vh}.kbasicWork{grid-template-columns:38px 1fr}.kbasicButtons{grid-template-columns:repeat(3,1fr)}.kbasicMenu{gap:7px;font-size:9px}.kbasicOutputWrap{height:150px}}
+
 body.tty header,body.tty aside,body.tty .bar{display:none}
 body.tty .layout{display:block;min-height:100vh}
 body.tty main{padding:0}
@@ -118,11 +126,9 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
 
 #gameOverlay.show{display:flex}
 .gameShell{width:min(760px,100%);height:min(94vh,760px);border:2px solid #7b160f;background:#050000;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(255,35,20,.22)}
-.gameHead{display:flex;align-items:center;gap:8px;border-bottom:1px solid #5d0f0a;padding:7px 8px;font-size:12px;flex-wrap:wrap}
+.gameHead{display:flex;align-items:center;gap:8px;border-bottom:1px solid #5d0f0a;padding:7px 8px;font-size:12px}
 #gameTitle{font-weight:900;letter-spacing:2px;flex:1}
-#gameScore{color:#69ff7b;white-space:nowrap}
-#gamePause,#gameRestart{min-width:82px}
-#gamePause.paused{color:#ffc44e;border-color:#ffc44e}
+#gameScore{color:#69ff7b}
 #gameCanvas{display:block;background:#000;margin:auto;max-width:100%;max-height:calc(94vh - 150px);image-rendering:pixelated;touch-action:none}
 .gameControls{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:7px;border-top:1px solid #3a0906}
 .gameControls button{height:44px;font-size:17px}
@@ -250,47 +256,6 @@ html,body { overflow-x:hidden; }
 .kappHead > span:nth-child(3) { grid-column:1; grid-row:2; font-size:10px; }
 #kappClose { grid-column:2; grid-row:1 / 3; min-width:80px; }
 .kappControls button { min-width:0; flex:1 1 120px; }
-
-
-/* KEDIT - Éditeur de texte amélioré */
-#keditOverlay{display:none;position:fixed;inset:0;z-index:320;background:#000;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));font-family:"Courier New",monospace;color:#ff7669;-webkit-user-select:text;user-select:text}
-#keditOverlay.show{display:flex;align-items:center;justify-content:center}
-.keditShell{width:min(920px,100%);height:min(92vh,720px);border:2px solid #8b170f;background:#060000;display:flex;flex-direction:column;box-shadow:0 0 42px rgba(255,30,20,.22);overflow:hidden}
-.keditTitleBar{display:flex;align-items:center;gap:8px;background:#4b0a06;color:#ffd3cd;padding:6px 8px;border-bottom:1px solid #9b2117;font-weight:900;font-size:12px;letter-spacing:1px}
-.keditTitleBar span:first-child{flex:1}
-.keditMenuBar{display:flex;gap:6px;padding:4px 8px;border-bottom:1px solid #5a100b;color:#ff8e83;font-size:10px;background:#070000}
-.keditWorkArea{display:flex;flex:1;min-height:0;background:#000;overflow:hidden;border-bottom:1px solid #32100d}
-#keditGutter{width:52px;flex:none;padding:8px 6px;text-align:right;white-space:pre;overflow:hidden;border-right:1px solid #32100d;color:#6d3732;line-height:1.45;font-size:13px;user-select:none;background:#020000;min-height:100%}
-#keditTextArea{flex:1;resize:none;border:0;outline:0;background:#000;color:#ff7669;padding:8px;font:14px/1.45 "Courier New",monospace;caret-color:#ff4b3b;tab-size:4;white-space:pre;overflow:auto;line-height:1.45;min-height:100%;text-transform:uppercase}
-.keditStatus{display:flex;align-items:center;gap:14px;font-size:10px;color:#1b0000;background:#ff6b5d;margin:0;border:0;padding:3px 7px;min-height:20px;white-space:nowrap;overflow:hidden}
-.keditStatus span:nth-child(4){flex:1;text-align:center}
-.keditBlink{font-size:10px;margin-left:auto;animation:keditBlink .72s steps(1) infinite}
-@keyframes keditBlink{50%{opacity:0}}
-.keditButtons{display:flex;gap:6px;padding:5px 6px;border-top:1px solid #260805;background:#030000}
-.keditButtons button{flex:1;padding:7px 5px;font-size:10px}
-.keditGutter{background:#020000;padding:8px 6px;color:#6d3732}
-
-/* KBASIC - Interpréteur BASIC */
-#kbasicOverlay{display:none;position:fixed;inset:0;z-index:330;background:#000;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));font-family:"Courier New",monospace;color:#ff7669}
-#kbasicOverlay.show{display:flex;align-items:center;justify-content:center}
-.kbasicShell{width:min(920px,100%);height:min(92vh,720px);border:2px solid #7b160f;background:#050000;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(255,35,20,.22);overflow:hidden}
-.kbasicTitleBar{display:flex;align-items:center;gap:8px;background:#4b0a06;color:#ffd3cd;padding:6px 8px;border-bottom:1px solid #9b2117;font-weight:900;font-size:12px;letter-spacing:1px}
-.kbasicTitleBar span:first-child{flex:1}
-.kbasicMenuBar{display:flex;gap:6px;padding:4px 8px;border-bottom:1px solid #5a100b;color:#ff8e83;font-size:10px;background:#070000}
-.kbasicWorkArea{display:flex;flex:1;min-height:0;background:#000;overflow:hidden;border-bottom:1px solid #32100d}
-#kbasicGutter{width:52px;flex:none;padding:8px 6px;text-align:right;white-space:pre;overflow:hidden;border-right:1px solid #32100d;color:#6d3732;line-height:1.45;font-size:13px;user-select:none;background:#020000;min-height:100%}
-#kbasicCodeArea{flex:1;resize:none;border:0;outline:0;background:#000;color:#ff8a7e;padding:8px;font:14px/1.45 "Courier New",monospace;caret-color:#69ff7b;tab-size:4;white-space:pre;overflow:auto;line-height:1.45;min-height:60%}
-.kbasicOutputArea{background:#020000;border-top:1px solid #32100d;min-height:200px;max-height:300px;overflow:auto}
-.kbasicOutputHeader{padding:4px 8px;background:#35100b;color:#ffd3cd;font-size:11px;letter-spacing:1px;border-bottom:1px solid #5a100b}
-#kbasicOutput{padding:8px;white-space:pre-wrap;line-height:1.45;font-size:13px;color:#ffb53f;overflow:auto;min-height:150px}
-.kbasicStatus{display:flex;align-items:center;gap:14px;font-size:10px;color:#1b0000;background:#ff8a7e;margin:0;border:0;padding:3px 7px;min-height:20px;white-space:nowrap;overflow:hidden}
-.kbasicStatus span:nth-child(4){flex:1;text-align:center}
-.kbasicBlink{font-size:10px;margin-left:auto;animation:kbasicBlink .72s steps(1) infinite}
-@keyframes kbasicBlink{50%{opacity:0}}
-.kbasicButtons{display:flex;gap:6px;padding:5px 6px;border-top:1px solid #260805;background:#030000}
-.kbasicButtons button{flex:1;padding:7px 5px;font-size:10px}
-.kbasicGutter{background:#020000;padding:8px 6px;color:#6d3732}
-
 </style>
 </head>
 <body><div id="app">
@@ -302,8 +267,6 @@ html,body { overflow-x:hidden; }
     <div class="pw-cr">KNIGHT INDUSTRIES 2000 · KYRONEXT™ OS · Created by Manix</div>
   </div>
   <div id="bootlog"></div>
-  <div class="roll"></div>
-  <div class="boot-badge" aria-hidden="true"><span class="bb-glyph">&#9822;</span><span class="bb-txt">KNIGHT<br>INDUSTRIES</span></div>
   <div id="coreStage" aria-label="Mise sous tension du microprocesseur central KITT">
     <div class="cstSub">MISE SOUS TENSION — MICROPROCESSEUR CENTRAL</div>
     <svg id="cstSvg" viewBox="0 0 800 540" preserveAspectRatio="xMidYMid meet" role="img">
@@ -357,7 +320,7 @@ html,body { overflow-x:hidden; }
   </div>
 </div>
 
-<header><div><div class="brand">KYRONEXT™ OS // K.I.T.T.</div><div class="sub">SYSTEM SHELL 1.9 — BUILD 1982/2026 — AMÉLIORÉ · © KYRONEXT SYSTEMS™</div></div><div class="scanner"><span></span></div></header>
+<header><div><div class="brand">KYRONEXT™ OS // K.I.T.T.</div><div class="sub">SYSTEM SHELL 2.0 — BUILD 1982/2026 · © KYRONEXT SYSTEMS™</div></div><div class="scanner"><span></span></div></header>
 
 <div class="layout">
 <main>
@@ -371,14 +334,14 @@ html,body { overflow-x:hidden; }
 <div class="panel"><div class="ph">ÉTAT</div>
 <div class="stat"><span>SYSTÈME</span><span class="ok">ACTIF</span></div>
 <div class="stat"><span>MODE</span><span id="modeSide">NORMAL</span></div>
-<div class="stat"><span>SHELL</span><span id="shellSide">K-MODE</span></div>
 <div class="stat"><span>TTY</span><span id="ttySide">OFF</span></div>
+<div class="stat"><span>SHELL</span><span id="shellSide" class="warn">K-MODE</span></div>
 <div class="stat"><span>AUDIO</span><span id="audioSide" class="warn">INIT</span></div></div>
 <div class="panel"><div class="ph">ACCÈS RAPIDES</div><div class="quick">
 <button data-run="kaide">KAIDE</button><button data-run="ktty">KTTY</button>
 <button data-run="kdiagnostic">KDIAG</button><button data-run="kscanner">KSCAN</button>
 <button data-run="ksysteme">KSYSTÈME</button><button data-run="kvehicule">KVÉHICULE</button>
-<button data-run="kcore">KCORE IA</button><button data-run="kson test">KSON TEST</button><button data-run="kdemo">▶ KDEMO</button><button data-run="kedit">KEDIT</button><button data-run="kbasic">KBASIC</button><button data-run="kshell">SHELL</button>
+<button data-run="kcore">KCORE IA</button><button data-run="kson test">KSON TEST</button><button data-run="kdemo">▶ KDEMO</button><button data-run="kedit README.KXT">KEDIT</button><button data-run="kbasic BASIC\\HELLO.KXB">KBASIC</button><button data-run="kshell">SHELL</button>
 </div></div>
 <div class="panel"><div class="ph">SYSTÈME CENTRAL</div><div class="quick">
 <button data-run="kcentral">KCENTRAL</button><button data-run="kradar">KRADAR</button>
@@ -402,12 +365,24 @@ html,body { overflow-x:hidden; }
  </div>
  <div class="edbuttons"><button id="editorKeyboard">⌨ CLAVIER KX</button><button id="saveEdit">F2 ENREGISTRER</button><button id="runEdit">F5 EXÉCUTER</button><button id="cancelEdit">ESC QUITTER</button></div>
 </div>
+
+<div id="kbasicOverlay" aria-label="Kyronext KBASIC">
+ <div class="kbasicShell">
+  <div class="kbasicTitle"><span id="kbasicTitle">KYRONEXT™ KBASIC 1.0</span><span class="grow"></span><span>GW/QBASIC COMPATIBLE STYLE</span><button id="kbasicClose">QUITTER</button></div>
+  <div class="kbasicMenu"><span>FICHIER</span><span>ÉDITION</span><span>EXÉCUTER</span><span>DÉBOGUER</span><span>AIDE</span></div>
+  <div class="kbasicWork"><div id="kbasicGutter">1</div><textarea id="kbasicCode" spellcheck="false" wrap="off"></textarea></div>
+  <div class="kbasicOutputWrap"><div class="kbasicOutputHead">SORTIE PROGRAMME</div><pre id="kbasicOutput">KBASIC 1.0 READY.\nOK</pre></div>
+  <div class="kbasicStatus"><span id="kbasicPos">LIGNE 1 · COL 1</span><span id="kbasicState">PRÊT</span><span class="grow" id="kbasicFile">NONAME.KXB</span><span>F2 SAVE · F5 RUN · F6 STOP · ESC EXIT</span></div>
+  <div class="kbasicButtons"><button id="kbasicKeyboard">⌨ CLAVIER KX</button><button id="kbasicSave">F2 SAUVER</button><button id="kbasicRun">F5 EXÉCUTER</button><button id="kbasicStop">F6 STOP</button><button id="kbasicNew">NOUVEAU</button><button id="kbasicExit">SYSTEM</button></div>
+ </div>
+</div>
+
 <div id="gameOverlay">
  <div class="gameShell">
-  <div class="gameHead"><span id="gameTitle">KYRONEXT GAME</span><span id="gameScore">SCORE 000000</span><button id="gamePause" type="button">PAUSE</button><button id="gameRestart" type="button">RESTART</button><button id="gameExit">QUITTER</button></div>
+  <div class="gameHead"><span id="gameTitle">KYRONEXT GAME</span><span id="gameScore">SCORE 000000</span><button id="gameExit">QUITTER</button></div>
   <canvas id="gameCanvas" width="480" height="480"></canvas>
   <div class="gameControls"><button data-gk="left">◀</button><button data-gk="up">▲</button><button data-gk="action">●</button><button data-gk="down">▼</button><button data-gk="right">▶</button></div>
-  <div class="gameHelp" id="gameHelp">Flèches : déplacement · Action : tir/rotation · P : pause · R : restart</div>
+  <div class="gameHelp" id="gameHelp">Flèches : déplacement · Action : tir/rotation · QUITTER : retour Kyronext</div>
  </div>
 </div>
 
@@ -551,17 +526,23 @@ Transmission animée, annulation à tout moment.</div>
 <script>
 (()=>{
 const H=document.getElementById('history'),I=document.getElementById('cmd'),P=document.getElementById('prompt'),TP=document.getElementById('ttyPrompt'),TB=document.getElementById('ttyBuffer'),KB=document.getElementById('kitt-kb');
-const ttySide=document.getElementById('ttySide'),audioSide=document.getElementById('audioSide'),modeSide=document.getElementById('modeSide');
-let ctx=null,master=null,sound=true,mode='NORMAL',tty=false,cwd='K:\\KYRONEXT',hist=[],histIndex=0,editFile=null,ttyBuffer='',kbShift=false,kbNums=false,kbAccs=false,kxMemKB=32768,kxMemEnabled=true,volumePct=70,game=null,gameRAF=0,fallbackAudio=null,audioUnlocked=false,demoRunning=false,demoStop=false,editorInsert=true;
+const ttySide=document.getElementById('ttySide'),audioSide=document.getElementById('audioSide'),modeSide=document.getElementById('modeSide'),shellSide=document.getElementById('shellSide');
+let ctx=null,master=null,sound=true,mode='NORMAL',tty=false,shellMode=false,cwd='K:\\KYRONEXT',hist=[],histIndex=0,editFile=null,basicFile=null,basicRunning=false,basicStop=false,ttyBuffer='',kbShift=false,kbNums=false,kbAccs=false,kxMemKB=32768,kxMemEnabled=true,volumePct=70,game=null,gameRAF=0,fallbackAudio=null,audioUnlocked=false,demoRunning=false,demoStop=false,editorInsert=true;
 
 const fs={
- 'K:\\KYRONEXT':{type:'dir',children:['SYSTEME','KITT','CENTRAL','FLAG','MISSIONS','COMMUNICATION','DIAGNOSTIC','ARCHIVES','VEHICULE','VIGILANCE','AUDIO','JEUX','KYRONEXT.KXK','SYSTEM.KXC','STARTUP.KXA','DEMO.KXA','README.KXT']},
- 'K:\\KYRONEXT\\SYSTEME':{type:'dir',children:['MEMORY.KXD','KXMEM.KXD','DISPLAY.KXD','AUDIO.KXD','INPUT.KXD','NETLINK.KXD','STORAGE.KXD','CDROM.KXD','CUDA.KXM','KXEDIT.KXE','KMSD.KXE','KDEMO.KXE','KCOMPILER.KXE','KINFO.KXE','KCENTRAL.KXE','KRADAR.KXE','KMISSION.KXE','KCOMLINK.KXE']},
+ 'K:\\KYRONEXT':{type:'dir',children:['SYSTEME','BASIC','KITT','CENTRAL','FLAG','MISSIONS','COMMUNICATION','DIAGNOSTIC','ARCHIVES','VEHICULE','VIGILANCE','AUDIO','JEUX','KYRONEXT.KXK','SYSTEM.KXC','STARTUP.KXA','DEMO.KXA','README.KXT']},
+ 'K:\\KYRONEXT\\SYSTEME':{type:'dir',children:['MEMORY.KXD','KXMEM.KXD','DISPLAY.KXD','AUDIO.KXD','INPUT.KXD','NETLINK.KXD','STORAGE.KXD','CDROM.KXD','CUDA.KXM','KXEDIT.KXE','KEDIT.KXE','KBASIC.KXE','SHELL.KXM','KMSD.KXE','KDEMO.KXE','KCOMPILER.KXE','KINFO.KXE','KCENTRAL.KXE','KRADAR.KXE','KMISSION.KXE','KCOMLINK.KXE']},
  'K:\\KYRONEXT\\KITT':{type:'dir',children:['KITTCORE.KXS','VOICE.KXS','COMMAND.KXC']},
  'K:\\KYRONEXT\\VEHICULE':{type:'dir',children:['RELAIS.KXM','CAPTEURS.KXM','AUTOCRUISE.KXM']},
  'K:\\KYRONEXT\\VIGILANCE':{type:'dir',children:['CAMERA.KXM','EVENTS.KXL']},
  'K:\\KYRONEXT\\AUDIO':{type:'dir',children:['SFX.KXP','VOICE.KXP']},
  'K:\\KYRONEXT\\JEUX':{type:'dir',children:['PACMAN.KXE','TETRIS.KXE','SPACEKR.KXE','TRONKR.KXE']},
+ 'K:\\KYRONEXT\\BASIC':{type:'dir',children:['HELLO.KXB','DEMO.KXB']},
+ 'K:\\KYRONEXT\\BASIC\\HELLO.KXB':{type:'file',text:'10 CLS\n20 PRINT "KYRONEXT KBASIC READY"\n30 FOR I = 1 TO 5\n40 PRINT "SCANNER "; I\n50 NEXT I\n60 PRINT "PROGRAMME TERMINE"\n70 END'},
+ 'K:\\KYRONEXT\\BASIC\\DEMO.KXB':{type:'file',text:'10 PRINT "KNIGHT INDUSTRIES"\n20 LET X = 4\n30 GOSUB 100\n40 IF X > 0 THEN 60\n50 END\n60 PRINT "X="; X\n70 LET X = X - 1\n80 GOTO 40\n100 PRINT "KYRONEXT BASIC DEMO"\n110 RETURN'},
+ 'K:\\KYRONEXT\\SYSTEME\\KEDIT.KXE':{type:'file',text:'PROGRAM=KEDIT\nTYPE=TEXT EDITOR\nSTYLE=MS-DOS EDIT\nSTATE=READY'},
+ 'K:\\KYRONEXT\\SYSTEME\\KBASIC.KXE':{type:'file',text:'PROGRAM=KBASIC\nTYPE=BASIC INTERPRETER\nCOMPAT=GW-BASIC/QBASIC STYLE\nSTATE=READY'},
+ 'K:\\KYRONEXT\\SYSTEME\\SHELL.KXM':{type:'file',text:'MODULE=KYRONEXT SHELL\nDIRECT_COMMANDS=ON\nSTATE=READY'},
  'K:\\KYRONEXT\\KYRONEXT.KXK':{type:'file',text:'KYRONEXT KERNEL IMAGE\nVERSION=1.2\nMODE=EMBEDDED'},
  'K:\\KYRONEXT\\SYSTEM.KXC':{type:'file',text:'LANG=FR\nTTY=80x25\nAUDIO=ON\nNETWORK=KX-LINK\nCORE=ACTIVE'},
  'K:\\KYRONEXT\\STARTUP.KXA':{type:'file',text:'LOAD SYSTEM.KXC\nSTART KITTCORE.KXS\nSTART VOICE.KXS\nSTART WEBUI.KXS\nREADY'},
@@ -712,49 +693,12 @@ function tone(f,d=.06,type='square',gain=.7,delay=0){
   o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.03);
  }catch(e){fallbackBeep()}
 }
-function noiseBurst(dur=.02,freq=1300,gain=.5,delay=0){
- if(!sound)return;
- if(!ctx||ctx.state!=='running'){ensureAudio();if(!ctx||ctx.state!=='running')return}
- try{
-  const t=ctx.currentTime+delay,n=Math.max(1,Math.floor(ctx.sampleRate*dur)),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);
-  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
-  const src=ctx.createBufferSource();src.buffer=b;
-  const f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=1.1;
-  const g=ctx.createGain();g.gain.value=gain;
-  src.connect(f);f.connect(g);g.connect(master);src.start(t)
- }catch(e){}
-}
-function hum(dur=.9,gain=.18){tone(55,dur,'sine',gain);tone(110,dur,'sine',gain*.45,0);tone(220,dur,'sine',gain*.18,0)}
-class AudioSynth{
- constructor(){this.typeCursor=0}
- context(){if(!sound)return null;try{ensureAudio();return ctx&&ctx.state==='running'?ctx:null}catch(e){return null}}
- tone(frequency,duration,gain,type,when){const c=this.context();if(!c)return;try{const t=Math.max(c.currentTime+.004,when||c.currentTime+.004),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(frequency,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+duration);o.connect(g);g.connect(master);o.start(t);o.stop(t+duration+.02)}catch(e){}}
- key(){const c=this.context();if(!c)return;this.typeCursor=Math.max(this.typeCursor,c.currentTime+.004);this.tone(1000,.02,.035,'sine',this.typeCursor);this.typeCursor+=.018}
- ok(){const c=this.context();if(!c)return;const t=Math.max(c.currentTime+.004,this.typeCursor);this.tone(440,.06,.1,'square',t);this.tone(880,.08,.085,'sine',t+.07);this.typeCursor=t+.17}
-}
-const audioSynth=new AudioSynth();
-const sfx={ok:()=>audioSynth.ok(),err:()=>{tone(180,.1,'sawtooth',.7);tone(125,.15,'sawtooth',.7,.1)},scan:()=>[220,330,440,550,660,820].forEach((f,i)=>tone(f,.05,'square',.55,i*.055)),boot:()=>{tone(180,.08,'square',.85);tone(270,.08,'square',.85,.09);tone(360,.09,'square',.85,.18);tone(540,.18,'sine',.9,.29)},tick:()=>tone(780,.025,'square',.18)};
+const sfx={ok:()=>{tone(520,.05,'square',.7);tone(760,.08,'square',.7,.06)},err:()=>{tone(180,.1,'sawtooth',.7);tone(125,.15,'sawtooth',.7,.1)},scan:()=>[220,330,440,550,660,820].forEach((f,i)=>tone(f,.05,'square',.55,i*.055)),boot:()=>{tone(180,.08,'square',.85);tone(270,.08,'square',.85,.09);tone(360,.09,'square',.85,.18);tone(540,.18,'sine',.9,.29)},tick:()=>tone(780,.025,'square',.18)};
 
-function print(t=''){const text=String(t);H.textContent+=(H.textContent?'\n':'')+text;const chars=text.replace(/\s/g,'');for(let i=0;i<Math.min(chars.length,180);i++)audioSynth.key();if(/\[\s*OK\s*\]/i.test(text))audioSynth.ok();window.scrollTo(0,document.body.scrollHeight)}
+function print(t=''){H.textContent+=(H.textContent?'\n':'')+t;window.scrollTo(0,document.body.scrollHeight)}
 function norm(s){return s.toUpperCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
-function renderTTY(){
-  if(shellMode) {
-    TP.textContent=cwd+' SHELL>';
-  } else {
-    TP.textContent=cwd+'>';
-  }
-  TB.textContent=ttyBuffer;
-}
-function prompt(){
-  if(shellMode) {
-    P.textContent=cwd+' SHELL>';
-    I.placeholder='Commande shell…';
-  } else {
-    P.textContent=cwd+'>';
-    I.placeholder='Commande…';
-  }
-  renderTTY();
-}
+function renderTTY(){TP.textContent=(shellMode?'SHELL ':'')+cwd+'>';TB.textContent=ttyBuffer}
+function prompt(){P.textContent=(shellMode?'SHELL ':'')+cwd+'>';I.placeholder=shellMode?'Commande DOS/Kyronext…':'Commande K…';if(shellSide){shellSide.textContent=shellMode?'DIRECT':'K-MODE';shellSide.className=shellMode?'ok':'warn'}renderTTY()}
 function resolve(name){if(!name)return cwd;name=name.replaceAll('/','\\');if(/^K:\\/i.test(name))return name.toUpperCase();if(name==='..'){let p=cwd.split('\\');if(p.length>1)p.pop();return p.join('\\')}if(name==='.')return cwd;return (cwd+'\\'+name).toUpperCase()}
 function setTTY(on){
  tty=on;document.body.classList.toggle('tty',on);ttySide.textContent=on?'ON':'OFF';ttyBuffer='';renderTTY();
@@ -790,6 +734,13 @@ function kbPress(k){
  sfx.tick();
  if(k==='SH'){kbShift=!kbShift;renderKb();return}
  if(k==='MODE'){if(!kbNums&&!kbAccs)kbAccs=true;else if(kbAccs){kbAccs=false;kbNums=true}else kbNums=false;renderKb();return}
+ if(document.getElementById('kbasicOverlay').classList.contains('show')){
+  const ea=document.getElementById('kbasicCode');
+  if(k==='SEND'){basicInsertText('\n');return}
+  if(k==='BS'){let st=ea.selectionStart||0,en=ea.selectionEnd||st;if(st!==en)ea.setRangeText('',st,en,'end');else if(st>0)ea.setRangeText('',st-1,st,'end');ea.dispatchEvent(new Event('input',{bubbles:true}));return}
+  let ch=k==='SPACE'?' ':((kbShift&&!kbNums&&!kbAccs)?k.toUpperCase():k);basicInsertText(ch);
+  if(kbShift&&!kbNums&&!kbAccs){kbShift=false;renderKb()}return
+ }
  if(document.getElementById('editor').classList.contains('show')){
   const ea=document.getElementById('editarea');
   if(k==='SEND'){editorTextInsert('\n');return}
@@ -811,7 +762,7 @@ function kbPress(k){
 }
 
 function help(){
- print('KYRONEXT™ K-COMMAND — AIDE ÉTENDUE\nToutes les commandes Kyronext commencent par K.\n\nSYSTÈME / FICHIERS\n KAIDE, KHELP, KVER, KVERSION, KCLS, KEFFACER\n KDIR [chemin], KTREE, KCD [dossier], KCD.., KPWD\n KTYPE <fichier>, KEDIT <fichier>, KCODE <fichier>\n KCOPY <src> <dst>, KMOVE <src> <dst>, KDEL <fichier>, KREN <src> <dst>\n KMD <nom>, KRD <nom>, KTOUCH <fichier>\n KWRITE <fichier> <texte>, KAPPEND <fichier> <texte>\n KFIND <texte> <fichier>, KFC <f1> <f2>, KMORE <fichier>\n KHEAD <fichier>, KTAIL <fichier>, KATTRIB <fichier>, KFILES\n KDATE, KHEURE, KMEM, KCHKDSK, KSET, KPATH, KHISTORY, KWHOAMI\n KXMEM, KXMEM <Ko>, KXMEM /MAX, KXMEM /RESET\n KTTY, KINTERFACE, KGUI, KEXIT\n\nDIAGNOSTIC / MATÉRIEL\n KMSD, KINFO, KSYSINFO, KBIOS, KDRIVERS, KDEVICES\n KIRQ, KPORTS, KUPTIME, KTASKS, KLOG\n KCPU, KGPU, KRAM, KCUDA, KCORE, KIA, KLLM\n KDIAGNOSTIC, KTEST, KSYSTEME, KSTATUS, KETAT\n\nRÉSEAU\n KIPCONFIG, KIFCONFIG, KPING <hôte>, KARP, KNETSTAT\n KRESEAU, KXLINK, KSSH, KDNS\n\nK.I.T.T. / VÉHICULE\n KSTT, KTTS, KVOIX, KMICRO, KAUDIO, KSON TEST\n KSCANNER, KVIGILANCE, KCAMERA, KVEHICULE, KRELAIS\n KCAPTEURS, KAUTODIAG, KMODE NORMAL, KMODE POURSUITE, KMODE SHOW\n KRADIO, KMUSIQUE, KCD, KVIDEO\n\nJEUX / PROGRAMMES\n KJEUX, KPACMAN, KTETRIS, KSPACEKR, KTRONKR\n KCOMPILE <source.KXA>, KRUN <programme.KXE>\n KDEMO — démonstration complète à vitesse humaine\n KDEMO STOP — arrête la démonstration\n\nPROGRAMMES SYSTÈME CENTRAL (interactifs)\n KCENTRAL — schéma animé du microprocesseur + tests mémoire/bus/cœur\n KRADAR — scanner radar, balayage et contacts fictifs\n KMISSION — dossiers de mission K:\\KYRONEXT\\MISSIONS et progression\n KCOMLINK — liaison F.L.A.G., transmission animée et annulation\n\nFICHIERS SYSTÈME\n CENTRAL · FLAG · MISSIONS · COMMUNICATION · DIAGNOSTIC · ARCHIVES\n KDIR / KCD / KTYPE pour naviguer, KMAN pour les pages d\'aide\n\nOUTILS\n KMAN <commande>, KABOUT, KVOLUME <0-100>, KCOLOR RED|AMBER|GREEN\n KBOOTLOG, KPARLE <texte>, KREBOOT, KSHUTDOWN');
+ print('KYRONEXT™ K-COMMAND — AIDE ÉTENDUE\nToutes les commandes Kyronext commencent par K.\n\nSYSTÈME / FICHIERS\n KAIDE, KHELP, KVER, KVERSION, KCLS, KEFFACER\n KDIR [chemin], KTREE, KCD [dossier], KCD.., KPWD\n KTYPE <fichier>, KEDIT [fichier], KCODE <fichier>\n KBASIC [programme.KXB], KSHELL (mode commandes directes)\n KCOPY <src> <dst>, KMOVE <src> <dst>, KDEL <fichier>, KREN <src> <dst>\n KMD <nom>, KRD <nom>, KTOUCH <fichier>\n KWRITE <fichier> <texte>, KAPPEND <fichier> <texte>\n KFIND <texte> <fichier>, KFC <f1> <f2>, KMORE <fichier>\n KHEAD <fichier>, KTAIL <fichier>, KATTRIB <fichier>, KFILES\n KDATE, KHEURE, KMEM, KCHKDSK, KSET, KPATH, KHISTORY, KWHOAMI\n KXMEM, KXMEM <Ko>, KXMEM /MAX, KXMEM /RESET\n KTTY, KINTERFACE, KGUI, KEXIT\n\nDIAGNOSTIC / MATÉRIEL\n KMSD, KINFO, KSYSINFO, KBIOS, KDRIVERS, KDEVICES\n KIRQ, KPORTS, KUPTIME, KTASKS, KLOG\n KCPU, KGPU, KRAM, KCUDA, KCORE, KIA, KLLM\n KDIAGNOSTIC, KTEST, KSYSTEME, KSTATUS, KETAT\n\nRÉSEAU\n KIPCONFIG, KIFCONFIG, KPING <hôte>, KARP, KNETSTAT\n KRESEAU, KXLINK, KSSH, KDNS\n\nK.I.T.T. / VÉHICULE\n KSTT, KTTS, KVOIX, KMICRO, KAUDIO, KSON TEST\n KSCANNER, KVIGILANCE, KCAMERA, KVEHICULE, KRELAIS\n KCAPTEURS, KAUTODIAG, KMODE NORMAL, KMODE POURSUITE, KMODE SHOW\n KRADIO, KMUSIQUE, KCD, KVIDEO\n\nJEUX / PROGRAMMES\n KJEUX, KPACMAN, KTETRIS, KSPACEKR, KTRONKR\n KCOMPILE <source.KXA>, KRUN <programme.KXE|programme.KXB>\n KBASIC — éditeur/interpréteur BASIC style GW-BASIC / QBasic\n KDEMO — démonstration complète à vitesse humaine\n KDEMO STOP — arrête la démonstration\n\nPROGRAMMES SYSTÈME CENTRAL (interactifs)\n KCENTRAL — schéma animé du microprocesseur + tests mémoire/bus/cœur\n KRADAR — scanner radar, balayage et contacts fictifs\n KMISSION — dossiers de mission K:\\KYRONEXT\\MISSIONS et progression\n KCOMLINK — liaison F.L.A.G., transmission animée et annulation\n\nFICHIERS SYSTÈME\n CENTRAL · FLAG · MISSIONS · COMMUNICATION · DIAGNOSTIC · ARCHIVES\n KDIR / KCD / KTYPE pour naviguer, KMAN pour les pages d\'aide\n\nOUTILS\n KMAN <commande>, KABOUT, KVOLUME <0-100>, KCOLOR RED|AMBER|GREEN\n KBOOTLOG, KPARLE <texte>, KSHELL, KREBOOT, KSHUTDOWN');
  sfx.ok()
 }
 function dirCmd(arg){
@@ -826,10 +777,128 @@ function edit(path){
  let p=resolve(path),e=fs[p];
  if(!e){fs[p]={type:'file',text:''};let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);if(fs[parent]&&fs[parent].type==='dir'&&!fs[parent].children.includes(name))fs[parent].children.push(name)}
  else if(e.type!=='file'){print('Impossible d’éditer un dossier.');sfx.err();return}
- editFile=p;document.getElementById('edtitle').textContent='KYRONEXT™ CODE EDITOR — '+p;
+ editFile=p;document.getElementById('edtitle').textContent='KYRONEXT™ KEDIT — '+p;
  document.getElementById('editarea').value=fs[p].text;
  document.getElementById('edfiletype').textContent=p.endsWith('.KXA')?'KX-SCRIPT':(p.endsWith('.KXE')?'KX-EXEC':'KX-TEXT');
  document.getElementById('editor').classList.add('show');updateEditorUI();document.getElementById('editarea').focus();sfx.ok()
+}
+
+
+const SHELL_MAP={DIR:'KDIR',TREE:'KTREE',CD:'KCD',PWD:'KPWD',TYPE:'KTYPE',EDIT:'KEDIT',CODE:'KCODE',BASIC:'KBASIC',COPY:'KCOPY',MOVE:'KMOVE',DEL:'KDEL',ERASE:'KDEL',REN:'KREN',RENAME:'KREN',MD:'KMD',MKDIR:'KMD',RD:'KRD',RMDIR:'KRD',TOUCH:'KTOUCH',WRITE:'KWRITE',APPEND:'KAPPEND',FIND:'KFIND',FC:'KFC',MORE:'KMORE',HEAD:'KHEAD',TAIL:'KTAIL',ATTRIB:'KATTRIB',FILES:'KFILES',DATE:'KDATE',TIME:'KTIME',MEM:'KMEM',CHKDSK:'KCHKDSK',VER:'KVER',VERSION:'KVERSION',HELP:'KAIDE',CLS:'KCLS',TTY:'KTTY',INTERFACE:'KINTERFACE',RUN:'KRUN',DEMO:'KDEMO',INFO:'KINFO',MSD:'KMSD',BIOS:'KBIOS',COLOR:'KCOLOR'};
+function toggleShellMode(force){
+ shellMode=typeof force==='boolean'?force:!shellMode;prompt();
+ print(shellMode?'SHELL DIRECT ACTIF — commandes sans préfixe K. Exemples : DIR, EDIT README.KXT, BASIC BASIC\\\\HELLO.KXB, RUN BASIC\\\\HELLO.KXB. Tape EXIT ou SHELL pour revenir.':'SHELL DIRECT ARRÊTÉ — retour au mode K-COMMAND.');
+ sfx.ok()
+}
+function mapShellInput(text){
+ let t=text.trim(),u=norm(t);if(!shellMode||u.startsWith('K'))return text;
+ let p=t.split(/\s+/),first=norm(p.shift()||'');
+ if(first==='EXIT'||first==='QUIT'||first==='SHELL')return '__SHELL_EXIT__';
+ let k=SHELL_MAP[first];if(!k)return '__SHELL_UNKNOWN__:'+first;
+ return k+(p.length?' '+p.join(' '):'')
+}
+
+const BO=document.getElementById('kbasicOverlay'),BC=document.getElementById('kbasicCode'),BOUT=document.getElementById('kbasicOutput'),BG=document.getElementById('kbasicGutter'),BPOS=document.getElementById('kbasicPos'),BSTATE=document.getElementById('kbasicState'),BFILE=document.getElementById('kbasicFile'),BTITLE=document.getElementById('kbasicTitle');
+let basicVars={},basicProg=[],basicPc=0,basicGosub=[],basicFors=[];
+function basicInsertText(text){let st=BC.selectionStart||0,en=BC.selectionEnd||st;BC.setRangeText(text,st,en,'end');BC.dispatchEvent(new Event('input',{bubbles:true}))}
+function basicUi(){
+ let pos=BC.selectionStart||0,pre=BC.value.slice(0,pos),ln=pre.split('\n'),count=Math.max(1,BC.value.split('\n').length);
+ BPOS.textContent='LIGNE '+ln.length+' · COL '+(ln[ln.length-1].length+1);
+ BG.textContent=Array.from({length:count},(_,i)=>i+1).join('\n');BG.scrollTop=BC.scrollTop
+}
+function basicPrint(x=''){BOUT.textContent+=String(x)+'\n';BOUT.scrollTop=BOUT.scrollHeight}
+function basicClear(){BOUT.textContent=''}
+function basicCreate(path,text=''){
+ let p=resolve(path);if(!fs[p])addFile(path,text);return p
+}
+function openBasic(path){
+ let target=path&&path.trim()?path:'BASIC\\\\NONAME.KXB',p=resolve(target);
+ if(!p.endsWith('.KXB'))p+='.KXB';
+ if(!fs[p]){let parent=p.slice(0,p.lastIndexOf('\\\\'));if(!fs[parent]){print('Répertoire introuvable : '+parent);sfx.err();return}addFile(p,'10 PRINT "KYRONEXT KBASIC READY"\\n20 END')}
+ if(fs[p].type!=='file'){print('KBASIC : destination invalide.');sfx.err();return}
+ basicFile=p;BC.value=fs[p].text;BTITLE.textContent='KYRONEXT™ KBASIC 1.0 — '+p;BFILE.textContent=p.slice(p.lastIndexOf('\\\\')+1);BO.classList.add('show');basicUi();BC.focus();sfx.ok()
+}
+function closeBasic(){basicStop=true;basicRunning=false;BO.classList.remove('show');hideKb();if(tty)renderTTY();else I.focus()}
+function saveBasic(){if(!basicFile)basicFile=basicCreate('BASIC\\\\NONAME.KXB');fs[basicFile].text=BC.value;BFILE.textContent=basicFile.slice(basicFile.lastIndexOf('\\\\')+1);basicPrint('SAVED '+basicFile);sfx.ok()}
+function newBasic(){basicFile=basicCreate('BASIC\\\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.0 READY.');basicPrint('OK');basicUi();BC.focus()}
+function basicSplit(src){
+ let out=[],cur='',q=false;
+ for(let i=0;i<src.length;i++){let c=src[i];if(c==='"')q=!q;if(!q&&(c===';'||c===',')){out.push(cur.trim());cur='';continue}cur+=c}
+ if(cur.trim()||!out.length)out.push(cur.trim());return out
+}
+function basicEval(expr,condition=false){
+ let strings=[];
+ let x=expr.trim().replace(/"([^"]*)"/g,(_,v)=>'__KXQ'+(strings.push(v)-1)+'__');
+ x=x.replace(/\bRND\b/gi,'Math.random()').replace(/\bINT\s*\(/gi,'Math.floor(').replace(/\bABS\s*\(/gi,'Math.abs(').replace(/\bSQR\s*\(/gi,'Math.sqrt(');
+ x=x.replace(/\b([A-Za-z][A-Za-z0-9_]*\$?)\b/g,(m,n)=>{
+   if(/^__KXQ\d+__$/.test(n))return n;
+   let u=n.toUpperCase();if(['MATH','RANDOM','FLOOR','ABS','SQRT','TRUE','FALSE'].includes(u))return m;
+   if(Object.prototype.hasOwnProperty.call(basicVars,u))return JSON.stringify(basicVars[u]);
+   return u.endsWith('$')?'""':'0'
+ });
+ x=x.replace(/__KXQ(\d+)__/g,(_,i)=>JSON.stringify(strings[Number(i)]??''));
+ if(condition)x=x.replace(/<>/g,'!=').replace(/(^|[^<>=!])=([^=])/g,'$1==$2');
+ try{return Function('"use strict";return ('+x+')')()}catch(e){throw new Error('Expression invalide : '+expr)}
+}
+function parseBasic(){
+ basicProg=[];let seq=10;
+ BC.value.split(/\r?\n/).forEach(raw=>{let t=raw.trim();if(!t)return;let m=t.match(/^(\d+)\s*(.*)$/);if(m)basicProg.push({num:parseInt(m[1]),code:m[2].trim()});else{basicProg.push({num:seq,code:t});seq+=10}});
+ basicProg.sort((a,b)=>a.num-b.num)
+}
+function basicFindLine(n){return basicProg.findIndex(x=>x.num===Number(n))}
+function basicAssignment(src){
+ let m=src.match(/^([A-Za-z][A-Za-z0-9]*\$?)\s*=\s*(.+)$/);if(!m)return false;
+ basicVars[m[1].toUpperCase()]=basicEval(m[2]);return true
+}
+async function basicExec(code){
+ let t=code.trim();if(!t)return null;let u=norm(t);
+ if(u.startsWith('REM ')||u==='REM'||t.startsWith("'"))return null;
+ if(/^PRINT\b/i.test(t)||t.startsWith('?')){
+   let body=t.startsWith('?')?t.slice(1):t.replace(/^PRINT\b/i,'');
+   let vals=basicSplit(body).map(x=>x?basicEval(x):'');basicPrint(vals.join(''));return null
+ }
+ if(/^LET\b/i.test(t)){if(!basicAssignment(t.replace(/^LET\b/i,'').trim()))throw new Error('LET invalide');return null}
+ if(basicAssignment(t))return null;
+ let m;
+ if((m=t.match(/^INPUT\s+(?:"([^"]*)"\s*;\s*)?([A-Za-z][A-Za-z0-9]*\$?)$/i))){
+   let label=m[1]||m[2],v=window.prompt(label+' ?','')??'',name=m[2].toUpperCase();basicVars[name]=name.endsWith('$')?v:(Number(v)||0);return null
+ }
+ if((m=t.match(/^GOTO\s+(\d+)$/i)))return {goto:Number(m[1])};
+ if((m=t.match(/^GOSUB\s+(\d+)$/i))){basicGosub.push(basicPc+1);return {goto:Number(m[1])}}
+ if(/^RETURN$/i.test(t)){if(!basicGosub.length)throw new Error('RETURN sans GOSUB');return {pc:basicGosub.pop()}}
+ if((m=t.match(/^IF\s+(.+?)\s+THEN\s+(.+)$/i))){
+   if(basicEval(m[1],true)){let rhs=m[2].trim();if(/^\d+$/.test(rhs))return {goto:Number(rhs)};return await basicExec(rhs)}return null
+ }
+ if((m=t.match(/^FOR\s+([A-Za-z][A-Za-z0-9]*)\s*=\s*(.+?)\s+TO\s+(.+?)(?:\s+STEP\s+(.+))?$/i))){
+   let v=m[1].toUpperCase(),start=Number(basicEval(m[2]))||0,end=Number(basicEval(m[3]))||0,step=m[4]?(Number(basicEval(m[4]))||1):1;
+   basicVars[v]=start;basicFors.push({v,end,step,pc:basicPc+1});return null
+ }
+ if((m=t.match(/^NEXT(?:\s+([A-Za-z][A-Za-z0-9]*))?$/i))){
+   if(!basicFors.length)throw new Error('NEXT sans FOR');let f=basicFors[basicFors.length-1];if(m[1]&&norm(m[1])!==f.v)throw new Error('NEXT variable incorrect');
+   basicVars[f.v]=Number(basicVars[f.v]||0)+f.step;let keep=f.step>=0?basicVars[f.v]<=f.end:basicVars[f.v]>=f.end;if(keep)return {pc:f.pc};basicFors.pop();return null
+ }
+ if(/^CLS$/i.test(t)){basicClear();return null}
+ if(/^BEEP$/i.test(t)){sfx.tick();return null}
+ if(/^END$/i.test(t)||/^STOP$/i.test(t))return {end:true};
+ if(/^LIST$/i.test(t)){basicProg.forEach(x=>basicPrint(x.num+' '+x.code));return null}
+ if(/^SLEEP\s+/i.test(t)){let ms=Math.max(0,Math.min(5000,Number(basicEval(t.replace(/^SLEEP\s+/i,'')))*1000));await sleep(ms);return null}
+ throw new Error('Commande inconnue : '+t)
+}
+async function runBasic(){
+ if(basicRunning)return;saveBasic();parseBasic();basicVars={};basicGosub=[];basicFors=[];basicPc=0;basicStop=false;basicRunning=true;BSTATE.textContent='EXÉCUTION';basicClear();basicPrint('RUN');
+ let steps=0;
+ try{
+  while(basicPc<basicProg.length&&!basicStop){
+   if(++steps>5000)throw new Error('Limite de 5000 instructions atteinte');
+   let line=basicProg[basicPc],r=await basicExec(line.code);
+   if(r?.end)break;
+   if(r&&Object.prototype.hasOwnProperty.call(r,'pc')){basicPc=r.pc;continue}
+   if(r?.goto!==undefined){let j=basicFindLine(r.goto);if(j<0)throw new Error('Ligne '+r.goto+' introuvable');basicPc=j;continue}
+   basicPc++;if(steps%40===0)await sleep(0)
+  }
+  basicPrint(basicStop?'BREAK':'OK')
+ }catch(e){basicPrint('ERREUR '+(basicProg[basicPc]?.num||'?')+' : '+e.message);sfx.err()}
+ basicRunning=false;BSTATE.textContent=basicStop?'ARRÊTÉ':'PRÊT'
 }
 
 function addFile(path,text=''){
@@ -868,7 +937,7 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 const DH=document.getElementById('demoHud'),DS=document.getElementById('demoStep'),DP=document.getElementById('demoProgress'),DL=document.getElementById('demoLabel');
 function demoHud(step,total,label){
  if(demoStop)return;
- DS.textContent=step+'/'+total;DP.style.width=Math.round((step/total)*100)+'%';DL.textContent=label
+ DH.classList.add('show');DS.textContent=step+'/'+total;DP.style.width=Math.round((step/total)*100)+'%';DL.textContent=label
 }
 function hideDemoHud(){DH.classList.remove('show')}
 async function humanType(target,text,speed=75){
@@ -915,7 +984,7 @@ async function runDemo(){
  if(!tty)setTTY(true);
  hideKb();
  const total=12;
- print('\n╔════════════════════════════════════════════╗\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\n║  Mode lecture confortable — Created by Manix      \n║  Toucher l\'écran pour interrompre║\n╚════════════════════════════════════════════╝\n');
+ print('\n╔════════════════════════════════════════════╗\n║  KYRONEXT™ SYSTEM DEMONSTRATION 1.0       ║\n║  Mode lecture confortable — Created by Manix      ║\n╚════════════════════════════════════════════╝\n');
  try{
   demoHud(1,total,'Identité et version du système');
   await demoCommand('KVER',600);await demoCommand('KABOUT',500);
@@ -988,22 +1057,26 @@ function requestDemoStop(){
  hideDemoHud();DL.textContent='Arrêt demandé…';sfx.err()
 }
 function command(raw){
- let shown=raw.trim();if(!shown)return;hist.push(shown);histIndex=hist.length;print(cwd+'>'+shown);
+ let shown=raw.trim();if(!shown)return;hist.push(shown);histIndex=hist.length;print((shellMode?'SHELL ':'')+cwd+'>'+shown);
+ let mapped=mapShellInput(shown);if(mapped==='__SHELL_EXIT__'){toggleShellMode(false);return}if(mapped.startsWith('__SHELL_UNKNOWN__:')){print('Commande SHELL inconnue : '+mapped.split(':')[1]+'. Tape HELP.');sfx.err();return}shown=mapped;
  let typedUpper=norm(shown);
- if(!typedUpper.startsWith('K')){print('Commande Kyronext invalide : le préfixe K est obligatoire. Exemples : KDIR, KMD, KDEL, KVER, KAIDE.');sfx.err();return}
+ if(!typedUpper.startsWith('K')){print('Commande Kyronext invalide : le préfixe K est obligatoire. Exemples : KDIR, KEDIT, KBASIC, KSHELL, KAIDE.');sfx.err();return}
  let line=(typedUpper.startsWith('KXMEM')||typedUpper.startsWith('KXLINK'))?shown:shown.replace(/^k/i,'');
  let upper=norm(line),parts=line.trim().split(/\s+/),cmd=norm(parts.shift()||''),args=parts.join(' ');
  if(['AIDE','HELP','?'].includes(cmd)){help();return}
  if(['CLS','EFFACER'].includes(cmd)){H.textContent='';return}
- if(['VER','VERSION'].includes(cmd)){print('KYRONEXT™ OS [Version 1.6.1982]\nKyronext Systems™ — K.I.T.T. Environment\nCreated by Manix\nCopyright © 2026 Kyronext Systems™');sfx.ok();return}
- if(cmd==='ABOUT'){print('KYRONEXT™ OS\nK.I.T.T. Terminal Operating Environment\nVersion 1.6.1982\nCreated by Manix\nCopyright © 2026 Kyronext Systems™');sfx.ok();return}
+ if(['VER','VERSION'].includes(cmd)){print('KYRONEXT™ OS [Version 2.0 / v9 · 1982/2026]\nKyronext Systems™ — K.I.T.T. Environment\nCreated by Manix\nCopyright © 2026 Kyronext Systems™');sfx.ok();return}
+ if(cmd==='ABOUT'){print('KYRONEXT™ OS\nK.I.T.T. Terminal Operating Environment\nVersion 2.0 / v9 · 1982/2026\nCreated by Manix\nCopyright © 2026 Kyronext Systems™');sfx.ok();return}
  if(cmd==='MSD'){openKMSD('computer');sfx.scan();return}
  if(cmd==='INFO'||cmd==='SYSINFO'){print('Chargement KINFO.KXE...');sfx.ok();openKinfo();return}
- if(cmd==='MAN'){let q=norm(args).replace(/^K/,'');let d={'DIR':'KDIR [chemin] — affiche un répertoire.','MD':'KMD <nom> — crée un répertoire.','RD':'KRD <nom> — supprime un répertoire vide.','DEL':'KDEL <fichier> — supprime un fichier.','EDIT':'KEDIT <fichier> — éditeur texte/code Kyronext.','XMEM':'KXMEM <Ko> — règle la mémoire étendue.','TTY':'KTTY — terminal direct 80x25.','RUN':'KRUN <jeu.KXE> — lance un exécutable.','VOLUME':'KVOLUME <0-100> — règle le volume.','MSD':'KMSD — ouvre Kyronext Machine/System Diagnostics, inspiré de MSD.EXE.','INFO':'KINFO — alias de KMSD.','SYSINFO':'KSYSINFO — alias de KMSD.','DEMO':'KDEMO — démonstration automatique des fonctions Kyronext à vitesse humaine.','COMPILE':'KCOMPILE <source.KXA> — compile un script Kyronext en .KXE.','CENTRAL':'KCENTRAL — schéma animé du microprocesseur central + tests mémoire/bus/cœur.','RADAR':'KRADAR — scanner radar interactif, contacts fictifs [SIMULATION].','MISSION':'KMISSION — dossiers de mission (K:\\KYRONEXT\\MISSIONS) et progression.','COMLINK':'KCOMLINK — liaison F.L.A.G., transmission animée et annulation.','CODE':'KCODE <fichier.KXA> — ouvre l’éditeur de code Kyronext.','INFO':'KINFO — ouvre Kyronext Information & Diagnostics, inspiré des utilitaires de diagnostic DOS.'};if(!q){print('Syntaxe : KMAN <commande>');sfx.err();return}print(d[q]||('Pas de page KMAN pour K'+q+'.'));sfx.ok();return}
+ if(cmd==='MAN'){let q=norm(args).replace(/^K/,'');let d={'DIR':'KDIR [chemin] — affiche un répertoire.','MD':'KMD <nom> — crée un répertoire.','RD':'KRD <nom> — supprime un répertoire vide.','DEL':'KDEL <fichier> — supprime un fichier.','EDIT':'KEDIT [fichier] — éditeur de texte style MS-DOS EDIT.','BASIC':'KBASIC [fichier.KXB] — éditeur/interpréteur BASIC.','SHELL':'KSHELL — active le mode de commandes sans préfixe K.','XMEM':'KXMEM <Ko> — règle la mémoire étendue.','TTY':'KTTY — terminal direct 80x25.','RUN':'KRUN <jeu.KXE> — lance un exécutable.','VOLUME':'KVOLUME <0-100> — règle le volume.','MSD':'KMSD — ouvre Kyronext Machine/System Diagnostics, inspiré de MSD.EXE.','INFO':'KINFO — alias de KMSD.','SYSINFO':'KSYSINFO — alias de KMSD.','DEMO':'KDEMO — démonstration automatique des fonctions Kyronext à vitesse humaine.','COMPILE':'KCOMPILE <source.KXA> — compile un script Kyronext en .KXE.','CENTRAL':'KCENTRAL — schéma animé du microprocesseur central + tests mémoire/bus/cœur.','RADAR':'KRADAR — scanner radar interactif, contacts fictifs [SIMULATION].','MISSION':'KMISSION — dossiers de mission (K:\\KYRONEXT\\MISSIONS) et progression.','COMLINK':'KCOMLINK — liaison F.L.A.G., transmission animée et annulation.','CODE':'KCODE <fichier.KXA> — ouvre l’éditeur de code Kyronext.','INFO':'KINFO — ouvre Kyronext Information & Diagnostics, inspiré des utilitaires de diagnostic DOS.'};if(!q){print('Syntaxe : KMAN <commande>');sfx.err();return}print(d[q]||('Pas de page KMAN pour K'+q+'.'));sfx.ok();return}
+ if(cmd==='SHELL'){toggleShellMode();return}
+ if(cmd==='BASIC'){openBasic(args);return}
  if(cmd==='VOLUME'){let n=parseInt(args,10);if(!Number.isFinite(n)){print('Volume Kyronext : '+volumePct+'%\nSyntaxe : KVOLUME <0-100>');sfx.ok();return}volumePct=Math.max(0,Math.min(100,n));if(master)master.gain.value=(volumePct/100)*0.6;print('Volume Kyronext réglé à '+volumePct+'%.');sfx.ok();return}
- if(cmd==='BOOTLOG'){print('KNIGHT INDUSTRIES 2000 BOOT ROM V1.6 - POST PASSED\nMEMORY TEST : 640 Ko OK\nKXMEM EXTENDED MEMORY : '+kxMemKB+' Ko '+(kxMemEnabled?'OK':'OFF')+'\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\n\n[KXD] MEMORY.KXD\n[KXD] KXMEM.KXD\n[KXD] DISPLAY.KXD\n[KXD] AUDIO.KXD\n[KXD] INPUT.KXD\n[KXD] STORAGE.KXD\n[KXD] CDROM.KXD\n[KXD] NETLINK.KXD\n[KXE] KXEDIT.KXE\n[KXE] KMSD.KXE\n[KXE] KCOMPILER.KXE\n[KXE] KDEMO.KXE\n[KXE] KCENTRAL.KXE\n[KXE] KRADAR.KXE\n[KXE] KMISSION.KXE\n[KXE] KCOMLINK.KXE\n[KXE] KINFO.KXE\n[KXM] CUDA.KXM\n[KXM] RELAIS.KXM\n[KXS] KITTCORE.KXS\n[KXS] VOICE.KXS\n[KXA] STARTUP.KXA\n\nTous les modules : OK');sfx.scan();return}
+ if(cmd==='BOOTLOG'){print('KNIGHT INDUSTRIES 2000 BOOT ROM V1.6 - POST PASSED\nMEMORY TEST : 640 Ko OK\nKXMEM EXTENDED MEMORY : '+kxMemKB+' Ko '+(kxMemEnabled?'OK':'OFF')+'\nK.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns\n\n[KXD] MEMORY.KXD\n[KXD] KXMEM.KXD\n[KXD] DISPLAY.KXD\n[KXD] AUDIO.KXD\n[KXD] INPUT.KXD\n[KXD] STORAGE.KXD\n[KXD] CDROM.KXD\n[KXD] NETLINK.KXD\n[KXE] KXEDIT.KXE\n[KXE] KEDIT.KXE\n[KXE] KBASIC.KXE\n[KXM] SHELL.KXM\n[KXE] KMSD.KXE\n[KXE] KCOMPILER.KXE\n[KXE] KDEMO.KXE\n[KXE] KCENTRAL.KXE\n[KXE] KRADAR.KXE\n[KXE] KMISSION.KXE\n[KXE] KCOMLINK.KXE\n[KXE] KINFO.KXE\n[KXM] CUDA.KXM\n[KXM] RELAIS.KXM\n[KXS] KITTCORE.KXS\n[KXS] VOICE.KXS\n[KXA] STARTUP.KXA\n\nTous les modules : OK');sfx.scan();return}
  if(cmd==='RUN'){
-  let raw=args.trim(),e=norm(raw).replace(/^K/,'').replace(/\.KXE$/,'');let m={PACMAN:'PACMAN',TETRIS:'TETRIS',SPACEKR:'SPACEKR',TRONKR:'TRONKR'};
+  let raw=args.trim(),bp=raw?resolve(raw):'';if(bp&&bp.endsWith('.KXB')&&fs[bp]&&fs[bp].type==='file'){openBasic(raw);setTimeout(runBasic,80);return}
+  let e=norm(raw).replace(/^K/,'').replace(/\.KXE$/,'');let m={PACMAN:'PACMAN',TETRIS:'TETRIS',SPACEKR:'SPACEKR',TRONKR:'TRONKR'};
   if(m[e]){print('KRUN : chargement '+e+'.KXE...');sfx.ok();launchGame(m[e]);return}
   let p=resolve(raw);if(fs[p]&&fs[p].type==='file'&&p.endsWith('.KXE')){runScriptFile(raw);return}
   print('Exécutable introuvable. Exemple : KRUN PACMAN.KXE ou KRUN PROGRAMME.KXE');sfx.err();return
@@ -1041,7 +1114,7 @@ function command(raw){
  if(['CD','CHDIR'].includes(cmd)){let p=resolve(args);if(fs[p]&&fs[p].type==='dir'){cwd=p;prompt();sfx.ok()}else{print('Répertoire introuvable.');sfx.err()}return}
  if(cmd==='PWD'){print(cwd);sfx.ok();return}
  if(cmd==='TYPE'){let p=resolve(args),e=fs[p];if(e&&e.type==='file'){print(e.text);sfx.ok()}else{print('Fichier introuvable.');sfx.err()}return}
- if(cmd==='EDIT'||cmd==='CODE'){if(args)edit(args);else{print('Syntaxe : K'+cmd+' <fichier>');sfx.err()}return}
+ if(cmd==='EDIT'||cmd==='CODE'){if(args)edit(args);else edit(cmd==='EDIT'?'README.KXT':'STARTUP.KXA');return}
  if(['MD','MKDIR'].includes(cmd)){if(!args){print('Syntaxe : KMD <nom>');sfx.err();return}let p=resolve(args);if(fs[p]){print('Existe déjà.');sfx.err();return}fs[p]={type:'dir',children:[]};let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);fs[parent].children.push(name);print('Répertoire créé : '+p);sfx.ok();return}
  if(['RD','RMDIR'].includes(cmd)){let p=resolve(args),e=fs[p];if(e&&e.type==='dir'&&(!e.children||!e.children.length)){let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);fs[parent].children=fs[parent].children.filter(x=>x!==name);delete fs[p];print('Répertoire supprimé.');sfx.ok()}else{print('Répertoire absent ou non vide.');sfx.err()}return}
  if(['DEL','ERASE'].includes(cmd)){let p=resolve(args),e=fs[p];if(e&&e.type==='file'){let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);fs[parent].children=fs[parent].children.filter(x=>x!==name);delete fs[p];print('Fichier supprimé.');sfx.ok()}else{print('Fichier introuvable.');sfx.err()}return}
@@ -1351,41 +1424,37 @@ document.addEventListener('keydown',e=>{if(KMSDO.classList.contains('show')&&e.k
 
 /* ── KYRONEXT™ EXECUTABLE GAME RUNTIME ───────────────────────── */
 const GO=document.getElementById('gameOverlay'),GC=document.getElementById('gameCanvas'),GX=GC.getContext('2d');
-const GTitle=document.getElementById('gameTitle'),GScore=document.getElementById('gameScore'),GHelp=document.getElementById('gameHelp'),GPause=document.getElementById('gamePause'),GRestart=document.getElementById('gameRestart');
-function gScore(){if(game)game.level=1+Math.floor((game.score||0)/500);const s=(game&&game.score)||0,l=(game&&game.lives==null?'':(' · VIES '+game.lives)),lv=(game&&game.level?(' · NIVEAU '+game.level):'');GScore.textContent='SCORE '+String(s).padStart(6,'0')+lv+l;GPause.classList.toggle('paused',!!(game&&game.paused));GPause.textContent=game&&game.paused?'REPRENDRE':'PAUSE'}
-function gSaveScore(){if(!game)return;try{const k='kyronext.game.high.'+game.name,v=Math.max(Number(localStorage.getItem(k)||0),game.score||0);localStorage.setItem(k,String(v))}catch(_){} }
-function gameMessage(t){GX.fillStyle='#000';GX.fillRect(0,0,GC.width,GC.height);GX.fillStyle=t==='PAUSE'?'#ffc44e':'#ff3b2f';GX.font='bold 22px Courier New';GX.textAlign='center';GX.fillText(t,GC.width/2,GC.height/2);GX.font='14px Courier New';GX.fillText(t==='PAUSE'?'P ou PAUSE pour reprendre':'ACTION ou RESTART pour rejouer',GC.width/2,GC.height/2+34)}
-function toggleGamePause(){if(!game||game.over)return;game.paused=!game.paused;game.last=performance.now();sfx.ok();gScore()}
+const GTitle=document.getElementById('gameTitle'),GScore=document.getElementById('gameScore'),GHelp=document.getElementById('gameHelp');
+function gScore(){GScore.textContent='SCORE '+String((game&&game.score)||0).padStart(6,'0')}
+function gameMessage(t){GX.fillStyle='#000';GX.fillRect(0,0,GC.width,GC.height);GX.fillStyle='#ff3b2f';GX.font='bold 22px Courier New';GX.textAlign='center';GX.fillText(t,GC.width/2,GC.height/2);GX.font='14px Courier New';GX.fillText('ACTION pour rejouer · QUITTER pour revenir',GC.width/2,GC.height/2+34)}
 function closeGame(){cancelAnimationFrame(gameRAF);game=null;GO.classList.remove('show');if(tty)showKb();else I.focus();print('Retour au système Kyronext™.');sfx.ok()}
 function launchGame(name){
  cancelAnimationFrame(gameRAF);hideKb();GO.classList.add('show');
- game={name,keys:{},score:0,over:false,paused:false,last:performance.now(),acc:0,level:1};
+ game={name,keys:{},score:0,over:false,last:performance.now(),acc:0};
  GTitle.textContent='KYRONEXT™ // '+name+'.KXE';gScore();
  if(name==='PACMAN')initPacman(); else if(name==='TETRIS')initTetris(); else if(name==='SPACEKR')initSpace(); else if(name==='TRONKR')initTron();
  gameRAF=requestAnimationFrame(gameLoop);sfx.scan()
 }
 function gameLoop(t){
  if(!game)return;let dt=Math.min(50,t-game.last);game.last=t;
- if(!game.over&&!game.paused){if(game.name==='PACMAN')updatePacman(dt);else if(game.name==='TETRIS')updateTetris(dt);else if(game.name==='SPACEKR')updateSpace(dt);else if(game.name==='TRONKR')updateTron(dt)}
+ if(!game.over){if(game.name==='PACMAN')updatePacman(dt);else if(game.name==='TETRIS')updateTetris(dt);else if(game.name==='SPACEKR')updateSpace(dt);else if(game.name==='TRONKR')updateTron(dt)}
  if(game.name==='PACMAN')drawPacman();else if(game.name==='TETRIS')drawTetris();else if(game.name==='SPACEKR')drawSpace();else if(game.name==='TRONKR')drawTron();
- if(game.over&&!game.saved){game.saved=true;gSaveScore()}
- gScore();if(game.paused)gameMessage('PAUSE');gameRAF=requestAnimationFrame(gameLoop)
+ gScore();gameRAF=requestAnimationFrame(gameLoop)
 }
-function gameAction(k,on=true){if(!game)return;if(on&&k==='pause'){toggleGamePause();return}if(on&&k==='restart'){launchGame(game.name);return}if(game.over&&on&&k==='action'){launchGame(game.name);return}if(game.paused)return;game.keys[k]=on;if(on&&game.name==='PACMAN'&&['left','right','up','down'].includes(k)){const d={left:{x:-1,y:0},right:{x:1,y:0},up:{x:0,y:-1},down:{x:0,y:1}}[k];game.nextDir=d;game.bufferUntil=performance.now()+200}if(on&&game.name==='TETRIS'&&k==='action')tRotate();if(on&&game.name==='SPACEKR'&&k==='action')spaceFire()}
+function gameAction(k,on=true){if(!game)return;if(game.over&&on&&k==='action'){launchGame(game.name);return}game.keys[k]=on;if(on&&game.name==='TETRIS'&&k==='action')tRotate();if(on&&game.name==='SPACEKR'&&k==='action')spaceFire()}
 
 /* PAC-MAN */
 const PMAP=['###############','#.............#','#.###.###.###.#','#.............#','#.#.###.###.#.#','#.#.........#.#','#.###.#.#.###.#','#.....#.#.....#','###.#.....#.###','#...#.###.#...#','#.#.........#.#','#.###.###.###.#','#.............#','#.###.#.#.###.#','###############'];
-function initPacman(){GC.width=480;GC.height=480;GHelp.textContent='PAC-MAN — flèches pour bouger · mange tous les points';game.map=PMAP;game.p={x:1,y:1};game.dir={x:1,y:0};game.nextDir={x:1,y:0};game.bufferUntil=0;game.ghost={x:13,y:13};game.pel=new Set();game.moveT=0;game.ghostT=0;game.pulse=0;game.lives=3;for(let y=0;y<15;y++)for(let x=0;x<15;x++)if(PMAP[y][x]==='.')game.pel.add(x+','+y)}
+function initPacman(){GC.width=480;GC.height=480;GHelp.textContent='PAC-MAN — flèches pour bouger · mange tous les points';game.map=PMAP;game.p={x:1,y:1};game.ghost={x:13,y:13};game.pel=new Set();game.moveT=0;game.ghostT=0;game.lives=3;for(let y=0;y<15;y++)for(let x=0;x<15;x++)if(PMAP[y][x]==='.')game.pel.add(x+','+y)}
 function pmFree(x,y){return y>=0&&y<15&&x>=0&&x<15&&game.map[y][x]!=='#'}
-function pmCan(d){return !!d&&pmFree(game.p.x+d.x,game.p.y+d.y)}
 function updatePacman(dt){
- game.moveT+=dt;game.ghostT+=dt;game.pulse+=dt;
- if(game.moveT>=110){game.moveT-=110;if(pmCan(game.nextDir)){game.dir=game.nextDir;game.bufferUntil=0}const nx=game.p.x+game.dir.x,ny=game.p.y+game.dir.y;if(pmFree(nx,ny)){game.p.x=nx;game.p.y=ny}else if(performance.now()>=game.bufferUntil){game.dir={x:0,y:0}}let key=game.p.x+','+game.p.y;if(game.pel.delete(key)){game.score+=10;sfx.tick()}}
+ game.moveT+=dt;game.ghostT+=dt;
+ if(game.moveT>115){game.moveT=0;let dx=0,dy=0;if(game.keys.left)dx=-1;else if(game.keys.right)dx=1;else if(game.keys.up)dy=-1;else if(game.keys.down)dy=1;if(pmFree(game.p.x+dx,game.p.y+dy)){game.p.x+=dx;game.p.y+=dy}let key=game.p.x+','+game.p.y;if(game.pel.delete(key)){game.score+=10;sfx.tick()}}
  if(game.ghostT>210){game.ghostT=0;let dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(d=>pmFree(game.ghost.x+d[0],game.ghost.y+d[1]));dirs.sort((a,b)=>((Math.abs(game.p.x-(game.ghost.x+a[0]))+Math.abs(game.p.y-(game.ghost.y+a[1])))-(Math.abs(game.p.x-(game.ghost.x+b[0]))+Math.abs(game.p.y-(game.ghost.y+b[1]))))+(Math.random()-.5)*3);let d=dirs[0];if(d){game.ghost.x+=d[0];game.ghost.y+=d[1]}}
  if(game.p.x===game.ghost.x&&game.p.y===game.ghost.y){game.lives--;sfx.err();game.p={x:1,y:1};game.ghost={x:13,y:13};if(game.lives<=0)game.over=true}
  if(game.pel.size===0){game.score+=1000;game.over=true;sfx.scan()}
 }
-function drawPacman(){const c=32;GX.fillStyle='#000';GX.fillRect(0,0,480,480);GX.save();GX.lineWidth=2;GX.shadowColor='#ff243f';GX.shadowBlur=9;for(let y=0;y<15;y++)for(let x=0;x<15;x++){if(game.map[y][x]==='#'){GX.strokeStyle='#ff3046';GX.strokeRect(x*c+2,y*c+2,c-4,c-4)}else if(game.pel.has(x+','+y)){GX.fillStyle='#ffb4a9';GX.shadowColor='#ff4560';GX.shadowBlur=8;GX.beginPath();GX.arc(x*c+16,y*c+16,3,0,Math.PI*2);GX.fill()}}const px=game.p.x*c+16,py=game.p.y*c+16;const mouth=.18+.16*Math.abs(Math.sin(game.pulse*.012));let angle=0;if(game.dir.x<0)angle=Math.PI;if(game.dir.y<0)angle=-Math.PI/2;if(game.dir.y>0)angle=Math.PI/2;GX.shadowColor='#ffd64d';GX.shadowBlur=18;GX.fillStyle='#ffd64d';GX.beginPath();GX.moveTo(px,py);GX.arc(px,py,11,angle+mouth,angle+Math.PI*2-mouth);GX.closePath();GX.fill();const ex=game.ghost.x*c+16,ey=game.ghost.y*c+16;GX.shadowColor='#ff174f';GX.shadowBlur=16;GX.fillStyle='#ff3b2f';GX.beginPath();GX.arc(ex,ey,11,Math.PI,0);GX.lineTo(ex+11,ey+11);GX.lineTo(ex+5,ey+7);GX.lineTo(ex,ey+11);GX.lineTo(ex-5,ey+7);GX.lineTo(ex-11,ey+11);GX.closePath();GX.fill();GX.shadowBlur=0;GX.fillStyle='#fff';GX.beginPath();GX.arc(ex-4,ey-3,3,0,Math.PI*2);GX.arc(ex+4,ey-3,3,0,Math.PI*2);GX.fill();GX.fillStyle='#10131d';GX.beginPath();GX.arc(ex-4,ey-3,1.3,0,Math.PI*2);GX.arc(ex+4,ey-3,1.3,0,Math.PI*2);GX.fill();GX.restore();GX.fillStyle='#69ff7b';GX.font='12px Courier New';GX.textAlign='left';GX.fillText('VIES '+game.lives,5,476);if(game.over)gameMessage(game.pel.size===0?'SECTEUR NETTOYÉ':'GAME OVER')}
+function drawPacman(){let c=32;GX.fillStyle='#000';GX.fillRect(0,0,480,480);for(let y=0;y<15;y++)for(let x=0;x<15;x++){if(game.map[y][x]==='#'){GX.strokeStyle='#932018';GX.strokeRect(x*c+2,y*c+2,c-4,c-4)}else if(game.pel.has(x+','+y)){GX.fillStyle='#ffb4a9';GX.beginPath();GX.arc(x*c+16,y*c+16,3,0,Math.PI*2);GX.fill()}}GX.fillStyle='#ffd64d';GX.beginPath();GX.arc(game.p.x*c+16,game.p.y*c+16,11,.2,Math.PI*1.8);GX.lineTo(game.p.x*c+16,game.p.y*c+16);GX.fill();GX.fillStyle='#ff3b2f';GX.beginPath();GX.arc(game.ghost.x*c+16,game.ghost.y*c+16,11,Math.PI,0);GX.lineTo(game.ghost.x*c+27,game.ghost.y*c+27);GX.lineTo(game.ghost.x*c+5,game.ghost.y*c+27);GX.fill();GX.fillStyle='#69ff7b';GX.font='12px Courier New';GX.textAlign='left';GX.fillText('VIES '+game.lives,5,476);if(game.over)gameMessage(game.pel.size===0?'SECTEUR NETTOYÉ':'GAME OVER')}
 
 /* TETRIS */
 const TSHAPES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];
@@ -1430,10 +1499,8 @@ document.addEventListener('selectionchange',()=>{
 });
 
 document.getElementById('gameExit').addEventListener('click',closeGame);
-GPause.addEventListener('click',()=>gameAction('pause'));
-GRestart.addEventListener('click',()=>gameAction('restart'));
 document.querySelectorAll('[data-gk]').forEach(b=>{const k=b.dataset.gk;b.addEventListener('pointerdown',e=>{e.preventDefault();gameAction(k,true)});b.addEventListener('pointerup',e=>{e.preventDefault();gameAction(k,false)});b.addEventListener('pointercancel',()=>gameAction(k,false))});
-document.addEventListener('keydown',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(e.key==='Escape'){e.preventDefault();closeGame();return}if(e.key.toLowerCase()==='p'){e.preventDefault();gameAction('pause',true);return}if(e.key.toLowerCase()==='r'){e.preventDefault();gameAction('restart',true);return}if(m[e.key]){e.preventDefault();gameAction(m[e.key],true)}});
+document.addEventListener('keydown',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(e.key==='Escape'){e.preventDefault();closeGame();return}if(m[e.key]){e.preventDefault();gameAction(m[e.key],true)}});
 document.addEventListener('keyup',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(m[e.key])gameAction(m[e.key],false)});
 
 
@@ -1687,37 +1754,21 @@ async function demoKapps(){
 }
 
 let powerOnDone=false;
-function crtFlash(){try{const B=document.getElementById('boot'),f=document.createElement('div');f.className='crt-flash';B.appendChild(f);setTimeout(()=>f.remove(),1150)}catch(e){}}
+function crtFlash(){try{const B=document.getElementById('boot'),f=document.createElement('div');f.className='crt-flash';B.appendChild(f);setTimeout(()=>f.remove(),700)}catch(e){}}
 async function powerOn(){
  if(powerOnDone)return;powerOnDone=true;
  try{await unlockAudio()}catch(e){}
- sfx.boot();crtFlash();hum(.95,.16);noiseBurst(.02,1250,.75);noiseBurst(.018,950,.5,.05);
+ sfx.boot();crtFlash();
  const B=document.getElementById('boot'),log=document.getElementById('bootlog');
  B.classList.add('post');
- const bl=[];let bootCur=true;
- const render=()=>{log.textContent=bl.join('\n')+(bootCur?'\u2588':' ');log.scrollTop=log.scrollHeight};
- const curTimer=setInterval(()=>{bootCur=!bootCur;render()},265);
- const line=(t='')=>{bl.push(t);render()};
- const setLast=(t)=>{bl[bl.length-1]=t;render()};
+ const bl=[];
+ const line=(t='')=>{bl.push(t);log.textContent=bl.join('\n');log.scrollTop=log.scrollHeight};
+ const setLast=(t)=>{bl[bl.length-1]=t;log.textContent=bl.join('\n');log.scrollTop=log.scrollHeight};
  const pad=(l)=>{l=l+' ';while(l.length<44)l+='.';return l};
- const sleepJ=(ms)=>sleep(ms*(.72+Math.random()*.56));
- const relay=()=>{noiseBurst(.02,1250,.75);noiseBurst(.018,950,.5,.05)};
- const ok=async(label,d=420)=>{line(pad(label));await sleepJ(d);setLast(pad(label)+' OK');sfx.tick()};
-  // --- ALLUMAGE MACHINE IA K.I.T.T. ---
- const scan=document.createElement('div');scan.className='boot-scan';scan.innerHTML='<i></i>';B.appendChild(scan);
- line('MISE SOUS TENSION - MACHINE IA K.I.T.T.');await sleep(650);
- line('KNIGHT INDUSTRIES 2000 - UNITE CENTRALE');await sleep(520);
- line('');
- line(pad('RELAIS PRINCIPAL'));relay();await sleepJ(480);setLast(pad('RELAIS PRINCIPAL')+' OK');sfx.tick();
- line(pad('CIRCUIT ALIMENTATION'));relay();await sleepJ(440);setLast(pad('CIRCUIT ALIMENTATION')+' OK');sfx.tick();
- line(pad('TABLEAU DE BORD'));relay();await sleepJ(440);setLast(pad('TABLEAU DE BORD')+' OK');sfx.tick();
- line(pad('BARRE SCANNER')+' ON');sfx.scan();await sleep(2200);
- line(pad('SYSTEME IA K.I.T.T.')+' EN MARCHE');tone(520,.05,'square',.6);tone(760,.09,'square',.6,.06);await sleep(800);
- line('');
- scan.remove();
+ const ok=async(label,d=420)=>{line(pad(label));await sleep(d);setLast(pad(label)+' OK');sfx.tick()};
  line('KNIGHT INDUSTRIES 2000 BOOT ROM  V1.6');await sleep(460);
  line('KYRONEXT SYSTEMS (C) 2026 - ALL RIGHTS RESERVED');await sleep(340);
- line('MICROPROCESSEUR : KNIGHT 2000 - UNITE N° 2000-082-1982');await sleep(520);
+ line('KNIGHT INDUSTRIES 2000 MICROPROCESSOR');await sleep(460);
  line('');
  line('ROM BOOTSTRAP 2.5K — LECTURE SECTEUR 0 DU VOLUME K:');await sleep(420);
  await ok('MONITEUR ROM 1.6 — SOMMAIRE DES PERIPHERIQUES',420);
@@ -1738,7 +1789,6 @@ async function powerOn(){
  line('KXMEM EXTENDED MEMORY :     0 Ko');
  for(let kb=2048;kb<=kxMemKB;kb+=2048){setLast('KXMEM EXTENDED MEMORY : '+String(kb).padStart(5,' ')+' Ko');tone(760,.03,'square',.2);await sleep(105)}
  setLast('KXMEM EXTENDED MEMORY : '+kxMemKB+' Ko  OK');await sleep(380);
- line(pad('PATTERNS AAAA 5555 0101 F0F0'));tone(1040,.02,'square',.18);await sleepJ(620);setLast(pad('PATTERNS AAAA 5555 0101 F0F0')+' VERIFIE');sfx.tick();await sleepJ(240);
  line('K.I.T.T. CORE MEMORY : 1000 MEGABITS / ACCESS 1 ns');await sleep(640);
  tone(880,.1,'square',.72);await sleep(300);
  line('');
@@ -1755,8 +1805,7 @@ async function powerOn(){
  await ok('MONTAGE K:\\KYRONEXT\\SYSTEME (LECTURE SEULE)',380);
  line('');
  line('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK');
- noiseBurst(.03,700,.4);noiseBurst(.02,1900,.3,.12);noiseBurst(.025,800,.35,.3);
- for(let n=1;n<=8;n++){let s='[';for(let i=1;i<=8;i++)s+=i<=n?'#':'.';setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  '+s+']');noiseBurst(.012,2300,.28);sfx.tick();await sleepJ(190)}
+ for(let n=1;n<=8;n++){let s='[';for(let i=1;i<=8;i++)s+=i<=n?'#':'.';setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  '+s+']');sfx.tick();await sleep(190)}
  setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  OK');await sleep(340);
  await ok('LECTURE K:\\KYRONEXT\\SYSTEM.KXC',420);
  line('EXECUTION K:\\KYRONEXT\\STARTUP.KXA');await sleep(420);
@@ -1774,6 +1823,9 @@ async function powerOn(){
  await ok('[KXD] NETLINK.KXD interface KX-LINK',380);
  line('');
  await ok('[KXE] KXEDIT.KXE  editeur texte / code',380);
+ await ok('[KXE] KEDIT.KXE   editeur MS-DOS style',360);
+ await ok('[KXE] KBASIC.KXE  interpreteur BASIC',360);
+ await ok('[KXM] SHELL.KXM   commandes directes',320);
  await ok('[KXE] KMSD.KXE    diagnostic machine',380);
  await ok('[KXE] KCOMPILER.KXE compilateur KX',380);
  await ok('[KXE] KDEMO.KXE   demonstration systeme',380);
@@ -1793,9 +1845,8 @@ async function powerOn(){
  line('  K.I.T.T. ONLINE .......................... OK');await sleep(560);
  line('');
  line('KYRONEXT OS PRET.');sfx.boot();await sleep(900);
- clearInterval(curTimer);log.textContent=bl.join('\n');
  B.classList.add('hide');
- print('KYRONEXT™ OS 1.6\nCopyright © 2026 Kyronext Systems™\nK.I.T.T. SYSTEM ONLINE\nTape KAIDE pour les commandes ou KTTY pour le terminal plein écran.');
+ print('KYRONEXT™ OS 2.0 / v9\nCopyright © 2026 Kyronext Systems™\nK.I.T.T. SYSTEM ONLINE\nTape KAIDE pour les commandes, KEDIT pour éditer, KBASIC pour programmer, KSHELL pour le mode direct ou KTTY pour le terminal plein écran.');
  setTimeout(()=>I.focus(),120);sfx.ok()
 }
 document.getElementById('bootpower').addEventListener('click',powerOn);
@@ -1806,1232 +1857,27 @@ I.addEventListener('keydown',e=>{
  if(e.key==='Enter'){e.preventDefault();ensureAudio();command(I.value);I.value=''}
  else if(e.key==='ArrowUp'){e.preventDefault();if(histIndex>0){histIndex--;I.value=hist[histIndex]||''}}
  else if(e.key==='ArrowDown'){e.preventDefault();if(histIndex<hist.length-1){histIndex++;I.value=hist[histIndex]||''}else{histIndex=hist.length;I.value=''}}
-else if(e.key==='Tab'){e.preventDefault();let q=norm(I.value);let all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KBASIC','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KTTY','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KCOPY','KDEL','KREN','KMD','KRD','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KDATE','KTIME','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)I.value=m}
+ else if(e.key==='Tab'){e.preventDefault();let q=norm(I.value);let all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KBASIC','KSHELL','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KTTY','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)I.value=m}
  else tone(900,.018,'square',.18)
 });
 document.addEventListener('keydown',e=>{
- if(!tty||document.getElementById('editor').classList.contains('show')||document.getElementById('gameOverlay').classList.contains('show')||kappOpen())return;
+ if(!tty||document.getElementById('editor').classList.contains('show')||document.getElementById('kbasicOverlay').classList.contains('show')||document.getElementById('gameOverlay').classList.contains('show')||kappOpen())return;
  if(e.ctrlKey||e.metaKey||e.altKey)return;
  if(e.key==='Enter'){e.preventDefault();submitTTY()}
  else if(e.key==='Backspace'){e.preventDefault();setTtyText(ttyBuffer.slice(0,-1))}
  else if(e.key==='ArrowUp'){e.preventDefault();if(histIndex>0){histIndex--;setTtyText(hist[histIndex]||'')}}
- else if(e.key==='Tab'){e.preventDefault();let q=norm(ttyBuffer),all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KBASIC','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KTTY','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KCOPY','KDEL','KREN','KMD','KRD','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KDATE','KTIME','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)setTtyText(m)}
-// KEDIT - Éditeur de texte amélioré (style MS-DOS EDIT)
-// ============================================================================
-const KEDIT = (() => {
-  const overlay = document.getElementById('keditOverlay');
-  const textarea = document.getElementById('keditTextArea');
-  const gutter = document.getElementById('keditGutter');
-  const title = document.getElementById('keditTitle');
-  const pos = document.getElementById('keditPos');
-  const mode = document.getElementById('keditMode');
-  const fileInfo = document.getElementById('keditFileInfo');
-  
-  let currentFile = null;
-  let insertMode = true;
-  let lineNumbers = [];
-  
-  function updateGutter() {
-    const lines = textarea.value.split('\n');
-    const lineCount = lines.length;
-    let gutterHTML = '';
-    for (let i = 1; i <= Math.max(lineCount, 25); i++) {
-      gutterHTML += i + '\n';
-    }
-    gutter.textContent = gutterHTML.trim();
-  }
-  
-  function updateStatus() {
-    const cursorPos = textarea.selectionStart;
-    const text = textarea.value;
-    const lines = text.substring(0, cursorPos).split('\n');
-    const line = lines.length;
-    const col = lines[lines.length - 1].length + 1;
-    pos.textContent = 'LIGNE ' + line + ' · COL ' + col;
-    mode.textContent = insertMode ? 'INS' : 'SUR';
-  }
-  
-  function openFile(filePath) {
-    if (fs[filePath] && fs[filePath].type === 'file') {
-      currentFile = filePath;
-      textarea.value = fs[filePath].text;
-      title.textContent = 'KYRONEXT™ KEDIT — ' + filePath;
-      fileInfo.textContent = 'FICHIER: ' + filePath.split('\\').pop();
-      updateGutter();
-      updateStatus();
-      overlay.classList.add('show');
-      textarea.focus();
-      sfx.ok();
-    } else {
-      print('Fichier introuvable: ' + filePath);
-      sfx.err();
-    }
-  }
-  
-  function saveFile() {
-    if (!currentFile) {
-      // Demander un nom de fichier
-      print('Aucun fichier ouvert. Utilisez F3 pour ouvrir un fichier.');
-      sfx.err();
-      return;
-    }
-    fs[currentFile].text = textarea.value;
-    print('Fichier sauvegardé: ' + currentFile);
-    sfx.ok();
-    updateGutter();
-  }
-  
-  function newFile() {
-    currentFile = null;
-    textarea.value = '';
-    title.textContent = 'KYRONEXT™ KEDIT — NOUVEAU FICHIER';
-    fileInfo.textContent = 'FICHIER: NON NOMMÉ.KXT';
-    updateGutter();
-    updateStatus();
-    sfx.ok();
-  }
-  
-  function closeEditor() {
-    overlay.classList.remove('show');
-    I.focus();
-    sfx.ok();
-  }
-  
-  // Gérer les raccourcis clavier
-  function handleKeyDown(e) {
-    // Alt+X pour quitter
-    if (e.altKey && e.key === 'x') {
-      e.preventDefault();
-      closeEditor();
-    }
-    // F1 - Aide
-    if (e.key === 'F1') {
-      e.preventDefault();
-      print('KEDIT - Éditeur de texte Kyronext\n\nRaccourcis:\nAlt+X: Quitter\nF1: Aide\nF2: Sauver\nF3: Ouvrir\nF4: Nouveau\nF5: Imprimer\n\nFlèches: Déplacement\nSuppr: Supprimer\nIns: Mode insertion/surcharge');
-      sfx.ok();
-    }
-    // F2 - Sauver
-    if (e.key === 'F2') {
-      e.preventDefault();
-      saveFile();
-    }
-    // F3 - Ouvrir
-    if (e.key === 'F3') {
-      e.preventDefault();
-      // Ouvrir une boîte de dialogue ou demander le fichier
-      print('Ouvrir un fichier - Tapez: KEDIT <fichier>');
-      sfx.tick();
-    }
-    // F4 - Nouveau
-    if (e.key === 'F4') {
-      e.preventDefault();
-      newFile();
-    }
-    // Insert key
-    if (e.key === 'Insert') {
-      e.preventDefault();
-      insertMode = !insertMode;
-      mode.textContent = insertMode ? 'INS' : 'SUR';
-      sfx.tick();
-    }
-    updateStatus();
-  }
-  
-  // Initialisation
-  textarea.addEventListener('input', () => {
-    updateGutter();
-    updateStatus();
-  });
-  textarea.addEventListener('keydown', handleKeyDown);
-  textarea.addEventListener('scroll', () => {
-    gutter.scrollTop = textarea.scrollTop;
-  });
-  
-  document.getElementById('keditClose').addEventListener('click', closeEditor);
-  document.getElementById('keditSave').addEventListener('click', saveFile);
-  document.getElementById('keditNew').addEventListener('click', newFile);
-  document.getElementById('keditExit').addEventListener('click', closeEditor);
-  
-  return {
-    open: openFile,
-    close: closeEditor
-  };
-})();
-
-// ============================================================================
-// KBASIC - Interpréteur BASIC
-// ============================================================================
-const KBASIC = (() => {
-  const overlay = document.getElementById('kbasicOverlay');
-  const codeArea = document.getElementById('kbasicCodeArea');
-  const outputArea = document.getElementById('kbasicOutput');
-  const title = document.getElementById('kbasicTitle');
-  const pos = document.getElementById('kbasicPos');
-  const modeStatus = document.getElementById('kbasicMode');
-  const fileInfo = document.getElementById('kbasicFile');
-  const gutter = document.getElementById('kbasicGutter');
-  
-  let currentFile = null;
-  let running = false;
-  let stopped = false;
-  let variables = {};
-  let program = [];
-  let currentLine = 0;
-  
-  // Fonctions utilitaires
-  function printBasic(text) {
-    outputArea.textContent += text + '\n';
-    outputArea.scrollTop = outputArea.scrollHeight;
-  }
-  
-  function clearOutput() {
-    outputArea.textContent = '';
-  }
-  
-  function updateGutter() {
-    const lines = codeArea.value.split('\n');
-    const lineCount = lines.length;
-    let gutterHTML = '';
-    for (let i = 1; i <= Math.max(lineCount, 25); i++) {
-      gutterHTML += String(i).padStart(4, ' ') + '\n';
-    }
-    gutter.textContent = gutterHTML.trim();
-  }
-  
-  function updateStatus() {
-    const cursorPos = codeArea.selectionStart;
-    const text = codeArea.value;
-    const lines = text.substring(0, cursorPos).split('\n');
-    const line = lines.length;
-    const col = lines[lines.length - 1].length + 1;
-    pos.textContent = 'LIGNE ' + line + ' · COL ' + col;
-  }
-  
-  function parseLine(line) {
-    line = line.trim();
-    if (!line) return null;
-    
-    // Extraire le numéro de ligne
-    const match = line.match(/^(\d+)\s+(.*)/);
-    if (!match) return null;
-    
-    const lineNum = parseInt(match[1]);
-    const command = match[2].trim().toUpperCase();
-    
-    return { lineNum, command };
-  }
-  
-  function parseProgram() {
-    const lines = codeArea.value.split('\n');
-    program = [];
-    
-    for (const rawLine of lines) {
-      const parsed = parseLine(rawLine);
-      if (parsed) {
-        program.push(parsed);
-      }
-    }
-    
-    // Trier par numéro de ligne
-    program.sort((a, b) => a.lineNum - b.lineNum);
-  }
-  
-  function findLine(lineNum) {
-    for (let i = 0; i < program.length; i++) {
-      if (program[i].lineNum === lineNum) {
-        return i;
-      }
-    }
-    return -1;
-  }
-  
-  function getNextLine() {
-    currentLine++;
-    const idx = findLine(currentLine);
-    if (idx !== -1) {
-      return program[idx];
-    }
-    return null;
-  }
-  
-  function evaluateExpression(expr) {
-    // Remplacer les variables
-    expr = expr.replace(/\b([A-Za-z]\w*)\b/g, (match, varName) => {
-      varName = varName.toUpperCase();
-      if (variables.hasOwnProperty(varName)) {
-        return variables[varName];
-      }
-      return '0';
-    });
-    
-    try {
-      // Évaluer l'expression mathématique
-      return Function('"use strict"; return (' + expr + ')')();
-    } catch (e) {
-      return 0;
-    }
-  }
-  
-  function executeCommand(command) {
-    // Supprimer le numéro de ligne s'il est présent
-    const parts = command.split(/\s+/);
-    const cmd = parts[0].toUpperCase();
-    const args = parts.slice(1);
-    
-    switch (cmd) {
-      case 'PRINT':
-        printBasic(args.join(' '));
-        break;
-      
-      case 'LET':
-        if (args.length >= 3) {
-          const varName = args[0].toUpperCase();
-          const expr = args.slice(2).join(' ');
-          variables[varName] = evaluateExpression(expr);
-        }
-        break;
-      
-      case 'INPUT':
-        if (args.length >= 2) {
-          const prompt = args.slice(1).join(' ');
-          const varName = args[0].toUpperCase();
-          // Pour l'instant, on simule l'entrée
-          printBasic(prompt + ' ?');
-          variables[varName] = 0; // Valeur par défaut
-        }
-        break;
-      
-      case 'GOTO':
-        if (args.length > 0) {
-          currentLine = parseInt(evaluateExpression(args[0])) - 1;
-        }
-        break;
-      
-      case 'GOSUB':
-        // À implémenter
-        break;
-      
-      case 'RETURN':
-        // À implémenter
-        break;
-      
-      case 'IF':
-        if (args.length >= 3) {
-          const condition = args[0];
-          const lineNum = parseInt(args[2]);
-          const left = args[1];
-          const op = args[2];
-          const right = args.slice(3).join(' ');
-          
-          // Simplifié : évaluer la condition
-          if (evaluateExpression(left + op + right)) {
-            currentLine = lineNum - 1;
-          }
-        }
-        break;
-      
-      case 'FOR':
-        // À implémenter
-        break;
-      
-      case 'NEXT':
-        // À implémenter
-        break;
-      
-      case 'REM':
-      case ''':
-        // Commentaire - ne rien faire
-        break;
-      
-      case 'CLS':
-        clearOutput();
-        break;
-      
-      case 'END':
-        running = false;
-        printBasic('PROGRAMME TERMINÉ');
-        break;
-      
-      case 'STOP':
-        running = false;
-        stopped = true;
-        printBasic('PROGRAMME ARRÊTÉ');
-        break;
-      
-      case 'LIST':
-        // Afficher le programme
-        const lines = codeArea.value.split('\n');
-        lines.forEach(line => printBasic(line));
-        break;
-      
-      case 'NEW':
-        codeArea.value = '';
-        variables = {};
-        program = [];
-        currentFile = null;
-        clearOutput();
-        printBasic('PRÊT');
-        break;
-      
-      case 'RUN':
-        runProgram();
-        break;
-      
-      default:
-        printBasic('ERREUR: Commande inconnue: ' + cmd);
-    }
-  }
-  
-  async function runProgram() {
-    if (running) return;
-    
-    running = true;
-    stopped = false;
-    variables = {};
-    currentLine = 0;
-    clearOutput();
-    parseProgram();
-    
-    printBasic('EXÉCUTION...');
-    printBasic('');
-    
-    while (running && !stopped && currentLine < 9999) {
-      const line = getNextLine();
-      if (!line) {
-        running = false;
-        printBasic('FIN DE PROGRAMME');
-        break;
-      }
-      
-      executeCommand(line.command);
-      
-      // Petite pause pour permettre l'affichage
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-    
-    running = false;
-    modeStatus.textContent = 'PRÊT';
-  }
-  
-  function stopProgram() {
-    running = false;
-    stopped = true;
-    modeStatus.textContent = 'ARRÊTÉ';
-    printBasic('PROGRAMME ARRÊTÉ PAR L\'UTILISATEUR');
-  }
-  
-  function clearProgram() {
-    codeArea.value = '';
-    variables = {};
-    program = [];
-    currentFile = null;
-    clearOutput();
-    updateGutter();
-    modeStatus.textContent = 'PRÊT';
-    printBasic('PRÊT');
-  }
-  
-  function openFile(filePath) {
-    if (fs[filePath] && fs[filePath].type === 'file') {
-      currentFile = filePath;
-      codeArea.value = fs[filePath].text;
-      title.textContent = 'KYRONEXT™ KBASIC — ' + filePath;
-      fileInfo.textContent = 'FICHIER: ' + filePath.split('\\').pop();
-      updateGutter();
-      updateStatus();
-      overlay.classList.add('show');
-      codeArea.focus();
-      sfx.ok();
-    } else {
-      print('Fichier introuvable: ' + filePath);
-      sfx.err();
-    }
-  }
-  
-  function saveFile() {
-    if (!currentFile) {
-      print('Aucun fichier ouvert.');
-      sfx.err();
-      return;
-    }
-    fs[currentFile].text = codeArea.value;
-    print('Fichier sauvegardé: ' + currentFile);
-    sfx.ok();
-  }
-  
-  function closeEditor() {
-    if (running) {
-      stopProgram();
-    }
-    overlay.classList.remove('show');
-    I.focus();
-    sfx.ok();
-  }
-  
-  // Gérer les raccourcis clavier
-  function handleKeyDown(e) {
-    // SYSTEM pour quitter
-    if (e.key === 'Escape') {
-      closeEditor();
-    }
-    // F5 - Exécuter
-    if (e.key === 'F5') {
-      e.preventDefault();
-      runProgram();
-    }
-    // F6 - Effacer
-    if (e.key === 'F6') {
-      e.preventDefault();
-      clearProgram();
-    }
-    // F1 - Aide
-    if (e.key === 'F1') {
-      e.preventDefault();
-      printBasic('KBASIC v1.0 - Aide\n\nCommandes disponibles:\nPRINT, LET, INPUT, GOTO, IF, FOR, NEXT, REM\nGOSUB, RETURN, CLS, END, STOP, LIST, NEW, RUN\n\nExemple:\n10 PRINT "HELLO KYRONEXT"\n20 LET X = 5\n30 PRINT X\n40 GOTO 20');
-    }
-    updateStatus();
-  }
-  
-  // Initialisation
-  codeArea.addEventListener('input', () => {
-    updateGutter();
-    updateStatus();
-  });
-  codeArea.addEventListener('keydown', handleKeyDown);
-  codeArea.addEventListener('scroll', () => {
-    gutter.scrollTop = codeArea.scrollTop;
-  });
-  
-  document.getElementById('kbasicClose').addEventListener('click', closeEditor);
-  document.getElementById('kbasicRun').addEventListener('click', runProgram);
-  document.getElementById('kbasicClear').addEventListener('click', clearProgram);
-  document.getElementById('kbasicStop').addEventListener('click', stopProgram);
-  document.getElementById('kbasicList').addEventListener('click', () => {
-    executeCommand('LIST');
-  });
-  document.getElementById('kbasicNew').addEventListener('click', () => {
-    executeCommand('NEW');
-  });
-  document.getElementById('kbasicExit').addEventListener('click', closeEditor);
-  
-  return {
-    open: openFile,
-    close: closeEditor,
-    run: runProgram
-  };
-})();
-
-
-
-// Boutons KEDIT et KBASIC dans la barre inférieure
-document.getElementById('keditButton').addEventListener('click', () => {
-  KEDIT.open(cwd + '\\NONNOMMÉ.KXT');
-  sfx.ok();
-});
-
-document.getElementById('kbasicButton').addEventListener('click', () => {
-  KBASIC.open(cwd + '\\NONNOMMÉ.KXB');
-  sfx.ok();
-});
-
-
-
-// ============================================================================
-// MODE SHELL (Exécution directe des commandes sans préfixe K)
-// ============================================================================
-let shellMode = false;
-const shellSide = document.getElementById('shellSide');
-
-// Mappage des commandes shell (sans K) vers les commandes Kyronext
-const SHELL_MAP = {
-  'EDIT': 'KEDIT',
-  'BASIC': 'KBASIC',
-  'DIR': 'KDIR',
-  'CD': 'KCD',
-  'TYPE': 'KTYPE',
-  'COPY': 'KCOPY',
-  'DEL': 'KDEL',
-  'REN': 'KREN',
-  'MD': 'KMD',
-  'RD': 'KRD',
-  'MOVE': 'KMOVE',
-  'FC': 'KFC',
-  'FIND': 'KFIND',
-  'MORE': 'KMORE',
-  'HEAD': 'KHEAD',
-  'TAIL': 'KTAIL',
-  'ATTRIB': 'KATTRIB',
-  'WRITE': 'KWRITE',
-  'APPEND': 'KAPPEND',
-  'DATE': 'KDATE',
-  'TIME': 'KTIME',
-  'CLS': 'KCLS',
-  'VER': 'KVER',
-  'HELP': 'KAIDE',
-  'TTY': 'KTTY',
-  'DEMO': 'KDEMO',
-  'INTERFACE': 'KINTERFACE',
-  'EXIT': 'KEXIT',
-  'QUIT': 'KEXIT',
-  'SHELL': 'KSHELL',
-  'KEDIT': 'KEDIT',
-  'KBASIC': 'KBASIC'
-};
-
-// Activer/Désactiver le mode SHELL
-function toggleShellMode() {
-  shellMode = !shellMode;
-  shellSide.textContent = shellMode ? 'SHELL-MODE' : 'K-MODE';
-  shellSide.className = shellMode ? 'ok' : 'warn';
-  modeSide.textContent = shellMode ? 'SHELL' : 'NORMAL';
-  
-  // Mettre à jour le prompt
-  prompt();
-  
-  if (shellMode) {
-    print('Mode SHELL activé. Tapez les commandes sans préfixe K (ex: EDIT, BASIC, DIR).');
-    print('Tapez EXIT ou SHELL pour revenir au mode normal.');
-  } else {
-    print('Mode SHELL désactivé. Retour au mode K-COMMAND.');
-  }
-  sfx.ok();
-}
-
-// Exécuter une commande en mode SHELL
-function executeShellCommand(cmd) {
-  if (!shellMode) {
-    return false; // Pas en mode shell, laisser le traitement normal
-  }
-  
-  // Normaliser la commande
-  cmd = norm(cmd);
-  
-  // Vérifier si c'est une commande shell connue
-  if (SHELL_MAP[cmd.split(' ')[0]]) {
-    // Remplacer le préfixe par K
-    const parts = cmd.split(' ');
-    parts[0] = SHELL_MAP[parts[0]];
-    const kyronetCmd = parts.join(' ');
-    command(kyronetCmd);
-    return true;
-  }
-  
-  // Commandes spéciales pour le mode shell
-  switch (cmd.split(' ')[0]) {
-    case 'EXIT':
-    case 'QUIT':
-      toggleShellMode();
-      return true;
-    case 'SHELL':
-      toggleShellMode();
-      return true;
-    case '':
-      return true; // Commande vide
-    default:
-      print('Commande inconnue en mode SHELL: ' + cmd.split(' ')[0]);
-      print('Tapez HELP pour la liste des commandes.');
-      sfx.err();
-      return true;
-  }
-}
-
-// Modifier le gestionnaire de la touche Entrée pour le mode SHELL
-const originalSendHandler = document.getElementById('send').onclick;
-if (originalSendHandler) {
-  document.getElementById('send').onclick = function(e) {
-    const cmd = I.value.trim();
-    if (cmd) {
-      if (!executeShellCommand(cmd)) {
-        // Si ce n'est pas une commande shell, utiliser le traitement normal
-        command(cmd);
-      }
-      I.value = '';
-      I.focus();
-    }
-    e.preventDefault();
-    return false;
-  };
-}
-
-// Ajouter l'event listener pour le bouton SHELL
-document.getElementById('shellButton').addEventListener('click', () => {
-  toggleShellMode();
-  I.focus();
-});
-
-// Modifier la fonction command pour gérer le mode SHELL dans le TTY
-const originalSubmitTTY = window.submitTTY;
-window.submitTTY = function() {
-  let v = ttyBuffer;
-  ttyBuffer = '';
-  renderTTY();
-  if (v) {
-    if (!executeShellCommand(v)) {
-      // Si ce n'est pas une commande shell, utiliser le traitement normal
-      command(v);
-    }
-  }
-  prompt();
-};
-
-// Ajouter la commande KSHELL
-function commandKShell() {
-  toggleShellMode();
-}
-
-// Étendre commandExtended pour gérer KSHELL
-const originalCommandExtended = window.commandExtended;
-window.commandExtended = function(cmd) {
-  const parts = cmd.trim().split(/\s+/);
-  const commandName = parts[0].toUpperCase();
-  const args = parts.slice(1);
-  
-  // Gérer KSHELL
-  if (commandName === 'KSHELL') {
-    toggleShellMode();
-    return true;
-  }
-  
-  // Si on est en mode shell, essayer de mapper
-  if (shellMode && !cmd.startsWith('K')) {
-    const mapped = SHELL_MAP[commandName];
-    if (mapped) {
-      return originalCommandExtended(mapped + (args.length > 0 ? ' ' + args.join(' ') : ''));
-    }
-  }
-  
-  // Sinon, utiliser l'ancienne version
-  if (originalCommandExtended) {
-    return originalCommandExtended(cmd);
-  }
-  return false;
-};
-
-// Mettre à jour l'aide pour inclure le mode SHELL
-const originalHelp = window.help;
-window.help = function() {
-  if (shellMode) {
-    print('KYRONEXT SHELL MODE — AIDE\n\nEn mode SHELL, vous pouvez utiliser des commandes sans préfixe K:\n');
-    print('EDIT, BASIC, DIR, CD, TYPE, COPY, DEL, REN, MD, RD\n');
-    print('MOVE, FC, FIND, MORE, HEAD, TAIL, ATTRIB\n');
-    print('WRITE, APPEND, DATE, TIME, CLS, VER, HELP\n');
-    print('TTY, DEMO, INTERFACE, SHELL, EXIT\n\n');
-    print('Tapez EXIT ou SHELL pour revenir au mode K-COMMAND.');
-    sfx.ok();
-  } else {
-    // Aide normale + mention du mode SHELL
-    originalHelp();
-    print('\nMode SHELL: tapez SHELL pour activer le mode commande direct.');
-  }
-};
-
-// ============================================================================
-// NOUVELLES COMMANDES POUR KYRONEXT OS v9
-// ============================================================================
-
-// Ajouter au système de fichiers virtuel
-const NEW_FS_ENTRIES = {
-  'K:\\KYRONEXT\\BASIC': {type: 'dir', children: []},
-  'K:\\KYRONEXT\\BASIC\\KBASIC.KXE': {type: 'file', text: 'KBASIC INTERPRETER\nVERSION=1.0\nAUTEUR=Manix\nDATE=2026'},
-  'K:\\KYRONEXT\\SYSTEME\\KEDIT.KXE': {type: 'file', text: 'KYRONEXT EDITOR\nVERSION=2.0\nTYPE=TEXT EDITOR\nEXTENSION=.KXT'},
-  'K:\\KYRONEXT\\SYSTEME\\KBASIC.KXM': {type: 'file', text: 'KBASIC MODULE\nVERSION=1.0\nTYPE=BASIC INTERPRETER'}
-};
-
-// Fusionner avec le fs existant
-for (const [key, value] of Object.entries(NEW_FS_ENTRIES)) {
-  if (!fs[key]) {
-    fs[key] = value;
-    // Ajouter au parent si c'est un fichier
-    if (value.type === 'file') {
-      const parent = key.slice(0, key.lastIndexOf('\\'));
-      if (fs[parent] && fs[parent].type === 'dir') {
-        const name = key.slice(key.lastIndexOf('\\') + 1);
-        if (!fs[parent].children.includes(name)) {
-          fs[parent].children.push(name);
-        }
-      }
-    }
-  }
-}
-
-// Nouvelle fonction de commande étendue
-function commandExtended(cmd) {
-  const parts = cmd.trim().split(/\s+/);
-  const commandName = parts[0].toUpperCase();
-  const args = parts.slice(1);
-  
-  switch (commandName) {
-    // Commandes KEDIT
-    case 'KEDIT':
-      if (args.length > 0) {
-        const filePath = resolve(args[0]);
-        KEDIT.open(filePath);
-      } else {
-        KEDIT.open(cwd + '\\NONNOMMÉ.KXT');
-      }
-      break;
-    
-    // Commandes KBASIC
-    case 'KBASIC':
-      KBASIC.open(cwd + '\\NONNOMMÉ.KXB');
-      break;
-    
-    case 'KLOAD':
-      if (args.length > 0) {
-        const filePath = resolve(args[0]);
-        if (filePath.endsWith('.KXB')) {
-          KBASIC.open(filePath);
-        } else {
-          print('KBASIC: Fichier doit avoir l\'extension .KXB');
-          sfx.err();
-        }
-      }
-      break;
-    
-    case 'KRUN':
-      if (args.length > 0) {
-        const filePath = resolve(args[0]);
-        if (fs[filePath] && fs[filePath].type === 'file' && filePath.endsWith('.KXB')) {
-          KBASIC.open(filePath);
-          setTimeout(() => KBASIC.run(), 100);
-        } else {
-          print('Fichier BASIC introuvable: ' + args[0]);
-          sfx.err();
-        }
-      }
-      break;
-    
-    // Autres nouvelles commandes
-    case 'KDATE':
-      print('DATE: ' + new Date().toLocaleDateString('fr-FR'));
-      sfx.ok();
-      break;
-    
-    case 'KTIME':
-      print('HEURE: ' + new Date().toLocaleTimeString('fr-FR'));
-      sfx.ok();
-      break;
-    
-    case 'KVER':
-    case 'KVERSION':
-      print('KYRONEXT OS v9 — BUILD 1982/2026 — AMÉLIORÉ');
-      print('Ajouts: KEDIT amélioré, KBASIC, nouvelles commandes');
-      print('Créateur: Manix / Knight Industries');
-      sfx.ok();
-      break;
-    
-    case 'KCLS':
-      dirCmd(args[0]);
-      break;
-    
-    case 'KCOPY':
-      if (args.length >= 2) {
-        const src = resolve(args[0]);
-        const dst = resolve(args[1]);
-        if (fs[src] && fs[src].type === 'file') {
-          fs[dst] = { type: 'file', text: fs[src].text };
-          const dstParent = dst.slice(0, dst.lastIndexOf('\\'));
-          const dstName = dst.slice(dst.lastIndexOf('\\') + 1);
-          if (fs[dstParent] && fs[dstParent].type === 'dir') {
-            if (!fs[dstParent].children.includes(dstName)) {
-              fs[dstParent].children.push(dstName);
-            }
-          }
-          print('1 fichier(s) copié(s).');
-          sfx.ok();
-        } else {
-          print('Fichier source introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KCOPY <source> <destination>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KDEL':
-    case 'KERASE':
-      if (args.length > 0) {
-        const filePath = resolve(args[0]);
-        if (fs[filePath]) {
-          removeFilePath(filePath);
-          print('Fichier supprimé: ' + args[0]);
-          sfx.ok();
-        } else {
-          print('Fichier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KDEL <fichier>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KREN':
-    case 'KRENAME':
-      if (args.length >= 2) {
-        const oldPath = resolve(args[0]);
-        const newPath = resolve(args[1]);
-        if (fs[oldPath]) {
-          fs[newPath] = fs[oldPath];
-          removeFilePath(oldPath);
-          const newParent = newPath.slice(0, newPath.lastIndexOf('\\'));
-          const newName = newPath.slice(newPath.lastIndexOf('\\') + 1);
-          if (fs[newParent] && fs[newParent].type === 'dir') {
-            if (!fs[newParent].children.includes(newName)) {
-              fs[newParent].children.push(newName);
-            }
-          }
-          print('Fichier renommé.');
-          sfx.ok();
-        } else {
-          print('Fichier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KREN <ancien> <nouveau>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KMD':
-    case 'KMKDIR':
-      if (args.length > 0) {
-        const dirPath = resolve(args[0]);
-        if (!fs[dirPath]) {
-          fs[dirPath] = { type: 'dir', children: [] };
-          const parent = dirPath.slice(0, dirPath.lastIndexOf('\\'));
-          const name = dirPath.slice(dirPath.lastIndexOf('\\') + 1);
-          if (fs[parent] && fs[parent].type === 'dir') {
-            if (!fs[parent].children.includes(name)) {
-              fs[parent].children.push(name);
-            }
-          }
-          print('Dossier créé: ' + args[0]);
-          sfx.ok();
-        } else {
-          print('Dossier déjà existant.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KMD <dossier>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KRD':
-    case 'KRMdir':
-      if (args.length > 0) {
-        const dirPath = resolve(args[0]);
-        if (fs[dirPath] && fs[dirPath].type === 'dir') {
-          const children = fs[dirPath].children || [];
-          children.forEach(child => {
-            removeFilePath(dirPath + '\\' + child);
-          });
-          delete fs[dirPath];
-          const parent = dirPath.slice(0, dirPath.lastIndexOf('\\'));
-          const name = dirPath.slice(dirPath.lastIndexOf('\\') + 1);
-          if (fs[parent] && fs[parent].children) {
-            fs[parent].children = fs[parent].children.filter(x => x !== name);
-          }
-          print('Dossier supprimé: ' + args[0]);
-          sfx.ok();
-        } else {
-          print('Dossier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KRD <dossier>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KWRITE':
-      if (args.length >= 2) {
-        const filePath = resolve(args[0]);
-        const content = args.slice(1).join(' ');
-        addFile(filePath, content);
-        print('Fichier créé: ' + args[0]);
-        sfx.ok();
-      } else {
-        print('Syntaxe: KWRITE <fichier> <texte>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KAPPEND':
-      if (args.length >= 2) {
-        const filePath = resolve(args[0]);
-        const content = args.slice(1).join(' ');
-        if (fs[filePath] && fs[filePath].type === 'file') {
-          fs[filePath].text += '\n' + content;
-          print('Texte ajouté à: ' + args[0]);
-          sfx.ok();
-        } else {
-          print('Fichier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KAPPEND <fichier> <texte>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KATTRIB':
-      if (args.length > 0) {
-        const filePath = resolve(args[0]);
-        if (fs[filePath]) {
-          print('Attributs de ' + args[0] + ':');
-          print('  Type: ' + (fs[filePath].type === 'dir' ? 'Dossier' : 'Fichier'));
-          if (fs[filePath].type === 'file') {
-            print('  Taille: ' + fs[filePath].text.length + ' octets');
-          } else if (fs[filePath].type === 'dir') {
-            print('  Contient: ' + (fs[filePath].children?.length || 0) + ' élément(s)');
-          }
-          sfx.ok();
-        } else {
-          print('Fichier/Dossier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KATTRIB <fichier/dossier>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KFIND':
-      if (args.length >= 2) {
-        const searchText = args[0];
-        const filePath = resolve(args[1]);
-        if (fs[filePath] && fs[filePath].type === 'file') {
-          const text = fs[filePath].text;
-          const lines = text.split('\n');
-          let found = false;
-          for (let i = 0; i < lines.length; i++) {
-            if (lines[i].includes(searchText)) {
-              print('Ligne ' + (i + 1) + ': ' + lines[i]);
-              found = true;
-            }
-          }
-          if (!found) {
-            print('Texte non trouvé.');
-          }
-          sfx.ok();
-        } else {
-          print('Fichier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KFIND <texte> <fichier>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KFC':
-      if (args.length >= 2) {
-        const file1 = resolve(args[0]);
-        const file2 = resolve(args[1]);
-        if (fs[file1] && fs[file2] && fs[file1].type === 'file' && fs[file2].type === 'file') {
-          print('Comparaison de ' + args[0] + ' et ' + args[1] + ':');
-          const text1 = fs[file1].text;
-          const text2 = fs[file2].text;
-          const lines1 = text1.split('\n');
-          const lines2 = text2.split('\n');
-          let diffCount = 0;
-          const maxLen = Math.max(lines1.length, lines2.length);
-          for (let i = 0; i < maxLen; i++) {
-            if (lines1[i] !== lines2[i]) {
-              diffCount++;
-              print('Différence ligne ' + (i + 1));
-              print('  <: ' + (lines1[i] || '(vide)'));
-              print('  >: ' + (lines2[i] || '(vide)'));
-            }
-          }
-          print(diffCount + ' différence(s) trouvée(s).');
-          sfx.ok();
-        } else {
-          print('Fichiers introuvables.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KFC <fichier1> <fichier2>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KMORE':
-      if (args.length > 0) {
-        const filePath = resolve(args[0]);
-        if (fs[filePath] && fs[filePath].type === 'file') {
-          const lines = fs[filePath].text.split('\n');
-          let page = 1;
-          const linesPerPage = 20;
-          
-          function showPage(p) {
-            const start = (p - 1) * linesPerPage;
-            const end = Math.min(start + linesPerPage, lines.length);
-            for (let i = start; i < end; i++) {
-              print(lines[i]);
-            }
-            print('--- Plus (' + p + '/' + Math.ceil(lines.length / linesPerPage) + ') ---');
-          }
-          
-          showPage(page);
-          sfx.ok();
-        } else {
-          print('Fichier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KMORE <fichier>');
-        sfx.err();
-      }
-      break;
-    
-    case 'KHEAD':
-      if (args.length > 0) {
-        const filePath = resolve(args[0]);
-        const n = args[1] ? parseInt(args[1]) : 10;
-        if (fs[filePath] && fs[filePath].type === 'file') {
-          const lines = fs[filePath].text.split('\n');
-          for (let i = 0; i < Math.min(n, lines.length); i++) {
-            print(lines[i]);
-          }
-          sfx.ok();
-        } else {
-          print('Fichier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KHEAD <fichier> [n]');
-        sfx.err();
-      }
-      break;
-    
-    case 'KTAIL':
-      if (args.length > 0) {
-        const filePath = resolve(args[0]);
-        const n = args[1] ? parseInt(args[1]) : 10;
-        if (fs[filePath] && fs[filePath].type === 'file') {
-          const lines = fs[filePath].text.split('\n');
-          const start = Math.max(0, lines.length - n);
-          for (let i = start; i < lines.length; i++) {
-            print(lines[i]);
-          }
-          sfx.ok();
-        } else {
-          print('Fichier introuvable.');
-          sfx.err();
-        }
-      } else {
-        print('Syntaxe: KTAIL <fichier> [n]');
-        sfx.err();
-      }
-      break;
-    
-    // Commande par défaut - passer à la fonction originale
-    default:
-      return false;
-  }
-  
-  return true;
-}
-
-// Modifier la fonction command pour utiliser commandExtended
-const originalCommand = window.command;
-window.command = function(cmd) {
-  // Essayer les nouvelles commandes d'abord
-  if (commandExtended(cmd)) {
-    return;
-  }
-  // Sinon, utiliser la fonction originale
-  if (originalCommand) {
-    originalCommand(cmd);
-  }
-};
-
-
-KVIGILANC
-
-<!-- KEDIT - Éditeur de texte amélioré style MS-DOS EDIT -->
-<div id="keditOverlay" aria-label="Kyronext Text Editor">
- <div class="keditShell">
-  <div class="keditTitleBar"><span id="keditTitle">KYRONEXT™ KEDIT — Éditeur de texte</span><button id="keditClose" class="kappBtn">QUITTER (Alt+X)</button></div>
-  <div class="keditMenuBar">
-   <button data-kedit="file">FICHIER</button>
-   <button data-kedit="edit">ÉDITION</button>
-   <button data-kedit="search">RECHERCHER</button>
-   <button data-kedit="options">OPTIONS</button>
-   <button data-kedit="help">AIDE (F1)</button>
-  </div>
-  <div class="keditWorkArea">
-   <div id="keditGutter" class="keditGutter"></div>
-   <textarea id="keditTextArea" spellcheck="false" wrap="off"></textarea>
-  </div>
-  <div class="keditStatus">
-   <span id="keditPos">LIGNE 1 · COL 1</span>
-   <span id="keditMode">INS</span>
-   <span id="keditFileInfo">FICHIER: NON NOMMÉ.KXT</span>
-   <span>F1:AIDE F2:SAUVER F3:OUVRIR F4:NOUVEAU F5:IMPRIMER</span>
-   <span class="keditBlink">■</span>
-  </div>
-  <div class="keditButtons">
-   <button id="keditSave">F2 SAUVER</button>
-   <button id="keditOpen">F3 OUVRIR</button>
-   <button id="keditNew">F4 NOUVEAU</button>
-   <button id="keditExit">Alt+X QUITTER</button>
-  </div>
- </div>
-</div>
-
-<!-- KBASIC - Interpréteur BASIC -->
-<div id="kbasicOverlay" aria-label="Kyronext BASIC Interpreter">
- <div class="kbasicShell">
-  <div class="kbasicTitleBar"><span id="kbasicTitle">KYRONEXT™ KBASIC — Interpréteur BASIC v1.0</span><button id="kbasicClose" class="kappBtn">QUITTER (SYSTEM)</button></div>
-  <div class="kbasicMenuBar">
-   <button data-kbasic="file">FICHIER</button>
-   <button data-kbasic="run">EXÉCUTER (F5)</button>
-   <button data-kbasic="debug">DÉBOGUER</button>
-   <button data-kbasic="options">OPTIONS</button>
-   <button data-kbasic="help">AIDE (F1)</button>
-  </div>
-  <div class="kbasicWorkArea">
-   <div id="kbasicGutter" class="kbasicGutter"></div>
-   <textarea id="kbasicCodeArea" spellcheck="false" wrap="off" placeholder="10 PRINT "HELLO KYRONEXT"
-20 GOTO 10"></textarea>
-  </div>
-  <div class="kbasicOutputArea">
-   <div class="kbasicOutputHeader">SORTIE :</div>
-   <div id="kbasicOutput" class="kbasicOutput"></div>
-  </div>
-  <div class="kbasicStatus">
-   <span id="kbasicPos">LIGNE 1 · COL 1</span>
-   <span id="kbasicMode">PRÊT</span>
-   <span id="kbasicFile">FICHIER: NON NOMMÉ.KXB</span>
-   <span>F1:AIDE F5:EXÉCUTER F6:EFFACER</span>
-   <span class="kbasicBlink">▮</span>
-  </div>
-  <div class="kbasicButtons">
-   <button id="kbasicRun">F5 EXÉCUTER</button>
-   <button id="kbasicClear">F6 EFFACER</button>
-   <button id="kbasicStop">STOP</button>
-   <button id="kbasicList">LIST</button>
-   <button id="kbasicNew">NOUVEAU</button>
-   <button id="kbasicExit">SYSTEM</button>
-  </div>
- </div>
-</div>
-
-E','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)setTtyText(m)}
+ else if(e.key==='ArrowDown'){e.preventDefault();if(histIndex<hist.length-1){histIndex++;setTtyText(hist[histIndex]||'')}else{histIndex=hist.length;setTtyText('')}}
+ else if(e.key==='Tab'){e.preventDefault();let q=norm(ttyBuffer),all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KBASIC','KSHELL','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KNETSTAT','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)setTtyText(m)}
  else if(e.key.length===1){e.preventDefault();setTtyText(ttyBuffer+e.key);tone(900,.018,'square',.18)}
 });
 document.getElementById('keyboard').addEventListener('click',()=>{I.setAttribute('inputmode','none');if(!tty)I.focus({preventScroll:true});showKb()});
 document.getElementById('audioTest').addEventListener('click',async()=>{await unlockAudio();sfx.boot();setTimeout(()=>fallbackBeep(),520)});
 document.getElementById('ttyButton').addEventListener('click',()=>setTTY(!tty));
-document.getElementById('demoButton').addEventListener('click',()=>{ensureAudio();if(demoRunning){requestDemoStop();print('Arrêt de KDEMO demandé.')}else command('KDEMO')});
+document.getElementById('demoButton').addEventListener('click',()=>{ensureAudio();command('KDEMO')});
+document.getElementById('keditButton').addEventListener('click',()=>{ensureAudio();command('KEDIT README.KXT')});
+document.getElementById('kbasicButton').addEventListener('click',()=>{ensureAudio();command('KBASIC BASIC\\HELLO.KXB')});
+document.getElementById('shellButton').addEventListener('click',()=>{ensureAudio();command('KSHELL')});
 document.getElementById('demoStopBtn').addEventListener('click',requestDemoStop);
-document.addEventListener('click',e=>{if(demoRunning&&(e.target.closest('.screen')||e.target.closest('.tty-line'))){requestDemoStop();print('Arrêt de KDEMO demandé.')}},{capture:true});
-document.addEventListener('keydown',e=>{if(demoRunning&&e.key==='Escape'){requestDemoStop();print('Arrêt de KDEMO demandé.')}},{capture:true});
 document.querySelectorAll('[data-run]').forEach(b=>b.addEventListener('click',()=>{ensureAudio();command(b.dataset.run)}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})});
 document.addEventListener('touchend',()=>{if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})},{passive:true});
@@ -3061,5 +1907,23 @@ document.getElementById('runEdit').addEventListener('click',()=>{
  else print('F5 : seuls les scripts .KXA sont exécutables.')
 });
 
-var requestedGame=new URLSearchParams(location.search).get('game');if(requestedGame&&['PACMAN','TETRIS','SPACEKR','TRONKR'].includes(requestedGame.toUpperCase()))setTimeout(function(){launchGame(requestedGame.toUpperCase())},650);
-})();</script></body></html>
+
+BC.addEventListener('input',basicUi);BC.addEventListener('click',basicUi);BC.addEventListener('keyup',basicUi);BC.addEventListener('scroll',()=>BG.scrollTop=BC.scrollTop);
+BC.addEventListener('keydown',e=>{
+ if(e.key==='F2'){e.preventDefault();saveBasic()}
+ else if(e.key==='F5'){e.preventDefault();runBasic()}
+ else if(e.key==='F6'){e.preventDefault();basicStop=true;BSTATE.textContent='ARRÊTÉ'}
+ else if(e.key==='Escape'){e.preventDefault();closeBasic()}
+ else if(e.key==='Tab'){e.preventDefault();basicInsertText('  ')}
+});
+document.getElementById('kbasicKeyboard').addEventListener('click',()=>{BC.setAttribute('inputmode','none');BC.focus({preventScroll:true});showKb()});
+document.getElementById('kbasicSave').addEventListener('click',saveBasic);
+document.getElementById('kbasicRun').addEventListener('click',runBasic);
+document.getElementById('kbasicStop').addEventListener('click',()=>{basicStop=true;BSTATE.textContent='ARRÊTÉ';sfx.err()});
+document.getElementById('kbasicNew').addEventListener('click',newBasic);
+document.getElementById('kbasicExit').addEventListener('click',closeBasic);
+document.getElementById('kbasicClose').addEventListener('click',closeBasic);
+
+prompt();
+})();
+</script></body></html>
