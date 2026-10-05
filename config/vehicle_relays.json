@@ -1,0 +1,120 @@
+{
+  "_comment": "Mapping KNIGHT2000 Thunder pour 2 modules KMTronic RS-485 de 8 relais, soit 16 relais installés.",
+  "version": "2.0-thunder",
+  "relay_board": {
+    "port": "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AL03EICJ-if00-port0",
+    "baudrate": 9600,
+    "protocol": "kmtronic",
+    "relay_count": 16,
+    "module_size": 8,
+    "planned_modules": 2,
+    "installed_modules": 2
+  },
+  "safety": {
+    "antagonist_delay_seconds": 0.15,
+    "window_default_down_seconds": 4.0,
+    "window_default_up_seconds": 5.0,
+    "window_max_seconds": 8.0,
+    "voice_confidence_min_execute": 0.70,
+    "voice_confidence_policy": "server-side Whisper confidence required for STT relay execution"
+  },
+  "windows": {
+    "architecture": "thunder_internal_reverse",
+    "_comment": "Figure 2 du manuel KNIGHT2000Th-TechSupport-ENG : R1/R2 inversent la polarité, R3/R4 sélectionnent le passager, R5/R6 le conducteur.",
+    "polarity_relays": [1, 2],
+    "neutral": {"1": false, "2": false},
+    "down": {"1": true, "2": false},
+    "up": {"1": false, "2": true},
+    "selectors": {
+      "passenger": [3, 4],
+      "driver": [5, 6],
+      "both": [3, 4, 5, 6]
+    },
+    "_direction_note": "Si montée et descente sont inversées sur le véhicule, permuter les objets up/down après mesure, sans modifier le code."
+  },
+  "functions": {
+    "headlights": {
+      "label": "Phares",
+      "relay": 7,
+      "type": "on",
+      "category": "lights"
+    },
+    "scanner": {
+      "label": "Scanner KITT",
+      "relay": 8,
+      "type": "on",
+      "category": "lights"
+    },
+    "ignition": {
+      "label": "Contact moteur",
+      "relay": 9,
+      "type": "on",
+      "category": "engine",
+      "requires_module": 2
+    },
+    "engine_start": {
+      "label": "Démarreur",
+      "relay": 10,
+      "type": "pulse",
+      "duration_seconds": 2.0,
+      "category": "engine",
+      "requires_module": 2
+    },
+    "engine_stop": {
+      "label": "Coupure contact moteur",
+      "relay": 9,
+      "type": "on",
+      "category": "engine",
+      "requires_module": 2
+    },
+    "trunk": {
+      "label": "Ouverture coffre",
+      "relay": 11,
+      "type": "pulse",
+      "duration_seconds": 1.0,
+      "category": "trunk",
+      "requires_module": 2
+    },
+    "doors_lock": {
+      "label": "Verrouillage portes",
+      "relay": 12,
+      "type": "pulse",
+      "duration_seconds": 0.7,
+      "category": "doors",
+      "requires_module": 2
+    },
+    "doors_unlock": {
+      "label": "Déverrouillage portes",
+      "relay": 13,
+      "type": "pulse",
+      "duration_seconds": 0.7,
+      "category": "doors",
+      "requires_module": 2
+    },
+    "horn": {
+      "label": "Klaxon",
+      "relay": 14,
+      "type": "pulse",
+      "duration_seconds": 0.3,
+      "safety_max_seconds": 1.0,
+      "category": "horn",
+      "requires_module": 2
+    },
+    "fog_lights": {
+      "label": "Antibrouillards",
+      "relay": 15,
+      "type": "on",
+      "category": "lights",
+      "requires_module": 2
+    },
+    "laser": {
+      "label": "Laser / accessoire",
+      "relay": 16,
+      "type": "timed_hold",
+      "duration_seconds": 5.0,
+      "safety_max_seconds": 5.0,
+      "category": "accessory",
+      "requires_module": 2
+    }
+  }
+}
