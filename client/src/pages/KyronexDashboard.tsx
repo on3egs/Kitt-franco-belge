@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 const units = [
   ["K.A.R.R.", "01 // KARR", "KARR · ORIN NX 16GB", "https://karr.kitt-franco-belge.be", "hover_karr.mp3"],
   ["K.I.T.T.", "02 // KITT", "KITT · ORIN NANO 8GB", "https://kitt.kitt-franco-belge.be", "hover_kitt.mp3"],
@@ -19,16 +21,44 @@ export default function KyronexDashboard() {
     event.preventDefault();
     setTarget(name);
     setLinking(true);
-    window.setTimeout(() => { window.location.href = href; }, 1450);
+    playSystemSfx("link");
+    window.setTimeout(() => { window.location.href = href; }, 5200);
   };
 
-  window.setTimeout(() => setBooting(false), 2300);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBooting(false), 5500);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const playSfx = (file: string) => {
     const audio = new Audio(`/kyronex/${file}`);
     audio.volume = 0.24;
     audio.play().catch(() => undefined);
   };
+
+  const playSystemSfx = (mode: "boot" | "link") => {
+    try {
+      const context = new AudioContext();
+      const notes = mode === "boot" ? [110, 165, 220, 330, 440] : [220, 277, 370, 494, 659];
+      notes.forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = index % 2 ? "triangle" : "sine";
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, context.currentTime + index * 0.62);
+        gain.gain.exponentialRampToValueAtTime(0.055, context.currentTime + index * 0.62 + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + index * 0.62 + 0.42);
+        oscillator.connect(gain).connect(context.destination);
+        oscillator.start(context.currentTime + index * 0.62);
+        oscillator.stop(context.currentTime + index * 0.62 + 0.45);
+      });
+      window.setTimeout(() => context.close(), 3800);
+    } catch {}
+  };
+
+  useEffect(() => {
+    playSystemSfx("boot");
+  }, []);
 
   return (
     <main className="kx-red">
