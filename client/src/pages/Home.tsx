@@ -274,21 +274,6 @@ function NavBar() {
             KYRONEXT OS
           </a>
           <a
-            href="/kyronext-os/"
-            className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.6rem",
-              color: "#ff6a5a",
-              border: "1px solid rgba(255,70,50,0.85)",
-              background: "rgba(255,34,34,0.12)",
-              boxShadow: "0 0 12px rgba(255,34,34,0.28)",
-            }}
-            onMouseEnter={() => play("hover")}
-          >
-            KYRONEXT OS
-          </a>
-          <a
             href="/kyronext-studio/"
             className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
             style={{
@@ -416,25 +401,6 @@ function NavBar() {
             }}
             onMouseEnter={() => play("hover")}
             onClick={() => setMenuOpen(false)}
-          >
-            KYRONEXT OS
-          </a>
-          <a
-            href="/kyronext-os/"
-            className="text-center block"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.6rem",
-              color: "#ff6a5a",
-              border: "1px solid rgba(255,70,50,0.85)",
-              background: "rgba(255,34,34,0.12)",
-              boxShadow: "0 0 12px rgba(255,34,34,0.28)",
-              padding: "14px 22px",
-              letterSpacing: "0.12em",
-              textDecoration: "none",
-            }}
-            onClick={() => setMenuOpen(false)}
-            onMouseEnter={() => play("hover")}
           >
             KYRONEXT OS
           </a>
