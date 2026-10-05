@@ -38,13 +38,14 @@ export default function KyronexDashboard() {
   };
 
   const speakIdentity = (name: string) => {
+    const isKarr = name.toUpperCase().includes("KARR");
     fetch("https://karr.kitt-franco-belge.be/api/tts-eleven", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         text: `Je suis ${name}. Liaison directe avec l'ordinateur de la Fondation. Connexion acceptée.`,
         model_id: "eleven_v3",
-        voice_settings: { stability: 0.55, similarity_boost: 0.88, style: 0.22, use_speaker_boost: true },
+        voice_settings: { stability: isKarr ? 0.42 : 0.58, similarity_boost: 0.88, style: isKarr ? 0.32 : 0.16, use_speaker_boost: true },
       }),
     })
       .then((response) => response.ok ? response.blob() : Promise.reject())
