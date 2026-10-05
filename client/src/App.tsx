@@ -25,6 +25,7 @@ import SoumettrePdf from "./pages/SoumettrePdf";
 import AdminPdfs from "./pages/AdminPdfs";
 import Admin from "./pages/Admin";
 import MentionsLegales from "./pages/MentionsLegales";
+import KyronexDashboard from "./pages/KyronexDashboard";
 
 function AppRouter() {
   return (
@@ -34,6 +35,7 @@ function AppRouter() {
         <Route path={"/privacy"} component={Privacy} />
         <Route path={"/data-deletion"} component={DataDeletion} />
         <Route path={"/karr"} component={Karr} />
+        <Route path={"/kyronex"} component={KyronexDashboard} />
         <Route path={"/manix"} component={Manix} />
         <Route path={"/soumettre"} component={Soumettre} />
         <Route path={"/videos"} component={Videos} />
