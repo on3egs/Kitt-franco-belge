@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>Kyronext™ OS 1982 v8</title>
+<title>Kyronext™ OS 1982 v9 - AMÉLIORÉ</title>
 <style>
 :root{--r:#ff3b2f;--r2:#8d140e;--g:#69ff7b;--a:#ffc44e;--bg:#000}
 *{box-sizing:border-box}
@@ -250,6 +250,47 @@ html,body { overflow-x:hidden; }
 .kappHead > span:nth-child(3) { grid-column:1; grid-row:2; font-size:10px; }
 #kappClose { grid-column:2; grid-row:1 / 3; min-width:80px; }
 .kappControls button { min-width:0; flex:1 1 120px; }
+
+
+/* KEDIT - Éditeur de texte amélioré */
+#keditOverlay{display:none;position:fixed;inset:0;z-index:320;background:#000;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));font-family:"Courier New",monospace;color:#ff7669;-webkit-user-select:text;user-select:text}
+#keditOverlay.show{display:flex;align-items:center;justify-content:center}
+.keditShell{width:min(920px,100%);height:min(92vh,720px);border:2px solid #8b170f;background:#060000;display:flex;flex-direction:column;box-shadow:0 0 42px rgba(255,30,20,.22);overflow:hidden}
+.keditTitleBar{display:flex;align-items:center;gap:8px;background:#4b0a06;color:#ffd3cd;padding:6px 8px;border-bottom:1px solid #9b2117;font-weight:900;font-size:12px;letter-spacing:1px}
+.keditTitleBar span:first-child{flex:1}
+.keditMenuBar{display:flex;gap:6px;padding:4px 8px;border-bottom:1px solid #5a100b;color:#ff8e83;font-size:10px;background:#070000}
+.keditWorkArea{display:flex;flex:1;min-height:0;background:#000;overflow:hidden;border-bottom:1px solid #32100d}
+#keditGutter{width:52px;flex:none;padding:8px 6px;text-align:right;white-space:pre;overflow:hidden;border-right:1px solid #32100d;color:#6d3732;line-height:1.45;font-size:13px;user-select:none;background:#020000;min-height:100%}
+#keditTextArea{flex:1;resize:none;border:0;outline:0;background:#000;color:#ff7669;padding:8px;font:14px/1.45 "Courier New",monospace;caret-color:#ff4b3b;tab-size:4;white-space:pre;overflow:auto;line-height:1.45;min-height:100%;text-transform:uppercase}
+.keditStatus{display:flex;align-items:center;gap:14px;font-size:10px;color:#1b0000;background:#ff6b5d;margin:0;border:0;padding:3px 7px;min-height:20px;white-space:nowrap;overflow:hidden}
+.keditStatus span:nth-child(4){flex:1;text-align:center}
+.keditBlink{font-size:10px;margin-left:auto;animation:keditBlink .72s steps(1) infinite}
+@keyframes keditBlink{50%{opacity:0}}
+.keditButtons{display:flex;gap:6px;padding:5px 6px;border-top:1px solid #260805;background:#030000}
+.keditButtons button{flex:1;padding:7px 5px;font-size:10px}
+.keditGutter{background:#020000;padding:8px 6px;color:#6d3732}
+
+/* KBASIC - Interpréteur BASIC */
+#kbasicOverlay{display:none;position:fixed;inset:0;z-index:330;background:#000;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));font-family:"Courier New",monospace;color:#ff7669}
+#kbasicOverlay.show{display:flex;align-items:center;justify-content:center}
+.kbasicShell{width:min(920px,100%);height:min(92vh,720px);border:2px solid #7b160f;background:#050000;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(255,35,20,.22);overflow:hidden}
+.kbasicTitleBar{display:flex;align-items:center;gap:8px;background:#4b0a06;color:#ffd3cd;padding:6px 8px;border-bottom:1px solid #9b2117;font-weight:900;font-size:12px;letter-spacing:1px}
+.kbasicTitleBar span:first-child{flex:1}
+.kbasicMenuBar{display:flex;gap:6px;padding:4px 8px;border-bottom:1px solid #5a100b;color:#ff8e83;font-size:10px;background:#070000}
+.kbasicWorkArea{display:flex;flex:1;min-height:0;background:#000;overflow:hidden;border-bottom:1px solid #32100d}
+#kbasicGutter{width:52px;flex:none;padding:8px 6px;text-align:right;white-space:pre;overflow:hidden;border-right:1px solid #32100d;color:#6d3732;line-height:1.45;font-size:13px;user-select:none;background:#020000;min-height:100%}
+#kbasicCodeArea{flex:1;resize:none;border:0;outline:0;background:#000;color:#ff8a7e;padding:8px;font:14px/1.45 "Courier New",monospace;caret-color:#69ff7b;tab-size:4;white-space:pre;overflow:auto;line-height:1.45;min-height:60%}
+.kbasicOutputArea{background:#020000;border-top:1px solid #32100d;min-height:200px;max-height:300px;overflow:auto}
+.kbasicOutputHeader{padding:4px 8px;background:#35100b;color:#ffd3cd;font-size:11px;letter-spacing:1px;border-bottom:1px solid #5a100b}
+#kbasicOutput{padding:8px;white-space:pre-wrap;line-height:1.45;font-size:13px;color:#ffb53f;overflow:auto;min-height:150px}
+.kbasicStatus{display:flex;align-items:center;gap:14px;font-size:10px;color:#1b0000;background:#ff8a7e;margin:0;border:0;padding:3px 7px;min-height:20px;white-space:nowrap;overflow:hidden}
+.kbasicStatus span:nth-child(4){flex:1;text-align:center}
+.kbasicBlink{font-size:10px;margin-left:auto;animation:kbasicBlink .72s steps(1) infinite}
+@keyframes kbasicBlink{50%{opacity:0}}
+.kbasicButtons{display:flex;gap:6px;padding:5px 6px;border-top:1px solid #260805;background:#030000}
+.kbasicButtons button{flex:1;padding:7px 5px;font-size:10px}
+.kbasicGutter{background:#020000;padding:8px 6px;color:#6d3732}
+
 </style>
 </head>
 <body><div id="app">
@@ -316,7 +357,7 @@ html,body { overflow-x:hidden; }
   </div>
 </div>
 
-<header><div><div class="brand">KYRONEXT™ OS // K.I.T.T.</div><div class="sub">SYSTEM SHELL 1.6 — BUILD 1982/2026 · © KYRONEXT SYSTEMS™</div></div><div class="scanner"><span></span></div></header>
+<header><div><div class="brand">KYRONEXT™ OS // K.I.T.T.</div><div class="sub">SYSTEM SHELL 1.9 — BUILD 1982/2026 — AMÉLIORÉ · © KYRONEXT SYSTEMS™</div></div><div class="scanner"><span></span></div></header>
 
 <div class="layout">
 <main>
@@ -330,13 +371,14 @@ html,body { overflow-x:hidden; }
 <div class="panel"><div class="ph">ÉTAT</div>
 <div class="stat"><span>SYSTÈME</span><span class="ok">ACTIF</span></div>
 <div class="stat"><span>MODE</span><span id="modeSide">NORMAL</span></div>
+<div class="stat"><span>SHELL</span><span id="shellSide">K-MODE</span></div>
 <div class="stat"><span>TTY</span><span id="ttySide">OFF</span></div>
 <div class="stat"><span>AUDIO</span><span id="audioSide" class="warn">INIT</span></div></div>
 <div class="panel"><div class="ph">ACCÈS RAPIDES</div><div class="quick">
 <button data-run="kaide">KAIDE</button><button data-run="ktty">KTTY</button>
 <button data-run="kdiagnostic">KDIAG</button><button data-run="kscanner">KSCAN</button>
 <button data-run="ksysteme">KSYSTÈME</button><button data-run="kvehicule">KVÉHICULE</button>
-<button data-run="kcore">KCORE IA</button><button data-run="kson test">KSON TEST</button><button data-run="kdemo">▶ KDEMO</button>
+<button data-run="kcore">KCORE IA</button><button data-run="kson test">KSON TEST</button><button data-run="kdemo">▶ KDEMO</button><button data-run="kedit">KEDIT</button><button data-run="kbasic">KBASIC</button><button data-run="kshell">SHELL</button>
 </div></div>
 <div class="panel"><div class="ph">SYSTÈME CENTRAL</div><div class="quick">
 <button data-run="kcentral">KCENTRAL</button><button data-run="kradar">KRADAR</button>
@@ -346,7 +388,7 @@ html,body { overflow-x:hidden; }
 </aside>
 </div>
 
-<div class="bar"><button id="keyboard">⌨ CLAVIER</button><button id="audioTest">🔊 AUDIO</button><button id="ttyButton">TTY</button><button id="demoButton">▶ DÉMO</button></div>
+<div class="bar"><button id="keyboard">⌨ CLAVIER</button><button id="audioTest">🔊 AUDIO</button><button id="ttyButton">TTY</button><button id="demoButton">▶ DÉMO</button><button id="keditButton">KEDIT</button><button id="kbasicButton">KBASIC</button><button id="shellButton">SHELL</button></div>
 
 <div id="demoHud"><div class="demoTop"><span>DÉMONSTRATION KYRONEXT™</span><span id="demoStep">0/0</span><button id="demoStopBtn">STOP</button></div><div class="demoTrack"><div id="demoProgress"></div></div><div id="demoLabel">Préparation…</div></div>
 <div id="kitt-kb" aria-label="Clavier Kyronext"></div>
@@ -695,8 +737,24 @@ const sfx={ok:()=>audioSynth.ok(),err:()=>{tone(180,.1,'sawtooth',.7);tone(125,.
 
 function print(t=''){const text=String(t);H.textContent+=(H.textContent?'\n':'')+text;const chars=text.replace(/\s/g,'');for(let i=0;i<Math.min(chars.length,180);i++)audioSynth.key();if(/\[\s*OK\s*\]/i.test(text))audioSynth.ok();window.scrollTo(0,document.body.scrollHeight)}
 function norm(s){return s.toUpperCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
-function renderTTY(){TP.textContent=cwd+'>';TB.textContent=ttyBuffer}
-function prompt(){P.textContent=cwd+'>';I.placeholder='Commande…';renderTTY()}
+function renderTTY(){
+  if(shellMode) {
+    TP.textContent=cwd+' SHELL>';
+  } else {
+    TP.textContent=cwd+'>';
+  }
+  TB.textContent=ttyBuffer;
+}
+function prompt(){
+  if(shellMode) {
+    P.textContent=cwd+' SHELL>';
+    I.placeholder='Commande shell…';
+  } else {
+    P.textContent=cwd+'>';
+    I.placeholder='Commande…';
+  }
+  renderTTY();
+}
 function resolve(name){if(!name)return cwd;name=name.replaceAll('/','\\');if(/^K:\\/i.test(name))return name.toUpperCase();if(name==='..'){let p=cwd.split('\\');if(p.length>1)p.pop();return p.join('\\')}if(name==='.')return cwd;return (cwd+'\\'+name).toUpperCase()}
 function setTTY(on){
  tty=on;document.body.classList.toggle('tty',on);ttySide.textContent=on?'ON':'OFF';ttyBuffer='';renderTTY();
@@ -1748,7 +1806,7 @@ I.addEventListener('keydown',e=>{
  if(e.key==='Enter'){e.preventDefault();ensureAudio();command(I.value);I.value=''}
  else if(e.key==='ArrowUp'){e.preventDefault();if(histIndex>0){histIndex--;I.value=hist[histIndex]||''}}
  else if(e.key==='ArrowDown'){e.preventDefault();if(histIndex<hist.length-1){histIndex++;I.value=hist[histIndex]||''}else{histIndex=hist.length;I.value=''}}
- else if(e.key==='Tab'){e.preventDefault();let q=norm(I.value);let all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KTTY','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)I.value=m}
+else if(e.key==='Tab'){e.preventDefault();let q=norm(I.value);let all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KBASIC','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KTTY','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KCOPY','KDEL','KREN','KMD','KRD','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KDATE','KTIME','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)I.value=m}
  else tone(900,.018,'square',.18)
 });
 document.addEventListener('keydown',e=>{
@@ -1757,8 +1815,1214 @@ document.addEventListener('keydown',e=>{
  if(e.key==='Enter'){e.preventDefault();submitTTY()}
  else if(e.key==='Backspace'){e.preventDefault();setTtyText(ttyBuffer.slice(0,-1))}
  else if(e.key==='ArrowUp'){e.preventDefault();if(histIndex>0){histIndex--;setTtyText(hist[histIndex]||'')}}
- else if(e.key==='ArrowDown'){e.preventDefault();if(histIndex<hist.length-1){histIndex++;setTtyText(hist[histIndex]||'')}else{histIndex=hist.length;setTtyText('')}}
- else if(e.key==='Tab'){e.preventDefault();let q=norm(ttyBuffer),all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KNETSTAT','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)setTtyText(m)}
+ else if(e.key==='Tab'){e.preventDefault();let q=norm(ttyBuffer),all=['KAIDE','KDIR','KTREE','KCD','KTYPE','KEDIT','KCODE','KBASIC','KXMEM','KVERSION','KVER','KDIAGNOSTIC','KSCANNER','KSYSTEME','KCORE','KCUDA','KGPU','KCPU','KRAM','KRESEAU','KIPCONFIG','KPING','KVIGILANCE','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KTTY','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KCOPY','KDEL','KREN','KMD','KRD','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KDATE','KTIME','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)setTtyText(m)}
+// KEDIT - Éditeur de texte amélioré (style MS-DOS EDIT)
+// ============================================================================
+const KEDIT = (() => {
+  const overlay = document.getElementById('keditOverlay');
+  const textarea = document.getElementById('keditTextArea');
+  const gutter = document.getElementById('keditGutter');
+  const title = document.getElementById('keditTitle');
+  const pos = document.getElementById('keditPos');
+  const mode = document.getElementById('keditMode');
+  const fileInfo = document.getElementById('keditFileInfo');
+  
+  let currentFile = null;
+  let insertMode = true;
+  let lineNumbers = [];
+  
+  function updateGutter() {
+    const lines = textarea.value.split('\n');
+    const lineCount = lines.length;
+    let gutterHTML = '';
+    for (let i = 1; i <= Math.max(lineCount, 25); i++) {
+      gutterHTML += i + '\n';
+    }
+    gutter.textContent = gutterHTML.trim();
+  }
+  
+  function updateStatus() {
+    const cursorPos = textarea.selectionStart;
+    const text = textarea.value;
+    const lines = text.substring(0, cursorPos).split('\n');
+    const line = lines.length;
+    const col = lines[lines.length - 1].length + 1;
+    pos.textContent = 'LIGNE ' + line + ' · COL ' + col;
+    mode.textContent = insertMode ? 'INS' : 'SUR';
+  }
+  
+  function openFile(filePath) {
+    if (fs[filePath] && fs[filePath].type === 'file') {
+      currentFile = filePath;
+      textarea.value = fs[filePath].text;
+      title.textContent = 'KYRONEXT™ KEDIT — ' + filePath;
+      fileInfo.textContent = 'FICHIER: ' + filePath.split('\\').pop();
+      updateGutter();
+      updateStatus();
+      overlay.classList.add('show');
+      textarea.focus();
+      sfx.ok();
+    } else {
+      print('Fichier introuvable: ' + filePath);
+      sfx.err();
+    }
+  }
+  
+  function saveFile() {
+    if (!currentFile) {
+      // Demander un nom de fichier
+      print('Aucun fichier ouvert. Utilisez F3 pour ouvrir un fichier.');
+      sfx.err();
+      return;
+    }
+    fs[currentFile].text = textarea.value;
+    print('Fichier sauvegardé: ' + currentFile);
+    sfx.ok();
+    updateGutter();
+  }
+  
+  function newFile() {
+    currentFile = null;
+    textarea.value = '';
+    title.textContent = 'KYRONEXT™ KEDIT — NOUVEAU FICHIER';
+    fileInfo.textContent = 'FICHIER: NON NOMMÉ.KXT';
+    updateGutter();
+    updateStatus();
+    sfx.ok();
+  }
+  
+  function closeEditor() {
+    overlay.classList.remove('show');
+    I.focus();
+    sfx.ok();
+  }
+  
+  // Gérer les raccourcis clavier
+  function handleKeyDown(e) {
+    // Alt+X pour quitter
+    if (e.altKey && e.key === 'x') {
+      e.preventDefault();
+      closeEditor();
+    }
+    // F1 - Aide
+    if (e.key === 'F1') {
+      e.preventDefault();
+      print('KEDIT - Éditeur de texte Kyronext\n\nRaccourcis:\nAlt+X: Quitter\nF1: Aide\nF2: Sauver\nF3: Ouvrir\nF4: Nouveau\nF5: Imprimer\n\nFlèches: Déplacement\nSuppr: Supprimer\nIns: Mode insertion/surcharge');
+      sfx.ok();
+    }
+    // F2 - Sauver
+    if (e.key === 'F2') {
+      e.preventDefault();
+      saveFile();
+    }
+    // F3 - Ouvrir
+    if (e.key === 'F3') {
+      e.preventDefault();
+      // Ouvrir une boîte de dialogue ou demander le fichier
+      print('Ouvrir un fichier - Tapez: KEDIT <fichier>');
+      sfx.tick();
+    }
+    // F4 - Nouveau
+    if (e.key === 'F4') {
+      e.preventDefault();
+      newFile();
+    }
+    // Insert key
+    if (e.key === 'Insert') {
+      e.preventDefault();
+      insertMode = !insertMode;
+      mode.textContent = insertMode ? 'INS' : 'SUR';
+      sfx.tick();
+    }
+    updateStatus();
+  }
+  
+  // Initialisation
+  textarea.addEventListener('input', () => {
+    updateGutter();
+    updateStatus();
+  });
+  textarea.addEventListener('keydown', handleKeyDown);
+  textarea.addEventListener('scroll', () => {
+    gutter.scrollTop = textarea.scrollTop;
+  });
+  
+  document.getElementById('keditClose').addEventListener('click', closeEditor);
+  document.getElementById('keditSave').addEventListener('click', saveFile);
+  document.getElementById('keditNew').addEventListener('click', newFile);
+  document.getElementById('keditExit').addEventListener('click', closeEditor);
+  
+  return {
+    open: openFile,
+    close: closeEditor
+  };
+})();
+
+// ============================================================================
+// KBASIC - Interpréteur BASIC
+// ============================================================================
+const KBASIC = (() => {
+  const overlay = document.getElementById('kbasicOverlay');
+  const codeArea = document.getElementById('kbasicCodeArea');
+  const outputArea = document.getElementById('kbasicOutput');
+  const title = document.getElementById('kbasicTitle');
+  const pos = document.getElementById('kbasicPos');
+  const modeStatus = document.getElementById('kbasicMode');
+  const fileInfo = document.getElementById('kbasicFile');
+  const gutter = document.getElementById('kbasicGutter');
+  
+  let currentFile = null;
+  let running = false;
+  let stopped = false;
+  let variables = {};
+  let program = [];
+  let currentLine = 0;
+  
+  // Fonctions utilitaires
+  function printBasic(text) {
+    outputArea.textContent += text + '\n';
+    outputArea.scrollTop = outputArea.scrollHeight;
+  }
+  
+  function clearOutput() {
+    outputArea.textContent = '';
+  }
+  
+  function updateGutter() {
+    const lines = codeArea.value.split('\n');
+    const lineCount = lines.length;
+    let gutterHTML = '';
+    for (let i = 1; i <= Math.max(lineCount, 25); i++) {
+      gutterHTML += String(i).padStart(4, ' ') + '\n';
+    }
+    gutter.textContent = gutterHTML.trim();
+  }
+  
+  function updateStatus() {
+    const cursorPos = codeArea.selectionStart;
+    const text = codeArea.value;
+    const lines = text.substring(0, cursorPos).split('\n');
+    const line = lines.length;
+    const col = lines[lines.length - 1].length + 1;
+    pos.textContent = 'LIGNE ' + line + ' · COL ' + col;
+  }
+  
+  function parseLine(line) {
+    line = line.trim();
+    if (!line) return null;
+    
+    // Extraire le numéro de ligne
+    const match = line.match(/^(\d+)\s+(.*)/);
+    if (!match) return null;
+    
+    const lineNum = parseInt(match[1]);
+    const command = match[2].trim().toUpperCase();
+    
+    return { lineNum, command };
+  }
+  
+  function parseProgram() {
+    const lines = codeArea.value.split('\n');
+    program = [];
+    
+    for (const rawLine of lines) {
+      const parsed = parseLine(rawLine);
+      if (parsed) {
+        program.push(parsed);
+      }
+    }
+    
+    // Trier par numéro de ligne
+    program.sort((a, b) => a.lineNum - b.lineNum);
+  }
+  
+  function findLine(lineNum) {
+    for (let i = 0; i < program.length; i++) {
+      if (program[i].lineNum === lineNum) {
+        return i;
+      }
+    }
+    return -1;
+  }
+  
+  function getNextLine() {
+    currentLine++;
+    const idx = findLine(currentLine);
+    if (idx !== -1) {
+      return program[idx];
+    }
+    return null;
+  }
+  
+  function evaluateExpression(expr) {
+    // Remplacer les variables
+    expr = expr.replace(/\b([A-Za-z]\w*)\b/g, (match, varName) => {
+      varName = varName.toUpperCase();
+      if (variables.hasOwnProperty(varName)) {
+        return variables[varName];
+      }
+      return '0';
+    });
+    
+    try {
+      // Évaluer l'expression mathématique
+      return Function('"use strict"; return (' + expr + ')')();
+    } catch (e) {
+      return 0;
+    }
+  }
+  
+  function executeCommand(command) {
+    // Supprimer le numéro de ligne s'il est présent
+    const parts = command.split(/\s+/);
+    const cmd = parts[0].toUpperCase();
+    const args = parts.slice(1);
+    
+    switch (cmd) {
+      case 'PRINT':
+        printBasic(args.join(' '));
+        break;
+      
+      case 'LET':
+        if (args.length >= 3) {
+          const varName = args[0].toUpperCase();
+          const expr = args.slice(2).join(' ');
+          variables[varName] = evaluateExpression(expr);
+        }
+        break;
+      
+      case 'INPUT':
+        if (args.length >= 2) {
+          const prompt = args.slice(1).join(' ');
+          const varName = args[0].toUpperCase();
+          // Pour l'instant, on simule l'entrée
+          printBasic(prompt + ' ?');
+          variables[varName] = 0; // Valeur par défaut
+        }
+        break;
+      
+      case 'GOTO':
+        if (args.length > 0) {
+          currentLine = parseInt(evaluateExpression(args[0])) - 1;
+        }
+        break;
+      
+      case 'GOSUB':
+        // À implémenter
+        break;
+      
+      case 'RETURN':
+        // À implémenter
+        break;
+      
+      case 'IF':
+        if (args.length >= 3) {
+          const condition = args[0];
+          const lineNum = parseInt(args[2]);
+          const left = args[1];
+          const op = args[2];
+          const right = args.slice(3).join(' ');
+          
+          // Simplifié : évaluer la condition
+          if (evaluateExpression(left + op + right)) {
+            currentLine = lineNum - 1;
+          }
+        }
+        break;
+      
+      case 'FOR':
+        // À implémenter
+        break;
+      
+      case 'NEXT':
+        // À implémenter
+        break;
+      
+      case 'REM':
+      case ''':
+        // Commentaire - ne rien faire
+        break;
+      
+      case 'CLS':
+        clearOutput();
+        break;
+      
+      case 'END':
+        running = false;
+        printBasic('PROGRAMME TERMINÉ');
+        break;
+      
+      case 'STOP':
+        running = false;
+        stopped = true;
+        printBasic('PROGRAMME ARRÊTÉ');
+        break;
+      
+      case 'LIST':
+        // Afficher le programme
+        const lines = codeArea.value.split('\n');
+        lines.forEach(line => printBasic(line));
+        break;
+      
+      case 'NEW':
+        codeArea.value = '';
+        variables = {};
+        program = [];
+        currentFile = null;
+        clearOutput();
+        printBasic('PRÊT');
+        break;
+      
+      case 'RUN':
+        runProgram();
+        break;
+      
+      default:
+        printBasic('ERREUR: Commande inconnue: ' + cmd);
+    }
+  }
+  
+  async function runProgram() {
+    if (running) return;
+    
+    running = true;
+    stopped = false;
+    variables = {};
+    currentLine = 0;
+    clearOutput();
+    parseProgram();
+    
+    printBasic('EXÉCUTION...');
+    printBasic('');
+    
+    while (running && !stopped && currentLine < 9999) {
+      const line = getNextLine();
+      if (!line) {
+        running = false;
+        printBasic('FIN DE PROGRAMME');
+        break;
+      }
+      
+      executeCommand(line.command);
+      
+      // Petite pause pour permettre l'affichage
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    
+    running = false;
+    modeStatus.textContent = 'PRÊT';
+  }
+  
+  function stopProgram() {
+    running = false;
+    stopped = true;
+    modeStatus.textContent = 'ARRÊTÉ';
+    printBasic('PROGRAMME ARRÊTÉ PAR L\'UTILISATEUR');
+  }
+  
+  function clearProgram() {
+    codeArea.value = '';
+    variables = {};
+    program = [];
+    currentFile = null;
+    clearOutput();
+    updateGutter();
+    modeStatus.textContent = 'PRÊT';
+    printBasic('PRÊT');
+  }
+  
+  function openFile(filePath) {
+    if (fs[filePath] && fs[filePath].type === 'file') {
+      currentFile = filePath;
+      codeArea.value = fs[filePath].text;
+      title.textContent = 'KYRONEXT™ KBASIC — ' + filePath;
+      fileInfo.textContent = 'FICHIER: ' + filePath.split('\\').pop();
+      updateGutter();
+      updateStatus();
+      overlay.classList.add('show');
+      codeArea.focus();
+      sfx.ok();
+    } else {
+      print('Fichier introuvable: ' + filePath);
+      sfx.err();
+    }
+  }
+  
+  function saveFile() {
+    if (!currentFile) {
+      print('Aucun fichier ouvert.');
+      sfx.err();
+      return;
+    }
+    fs[currentFile].text = codeArea.value;
+    print('Fichier sauvegardé: ' + currentFile);
+    sfx.ok();
+  }
+  
+  function closeEditor() {
+    if (running) {
+      stopProgram();
+    }
+    overlay.classList.remove('show');
+    I.focus();
+    sfx.ok();
+  }
+  
+  // Gérer les raccourcis clavier
+  function handleKeyDown(e) {
+    // SYSTEM pour quitter
+    if (e.key === 'Escape') {
+      closeEditor();
+    }
+    // F5 - Exécuter
+    if (e.key === 'F5') {
+      e.preventDefault();
+      runProgram();
+    }
+    // F6 - Effacer
+    if (e.key === 'F6') {
+      e.preventDefault();
+      clearProgram();
+    }
+    // F1 - Aide
+    if (e.key === 'F1') {
+      e.preventDefault();
+      printBasic('KBASIC v1.0 - Aide\n\nCommandes disponibles:\nPRINT, LET, INPUT, GOTO, IF, FOR, NEXT, REM\nGOSUB, RETURN, CLS, END, STOP, LIST, NEW, RUN\n\nExemple:\n10 PRINT "HELLO KYRONEXT"\n20 LET X = 5\n30 PRINT X\n40 GOTO 20');
+    }
+    updateStatus();
+  }
+  
+  // Initialisation
+  codeArea.addEventListener('input', () => {
+    updateGutter();
+    updateStatus();
+  });
+  codeArea.addEventListener('keydown', handleKeyDown);
+  codeArea.addEventListener('scroll', () => {
+    gutter.scrollTop = codeArea.scrollTop;
+  });
+  
+  document.getElementById('kbasicClose').addEventListener('click', closeEditor);
+  document.getElementById('kbasicRun').addEventListener('click', runProgram);
+  document.getElementById('kbasicClear').addEventListener('click', clearProgram);
+  document.getElementById('kbasicStop').addEventListener('click', stopProgram);
+  document.getElementById('kbasicList').addEventListener('click', () => {
+    executeCommand('LIST');
+  });
+  document.getElementById('kbasicNew').addEventListener('click', () => {
+    executeCommand('NEW');
+  });
+  document.getElementById('kbasicExit').addEventListener('click', closeEditor);
+  
+  return {
+    open: openFile,
+    close: closeEditor,
+    run: runProgram
+  };
+})();
+
+
+
+// Boutons KEDIT et KBASIC dans la barre inférieure
+document.getElementById('keditButton').addEventListener('click', () => {
+  KEDIT.open(cwd + '\\NONNOMMÉ.KXT');
+  sfx.ok();
+});
+
+document.getElementById('kbasicButton').addEventListener('click', () => {
+  KBASIC.open(cwd + '\\NONNOMMÉ.KXB');
+  sfx.ok();
+});
+
+
+
+// ============================================================================
+// MODE SHELL (Exécution directe des commandes sans préfixe K)
+// ============================================================================
+let shellMode = false;
+const shellSide = document.getElementById('shellSide');
+
+// Mappage des commandes shell (sans K) vers les commandes Kyronext
+const SHELL_MAP = {
+  'EDIT': 'KEDIT',
+  'BASIC': 'KBASIC',
+  'DIR': 'KDIR',
+  'CD': 'KCD',
+  'TYPE': 'KTYPE',
+  'COPY': 'KCOPY',
+  'DEL': 'KDEL',
+  'REN': 'KREN',
+  'MD': 'KMD',
+  'RD': 'KRD',
+  'MOVE': 'KMOVE',
+  'FC': 'KFC',
+  'FIND': 'KFIND',
+  'MORE': 'KMORE',
+  'HEAD': 'KHEAD',
+  'TAIL': 'KTAIL',
+  'ATTRIB': 'KATTRIB',
+  'WRITE': 'KWRITE',
+  'APPEND': 'KAPPEND',
+  'DATE': 'KDATE',
+  'TIME': 'KTIME',
+  'CLS': 'KCLS',
+  'VER': 'KVER',
+  'HELP': 'KAIDE',
+  'TTY': 'KTTY',
+  'DEMO': 'KDEMO',
+  'INTERFACE': 'KINTERFACE',
+  'EXIT': 'KEXIT',
+  'QUIT': 'KEXIT',
+  'SHELL': 'KSHELL',
+  'KEDIT': 'KEDIT',
+  'KBASIC': 'KBASIC'
+};
+
+// Activer/Désactiver le mode SHELL
+function toggleShellMode() {
+  shellMode = !shellMode;
+  shellSide.textContent = shellMode ? 'SHELL-MODE' : 'K-MODE';
+  shellSide.className = shellMode ? 'ok' : 'warn';
+  modeSide.textContent = shellMode ? 'SHELL' : 'NORMAL';
+  
+  // Mettre à jour le prompt
+  prompt();
+  
+  if (shellMode) {
+    print('Mode SHELL activé. Tapez les commandes sans préfixe K (ex: EDIT, BASIC, DIR).');
+    print('Tapez EXIT ou SHELL pour revenir au mode normal.');
+  } else {
+    print('Mode SHELL désactivé. Retour au mode K-COMMAND.');
+  }
+  sfx.ok();
+}
+
+// Exécuter une commande en mode SHELL
+function executeShellCommand(cmd) {
+  if (!shellMode) {
+    return false; // Pas en mode shell, laisser le traitement normal
+  }
+  
+  // Normaliser la commande
+  cmd = norm(cmd);
+  
+  // Vérifier si c'est une commande shell connue
+  if (SHELL_MAP[cmd.split(' ')[0]]) {
+    // Remplacer le préfixe par K
+    const parts = cmd.split(' ');
+    parts[0] = SHELL_MAP[parts[0]];
+    const kyronetCmd = parts.join(' ');
+    command(kyronetCmd);
+    return true;
+  }
+  
+  // Commandes spéciales pour le mode shell
+  switch (cmd.split(' ')[0]) {
+    case 'EXIT':
+    case 'QUIT':
+      toggleShellMode();
+      return true;
+    case 'SHELL':
+      toggleShellMode();
+      return true;
+    case '':
+      return true; // Commande vide
+    default:
+      print('Commande inconnue en mode SHELL: ' + cmd.split(' ')[0]);
+      print('Tapez HELP pour la liste des commandes.');
+      sfx.err();
+      return true;
+  }
+}
+
+// Modifier le gestionnaire de la touche Entrée pour le mode SHELL
+const originalSendHandler = document.getElementById('send').onclick;
+if (originalSendHandler) {
+  document.getElementById('send').onclick = function(e) {
+    const cmd = I.value.trim();
+    if (cmd) {
+      if (!executeShellCommand(cmd)) {
+        // Si ce n'est pas une commande shell, utiliser le traitement normal
+        command(cmd);
+      }
+      I.value = '';
+      I.focus();
+    }
+    e.preventDefault();
+    return false;
+  };
+}
+
+// Ajouter l'event listener pour le bouton SHELL
+document.getElementById('shellButton').addEventListener('click', () => {
+  toggleShellMode();
+  I.focus();
+});
+
+// Modifier la fonction command pour gérer le mode SHELL dans le TTY
+const originalSubmitTTY = window.submitTTY;
+window.submitTTY = function() {
+  let v = ttyBuffer;
+  ttyBuffer = '';
+  renderTTY();
+  if (v) {
+    if (!executeShellCommand(v)) {
+      // Si ce n'est pas une commande shell, utiliser le traitement normal
+      command(v);
+    }
+  }
+  prompt();
+};
+
+// Ajouter la commande KSHELL
+function commandKShell() {
+  toggleShellMode();
+}
+
+// Étendre commandExtended pour gérer KSHELL
+const originalCommandExtended = window.commandExtended;
+window.commandExtended = function(cmd) {
+  const parts = cmd.trim().split(/\s+/);
+  const commandName = parts[0].toUpperCase();
+  const args = parts.slice(1);
+  
+  // Gérer KSHELL
+  if (commandName === 'KSHELL') {
+    toggleShellMode();
+    return true;
+  }
+  
+  // Si on est en mode shell, essayer de mapper
+  if (shellMode && !cmd.startsWith('K')) {
+    const mapped = SHELL_MAP[commandName];
+    if (mapped) {
+      return originalCommandExtended(mapped + (args.length > 0 ? ' ' + args.join(' ') : ''));
+    }
+  }
+  
+  // Sinon, utiliser l'ancienne version
+  if (originalCommandExtended) {
+    return originalCommandExtended(cmd);
+  }
+  return false;
+};
+
+// Mettre à jour l'aide pour inclure le mode SHELL
+const originalHelp = window.help;
+window.help = function() {
+  if (shellMode) {
+    print('KYRONEXT SHELL MODE — AIDE\n\nEn mode SHELL, vous pouvez utiliser des commandes sans préfixe K:\n');
+    print('EDIT, BASIC, DIR, CD, TYPE, COPY, DEL, REN, MD, RD\n');
+    print('MOVE, FC, FIND, MORE, HEAD, TAIL, ATTRIB\n');
+    print('WRITE, APPEND, DATE, TIME, CLS, VER, HELP\n');
+    print('TTY, DEMO, INTERFACE, SHELL, EXIT\n\n');
+    print('Tapez EXIT ou SHELL pour revenir au mode K-COMMAND.');
+    sfx.ok();
+  } else {
+    // Aide normale + mention du mode SHELL
+    originalHelp();
+    print('\nMode SHELL: tapez SHELL pour activer le mode commande direct.');
+  }
+};
+
+// ============================================================================
+// NOUVELLES COMMANDES POUR KYRONEXT OS v9
+// ============================================================================
+
+// Ajouter au système de fichiers virtuel
+const NEW_FS_ENTRIES = {
+  'K:\\KYRONEXT\\BASIC': {type: 'dir', children: []},
+  'K:\\KYRONEXT\\BASIC\\KBASIC.KXE': {type: 'file', text: 'KBASIC INTERPRETER\nVERSION=1.0\nAUTEUR=Manix\nDATE=2026'},
+  'K:\\KYRONEXT\\SYSTEME\\KEDIT.KXE': {type: 'file', text: 'KYRONEXT EDITOR\nVERSION=2.0\nTYPE=TEXT EDITOR\nEXTENSION=.KXT'},
+  'K:\\KYRONEXT\\SYSTEME\\KBASIC.KXM': {type: 'file', text: 'KBASIC MODULE\nVERSION=1.0\nTYPE=BASIC INTERPRETER'}
+};
+
+// Fusionner avec le fs existant
+for (const [key, value] of Object.entries(NEW_FS_ENTRIES)) {
+  if (!fs[key]) {
+    fs[key] = value;
+    // Ajouter au parent si c'est un fichier
+    if (value.type === 'file') {
+      const parent = key.slice(0, key.lastIndexOf('\\'));
+      if (fs[parent] && fs[parent].type === 'dir') {
+        const name = key.slice(key.lastIndexOf('\\') + 1);
+        if (!fs[parent].children.includes(name)) {
+          fs[parent].children.push(name);
+        }
+      }
+    }
+  }
+}
+
+// Nouvelle fonction de commande étendue
+function commandExtended(cmd) {
+  const parts = cmd.trim().split(/\s+/);
+  const commandName = parts[0].toUpperCase();
+  const args = parts.slice(1);
+  
+  switch (commandName) {
+    // Commandes KEDIT
+    case 'KEDIT':
+      if (args.length > 0) {
+        const filePath = resolve(args[0]);
+        KEDIT.open(filePath);
+      } else {
+        KEDIT.open(cwd + '\\NONNOMMÉ.KXT');
+      }
+      break;
+    
+    // Commandes KBASIC
+    case 'KBASIC':
+      KBASIC.open(cwd + '\\NONNOMMÉ.KXB');
+      break;
+    
+    case 'KLOAD':
+      if (args.length > 0) {
+        const filePath = resolve(args[0]);
+        if (filePath.endsWith('.KXB')) {
+          KBASIC.open(filePath);
+        } else {
+          print('KBASIC: Fichier doit avoir l\'extension .KXB');
+          sfx.err();
+        }
+      }
+      break;
+    
+    case 'KRUN':
+      if (args.length > 0) {
+        const filePath = resolve(args[0]);
+        if (fs[filePath] && fs[filePath].type === 'file' && filePath.endsWith('.KXB')) {
+          KBASIC.open(filePath);
+          setTimeout(() => KBASIC.run(), 100);
+        } else {
+          print('Fichier BASIC introuvable: ' + args[0]);
+          sfx.err();
+        }
+      }
+      break;
+    
+    // Autres nouvelles commandes
+    case 'KDATE':
+      print('DATE: ' + new Date().toLocaleDateString('fr-FR'));
+      sfx.ok();
+      break;
+    
+    case 'KTIME':
+      print('HEURE: ' + new Date().toLocaleTimeString('fr-FR'));
+      sfx.ok();
+      break;
+    
+    case 'KVER':
+    case 'KVERSION':
+      print('KYRONEXT OS v9 — BUILD 1982/2026 — AMÉLIORÉ');
+      print('Ajouts: KEDIT amélioré, KBASIC, nouvelles commandes');
+      print('Créateur: Manix / Knight Industries');
+      sfx.ok();
+      break;
+    
+    case 'KCLS':
+      dirCmd(args[0]);
+      break;
+    
+    case 'KCOPY':
+      if (args.length >= 2) {
+        const src = resolve(args[0]);
+        const dst = resolve(args[1]);
+        if (fs[src] && fs[src].type === 'file') {
+          fs[dst] = { type: 'file', text: fs[src].text };
+          const dstParent = dst.slice(0, dst.lastIndexOf('\\'));
+          const dstName = dst.slice(dst.lastIndexOf('\\') + 1);
+          if (fs[dstParent] && fs[dstParent].type === 'dir') {
+            if (!fs[dstParent].children.includes(dstName)) {
+              fs[dstParent].children.push(dstName);
+            }
+          }
+          print('1 fichier(s) copié(s).');
+          sfx.ok();
+        } else {
+          print('Fichier source introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KCOPY <source> <destination>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KDEL':
+    case 'KERASE':
+      if (args.length > 0) {
+        const filePath = resolve(args[0]);
+        if (fs[filePath]) {
+          removeFilePath(filePath);
+          print('Fichier supprimé: ' + args[0]);
+          sfx.ok();
+        } else {
+          print('Fichier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KDEL <fichier>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KREN':
+    case 'KRENAME':
+      if (args.length >= 2) {
+        const oldPath = resolve(args[0]);
+        const newPath = resolve(args[1]);
+        if (fs[oldPath]) {
+          fs[newPath] = fs[oldPath];
+          removeFilePath(oldPath);
+          const newParent = newPath.slice(0, newPath.lastIndexOf('\\'));
+          const newName = newPath.slice(newPath.lastIndexOf('\\') + 1);
+          if (fs[newParent] && fs[newParent].type === 'dir') {
+            if (!fs[newParent].children.includes(newName)) {
+              fs[newParent].children.push(newName);
+            }
+          }
+          print('Fichier renommé.');
+          sfx.ok();
+        } else {
+          print('Fichier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KREN <ancien> <nouveau>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KMD':
+    case 'KMKDIR':
+      if (args.length > 0) {
+        const dirPath = resolve(args[0]);
+        if (!fs[dirPath]) {
+          fs[dirPath] = { type: 'dir', children: [] };
+          const parent = dirPath.slice(0, dirPath.lastIndexOf('\\'));
+          const name = dirPath.slice(dirPath.lastIndexOf('\\') + 1);
+          if (fs[parent] && fs[parent].type === 'dir') {
+            if (!fs[parent].children.includes(name)) {
+              fs[parent].children.push(name);
+            }
+          }
+          print('Dossier créé: ' + args[0]);
+          sfx.ok();
+        } else {
+          print('Dossier déjà existant.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KMD <dossier>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KRD':
+    case 'KRMdir':
+      if (args.length > 0) {
+        const dirPath = resolve(args[0]);
+        if (fs[dirPath] && fs[dirPath].type === 'dir') {
+          const children = fs[dirPath].children || [];
+          children.forEach(child => {
+            removeFilePath(dirPath + '\\' + child);
+          });
+          delete fs[dirPath];
+          const parent = dirPath.slice(0, dirPath.lastIndexOf('\\'));
+          const name = dirPath.slice(dirPath.lastIndexOf('\\') + 1);
+          if (fs[parent] && fs[parent].children) {
+            fs[parent].children = fs[parent].children.filter(x => x !== name);
+          }
+          print('Dossier supprimé: ' + args[0]);
+          sfx.ok();
+        } else {
+          print('Dossier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KRD <dossier>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KWRITE':
+      if (args.length >= 2) {
+        const filePath = resolve(args[0]);
+        const content = args.slice(1).join(' ');
+        addFile(filePath, content);
+        print('Fichier créé: ' + args[0]);
+        sfx.ok();
+      } else {
+        print('Syntaxe: KWRITE <fichier> <texte>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KAPPEND':
+      if (args.length >= 2) {
+        const filePath = resolve(args[0]);
+        const content = args.slice(1).join(' ');
+        if (fs[filePath] && fs[filePath].type === 'file') {
+          fs[filePath].text += '\n' + content;
+          print('Texte ajouté à: ' + args[0]);
+          sfx.ok();
+        } else {
+          print('Fichier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KAPPEND <fichier> <texte>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KATTRIB':
+      if (args.length > 0) {
+        const filePath = resolve(args[0]);
+        if (fs[filePath]) {
+          print('Attributs de ' + args[0] + ':');
+          print('  Type: ' + (fs[filePath].type === 'dir' ? 'Dossier' : 'Fichier'));
+          if (fs[filePath].type === 'file') {
+            print('  Taille: ' + fs[filePath].text.length + ' octets');
+          } else if (fs[filePath].type === 'dir') {
+            print('  Contient: ' + (fs[filePath].children?.length || 0) + ' élément(s)');
+          }
+          sfx.ok();
+        } else {
+          print('Fichier/Dossier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KATTRIB <fichier/dossier>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KFIND':
+      if (args.length >= 2) {
+        const searchText = args[0];
+        const filePath = resolve(args[1]);
+        if (fs[filePath] && fs[filePath].type === 'file') {
+          const text = fs[filePath].text;
+          const lines = text.split('\n');
+          let found = false;
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes(searchText)) {
+              print('Ligne ' + (i + 1) + ': ' + lines[i]);
+              found = true;
+            }
+          }
+          if (!found) {
+            print('Texte non trouvé.');
+          }
+          sfx.ok();
+        } else {
+          print('Fichier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KFIND <texte> <fichier>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KFC':
+      if (args.length >= 2) {
+        const file1 = resolve(args[0]);
+        const file2 = resolve(args[1]);
+        if (fs[file1] && fs[file2] && fs[file1].type === 'file' && fs[file2].type === 'file') {
+          print('Comparaison de ' + args[0] + ' et ' + args[1] + ':');
+          const text1 = fs[file1].text;
+          const text2 = fs[file2].text;
+          const lines1 = text1.split('\n');
+          const lines2 = text2.split('\n');
+          let diffCount = 0;
+          const maxLen = Math.max(lines1.length, lines2.length);
+          for (let i = 0; i < maxLen; i++) {
+            if (lines1[i] !== lines2[i]) {
+              diffCount++;
+              print('Différence ligne ' + (i + 1));
+              print('  <: ' + (lines1[i] || '(vide)'));
+              print('  >: ' + (lines2[i] || '(vide)'));
+            }
+          }
+          print(diffCount + ' différence(s) trouvée(s).');
+          sfx.ok();
+        } else {
+          print('Fichiers introuvables.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KFC <fichier1> <fichier2>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KMORE':
+      if (args.length > 0) {
+        const filePath = resolve(args[0]);
+        if (fs[filePath] && fs[filePath].type === 'file') {
+          const lines = fs[filePath].text.split('\n');
+          let page = 1;
+          const linesPerPage = 20;
+          
+          function showPage(p) {
+            const start = (p - 1) * linesPerPage;
+            const end = Math.min(start + linesPerPage, lines.length);
+            for (let i = start; i < end; i++) {
+              print(lines[i]);
+            }
+            print('--- Plus (' + p + '/' + Math.ceil(lines.length / linesPerPage) + ') ---');
+          }
+          
+          showPage(page);
+          sfx.ok();
+        } else {
+          print('Fichier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KMORE <fichier>');
+        sfx.err();
+      }
+      break;
+    
+    case 'KHEAD':
+      if (args.length > 0) {
+        const filePath = resolve(args[0]);
+        const n = args[1] ? parseInt(args[1]) : 10;
+        if (fs[filePath] && fs[filePath].type === 'file') {
+          const lines = fs[filePath].text.split('\n');
+          for (let i = 0; i < Math.min(n, lines.length); i++) {
+            print(lines[i]);
+          }
+          sfx.ok();
+        } else {
+          print('Fichier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KHEAD <fichier> [n]');
+        sfx.err();
+      }
+      break;
+    
+    case 'KTAIL':
+      if (args.length > 0) {
+        const filePath = resolve(args[0]);
+        const n = args[1] ? parseInt(args[1]) : 10;
+        if (fs[filePath] && fs[filePath].type === 'file') {
+          const lines = fs[filePath].text.split('\n');
+          const start = Math.max(0, lines.length - n);
+          for (let i = start; i < lines.length; i++) {
+            print(lines[i]);
+          }
+          sfx.ok();
+        } else {
+          print('Fichier introuvable.');
+          sfx.err();
+        }
+      } else {
+        print('Syntaxe: KTAIL <fichier> [n]');
+        sfx.err();
+      }
+      break;
+    
+    // Commande par défaut - passer à la fonction originale
+    default:
+      return false;
+  }
+  
+  return true;
+}
+
+// Modifier la fonction command pour utiliser commandExtended
+const originalCommand = window.command;
+window.command = function(cmd) {
+  // Essayer les nouvelles commandes d'abord
+  if (commandExtended(cmd)) {
+    return;
+  }
+  // Sinon, utiliser la fonction originale
+  if (originalCommand) {
+    originalCommand(cmd);
+  }
+};
+
+
+KVIGILANC
+
+<!-- KEDIT - Éditeur de texte amélioré style MS-DOS EDIT -->
+<div id="keditOverlay" aria-label="Kyronext Text Editor">
+ <div class="keditShell">
+  <div class="keditTitleBar"><span id="keditTitle">KYRONEXT™ KEDIT — Éditeur de texte</span><button id="keditClose" class="kappBtn">QUITTER (Alt+X)</button></div>
+  <div class="keditMenuBar">
+   <button data-kedit="file">FICHIER</button>
+   <button data-kedit="edit">ÉDITION</button>
+   <button data-kedit="search">RECHERCHER</button>
+   <button data-kedit="options">OPTIONS</button>
+   <button data-kedit="help">AIDE (F1)</button>
+  </div>
+  <div class="keditWorkArea">
+   <div id="keditGutter" class="keditGutter"></div>
+   <textarea id="keditTextArea" spellcheck="false" wrap="off"></textarea>
+  </div>
+  <div class="keditStatus">
+   <span id="keditPos">LIGNE 1 · COL 1</span>
+   <span id="keditMode">INS</span>
+   <span id="keditFileInfo">FICHIER: NON NOMMÉ.KXT</span>
+   <span>F1:AIDE F2:SAUVER F3:OUVRIR F4:NOUVEAU F5:IMPRIMER</span>
+   <span class="keditBlink">■</span>
+  </div>
+  <div class="keditButtons">
+   <button id="keditSave">F2 SAUVER</button>
+   <button id="keditOpen">F3 OUVRIR</button>
+   <button id="keditNew">F4 NOUVEAU</button>
+   <button id="keditExit">Alt+X QUITTER</button>
+  </div>
+ </div>
+</div>
+
+<!-- KBASIC - Interpréteur BASIC -->
+<div id="kbasicOverlay" aria-label="Kyronext BASIC Interpreter">
+ <div class="kbasicShell">
+  <div class="kbasicTitleBar"><span id="kbasicTitle">KYRONEXT™ KBASIC — Interpréteur BASIC v1.0</span><button id="kbasicClose" class="kappBtn">QUITTER (SYSTEM)</button></div>
+  <div class="kbasicMenuBar">
+   <button data-kbasic="file">FICHIER</button>
+   <button data-kbasic="run">EXÉCUTER (F5)</button>
+   <button data-kbasic="debug">DÉBOGUER</button>
+   <button data-kbasic="options">OPTIONS</button>
+   <button data-kbasic="help">AIDE (F1)</button>
+  </div>
+  <div class="kbasicWorkArea">
+   <div id="kbasicGutter" class="kbasicGutter"></div>
+   <textarea id="kbasicCodeArea" spellcheck="false" wrap="off" placeholder="10 PRINT "HELLO KYRONEXT"
+20 GOTO 10"></textarea>
+  </div>
+  <div class="kbasicOutputArea">
+   <div class="kbasicOutputHeader">SORTIE :</div>
+   <div id="kbasicOutput" class="kbasicOutput"></div>
+  </div>
+  <div class="kbasicStatus">
+   <span id="kbasicPos">LIGNE 1 · COL 1</span>
+   <span id="kbasicMode">PRÊT</span>
+   <span id="kbasicFile">FICHIER: NON NOMMÉ.KXB</span>
+   <span>F1:AIDE F5:EXÉCUTER F6:EFFACER</span>
+   <span class="kbasicBlink">▮</span>
+  </div>
+  <div class="kbasicButtons">
+   <button id="kbasicRun">F5 EXÉCUTER</button>
+   <button id="kbasicClear">F6 EFFACER</button>
+   <button id="kbasicStop">STOP</button>
+   <button id="kbasicList">LIST</button>
+   <button id="kbasicNew">NOUVEAU</button>
+   <button id="kbasicExit">SYSTEM</button>
+  </div>
+ </div>
+</div>
+
+E','KVEHICULE','KMODE POURSUITE','KMODE NORMAL','KRADIO','KMUSIQUE','KJEUX','KPACMAN','KTETRIS','KSPACEKR','KTRONKR','KINTERFACE','KSON TEST','KMAN','KABOUT','KVOLUME','KBOOTLOG','KINFO','KSYSINFO','KRUN','KDEMO','KCOMPILE','KCENTRAL','KRADAR','KMISSION','KCOMLINK','KTOUCH','KWRITE','KAPPEND','KMOVE','KFC','KFIND','KMORE','KHEAD','KTAIL','KATTRIB','KFILES','KDRIVERS','KDEVICES','KIRQ','KPORTS','KBIOS','KUPTIME','KTASKS','KLOG','KCOLOR'];let m=all.find(x=>x.startsWith(q));if(m)setTtyText(m)}
  else if(e.key.length===1){e.preventDefault();setTtyText(ttyBuffer+e.key);tone(900,.018,'square',.18)}
 });
 document.getElementById('keyboard').addEventListener('click',()=>{I.setAttribute('inputmode','none');if(!tty)I.focus({preventScroll:true});showKb()});
