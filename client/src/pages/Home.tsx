@@ -847,26 +847,6 @@ function HeroSection() {
           >
             TERMINAL KYRONEXT™ OS
           </a>
-          <a
-            href="/kyronext-os/"
-            onMouseEnter={() => play("hover")}
-            onClick={() => play("click")}
-            style={{
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.65rem",
-              letterSpacing: "0.12em",
-              color: "#ff6a5a",
-              border: "1px solid rgba(255,70,50,0.85)",
-              padding: "14px 22px",
-              display: "inline-flex",
-              alignItems: "center",
-              textDecoration: "none",
-              background: "rgba(255,34,34,0.12)",
-              boxShadow: "0 0 16px rgba(255,34,34,0.3)",
-            }}
-          >
-            KYRONEXT OS 1982
-          </a>
           <button
             onClick={() => {
               play("click");
