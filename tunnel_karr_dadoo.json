@@ -1,9 +1,9 @@
 {
   "status": "online",
-  "url": "https://karr-dadoo.kitt-franco-belge.be?ai=karr_dadoo",
-  "last_update": "2026-07-27T23:12:43.127102+00:00",
+  "url": "http://192.168.129.25:3001?ai=karr_dadoo",
+  "last_update": "2026-09-16T00:00:00+00:00",
   "host": "karr-jetson-dadoo",
   "version": "1.0",
-  "permanent": true,
-  "note": "KARR De Dadoo - Tunnel Cloudflare nomme - Jetson NX 8GB"
+  "permanent": false,
+  "note": "FALLBACK: IP locale (192.168.129.25:3001) - Tunnel Cloudflare non configuré. Voir CLOUDFLARE_KARR_DADOO_SETUP.md"
 }

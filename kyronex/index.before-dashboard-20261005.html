@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>KYRONEX · K.I.T.T. — by Manix</title>
+  <meta name="description" content="KYRONEX — Knight Industries Two Thousand. IA embarquee sur NVIDIA Jetson Orin Nano Super. by Manix.">
+  <meta name="theme-color" content="#000000">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: #000;
+      color: #ff4444;
+      font-family: 'Courier New', monospace;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* ── PORTAIL DE CONNEXION ────────────────────────────────── */
+    #portal {
+      display: flex;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse at 50% 40%, rgba(13,0,0,0.32), rgba(6,0,0,0.70) 66%, rgba(2,0,0,0.93) 100%),
+        url('/manix.png') no-repeat center center / cover;
+      align-items: center; justify-content: center;
+      flex-direction: column;
+      z-index: 1000;
+      gap: 2px; padding: 6px 20px 32px;
+      overflow-y: auto; max-height: 100vh;
+    }
+
+    .p-logo {
+      font-size: clamp(1.6em, 6vw, 3em);
+      font-weight: bold;
+      letter-spacing: 0.35em;
+      color: #ff2222;
+      text-shadow: 0 0 20px #cc0000, 0 0 50px rgba(200,0,0,0.4);
+      margin-bottom: 1px;
+      text-align: center;
+      line-height: 1;
+    }
+    .p-sub {
+      font-size: 0.54em;
+      letter-spacing: 4px;
+      color: #661111;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    /* ── SÉLECTEUR NEURAL KYRONEX ─────────────────────────────── */
+    #ai-selector-label {
+      font-size: 0.48em; letter-spacing: 5px; text-transform: uppercase;
+      color: #8a2a2a; margin: 10px 0 2px; text-align: center; opacity: 0.9;
+    }
+    #ai-selector-label b {
+      color: #ff3a3a; font-weight: normal;
+      text-shadow: 0 0 12px rgba(255,40,40,0.6);
+    }
+
+    #ai-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      border: none;
+      perspective: 900px;
+    }
+
+    .ai-sel-btn {
+      --accent: #ff2a2a;
+      --accent-dim: rgba(255,42,42,0.5);
+      position: relative;
+      flex: 1 1 130px;
+      max-width: 180px; min-width: 120px;
+      padding: 12px 10px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.65em; font-weight: bold;
+      letter-spacing: 2px; line-height: 1.3;
+      color: #6a3030;
+      background: linear-gradient(160deg, rgba(22,5,5,0.92), rgba(6,1,1,0.96));
+      border: 1px solid rgba(120,30,30,0.4);
+      border-radius: 5px;
+      cursor: pointer; overflow: hidden; text-align: center;
+      transition: transform 0.25s ease, color 0.25s, border-color 0.25s, box-shadow 0.25s;
+    }
+    /* accents canon : KITT rouge · KARR ambre · SKV3 cyan électrique · KARR Dadoo vert */
+    .ai-sel-btn[data-ai="karr"] { --accent: #ffb000; --accent-dim: rgba(255,176,0,0.5); }
+    .ai-sel-btn[data-ai="kitt"] { --accent: #ff2a2a; --accent-dim: rgba(255,42,42,0.5); }
+    .ai-sel-btn[data-ai="skv3"] { --accent: #54e6ff; --accent-dim: rgba(84,230,255,0.5); }
+    .ai-sel-btn[data-ai="karr_dadoo"] { --accent: #00ff88; --accent-dim: rgba(0,255,136,0.5); }
+    .ai-sel-btn[data-ai="k4000"] { --accent: #c56cff; --accent-dim: rgba(197,108,255,0.5); }
+    .ai-sel-btn[data-ai="pascal"] { --accent: #5aa7ff; --accent-dim: rgba(90,167,255,0.5); }
+    .ai-sel-btn[data-ai="jo_knight_rider"] { --accent: #e8ff54; --accent-dim: rgba(232,255,84,0.5); }
+    .ai-sel-btn[data-ai="herve_pascal_k"] { --accent: #ff6fb7; --accent-dim: rgba(255,111,183,0.5); }
+
+    .ai-sel-btn .ai-name { display: block; font-size: 1.22em; letter-spacing: 3px; }
+    .ai-sel-btn .ai-spec {
+      display: block; margin-top: 8px; font-size: 0.6em; font-weight: normal;
+      letter-spacing: 1.5px; line-height: 1.6; color: #5a3030; opacity: 0.8;
+    }
+    .ai-sel-btn .ai-dot {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+      background: #3a1010; margin-top: 10px; transition: all 0.3s;
+    }
+
+    .ai-sel-btn:hover {
+      color: var(--accent); border-color: var(--accent-dim);
+      transform: translateY(-3px);
+    }
+
+    .ai-sel-btn.active {
+      color: var(--accent); border-color: var(--accent);
+      transform: translateY(-4px) scale(1.03);
+      text-shadow: 0 0 14px var(--accent);
+      box-shadow: 0 0 22px var(--accent-dim), inset 0 0 18px rgba(0,0,0,0.6);
+    }
+    .ai-sel-btn.active .ai-spec { color: var(--accent); opacity: 0.95; }
+    .ai-sel-btn.active .ai-dot {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent), 0 0 16px var(--accent);
+    }
+    .ai-sel-btn .ai-progress {
+      position: absolute; inset: 0; z-index: 3;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px;
+      color: var(--accent);
+      background: rgba(4,1,1,0.94);
+      text-shadow: 0 0 12px var(--accent);
+      opacity: 0; transform: translateY(5px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+    }
+    .ai-sel-btn.in-progress:hover .ai-progress {
+      opacity: 1; transform: translateY(0);
+    }
+
+    /* Bouton principal — lien neural */
+    #connect-btn {
+      display: none; position: relative; overflow: hidden;
+      padding: 17px 46px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.86em; font-weight: bold; letter-spacing: 5px;
+      color: #ff5a5a; text-decoration: none;
+      background: linear-gradient(160deg, rgba(32,5,5,0.92), rgba(8,1,1,0.96));
+      border: 1px solid #aa1a1a; border-radius: 5px;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 0 18px rgba(200,0,0,0.3), inset 0 0 14px rgba(120,0,0,0.25);
+      margin-top: 8px;
+    }
+    #connect-btn:hover, #connect-btn:focus {
+      color: #fff; border-color: #ff3333; transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(255,40,40,0.6), inset 0 0 16px rgba(150,0,0,0.4);
+      outline: none;
+    }
+    #connect-btn.visible { display: inline-block; }
+
+    /* Status — pastille */
+    #p-status {
+      margin-top: 26px;
+      font-size: 0.62em; letter-spacing: 3px;
+      color: #7a5a2a; text-align: center; min-height: 1.4em;
+      padding: 7px 18px; border-radius: 20px;
+      border: 1px solid transparent; transition: all 0.3s;
+    }
+    #p-status.checking { color: #c79a3a; border-color: rgba(199,154,58,0.35); }
+    #p-status.online   { color: #5fcf5f; border-color: rgba(95,207,95,0.45); box-shadow: 0 0 14px rgba(60,200,60,0.22); }
+    #p-status.offline  { color: #cc4444; border-color: rgba(204,68,68,0.4); }
+
+    /* Offline details */
+    #offline-box {
+      display: none;
+      margin-top: 24px;
+      border: 1px solid #330000;
+      border-radius: 8px;
+      padding: 18px 24px;
+      font-size: 0.62em;
+      color: #441111;
+      letter-spacing: 2px;
+      line-height: 2;
+      text-align: center;
+      max-width: 360px;
+    }
+    #offline-box.visible { display: block; }
+
+    /* ── MESSAGE DE BIENVENUE ───────────────────────────────── */
+    #welcome-block {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 6px;
+      padding: 0 16px;
+      text-align: center;
+    }
+
+    #welcome-text {
+      font-size: clamp(0.7em, 2.2vw, 0.88em);
+      line-height: 2.0;
+      color: #7a4444;
+      letter-spacing: 2px;
+      min-height: 4em;
+    }
+    #welcome-text .w-hi { color: #cc4444; }
+    #welcome-text .w-key {
+      color: #ff3333;
+      letter-spacing: 4px;
+      font-weight: bold;
+    }
+
+    #welcome-audio-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 16px;
+      min-height: 30px;
+    }
+    #welcome-replay-btn {
+      font-family: 'Courier New', monospace;
+      font-size: 0.56em;
+      letter-spacing: 3px;
+      color: #551111;
+      background: transparent;
+      border: 1px solid #330000;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+    }
+    #welcome-replay-btn:hover {
+      color: #ff3333;
+      border-color: #aa1111;
+      box-shadow: 0 0 10px rgba(180,0,0,0.3);
+    }
+    #welcome-replay-btn.show { display: inline-block; }
+    #welcome-play-prompt {
+      font-size: 0.54em;
+      letter-spacing: 3px;
+      color: #441111;
+      display: none;
+      cursor: pointer;
+      border: 1px solid #330000;
+      padding: 8px 20px;
+      background: transparent;
+      font-family: 'Courier New', monospace;
+      transition: all 0.2s;
+    }
+    #welcome-play-prompt:hover { color: #ff2222; border-color: #880000; }
+    #welcome-play-prompt.show { display: inline-block; }
+
+    /* Equalizer animé pendant la lecture */
+    #welcome-eq {
+      display: none;
+      align-items: flex-end;
+      gap: 3px;
+      height: 18px;
+    }
+    #welcome-eq.active { display: flex; }
+    #welcome-eq span {
+      display: inline-block;
+      width: 3px;
+      background: #aa2222;
+      border-radius: 1px;
+      animation: eq-bar 0.6s ease-in-out infinite alternate;
+    }
+    #welcome-eq span:nth-child(1) { animation-delay: 0.00s; height: 4px; }
+    #welcome-eq span:nth-child(2) { animation-delay: 0.10s; height: 10px; }
+    #welcome-eq span:nth-child(3) { animation-delay: 0.20s; height: 16px; }
+    #welcome-eq span:nth-child(4) { animation-delay: 0.05s; height: 12px; }
+    #welcome-eq span:nth-child(5) { animation-delay: 0.15s; height: 8px;  }
+    #welcome-eq span:nth-child(6) { animation-delay: 0.25s; height: 14px; }
+    @keyframes eq-bar {
+      from { transform: scaleY(0.25); opacity: 0.4; }
+      to   { transform: scaleY(1);    opacity: 1;   }
+    }
+
+    /* ── PANNEAU FEEDBACK ─── */
+    .kx-panel {
+      position: relative; width: 100%; max-width: 440px; margin: 20px auto 0;
+      background: linear-gradient(160deg, rgba(24,5,5,0.72), rgba(7,1,1,0.9));
+      border: 1px solid rgba(150,34,34,0.3); border-radius: 8px;
+      padding: 22px 26px; text-align: left; overflow: hidden;
+    }
+    .kx-panel-title {
+      font-size: 0.52rem; letter-spacing: 0.3em; color: #ff5252;
+      text-transform: uppercase; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 9px;
+    }
+    .kx-panel-title::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: #ff2a2a; box-shadow: 0 0 8px #ff2a2a;
+    }
+    .kx-panel p { font-size: 0.62rem; letter-spacing: 1.5px; line-height: 2; color: #9a6a6a; }
+    .kx-hi  { color: #ff5a5a; }
+    .kx-key { color: #ff3333; font-weight: bold; letter-spacing: 2px; }
+    .kx-list { list-style: none; margin: 8px 0 4px; }
+    .kx-list li { font-size: 0.62rem; letter-spacing: 1.5px; line-height: 1.95; color: #9a6a6a; }
+    .kx-list li::before { content: '\25B8\00A0'; color: #cc3333; }
+
+    /* bouton HUD réutilisable */
+    .kx-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: 'Courier New', monospace; font-size: 0.64rem; font-weight: bold;
+      letter-spacing: 3px; color: #ff5a5a; text-decoration: none; cursor: pointer;
+      padding: 13px 28px; border-radius: 5px; position: relative; overflow: hidden;
+      background: linear-gradient(160deg, rgba(30,5,5,0.9), rgba(8,1,1,0.95));
+      border: 1px solid #aa1a1a; transition: all 0.25s;
+      box-shadow: 0 0 14px rgba(180,0,0,0.22);
+    }
+    .kx-btn:hover {
+      color: #fff; border-color: #ff3333; transform: translateY(-2px);
+      box-shadow: 0 0 24px rgba(255,40,40,0.5);
+    }
+    #kitt-voice-status {
+      margin-top: 12px; font-size: 0.55rem; letter-spacing: 3px;
+      color: #7a4444; min-height: 1.2em; text-align: center;
+    }
+    .kx-fb {
+      display: inline-block; margin-top: 14px; padding: 10px 20px; border-radius: 5px;
+      font-size: 0.58rem; letter-spacing: 2px; color: #ff7a4d; text-decoration: none;
+      border: 1px solid rgba(255,90,40,0.4); background: rgba(40,10,0,0.4); transition: all 0.2s;
+    }
+    .kx-fb:hover { color: #fff; border-color: #ff7a4d; box-shadow: 0 0 14px rgba(255,90,40,0.35); }
+  </style>
+</head>
+<body>
+
+<!-- ── PORTAIL D'ACCÈS ── -->
+<div id="portal">
+
+  <!-- ── MESSAGE DE BIENVENUE ── -->
+  <div id="welcome-block">
+    <div id="welcome-text"></div>
+    <div id="welcome-audio-bar">
+      <div id="welcome-eq">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+      <button id="welcome-play-prompt" onclick="welcomePlay()">[ ▶ &nbsp;ÉCOUTER LE MESSAGE ]</button>
+      <button id="welcome-replay-btn" onclick="welcomePlay()">[ ↺ &nbsp;RÉÉCOUTER ]</button>
+    </div>
+  </div>
+
+  <div class="p-logo">KYRONEX</div>
+  <div class="p-sub">KNIGHT INDUSTRIES TWO THOUSAND</div>
+  <div id="ai-selector-label">SÉLECTIONNEZ LE <b>CERVEAU NEURAL</b></div>
+  <div id="ai-selector">
+    <button class="ai-sel-btn active" data-ai="karr" onclick="_selectAI('karr')" onmouseenter="_playHover('karr')">
+      <span class="ai-name">K.A.R.R.</span>
+      <span class="ai-spec">ORIN NX 16GB<br>QWEN 7B</span>
+      <span class="ai-dot"></span>
+    </button>
+    <button class="ai-sel-btn" data-ai="kitt" onclick="_selectAI('kitt')" onmouseenter="_playHover('kitt')">
+      <span class="ai-name">K.I.T.T.</span>
+      <span class="ai-spec">ORIN NANO 8GB<br>QWEN 3B</span>
+      <span class="ai-dot"></span>
+    </button>
+    <button class="ai-sel-btn" data-ai="skv3" onclick="_selectAI('skv3')" onmouseenter="_playHover('skv3')">
+      <span class="ai-name">SUPER K.I.T.T. V3</span>
+      <span class="ai-spec">AGX ORIN<br>FLAGSHIP</span>
+      <span class="ai-dot"></span>
+    </button>
+    <button class="ai-sel-btn" data-ai="karr_dadoo" onclick="_selectAI('karr_dadoo')" onmouseenter="_playHover('karr_dadoo')">
+      <span class="ai-name">KARR De Dadoo</span>
+      <span class="ai-spec">JETSON NANO ORIN NX 8GB</span>
+      <span class="ai-dot"></span>
+    </button>
+    <button class="ai-sel-btn" data-ai="k4000" onclick="_selectAI('k4000')" onmouseenter="_playHover('k4000')">
+      <span class="ai-name">K-4000</span>
+      <span class="ai-spec">KIRONEX K-4000<br>Frank — KR-95<br>NVIDIA JETSON ORIN NANO 8 GO<br>By Manix</span>
+      <span class="ai-dot"></span>
+    </button>
+    <button class="ai-sel-btn" data-ai="pascal" onclick="_selectAI('pascal')" onmouseenter="_playHover('pascal')">
+      <span class="ai-name">K.I.T.T. PASCAL</span>
+      <span class="ai-spec">ORIN NANO 8GB SUPER<br>NEMOTRON 3 NANO 4B</span>
+      <span class="ai-dot"></span>
+    </button>
+    <button class="ai-sel-btn in-progress" data-ai="jo_knight_rider" onclick="_selectAI('jo_knight_rider')" onmouseenter="_playHover('jo_knight_rider')">
+      <span class="ai-name">JO KNIGHT RIDER</span>
+      <span class="ai-spec">KYRONEX<br>NEURAL NODE</span>
+      <span class="ai-dot"></span>
+      <span class="ai-progress">EN COURS DE CRÉATION...</span>
+    </button>
+    <button class="ai-sel-btn in-progress" data-ai="herve_pascal_k" onclick="_selectAI('herve_pascal_k')" onmouseenter="_playHover('herve_pascal_k')">
+      <span class="ai-name">HERVÉ DE PASCAL-K.</span>
+      <span class="ai-spec">KYRONEX<br>NEURAL NODE</span>
+      <span class="ai-dot"></span>
+      <span class="ai-progress">EN COURS DE CRÉATION...</span>
+    </button>
+  </div>
+  <a id="connect-btn" href="#" target="_blank">[ ACCEDER A KITT ]</a>
+  <div id="p-status" class="checking">VERIFICATION DU SYSTEME...</div>
+  <div id="offline-box">
+    KYRONEX EST HORS LIGNE<br>
+    LE SYSTEME N'EST PAS ACCESSIBLE<br>
+    POUR LE MOMENT<br><br>
+    REESSAYEZ PLUS TARD
+  </div>
+
+  <!-- ── DÉMO VOIX KITT ── -->
+  <div style="margin-top:34px;text-align:center;">
+    <button id="kitt-voice-btn" onclick="kittParle()" class="kx-btn">
+      &#9658;&nbsp;&nbsp;KITT — DÉMO VOCALE
+    </button>
+    <div id="kitt-voice-status"></div>
+  </div>
+
+  <!-- Statut système + invitation feedback -->
+  <div class="kx-panel">
+    <div class="kx-panel-title">Statut système</div>
+    <p>
+      L'intelligence artificielle <span class="kx-key">KYRONEX</span> est
+      <span class="kx-hi">en cours de développement</span>.
+      Certaines réponses peuvent être imprécises.
+    </p>
+    <p style="margin-top:12px;color:#c08a4a;">Tes retours sont les bienvenus :</p>
+    <ul class="kx-list">
+      <li>Bugs ou comportements étranges</li>
+      <li>Idées &amp; suggestions</li>
+      <li>Critiques constructives</li>
+    </ul>
+    <a href="https://www.facebook.com/groups/757797724622219/" target="_blank" rel="noopener" class="kx-fb">
+      &#10148;&nbsp; Partager sur le groupe Facebook
+    </a>
+  </div>
+  <!-- ── FIN ── -->
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ── TUNNEL — URL KYRONEX ───────────────────────────────────
+     tunnel.json est poussé sur GitHub à chaque démarrage du tunnel.
+     On lit via l'API GitHub (pas de cache CDN 5min comme raw.githubusercontent.com).
+  ─────────────────────────────────────────────────────────── */
+  var TUNNEL_URLS = {
+    kitt: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_kitt.json?ref=main',
+    karr: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_karr.json?ref=main',
+    skv3: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_skv3.json?ref=main',
+    karr_dadoo: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_karr_dadoo.json?ref=main',
+    k4000: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_k4000.json?ref=main',
+    pascal: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_pascal.json?ref=main',
+    jo_knight_rider: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_jo_knight_rider.json?ref=main',
+    herve_pascal_k: 'https://api.github.com/repos/on3egs/Kitt-franco-belge/contents/tunnel_herve_pascal_k.json?ref=main'
+  };
+  var TUNNEL_MAX_AGE_MIN = 120;
+  var _activeAI = 'karr';
+
+  /* ── HOVER AUDIO KITT / KARR ─────────────────────────────── */
+  var _hoverAudio = {};
+  var _hoverPlaying = false;
+  (function() {
+    var base = 'https://on3egs.github.io/Kitt-franco-belge/kyronex/';
+    ['kitt','karr','skv3','karr_dadoo'].forEach(function(id) {
+      var a = new Audio(base + 'hover_' + id + '.mp3');
+      a.preload = 'auto';
+      _hoverAudio[id] = a;
+    });
+    _hoverAudio.k4000 = new Audio(base + 'hover_kitt.mp3');
+    _hoverAudio.k4000.preload = 'auto';
+    _hoverAudio.pascal = new Audio(base + 'hover_kitt.mp3');
+    _hoverAudio.pascal.preload = 'auto';
+    _hoverAudio.jo_knight_rider = new Audio(base + 'hover_kitt.mp3');
+    _hoverAudio.jo_knight_rider.preload = 'auto';
+    _hoverAudio.herve_pascal_k = new Audio(base + 'hover_kitt.mp3');
+    _hoverAudio.herve_pascal_k.preload = 'auto';
+  })();
+
+  window._playHover = function(id) {
+    if (_hoverPlaying) return;
+    var a = _hoverAudio[id];
+    if (!a) return;
+    _hoverPlaying = true;
+    a.currentTime = 0;
+    a.play().catch(function(){});
+    a.onended = function() { _hoverPlaying = false; };
+  };
+
+  window._selectAI = function(which) {
+    _activeAI = which;
+    document.querySelectorAll('.ai-sel-btn').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-ai') === which);
+    });
+    var statusEl = document.getElementById('p-status');
+    var btnEl    = document.getElementById('connect-btn');
+    var offlineEl = document.getElementById('offline-box');
+    var label    = which === 'karr' ? 'K.A.R.R.' : which === 'skv3' ? 'SUPER K.I.T.T. V3' : which === 'karr_dadoo' ? 'KARR De Dadoo' : which === 'k4000' ? 'K-4000' : which === 'pascal' ? 'K.I.T.T. PASCAL' : which === 'jo_knight_rider' ? 'JO KNIGHT RIDER' : which === 'herve_pascal_k' ? 'HERVÉ DE PASCAL-K.' : 'K.I.T.T.';
+    btnEl.classList.remove('visible');
+    offlineEl.classList.remove('visible');
+    statusEl.className = 'checking';
+    statusEl.textContent = 'CONNEXION EN COURS...';
+    var separator = TUNNEL_URLS[which].indexOf('?') === -1 ? '?' : '&';
+    fetch(TUNNEL_URLS[which] + separator + 't=' + Date.now(), {
+      cache: 'no-store',
+      headers: {'Accept': 'application/vnd.github.raw+json'}
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.status !== 'online' || !d.url) throw new Error('offline');
+        var age = (Date.now() - new Date(d.last_update).getTime()) / 60000;
+        // Tunnel permanent (Cloudflare nomme) : URL fixe -> on ignore l'age.
+        if (!d.permanent && age > TUNNEL_MAX_AGE_MIN) throw new Error('stale');
+        statusEl.className = 'online';
+        statusEl.textContent = label + ' EN LIGNE — CLIQUEZ POUR ACCÉDER';
+        btnEl.href = d.url;
+        btnEl.textContent = '[ ACCÉDER À ' + label + ' ]';
+        btnEl.classList.add('visible');
+      })
+      .catch(function(){
+        statusEl.className = 'offline';
+        statusEl.textContent = label + ' HORS LIGNE';
+        offlineEl.classList.add('visible');
+      });
+  };
+
+  function _checkTunnel() {
+    var statusEl  = document.getElementById('p-status');
+    var btnEl     = document.getElementById('connect-btn');
+    var offlineEl = document.getElementById('offline-box');
+    var url       = TUNNEL_URLS[_activeAI];
+
+    statusEl.className = 'checking';
+    statusEl.textContent = 'VERIFICATION DU SYSTEME...';
+
+    fetch(url + '?t=' + Date.now(), { cache: 'no-store' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.status !== 'online' || !data.url) { throw new Error('offline'); }
+        var lastUp = new Date(data.last_update);
+        var ageMin = (Date.now() - lastUp.getTime()) / 60000;
+        // Tunnel permanent (Cloudflare nomme) : URL fixe -> on ignore l'age.
+        if (!data.permanent && ageMin > TUNNEL_MAX_AGE_MIN) { throw new Error('stale'); }
+        btnEl.href = data.url;
+        btnEl.classList.add('visible');
+        statusEl.className = 'online';
+        statusEl.textContent = 'SYSTEME EN LIGNE — CONNEXION DISPONIBLE';
+      })
+      .catch(function() {
+        statusEl.className = 'offline';
+        statusEl.textContent = 'SYSTEME HORS LIGNE';
+        offlineEl.classList.add('visible');
+      });
+  }
+
+  /* ── INITIALISATION DIRECTE (plus d'intro) ───────────────── */
+  document.addEventListener('DOMContentLoaded', function() {
+    _checkTunnel();
+    if (typeof window.welcomeInit === 'function') window.welcomeInit();
+  });
+})();
+</script>
+
+<!-- ── MESSAGE DE BIENVENUE — AUTOPLAY + FALLBACK ──────────────── -->
+<script>
+(function () {
+  'use strict';
+
+  // La cle ElevenLabs ne vit plus dans le client : on passe par le proxy serveur.
+  var KX_TTS_PROXY = 'https://karr.kitt-franco-belge.be/api/tts-eleven';
+  var AUDIO_DURATION_MS = 16500;         // duree estimee (ajuste si besoin)
+
+  // Texte audio (optimise intonation ElevenLabs)
+  var AUDIO_TEXT =
+    "Ce que vous explorez ici, est en construction. " +
+    "Non pas par manque de vision... " +
+    "mais parce que les choses qui durent, " +
+    "prennent le temps qu'il leur faut. " +
+    "Kyronex s'améliore à chaque mise à jour — " +
+    "et votre présence, dès maintenant, en fait partie.";
+
+  // Texte écran : segments avec classes CSS (normal | hi | key)
+  // Format : [texte, classe]
+  var SCREEN_SEGMENTS = [
+    ["CE QUE VOUS EXPLOREZ ICI\n", "w-key"],
+    ["est en construction.\n\n", "w-hi"],
+    ["Non pas par manque de vision —\n", ""],
+    ["mais parce que les choses qui durent\n", ""],
+    ["prennent le temps qu'il leur faut.\n\n", ""],
+    ["KYRONEX S'AMÉLIORE\n", "w-key"],
+    ["À CHAQUE MISE À JOUR.\n\n", "w-hi"],
+    ["Votre présence,\ndès maintenant,\n", ""],
+    ["en fait partie.", "w-hi"]
+  ];
+
+  var _played    = false;
+  var _playing   = false;
+  var _audio     = null;
+  var _typeTimer = null;
+
+  /* ── Typewriter synchronisé à la durée audio ── */
+  function _typeSync(segments, durationMs) {
+    var el = document.getElementById('welcome-text');
+    if (!el) return;
+    el.innerHTML = '';
+
+    // Calcule le nb total de caracteres
+    var totalChars = segments.reduce(function (s, seg) { return s + seg[0].length; }, 0);
+    var msPerChar  = durationMs / Math.max(totalChars, 1);
+
+    var si = 0, ci = 0, elapsed = 0;
+
+    function tick() {
+      if (si >= segments.length) return;
+      var seg  = segments[si];
+      var text = seg[0];
+      var cls  = seg[1];
+
+      if (ci < text.length) {
+        // Reconstruit le HTML complet à chaque tick
+        var html = '';
+        for (var i = 0; i < si; i++) {
+          var t = segments[i][0].replace(/\n/g, '<br>');
+          html += segments[i][1]
+            ? '<span class="' + segments[i][1] + '">' + t + '</span>'
+            : t;
+        }
+        var partial = text.slice(0, ci + 1).replace(/\n/g, '<br>');
+        html += cls
+          ? '<span class="' + cls + '">' + partial + '</span>'
+          : partial;
+        html += '<span style="opacity:0.3">_</span>';
+        el.innerHTML = html;
+        ci++;
+      } else {
+        si++;
+        ci = 0;
+        if (si >= segments.length) {
+          // Retire le curseur, affiche le texte complet proprement
+          var finalHtml = '';
+          for (var j = 0; j < segments.length; j++) {
+            var ft = segments[j][0].replace(/\n/g, '<br>');
+            finalHtml += segments[j][1]
+              ? '<span class="' + segments[j][1] + '">' + ft + '</span>'
+              : ft;
+          }
+          el.innerHTML = finalHtml;
+          return;
+        }
+      }
+      elapsed += msPerChar;
+      _typeTimer = setTimeout(tick, msPerChar);
+    }
+    tick();
+  }
+
+  /* ── Fetch ElevenLabs + lecture ── */
+  function _fetchAndPlay(onStart, onEnd, onError) {
+    fetch(KX_TTS_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: AUDIO_TEXT,
+        model_id: 'eleven_v3',
+        voice_settings: {
+          stability: 0.48,
+          similarity_boost: 0.88,
+          style: 0.22,
+          use_speaker_boost: true
+        }
+      })
+    })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    })
+    .then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      if (_audio) { _audio.pause(); try { URL.revokeObjectURL(_audio.src); } catch(e){} }
+      _audio = new Audio(url);
+      _audio.onplay   = onStart;
+      _audio.onended  = onEnd;
+      _audio.onerror  = onError;
+      _audio.play().catch(onError);
+    })
+    .catch(onError);
+  }
+
+  /* ── API publique ── */
+  window.welcomeInit = function () {
+    var block     = document.getElementById('welcome-block');
+    var eq        = document.getElementById('welcome-eq');
+    var replayBtn = document.getElementById('welcome-replay-btn');
+    var playPrompt= document.getElementById('welcome-play-prompt');
+
+    if (!block) return;
+
+    // Tente l'autoplay (sans clic préalable il sera probablement bloqué par le navigateur)
+    _playing = true;
+    _fetchAndPlay(
+      // onStart
+      function () {
+        _played = true;
+        eq.classList.add('active');
+        playPrompt.classList.remove('show');
+        _typeSync(SCREEN_SEGMENTS, AUDIO_DURATION_MS);
+      },
+      // onEnd
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+      },
+      // onError (autoplay bloqué ou erreur réseau)
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        // Affiche le texte directement + bouton "écouter"
+        _typeSync(SCREEN_SEGMENTS, 4000);
+        setTimeout(function () { playPrompt.classList.add('show'); }, 4200);
+      }
+    );
+  };
+
+  window.welcomePlay = function () {
+    if (_playing) return;
+    var eq        = document.getElementById('welcome-eq');
+    var replayBtn = document.getElementById('welcome-replay-btn');
+    var playPrompt= document.getElementById('welcome-play-prompt');
+    if (!eq) return;
+
+    _playing = true;
+    replayBtn.classList.remove('show');
+    playPrompt.classList.remove('show');
+    if (_typeTimer) { clearTimeout(_typeTimer); _typeTimer = null; }
+    document.getElementById('welcome-text').innerHTML = '';
+
+    _fetchAndPlay(
+      function () {
+        eq.classList.add('active');
+        _typeSync(SCREEN_SEGMENTS, AUDIO_DURATION_MS);
+      },
+      function () {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+      },
+      function (e) {
+        _playing = false;
+        eq.classList.remove('active');
+        replayBtn.classList.add('show');
+        console.warn('[WELCOME]', e);
+      }
+    );
+  };
+})();
+</script>
+
+<!-- ── KITT VOICE DEMO ─────────────────────────────────────────── -->
+<script>
+var _kittAudio = null;
+var _kittPlaying = false;
+
+var KITT_PHRASES = [
+  "Bonjour. Je suis K.I.T.T., le Knight Industries Two Thousand, version Franco-Belge. Système en ligne. Intelligence artificielle activée. Prêt à l'action, Manix.",
+  "Attention. Anomalie détectée dans le secteur nord. Je recommande la plus grande prudence. Mes capteurs sont pleinement opérationnels.",
+  "Manix, toutes mes fonctions sont au maximum. Le turbo boost est prêt. Donnez-moi vos coordonnées, et je calcule l'itinéraire optimal.",
+  "Système de navigation activé. Vitesse de croisière : deux cent quarante kilomètres heure. Carrosserie renforcée en mode combat. K.I.T.T. est prêt.",
+  "Je suis K.I.T.T. Mon intelligence artificielle traite mille deux cents opérations par seconde. Ensemble, Manix, nous sommes invincibles."
+];
+var _phraseIdx = 0;
+
+function kittParle() {
+  if (_kittPlaying) return;
+
+  var btn = document.getElementById('kitt-voice-btn');
+  var status = document.getElementById('kitt-voice-status');
+  var texte = KITT_PHRASES[_phraseIdx % KITT_PHRASES.length];
+  _phraseIdx++;
+
+  _kittPlaying = true;
+  btn.textContent = '[ TRANSMISSION EN COURS... ]';
+  btn.style.opacity = '0.5';
+  btn.style.cursor = 'wait';
+  status.style.color = '#664422';
+  status.textContent = 'CONNEXION ELEVENLABS...';
+
+  fetch('https://karr.kitt-franco-belge.be/api/tts-eleven', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: texte,
+      model_id: 'eleven_v3',
+      voice_settings: { stability: 0.55, similarity_boost: 0.78, style: 0.25, use_speaker_boost: true }
+    })
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    status.textContent = 'DECODAGE AUDIO...';
+    return r.blob();
+  })
+  .then(function(blob) {
+    var url = URL.createObjectURL(blob);
+    if (_kittAudio) { _kittAudio.pause(); URL.revokeObjectURL(_kittAudio.src); }
+    _kittAudio = new Audio(url);
+    _kittAudio.onplay = function() {
+      status.style.color = '#446622';
+      status.textContent = 'KITT PARLE...';
+      btn.textContent = '[ KITT EN LIGNE ]';
+    };
+    _kittAudio.onended = function() {
+      _kittPlaying = false;
+      btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      status.style.color = '#446622';
+      status.textContent = 'TRANSMISSION TERMINEE — CLIQUER POUR REJOUER';
+    };
+    _kittAudio.onerror = function() {
+      _kittPlaying = false;
+      btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      status.style.color = '#661111';
+      status.textContent = 'ERREUR AUDIO';
+    };
+    _kittAudio.play();
+  })
+  .catch(function(e) {
+    _kittPlaying = false;
+    btn.textContent = '[ KITT — ACTIVATION VOCALE ]';
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    status.style.color = '#661111';
+    status.textContent = 'ERREUR : ' + e.message;
+  });
+}
+</script>
+<!-- ── FIN ── -->
+</body>
+</html>
