@@ -259,6 +259,21 @@ function NavBar() {
             {t("nav.access")}
           </a>
           <a
+            href="https://kitt-franco-belge.be/kyronext-os/"
+            className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
+            style={{
+              fontFamily: "Orbitron, monospace",
+              fontSize: "0.6rem",
+              color: "#ff4a3d",
+              border: "1px solid #ff4a3d",
+              background: "rgba(255,40,30,0.12)",
+              boxShadow: "0 0 12px rgba(255,40,30,0.28)",
+            }}
+            onMouseEnter={() => play("hover")}
+          >
+            KIRONEX OS 1982
+          </a>
+          <a
             href="/kyronext-studio/"
             className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
             style={{
@@ -791,27 +806,6 @@ function HeroSection() {
             className="kitt-btn"
           >
             {t("hero.cta1")}
-          </a>
-          <a
-            href="/kyronext-os/"
-            onMouseEnter={() => play("hover")}
-            onClick={() => play("click")}
-            style={{
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.68rem",
-              letterSpacing: "0.12em",
-              color: "#ff4a3d",
-              border: "1px solid #ff4a3d",
-              padding: "14px 22px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              textDecoration: "none",
-              background: "rgba(255,40,30,0.12)",
-              boxShadow: "0 0 18px rgba(255,40,30,0.32)",
-            }}
-          >
-            KYRONEX OS 1982
           </a>
           <button
             onClick={() => {
