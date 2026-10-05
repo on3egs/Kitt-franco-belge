@@ -1789,4 +1789,4 @@ document.getElementById('runEdit').addEventListener('click',()=>{
 });
 
 })();
-</script></body></html>
+var requestedGame=new URLSearchParams(location.search).get('game');if(requestedGame&&['PACMAN','TETRIS','SPACEKR','TRONKR'].includes(requestedGame.toUpperCase()))setTimeout(function(){launchGame(requestedGame.toUpperCase())},650);</script></body></html>
