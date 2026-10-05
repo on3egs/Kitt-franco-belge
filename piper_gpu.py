@@ -451,6 +451,25 @@ def _map_whisper_lang(whisper_lang: str) -> str:
     return lang2 if lang2 in SUPPORTED_LANGS else "fr"
 
 
+class _EspeakFallback:
+    """Fallback local lorsque le modèle Piper n'est pas présent sur le SSD."""
+
+    sample_rate = 22050
+    device = "cpu"
+
+    def synthesize_to_wav(self, text: str, output_path: str,
+                          length_scale: float | None = None,
+                          natural_pauses: bool = False,
+                          lang: str = "fr") -> str:
+        speed = int(max(80, min(300, 180 / max(float(length_scale or 1.0), 0.1))))
+        voice = "fr" if not lang or lang.startswith("fr") else lang
+        subprocess.run(
+            ["espeak-ng", "-v", voice, "-s", str(speed), "-w", output_path],
+            input=text, text=True, check=True,
+        )
+        return output_path
+
+
 class MultilingualTTS:
     """
     Moteur TTS multilingue avec lazy loading et cache LRU.
@@ -460,14 +479,19 @@ class MultilingualTTS:
     """
     _MAX_CPU_CACHED = 1  # 1 langue secondaire en CPU max (VRAM limitée)
 
-    def __init__(self, models_dir: str):
+    def __init__(self, models_dir: str, device: str = "cuda"):
         self.models_dir = Path(models_dir)
         self._lock = threading.Lock()
         self._cpu_cache: OrderedDict = OrderedDict()  # lang -> PiperGPU (CPU)
 
-        # Charger le français en CUDA au boot
+        # Charger le français à la demande. Si le modèle local a été retiré,
+        # conserver une sortie audio fonctionnelle avec eSpeak-NG.
         fr_path = self.models_dir / LANG_MODELS["fr"]
-        self._fr_engine = PiperGPU(str(fr_path), device="cuda")
+        if fr_path.exists():
+            self._fr_engine = PiperGPU(str(fr_path), device=device)
+        else:
+            print(f"[TTS] Modèle Piper absent ({fr_path}) — fallback eSpeak-NG", flush=True)
+            self._fr_engine = _EspeakFallback()
         self.device = self._fr_engine.device  # Pour compatibilité
 
     @property
