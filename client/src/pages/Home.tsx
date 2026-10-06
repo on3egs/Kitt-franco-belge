@@ -307,7 +307,7 @@ function NavBar() {
       {/* Mobile menu */}
       {/* Single persistent Kyronext OS access — visible on desktop and mobile */}
       <a
-        href="/kyronext-os/?v=9.3"
+        href="/kyronext-os/?v=9.4"
         aria-label="Accéder à Kyronext OS"
         onMouseEnter={() => play("hover")}
         onClick={() => play("click")}

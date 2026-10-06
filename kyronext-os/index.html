@@ -24,9 +24,9 @@ header{height:68px;border-bottom:2px solid var(--r2);display:flex;align-items:ce
 .scannerMeta{margin-top:3px;font-size:7px;letter-spacing:1.2px;color:#71342f;text-align:right;white-space:nowrap}.scannerMeta b{color:#ff6e62;font-weight:700}
 @keyframes scan{from{left:-27%}to{left:100%}}
 .kxKnightBadge{position:relative;width:70px;height:56px;flex:0 0 70px;display:grid;place-items:center;filter:drop-shadow(0 0 7px rgba(255,49,34,.33));isolation:isolate}
-.kxKnightBadge svg{width:100%;height:100%;overflow:visible;animation:knightBreath 2.8s ease-in-out infinite}
+.kxKnightBadge img{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px;animation:knightBreath 2.8s ease-in-out infinite}
 .kxKnightBadge:after{content:"";position:absolute;left:16%;right:16%;top:8%;height:2px;background:linear-gradient(90deg,transparent,#ff4b3e,transparent);box-shadow:0 0 8px #ff3b2e;opacity:.7;animation:knightSweep 2.2s ease-in-out infinite;pointer-events:none}
-.kxKnightBadge:hover svg{transform:scale(1.06);filter:brightness(1.14)}
+.kxKnightBadge:hover img{transform:scale(1.06);filter:brightness(1.14)}
 @keyframes knightBreath{0%,100%{filter:brightness(.92)}50%{filter:brightness(1.12)}}
 @keyframes knightSweep{0%{transform:translateY(3px);opacity:.15}45%,55%{opacity:.95}100%{transform:translateY(39px);opacity:.08}}
 .knightWing{fill:url(#kxGold);stroke:#ff3c2f;stroke-width:1.1}.knightShield{fill:url(#kxShield);stroke:url(#kxGold);stroke-width:2}.knightInner{fill:#060000;stroke:#ff3b2f;stroke-width:1}.knightGlyph{fill:url(#kxGold);stroke:#ff4c3d;stroke-width:.45;paint-order:stroke;filter:url(#kxGlow);font-family:Georgia,"Times New Roman",serif;font-size:45px;font-weight:700}
@@ -106,7 +106,7 @@ button:active{background:#450805}
 @keyframes logoScan{from{transform:translateY(-38px);opacity:.25}to{transform:translateY(38px);opacity:1}}
 .finalSub{margin-top:18px;color:#ff9b90;font:900 clamp(11px,2vw,17px) "Courier New";letter-spacing:3px}
 .finalKnight{width:clamp(150px,22vw,240px);height:clamp(116px,17vw,186px);margin-bottom:0;filter:drop-shadow(0 0 24px rgba(255,55,35,.52)) drop-shadow(0 0 10px rgba(229,171,62,.24));animation:finalKnightIn 1.1s cubic-bezier(.2,.9,.25,1) both}
-.finalKnight svg{width:100%;height:100%;filter:brightness(1.18) saturate(1.08)}
+.finalKnight img{width:100%;height:100%;object-fit:contain;display:block;border-radius:18px;filter:brightness(1.08) saturate(1.05)}
 @keyframes finalKnightIn{from{opacity:0;transform:scale(.72) rotateX(20deg);filter:drop-shadow(0 0 0 rgba(255,55,35,0))}to{opacity:1;transform:scale(1) rotateX(0);filter:drop-shadow(0 0 18px rgba(255,55,35,.42))}}
 .finalModules{margin-top:24px;display:flex;flex-wrap:wrap;justify-content:center;gap:7px;max-width:720px}
 .finalModules span{border:1px solid #5a110c;background:#100100;padding:6px 9px;color:#ff7467;font:10px "Courier New"}
@@ -422,7 +422,7 @@ html,body { overflow-x:hidden; }
   <div id="bootFx">
    <div class="bootMatrixWrap"><canvas id="bootMatrixCanvas"></canvas><div class="matrixShade"></div><div class="matrixPanel"><b>KYRONEXT CYBERNETIC LINK</b><div id="matrixTrace">HANDSHAKE...</div></div><div class="matrixAccess">ENCRYPTED CORE // ACCESS GRANTED</div></div>
    <div class="bootCdWrap"><div class="cdDeck"><div class="cdBay"><div class="cdDisc"><div class="cdLaser"></div></div></div><div class="cdInfo"><h3>KYRONEXT OPTICAL BOOT</h3><div class="cdSlot"><span>ATAPI DEVICE</span><span>KYRONEXT-CD 8X</span></div><div class="cdSlot"><span>MEDIA</span><span>KX-SYSTEM DISC</span></div><div class="cdSlot"><span>TRACK</span><span>01 / SYSTEM</span></div><div class="cdSlot"><span>FILESYSTEM</span><span>KX-ISO9660</span></div><div class="cdReadBar"><div id="cdReadFill"></div></div><div id="cdSector">SECTOR 000000 — SEEK</div></div></div></div>
-   <div class="bootFinalWrap"><div class="finalKnight"><svg viewBox="0 0 120 90" role="img" aria-label="Cavalier Kyronext"><defs><linearGradient id="kxGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0a3"/><stop offset=".28" stop-color="#d89b28"/><stop offset=".55" stop-color="#fff1a5"/><stop offset="1" stop-color="#8e530e"/></linearGradient><linearGradient id="kxShield" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#25110b"/><stop offset="1" stop-color="#070000"/></linearGradient><filter id="kxGlow"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path class="knightWing" d="M39 34H7l8 8H4l12 9H6l17 12h21zM81 34h32l-8 8h11l-12 9h10L97 63H76z"/><path class="knightShield" d="M31 11h58l14 12-8 42-35 19-35-19-8-42z"/><path class="knightInner" d="M34 17h52l10 9-7 34-29 16-29-16-7-34z"/><text class="knightGlyph" x="60" y="62" text-anchor="middle">♞</text><path d="M60 18v6M27 39h7M86 39h7M60 69v5" stroke="#ff4638" stroke-width="1.4" opacity=".8"/></svg></div><div class="finalLogo">KYRONEXT</div><div class="finalSub">NEURAL AUTOMOTIVE OPERATING SYSTEM</div><div class="finalModules"><span>K.I.T.T. CORE</span><span>K-BASIC</span><span>VOICE</span><span>SAT-COM</span><span>VIGILANCE</span><span>VEHICLE BUS</span><span>F.L.A.G. LINK</span></div></div>
+   <div class="bootFinalWrap"><div class="finalKnight"><img src="kyronext-knight-v2.webp" alt="Cavalier Kyronext" /></div><div class="finalLogo">KYRONEXT</div><div class="finalSub">NEURAL AUTOMOTIVE OPERATING SYSTEM</div><div class="finalModules"><span>K.I.T.T. CORE</span><span>K-BASIC</span><span>VOICE</span><span>SAT-COM</span><span>VIGILANCE</span><span>VEHICLE BUS</span><span>F.L.A.G. LINK</span></div></div>
   </div>
   <div id="bootlog"></div>
   <div id="coreStage" aria-label="Mise sous tension du microprocesseur central KITT">
@@ -478,7 +478,7 @@ html,body { overflow-x:hidden; }
   </div>
 </div>
 
-<header><div><div class="brand">KYRONEXT™ OS // K.I.T.T.</div><div class="sub">SYSTEM SHELL 2.0 — BUILD 1982/2026 · © KYRONEXT SYSTEMS™</div></div><div class="headerRight"><div class="scannerWrap"><div class="scanner"><span></span></div><div class="scannerMeta">KNIGHT CORE // <b>ONLINE</b></div></div><div class="kxKnightBadge" title="KYRONEXT KNIGHT CORE"><svg viewBox="0 0 120 90" role="img" aria-label="Cavalier Kyronext"><defs><linearGradient id="kxGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0a3"/><stop offset=".28" stop-color="#d89b28"/><stop offset=".55" stop-color="#fff1a5"/><stop offset="1" stop-color="#8e530e"/></linearGradient><linearGradient id="kxShield" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#25110b"/><stop offset="1" stop-color="#070000"/></linearGradient><filter id="kxGlow"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path class="knightWing" d="M39 34H7l8 8H4l12 9H6l17 12h21zM81 34h32l-8 8h11l-12 9h10L97 63H76z"/><path class="knightShield" d="M31 11h58l14 12-8 42-35 19-35-19-8-42z"/><path class="knightInner" d="M34 17h52l10 9-7 34-29 16-29-16-7-34z"/><text class="knightGlyph" x="60" y="62" text-anchor="middle">♞</text><path d="M60 18v6M27 39h7M86 39h7M60 69v5" stroke="#ff4638" stroke-width="1.4" opacity=".8"/></svg></div></div></header>
+<header><div><div class="brand">KYRONEXT™ OS // K.I.T.T.</div><div class="sub">SYSTEM SHELL 2.0 — BUILD 1982/2026 · © KYRONEXT SYSTEMS™</div></div><div class="headerRight"><div class="scannerWrap"><div class="scanner"><span></span></div><div class="scannerMeta">KNIGHT CORE // <b>ONLINE</b></div></div><div class="kxKnightBadge" title="KYRONEXT KNIGHT CORE"><img src="kyronext-knight-v2.webp" alt="Cavalier Kyronext" /></div></div></header>
 
 <div class="layout">
 <main>
