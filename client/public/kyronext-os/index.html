@@ -10,11 +10,20 @@
 :root{--r:#ff3b2f;--r2:#8d140e;--g:#69ff7b;--a:#ffc44e;--bg:#000}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:#000;color:var(--r);font-family:"Courier New",monospace}
-body{background:radial-gradient(circle at 50% 18%,rgba(120,0,0,.16),transparent 47%),#000}
-#app{min-height:100vh;position:relative}
+body{background:
+radial-gradient(circle at 50% 14%,rgba(150,8,0,.16),transparent 42%),
+linear-gradient(90deg,rgba(255,42,28,.018) 1px,transparent 1px),
+linear-gradient(0deg,rgba(255,42,28,.014) 1px,transparent 1px),#000;
+background-size:auto,42px 42px,42px 42px}
+#app{min-height:100vh;position:relative;padding-top:76px}
 #app:before{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.024) 0 1px,transparent 2px 4px)}
-header{height:68px;border-bottom:2px solid var(--r2);display:flex;align-items:center;padding:7px 12px;background:#070000;position:sticky;top:0;z-index:20}
-.brand{font-weight:900;letter-spacing:2px;font-size:clamp(18px,5vw,30px);text-shadow:0 0 12px #ff2d20}
+header{height:76px;border-bottom:1px solid #8c1d15;display:flex;align-items:center;padding:7px 13px;
+background:linear-gradient(180deg,#100201 0,#060000 58%,#020000 100%);position:fixed;left:0;right:0;top:0;z-index:20;
+box-shadow:0 10px 34px rgba(0,0,0,.78),0 1px 0 rgba(255,84,65,.16),inset 0 -10px 24px rgba(120,8,0,.08)}
+.brand{font-weight:900;letter-spacing:2.4px;font-size:clamp(18px,5vw,30px);
+background:linear-gradient(180deg,#fff1eb 0,#ff8a7d 31%,#ff3b2f 55%,#9e160f 100%);
+-webkit-background-clip:text;background-clip:text;color:transparent;
+text-shadow:0 0 16px rgba(255,45,32,.34)}
 .sub{font-size:9px;opacity:.68}
 .headerRight{margin-left:auto;display:flex;align-items:center;gap:12px;min-width:260px;justify-content:flex-end}
 .scannerWrap{width:min(27vw,260px);min-width:130px}
@@ -23,29 +32,54 @@ header{height:68px;border-bottom:2px solid var(--r2);display:flex;align-items:ce
 .scanner span{position:absolute;top:2px;bottom:2px;width:26%;background:linear-gradient(90deg,transparent,#ff2e20 45%,#fff 50%,#ff2e20 55%,transparent);filter:drop-shadow(0 0 5px #ff2e20);animation:scan 1.08s linear infinite}
 .scannerMeta{margin-top:3px;font-size:7px;letter-spacing:1.2px;color:#71342f;text-align:right;white-space:nowrap}.scannerMeta b{color:#ff6e62;font-weight:700}
 @keyframes scan{from{left:-27%}to{left:100%}}
-.kxKnightBadge{position:relative;width:70px;height:56px;flex:0 0 70px;display:grid;place-items:center;filter:drop-shadow(0 0 7px rgba(255,49,34,.33));isolation:isolate}
-.kxKnightBadge img{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px;animation:knightBreath 2.8s ease-in-out infinite}
-.kxKnightBadge:after{content:"";position:absolute;left:16%;right:16%;top:8%;height:2px;background:linear-gradient(90deg,transparent,#ff4b3e,transparent);box-shadow:0 0 8px #ff3b2e;opacity:.7;animation:knightSweep 2.2s ease-in-out infinite;pointer-events:none}
-.kxKnightBadge:hover img{transform:scale(1.06);filter:brightness(1.14)}
-@keyframes knightBreath{0%,100%{filter:brightness(.92)}50%{filter:brightness(1.12)}}
-@keyframes knightSweep{0%{transform:translateY(3px);opacity:.15}45%,55%{opacity:.95}100%{transform:translateY(39px);opacity:.08}}
-.knightWing{fill:url(#kxGold);stroke:#ff3c2f;stroke-width:1.1}.knightShield{fill:url(#kxShield);stroke:url(#kxGold);stroke-width:2}.knightInner{fill:#060000;stroke:#ff3b2f;stroke-width:1}.knightGlyph{fill:url(#kxGold);stroke:#ff4c3d;stroke-width:.45;paint-order:stroke;filter:url(#kxGlow);font-family:Georgia,"Times New Roman",serif;font-size:45px;font-weight:700}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:calc(100vh - 68px)}
+.kxSvgDefs{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+.kxKnightBadge{position:relative;width:84px;height:62px;flex:0 0 84px;display:grid;place-items:center;isolation:isolate;filter:drop-shadow(0 0 9px rgba(255,48,34,.34))}
+.kxKnightBadge:before{content:"";position:absolute;inset:7px 9px;border:1px solid rgba(255,64,48,.18);clip-path:polygon(15% 0,85% 0,100% 50%,85% 100%,15% 100%,0 50%);background:linear-gradient(180deg,rgba(255,75,54,.045),rgba(0,0,0,.1))}
+.kxKnightBadge img{width:100%;height:100%;object-fit:contain;display:block;border-radius:10px;animation:knightBreath 3.2s ease-in-out infinite;transition:transform .22s ease,filter .22s ease}
+.kxKnightBadge:after{content:"";position:absolute;left:19%;right:19%;top:12%;height:2px;background:linear-gradient(90deg,transparent,#ff3c30 22%,#fff 50%,#ff3c30 78%,transparent);box-shadow:0 0 10px #ff3325,0 0 3px #fff;opacity:.82;animation:knightSweep 2.35s cubic-bezier(.45,0,.55,1) infinite;pointer-events:none}
+.kxKnightBadge:hover img{transform:scale(1.055);filter:brightness(1.17) saturate(1.08)}
+.kxKnightMark{width:100%;height:100%;overflow:visible}
+@keyframes knightBreath{0%,100%{filter:brightness(.9) drop-shadow(0 0 2px rgba(255,46,32,.25))}50%{filter:brightness(1.09) drop-shadow(0 0 7px rgba(255,46,32,.42))}}
+@keyframes knightSweep{0%{transform:translateY(3px);opacity:.08}42%,58%{opacity:.95}100%{transform:translateY(42px);opacity:.08}}
+.kxShieldFrame{fill:url(#kxShieldMetal);stroke:#ff4a3c;stroke-width:1.8}
+.kxShieldInset{fill:url(#kxShieldDark);stroke:#743029;stroke-width:1}
+.kxTechWing{fill:#21100d;stroke:#9a382e;stroke-width:1}
+.kxKnightBody{fill:url(#kxKnightSteel);stroke:#ffe0b0;stroke-width:1.35;stroke-linejoin:round}
+.kxKnightShadow{fill:#120704;opacity:.9}
+.kxKnightHighlight{fill:none;stroke:#fff2cf;stroke-width:1.35;stroke-linecap:round;opacity:.82}
+.kxKnightMane{fill:none;stroke:#ff4c3c;stroke-width:2;stroke-linecap:round;opacity:.9}
+.kxKnightEye{fill:#ffdf67;stroke:#ff3428;stroke-width:1;filter:url(#kxVectorGlow)}
+.kxKnightBase{fill:url(#kxBaseSteel);stroke:#ff4a3c;stroke-width:1.15}
+.kxCircuit{fill:none;stroke:#ff4537;stroke-width:1;opacity:.58}
+.kxCoreLine{fill:none;stroke:#ffd780;stroke-width:.8;opacity:.42}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:calc(100vh - 76px)}
 main{padding:12px 12px 118px}
 aside{border-left:2px solid #5f0b07;background:#070000;padding:10px;display:flex;flex-direction:column;gap:9px}
-.panel{border:1px solid #5b0f0a;background:#0a0101;padding:9px}
+.panel{border:1px solid #64130d;background:linear-gradient(180deg,#0d0201,#060000);padding:9px;
+box-shadow:inset 0 1px 0 rgba(255,96,77,.06),0 8px 24px rgba(0,0,0,.2)}
 .ph{font-size:11px;letter-spacing:2px;color:#ff958a;margin-bottom:7px}
 .stat{display:flex;justify-content:space-between;font-size:12px;margin:5px 0}.ok{color:var(--g)}.warn{color:var(--a)}
-.screen{border:1px solid #5f0d08;background:#010000;min-height:68vh;padding:12px;box-shadow:inset 0 0 30px rgba(255,30,15,.05)}
+.screen{position:relative;overflow:hidden;border:1px solid #71140e;
+background:
+linear-gradient(rgba(255,45,32,.018) 1px,transparent 1px),
+linear-gradient(90deg,rgba(255,45,32,.014) 1px,transparent 1px),
+radial-gradient(circle at 48% 18%,rgba(100,4,0,.07),transparent 48%),#010000;
+background-size:24px 24px,24px 24px,auto,auto;min-height:68vh;padding:14px;
+box-shadow:inset 0 0 46px rgba(255,30,15,.07),0 0 0 1px rgba(0,0,0,.8),0 12px 40px rgba(0,0,0,.44)}
+.screen:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 0 49.8%,rgba(255,70,55,.025) 50%,transparent 50.2%),linear-gradient(0deg,transparent 0 49.8%,rgba(255,70,55,.018) 50%,transparent 50.2%);background-size:160px 160px}
 #history{white-space:pre-wrap;line-height:1.36;font-size:clamp(13px,1.65vw,18px);text-shadow:0 0 6px rgba(255,55,40,.58)}
 .promptrow{display:flex;align-items:center;gap:7px;margin-top:10px;border-top:1px solid #35100d;padding-top:10px;position:sticky;bottom:69px;background:#010000;z-index:5}
 #prompt{font-weight:900;color:#ff7568}
 #cmd{flex:1;min-width:0;background:#080000;border:1px solid #71140d;color:#ff7467;padding:12px;font:inherit;font-size:16px;outline:none}
-button{border:1px solid #77150f;background:#170201;color:#ff7669;padding:10px 8px;font:700 12px "Courier New";cursor:pointer}
+button{border:1px solid #77150f;background:linear-gradient(180deg,#1d0503,#0d0101);color:#ff8276;padding:10px 8px;
+font:700 12px "Courier New";cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,130,112,.07);transition:border-color .12s,background .12s,color .12s,box-shadow .12s}
+button:hover{border-color:#c12a1e;color:#ffd1ca;box-shadow:inset 0 1px 0 rgba(255,150,135,.12),0 0 12px rgba(255,44,31,.08)}
 button:active{background:#450805}
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .status{font-size:11px;line-height:1.5}
-.bar{position:fixed;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;background:#000;padding:4px}
+.bar{position:fixed;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;
+background:linear-gradient(180deg,rgba(12,1,1,.96),rgba(0,0,0,.98));padding:5px;border:1px solid #3f0b08;
+box-shadow:0 -10px 30px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,68,52,.05)}
 .boot{position:fixed;inset:0;z-index:100;background:#000;display:block;padding:max(10px,env(safe-area-inset-top)) 12px 12px;overflow:hidden}
 .boot.hide{display:none}
 .boot:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.032) 0 1px,transparent 2px 4px)}
@@ -105,8 +139,8 @@ button:active{background:#450805}
 .finalLogo:after{content:"";position:absolute;left:-5%;right:-5%;top:50%;height:4px;background:#ff3b2f;box-shadow:0 0 22px #ff2416;animation:logoScan 1.15s ease-in-out infinite alternate}
 @keyframes logoScan{from{transform:translateY(-38px);opacity:.25}to{transform:translateY(38px);opacity:1}}
 .finalSub{margin-top:18px;color:#ff9b90;font:900 clamp(11px,2vw,17px) "Courier New";letter-spacing:3px}
-.finalKnight{width:clamp(150px,22vw,240px);height:clamp(116px,17vw,186px);margin-bottom:0;filter:drop-shadow(0 0 24px rgba(255,55,35,.52)) drop-shadow(0 0 10px rgba(229,171,62,.24));animation:finalKnightIn 1.1s cubic-bezier(.2,.9,.25,1) both}
-.finalKnight img{width:100%;height:100%;object-fit:contain;display:block;border-radius:18px;filter:brightness(1.08) saturate(1.05)}
+.finalKnight{width:clamp(190px,27vw,300px);height:clamp(142px,20vw,220px);margin-bottom:2px;filter:drop-shadow(0 0 24px rgba(255,55,35,.52)) drop-shadow(0 0 10px rgba(229,171,62,.24));animation:finalKnightIn 1.1s cubic-bezier(.2,.9,.25,1) both}
+.finalKnight img{width:100%;height:100%;object-fit:contain;display:block;border-radius:18px;filter:brightness(1.18) saturate(1.08)}
 @keyframes finalKnightIn{from{opacity:0;transform:scale(.72) rotateX(20deg);filter:drop-shadow(0 0 0 rgba(255,55,35,0))}to{opacity:1;transform:scale(1) rotateX(0);filter:drop-shadow(0 0 18px rgba(255,55,35,.42))}}
 .finalModules{margin-top:24px;display:flex;flex-wrap:wrap;justify-content:center;gap:7px;max-width:720px}
 .finalModules span{border:1px solid #5a110c;background:#100100;padding:6px 9px;color:#ff7467;font:10px "Courier New"}
@@ -407,9 +441,34 @@ html,body { overflow-x:hidden; }
 .kappHead > span:nth-child(3) { grid-column:1; grid-row:2; font-size:10px; }
 #kappClose { grid-column:2; grid-row:1 / 3; min-width:80px; }
 .kappControls button { min-width:0; flex:1 1 120px; }
+
+button,#kitt-kb,#gameOverlay,#kbasicOverlay,#knortonOverlay,.bar,.quick{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 </style>
 </head>
-<body><div id="app">
+<body><svg class="kxSvgDefs" aria-hidden="true" focusable="false">
+<defs>
+ <linearGradient id="kxShieldMetal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d211d"/><stop offset=".22" stop-color="#6a493d"/><stop offset=".42" stop-color="#160806"/><stop offset=".72" stop-color="#3f1b17"/><stop offset="1" stop-color="#090202"/></linearGradient>
+ <linearGradient id="kxShieldDark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#130403"/><stop offset="1" stop-color="#020000"/></linearGradient>
+ <linearGradient id="kxKnightSteel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3ce"/><stop offset=".18" stop-color="#c9b482"/><stop offset=".38" stop-color="#f5e4b0"/><stop offset=".58" stop-color="#8f774e"/><stop offset=".78" stop-color="#d9c48d"/><stop offset="1" stop-color="#65512f"/></linearGradient>
+ <linearGradient id="kxBaseSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8d59c"/><stop offset=".42" stop-color="#7d6842"/><stop offset="1" stop-color="#2b1c11"/></linearGradient>
+ <filter id="kxVectorGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.2" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <symbol id="kxKnightEmblem" viewBox="0 0 160 120">
+  <path class="kxTechWing" d="M22 35 4 48l19 4-13 12 22 2 8 20 10-10-6-46z"/>
+  <path class="kxTechWing" d="M138 35 156 48l-19 4 13 12-22 2-8 20-10-10 6-46z"/>
+  <path class="kxShieldFrame" d="M80 4 137 20l10 36c-4 30-27 48-67 60-40-12-63-30-67-60l10-36z"/>
+  <path class="kxShieldInset" d="M80 12 129 26l8 31c-5 24-24 39-57 50-33-11-52-26-57-50l8-31z"/>
+  <path class="kxCircuit" d="M30 53h18m-13-9 13 9-13 9m95-9h-18m13-9-13 9 13 9M80 17v12M80 97v8"/>
+  <path class="kxCoreLine" d="M43 83c6-22 12-34 20-41 8-7 14-13 17-23m31 63c-10-7-16-16-21-26"/>
+  <path class="kxKnightShadow" d="M43 94h77l-7-13-15-4c-4-9-10-17-18-23 8 1 16 1 23-2 8-3 13-9 13-16-1-5-4-9-10-12l-20-8-8-11-8 18c-13 2-25 8-34 18 13 2 22 8 27 17-9 9-15 21-20 36z"/>
+  <path class="kxKnightBody" d="M39 91h76l-6-9-16-5c-4-10-11-19-21-26 10 2 21 2 29-2 7-3 11-8 11-14 0-4-3-7-8-10l-19-8-9-12-7 18C56 25 45 31 36 40c13 2 23 9 28 19-10 9-18 20-25 32z"/>
+  <path class="kxKnightHighlight" d="M45 84c6-12 13-20 23-28 7-6 10-14 8-24m6-8 18 7c5 2 7 5 7 8-1 4-4 7-9 9-7 2-15 1-23-2"/>
+  <path class="kxKnightMane" d="M39 41c8 1 14 4 20 8m-15-14c8 2 14 5 20 10m-13-15c7 2 12 5 17 9"/>
+  <circle class="kxKnightEye" cx="92" cy="31" r="2.6"/>
+  <path class="kxKnightBase" d="M34 91h88l7 8-7 8H34l-7-8z"/>
+  <path class="kxKnightHighlight" d="M43 96h70" opacity=".55"/>
+ </symbol>
+</defs>
+</svg><div id="app">
 <div class="boot" id="boot">
   <div id="bootpower" role="button" tabindex="0" aria-label="Mise sous tension Kyronext">
     <div class="pw-knight">KNIGHT INDUSTRIES</div>
@@ -1994,7 +2053,7 @@ document.addEventListener('keyup',e=>{if(!game)return;let m={ArrowLeft:'left',Ar
 
 /* ── KYRONEXT CINEMATIC BOOT CONTROLLER ── */
 let bootAbort=false,bootFinished=false,bootMode='cinema',bootMatrixRAF=0;
-function bootScale(){return bootMode==='tech'?.72:(bootMode==='normal'?.21:.48)}
+function bootScale(){return bootMode==='tech'?1.02:(bootMode==='normal'?.24:.72)}
 function bootDelay(ms){return new Promise(resolve=>{if(bootAbort){resolve();return}const end=performance.now()+ms*bootScale();const tick=()=>{if(bootAbort||performance.now()>=end)resolve();else setTimeout(tick,24)};tick()})}
 function bootHud(phase,pct){const ph=document.getElementById('bootPhase'),f=document.getElementById('bootProgressFill'),p=document.getElementById('bootPct'),m=document.getElementById('bootModeLabel');if(ph)ph.textContent=phase;if(f)f.style.width=Math.max(0,Math.min(100,pct))+'%';if(p)p.textContent=Math.round(pct)+'%';if(m)m.textContent=bootMode.toUpperCase()}
 function bootFxMode(mode){const fx=document.getElementById('bootFx');if(!fx)return;fx.className='';if(mode){fx.classList.add('show',mode)}}
@@ -2006,10 +2065,10 @@ function startBootMatrix(){
  const draw=()=>{x.fillStyle='rgba(0,0,0,.12)';x.fillRect(0,0,w,h);x.font=fs+'px Courier New';for(let i=0;i<cols;i++){let ch=glyph[(Math.random()*glyph.length)|0];x.fillStyle=Math.random()>.985?'#eaffef':'#25d966';x.fillText(ch,i*fs,drops[i]*fs);if(drops[i]*fs>h&&Math.random()>.975)drops[i]=0;drops[i]+=.7+Math.random()*.35}bootMatrixRAF=requestAnimationFrame(draw)};draw()
 }
 async function bootMatrixSequence(){
- if(bootAbort)return;bootHud('CYBER LINK',7);bootFxMode('matrix');startBootMatrix();const tr=document.getElementById('matrixTrace');
+ if(bootAbort)return;bootHud('CYBER LINK',74);bootFxMode('matrix');startBootMatrix();const tr=document.getElementById('matrixTrace');
  const rows=['[KX-LINK] secure handshake ........ ACCEPTED','[CORE] neural address space ........ MAPPED','[CRYPT] voice matrix ............... DECRYPTED','[BUS] vehicle channel .............. ISOLATED','[NET] satellite relay .............. STANDBY','[AUTH] KNIGHT INDUSTRIES ........... VERIFIED','[ROOT] KYRONEXT kernel ............. ACCESS GRANTED'];
- let shown=[];for(let i=0;i<rows.length;i++){if(bootAbort)break;shown.push(rows[i]);tr.textContent=shown.join('\\n');bootHud('CYBER LINK',7+i*2.4);tone(620+i*55,.025,'square',.15);await bootDelay(380)}
- if(!bootAbort){tr.textContent=shown.join('\\n')+'\\n\\n>> CYBERNETIC LINK LOCKED';bootHud('LINK LOCKED',24);await bootDelay(1050)}stopBootMatrix();bootFxMode('')
+ let shown=[];for(let i=0;i<rows.length;i++){if(bootAbort)break;shown.push(rows[i]);tr.textContent=shown.join('\\n');bootHud('CYBER LINK',74+i*1.15);tone(620+i*55,.025,'square',.15);await bootDelay(380)}
+ if(!bootAbort){tr.textContent=shown.join('\\n')+'\\n\\n>> CYBERNETIC LINK LOCKED';bootHud('LINK LOCKED',82);await bootDelay(1050)}stopBootMatrix();bootFxMode('')
 }
 async function bootCdSequence(){
  if(bootAbort)return;bootHud('OPTICAL BOOT',58);bootFxMode('cd');const fill=document.getElementById('cdReadFill'),sec=document.getElementById('cdSector');
@@ -2017,12 +2076,13 @@ async function bootCdSequence(){
  if(!bootAbort){sec.textContent='SYSTEM DISC VERIFIED — BOOT IMAGE READY';bootHud('DISC VERIFIED',72);await bootDelay(950)}bootFxMode('')
 }
 async function bootFinalSequence(){
- if(bootAbort)return;bootHud('K.I.T.T. ONLINE',96);bootFxMode('final');sfx.scan();await bootDelay(2200);bootHud('SYSTEM READY',100);await bootDelay(1250);bootFxMode('')
+ if(bootAbort)return;bootHud('K.I.T.T. ONLINE',96);bootFxMode('final');sfx.scan();await bootDelay(3200);bootHud('SYSTEM READY',100);await bootDelay(1800);bootFxMode('')
 }
 function finishBoot(){
  if(bootFinished)return;bootFinished=true;stopBootMatrix();bootFxMode('');const cs=document.getElementById('coreStage');if(cs)cs.classList.remove('show','fade');const B=document.getElementById('boot');B.classList.add('hide');
- print('KYRONEXT™ OS 2.1 / v9\\nCopyright © 2026 Kyronext Systems™\\nK.I.T.T. SYSTEM ONLINE\\nTape KAIDE pour les commandes, KEDIT pour éditer, KBASIC pour programmer, KSHELL pour le mode direct ou KTTY pour le terminal plein écran.');
- setTimeout(()=>I.focus(),120);sfx.ok()
+ try{window.scrollTo({top:0,left:0,behavior:'instant'});document.documentElement.scrollTop=0;document.body.scrollTop=0}catch(e){}
+ print('KYRONEXT™ OS 2.1 / v9\nCopyright © 2026 Kyronext Systems™\nK.I.T.T. SYSTEM ONLINE\nTape KAIDE pour les commandes, KEDIT pour éditer, KBASIC pour programmer, KSHELL pour le mode direct ou KTTY pour le terminal plein écran.');
+ setTimeout(()=>{try{I.focus({preventScroll:true});window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0}catch(e){I.focus()}},120);sfx.ok()
 }
 function skipBoot(){if(bootFinished)return;bootAbort=true;finishBoot()}
 /* ── ETAPE FORTE BOOT : MISE SOUS TENSION DU MICROPROCESSEUR (SVG ANIME) ── */
@@ -2281,7 +2341,7 @@ async function powerOn(mode='cinema'){
  try{await unlockAudio()}catch(e){}
  sfx.boot();crtFlash();
  const B=document.getElementById('boot'),log=document.getElementById('bootlog');
- B.classList.add('post');bootHud('POWER ON',1);await bootMatrixSequence();if(bootAbort)return;
+ B.classList.add('post');bootHud('POWER ON',1);
  const bl=[];
  const line=(t='')=>{bl.push(t);log.textContent=bl.join('\n');log.scrollTop=log.scrollHeight};
  const setLast=(t)=>{bl[bl.length-1]=t;log.textContent=bl.join('\n');log.scrollTop=log.scrollHeight};
@@ -2291,6 +2351,7 @@ async function powerOn(mode='cinema'){
  line('KYRONEXT SYSTEMS (C) 2026 - ALL RIGHTS RESERVED');await bootDelay(340);
  line('KNIGHT INDUSTRIES 2000 MICROPROCESSOR');await bootDelay(460);
  line('');
+ line('>> PHASE 01 / POWER-ON SELF TEST');await bootDelay(520);
  line('ROM BOOTSTRAP 2.5K — LECTURE SECTEUR 0 DU VOLUME K:');await bootDelay(420);
  await ok('MONITEUR ROM 1.6 — SOMMAIRE DES PERIPHERIQUES',420);
  await ok('CPU K2000 : AUTO-TEST REGISTRES R0-R15',440);
@@ -2304,6 +2365,7 @@ async function powerOn(mode='cinema'){
  await ok('VOICE / ANHARMONIC SYNTHESIZER',480);
  await ok('SCANNER / SENSOR INTERFACE',480);
  line('');
+ line('');line('>> PHASE 02 / MEMORY & PROTECTED ADDRESS SPACE');await bootDelay(520);
  line('MEMORY TEST :   0 Ko');
  for(let kb=64;kb<=640;kb+=64){setLast('MEMORY TEST : '+String(kb).padStart(3,' ')+' Ko');tone(1040,.02,'square',.2);await bootDelay(95)}
  setLast('MEMORY TEST : 640 Ko  OK');await bootDelay(380);
@@ -2318,6 +2380,7 @@ async function powerOn(mode='cinema'){
  line('MICROPROCESSEUR CENTRAL : CHARGE 100% — CIRCUITS ALIMENTES');bootHud('CORE ONLINE',54);
  await bootDelay(900);
  line('');
+ line('>> PHASE 03 / STORAGE & BOOT MEDIA ENUMERATION');await bootDelay(520);
  await ok('STORAGE K:  KYRONEXT-HDD 32 Mo',520);
  await ok('PARITY CHECK',400);
  await ok('SUPERBLOC KX-FS : VOLUME K: VERIFIE',460);
@@ -2325,6 +2388,7 @@ async function powerOn(mode='cinema'){
  await ok('MONTAGE K: SUR RACINE — SYSTEME DE FICHIERS PRET',460);
  await ok('MONTAGE K:\\KYRONEXT\\SYSTEME (LECTURE SEULE)',380);
  line('');
+ line('>> PHASE 04 / KYRONEXT KERNEL & DRIVERS');await bootDelay(520);
  line('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK');
  for(let n=1;n<=8;n++){let s='[';for(let i=1;i<=8;i++)s+=i<=n?'#':'.';setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  '+s+']');sfx.tick();await bootDelay(190)}
  setLast('CHARGEMENT K:\\KYRONEXT\\KYRONEXT.KXK  OK');await bootDelay(340);
@@ -2344,6 +2408,10 @@ async function powerOn(mode='cinema'){
  if(!bootAbort){await bootCdSequence()}if(bootAbort)return;
  await ok('[KXD] NETLINK.KXD interface KX-LINK',380);
  line('');
+ line('>> SECURE CYBERNETIC HANDSHAKE / K.I.T.T. AUTHORIZATION');await bootDelay(520);
+ await bootMatrixSequence();if(bootAbort)return;
+ line('>> CYBERNETIC LINK VERIFIED — PROTECTED EXECUTION ENABLED');await bootDelay(520);
+ line('');
  await ok('[KXE] KXEDIT.KXE  editeur texte / code',380);
  await ok('[KXE] KEDIT.KXE   editeur MS-DOS style',360);
  await ok('[KXE] KBASIC.KXE  interpreteur BASIC',360);
@@ -2361,6 +2429,7 @@ async function powerOn(mode='cinema'){
  await ok('[KXS] KITTCORE.KXS intelligence K.I.T.T.',560);
  await ok('[KXS] VOICE.KXS    STT / TTS',440);
  line('');
+ line('>> PHASE 06 / K.I.T.T. SERVICES & VEHICLE BUS');await bootDelay(560);
  line('  CORE START ............................... OK');sfx.tick();await bootDelay(400);
  line('  AUDIO START .............................. OK');sfx.tick();await bootDelay(400);
  line('  KX-LINK START ............................ OK');sfx.tick();await bootDelay(400);
