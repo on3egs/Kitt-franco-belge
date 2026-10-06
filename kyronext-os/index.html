@@ -164,31 +164,56 @@ button:active{background:#450805}
 .kbasicShell.runtime #kbasicOutput{font-size:14px;line-height:1.45}
 .kbasicShell.runtime .kbasicOutputHead:after{content:"  •  PROGRAMME EN COURS";color:#69ff7b}
 .kbasicRunLamp{display:inline-block;width:7px;height:7px;border-radius:50%;background:#40100c;margin-right:5px}
-/* --- KBASIC 1.4 graphical runtime --- */
-#kbasicGameView{display:none;flex:1;min-height:0;grid-template-columns:minmax(0,2.25fr) minmax(230px,.8fr);gap:6px;padding:6px;background:#010302}
+/* --- KBASIC 1.5 cinematic graphical runtime --- */
+#kbasicGameView{display:none;flex:1;min-height:0;grid-template-columns:minmax(0,2.35fr) minmax(250px,.85fr);gap:7px;padding:7px;background:#010302}
 .kbasicShell.gamevisual #kbasicGameView{display:grid}
 .kbasicShell.gamevisual .kbasicWork{display:none}
-.kbasicShell.gamevisual .kbasicOutputWrap{height:auto;flex:0 0 auto;min-height:48px}
+.kbasicShell.gamevisual .kbasicOutputWrap{height:auto;flex:0 0 auto;min-height:46px}
 .kbasicShell.gamevisual #kbasicOutput{display:none}
-.wgStage{position:relative;min-width:0;min-height:0;border:1px solid #1f6f45;background:radial-gradient(circle at 50% 48%,#062815 0,#021409 48%,#000 100%);overflow:hidden}
-.wgStage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(55,255,132,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(55,255,132,.055) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
-.wgHeader{position:absolute;z-index:5;left:8px;right:8px;top:7px;display:flex;align-items:center;gap:10px;color:#8dffb1;font-size:10px;letter-spacing:1px;text-shadow:0 0 8px #1cff67}
-.wgHeader strong{font-size:13px;color:#e5ffe9}.wgHeader .grow{flex:1}.wgLive{color:#ffcb50}
-#wgMap{position:absolute;inset:28px 4px 50px;width:calc(100% - 8px);height:calc(100% - 78px)}
-.wgLand{fill:#06351c;stroke:#4dff8b;stroke-width:1.4;filter:drop-shadow(0 0 4px rgba(50,255,120,.28))}
-.wgCountry{fill:none;stroke:#1d7544;stroke-width:.8;opacity:.9}.wgLabel{fill:#54c57e;font:9px "Courier New";letter-spacing:.6px}
-.wgNode{fill:#8bffae;stroke:#eaffef;stroke-width:1;opacity:.78}.wgNode.active{fill:#ff5b46;stroke:#fff;filter:drop-shadow(0 0 7px #ff3928)}
-.wgNodeRing{fill:none;stroke:#7cff9f;stroke-width:1;opacity:.55}.wgSweep{transform-origin:430px 255px;animation:wgSweep 3.6s linear infinite}
-@keyframes wgSweep{to{transform:rotate(360deg)}}.wgPulse{animation:wgPulse .7s ease-out 2}@keyframes wgPulse{50%{r:12;opacity:.22}}
-#wgTraces line{stroke:#ff8a56;stroke-width:1.6;stroke-dasharray:7 5;animation:wgDash .7s linear infinite;filter:drop-shadow(0 0 3px #ff5b35)}@keyframes wgDash{to{stroke-dashoffset:-12}}
-#wgAlert{position:absolute;left:10px;right:10px;bottom:9px;z-index:6;min-height:32px;border:1px solid #b9472d;background:rgba(30,4,0,.86);color:#ffb18f;padding:7px 10px;font-size:11px;font-weight:900;letter-spacing:.5px;text-align:center}
-.wgPanel{min-width:0;border:1px solid #1f6f45;background:#020a05;display:flex;flex-direction:column;overflow:hidden}.wgPanelTitle{padding:7px 8px;background:#0a2d19;color:#9effb8;border-bottom:1px solid #1f6f45;font-size:11px;font-weight:900;letter-spacing:1px}
-.wgMeters{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:6px}.wgMeter{border:1px solid #174b2d;background:#010703;padding:6px;min-width:0}.wgMeter b{display:block;color:#66d98b;font-size:8px}.wgMeter span{display:block;color:#d8ffe2;font-size:19px;font-weight:900;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#wgDefcon{color:#ffcb50}.wgLogHead{padding:5px 7px;border-top:1px solid #174b2d;border-bottom:1px solid #174b2d;color:#66d98b;font-size:9px}#wgLog{flex:1;min-height:68px;overflow:hidden;padding:6px 7px;color:#65ff91;font-size:10px;line-height:1.35;white-space:pre-wrap}
-#wgPrompt{padding:6px 7px;border-top:1px solid #174b2d;color:#ffcb50;font-size:10px;min-height:30px}#wgChoices{display:flex;flex-wrap:wrap;gap:5px;padding:6px;border-top:1px solid #174b2d}#wgChoices:empty{display:none}
-.wgChoice{flex:1 1 100px;min-height:40px;border:1px solid #4e9a66;background:#06160c;color:#baffc9;font:10px "Courier New";font-weight:900;cursor:pointer}.wgChoice:hover,.wgChoice:focus{background:#10391f;color:#fff;border-color:#83ffab}
-#wgExit{margin:6px;border:1px solid #ff583f;background:#290500;color:#ffd1c8;min-height:40px;font:11px "Courier New";font-weight:900;letter-spacing:1px}#wgExit:hover,#wgExit:focus{background:#5b0b02;color:#fff}
-@media(max-width:780px){#kbasicGameView{grid-template-columns:1fr;grid-template-rows:minmax(290px,1fr) auto}.wgPanel{max-height:240px}.wgMeters{grid-template-columns:repeat(4,1fr)}.wgMeter span{font-size:14px}.kbasicShell.gamevisual .kbasicOutputWrap{min-height:44px}}
+.wgStage{position:relative;min-width:0;min-height:0;border:1px solid #2a8855;background:radial-gradient(circle at 50% 48%,#08351d 0,#02160b 44%,#000 100%);overflow:hidden;isolation:isolate}
+.wgStage:before{content:"";position:absolute;inset:0;z-index:8;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(188,255,210,.025) 0 1px,transparent 1px 4px);mix-blend-mode:screen}
+.wgStage:after{content:"";position:absolute;inset:-35%;z-index:1;pointer-events:none;background:conic-gradient(from 0deg at 50% 50%,transparent 0 76%,rgba(74,255,134,.09) 82%,transparent 89%);animation:wgRadarCone 4.2s linear infinite}
+@keyframes wgRadarCone{to{transform:rotate(360deg)}}
+.wgGridGlow{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(76,255,139,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(76,255,139,.055) 1px,transparent 1px);background-size:24px 24px;animation:wgGridMove 10s linear infinite}
+@keyframes wgGridMove{to{background-position:24px 24px}}
+.wgHeader{position:absolute;z-index:10;left:8px;right:8px;top:7px;display:flex;align-items:center;gap:10px;color:#8dffb1;font-size:10px;letter-spacing:1px;text-shadow:0 0 8px #1cff67}
+.wgHeader strong{font-size:13px;color:#e5ffe9}.wgHeader .grow{flex:1}.wgLive{color:#ffcb50;animation:wgLiveBlink 1s steps(1) infinite}
+@keyframes wgLiveBlink{50%{opacity:.28}}
+#wgClock{color:#baffca;font-size:9px;min-width:58px;text-align:right}
+#wgMap{position:absolute;z-index:3;inset:32px 4px 52px;width:calc(100% - 8px);height:calc(100% - 84px)}
+.wgSea{fill:#001107;stroke:#0c4327;stroke-width:1}.wgLand{fill:#06351c;stroke:#50ff8d;stroke-width:1.45;filter:drop-shadow(0 0 4px rgba(50,255,120,.28));transition:fill .25s}
+.wgCountry{fill:none;stroke:#1d7544;stroke-width:.8;opacity:.9}.wgLabel{fill:#65dd8d;font:9px "Courier New";letter-spacing:.6px}.wgCityLabel{fill:#b8ffca;font:8px "Courier New";opacity:.75}
+.wgNode{fill:#8bffae;stroke:#eaffef;stroke-width:1;opacity:.88;transform-box:fill-box;transform-origin:center}.wgNode.active{fill:#ff5b46;stroke:#fff;filter:drop-shadow(0 0 8px #ff3928);animation:wgNodeHot .55s ease-in-out infinite alternate}
+@keyframes wgNodeHot{to{transform:scale(1.8);opacity:.45}}
+.wgNodeRing{fill:none;stroke:#7cff9f;stroke-width:1;opacity:.48}.wgSweep{transform-origin:430px 255px;animation:wgSweep 3.1s linear infinite}
+@keyframes wgSweep{to{transform:rotate(360deg)}}.wgPulse{animation:wgPulse .55s ease-out 3}@keyframes wgPulse{50%{r:14;opacity:.18}}
+#wgTraces .wgArc{fill:none;stroke:#ff9a57;stroke-width:2;stroke-dasharray:8 6;animation:wgDash .6s linear infinite;filter:drop-shadow(0 0 5px #ff5b35)}
+#wgTraces .wgArcDanger{stroke:#ff4538;stroke-width:2.6;filter:drop-shadow(0 0 7px #ff2618)}
+#wgTraces .wgTrackDot{fill:#fff6b0;stroke:#ff6048;stroke-width:1.5;filter:drop-shadow(0 0 6px #ff3b26)}
+@keyframes wgDash{to{stroke-dashoffset:-14}}
+.wgShock{fill:none;stroke:#ff4e3e;stroke-width:2;animation:wgShock 1.1s ease-out forwards}
+@keyframes wgShock{0%{opacity:1;stroke-width:3}100%{opacity:0;stroke-width:.5}}
+#wgAlert{position:absolute;left:10px;right:10px;bottom:9px;z-index:12;min-height:34px;border:1px solid #b9472d;background:rgba(30,4,0,.9);color:#ffb18f;padding:7px 10px;font-size:11px;font-weight:900;letter-spacing:.5px;text-align:center;box-shadow:0 0 18px rgba(255,60,35,.12)}
+#wgAlert.hot{animation:wgAlertHot .42s steps(2) 5}@keyframes wgAlertHot{50%{background:#9b1609;color:#fff;border-color:#ff8b76;box-shadow:0 0 24px rgba(255,50,30,.52)}}
+#wgEvent{position:absolute;z-index:14;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);width:min(76%,520px);padding:14px 18px;border:1px solid #5cff8d;background:rgba(0,14,6,.92);color:#caffd7;text-align:center;font:900 13px/1.35 "Courier New";letter-spacing:1.2px;opacity:0;pointer-events:none;box-shadow:0 0 30px rgba(60,255,120,.25);transition:opacity .18s,transform .18s}
+#wgEvent.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#wgEvent.danger{border-color:#ff5842;background:rgba(48,2,0,.94);color:#ffd8cf;box-shadow:0 0 34px rgba(255,55,35,.45)}
+#wgFlash{position:absolute;inset:0;z-index:13;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 50%,rgba(255,241,208,.9),rgba(255,47,28,.28) 35%,transparent 72%)}
+#wgFlash.burst{animation:wgFlash .7s ease-out}@keyframes wgFlash{0%{opacity:.9}100%{opacity:0}}
+.wgPanel{min-width:0;border:1px solid #1f6f45;background:#020a05;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.wgPanel:before{content:"WOPR / JOSHUA";position:absolute;right:8px;top:7px;color:#2c7650;font:8px "Courier New";letter-spacing:1px}
+.wgPanelTitle{padding:7px 8px;background:#0a2d19;color:#9effb8;border-bottom:1px solid #1f6f45;font-size:11px;font-weight:900;letter-spacing:1px}
+.wgMeters{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:6px}.wgMeter{border:1px solid #174b2d;background:#010703;padding:6px;min-width:0;position:relative;overflow:hidden}.wgMeter b{display:block;color:#66d98b;font-size:8px}.wgMeter span{display:block;color:#d8ffe2;font-size:19px;font-weight:900;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wgDefcon{color:#ffcb50}.wgDefconScale{display:flex!important;gap:2px!important;margin-top:4px!important}.wgDefconScale i{display:block;width:12px;height:3px;background:#123a23;border:1px solid #1f5a36}.wgDefconScale i.on{background:#ffbd45;border-color:#ffe09a;box-shadow:0 0 5px #ff9f30}.wgDefconScale i.hot{background:#ff4634;border-color:#ff9c8c;box-shadow:0 0 7px #ff2f1e}
+.wgTelemetry{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:0 6px 6px}.wgTele{border:1px solid #103c23;background:#010703;padding:4px 5px;color:#5db77a;font-size:7px}.wgTele strong{display:block;color:#b7ffca;font-size:10px;margin-top:2px}
+.wgLogHead{padding:5px 7px;border-top:1px solid #174b2d;border-bottom:1px solid #174b2d;color:#66d98b;font-size:9px}#wgLog{flex:1;min-height:68px;overflow:hidden;padding:6px 7px;color:#65ff91;font-size:10px;line-height:1.35;white-space:pre-wrap}
+#wgPrompt{padding:6px 7px;border-top:1px solid #174b2d;color:#ffcb50;font-size:10px;min-height:30px;animation:wgPromptPulse 1.2s ease-in-out infinite alternate}@keyframes wgPromptPulse{to{color:#fff0a6}}
+#wgChoices{display:flex;flex-wrap:wrap;gap:5px;padding:6px;border-top:1px solid #174b2d}#wgChoices:empty{display:none}
+.wgChoice{flex:1 1 100px;min-height:42px;border:1px solid #4e9a66;background:#06160c;color:#baffc9;font:10px "Courier New";font-weight:900;cursor:pointer;transition:background .12s,transform .12s}.wgChoice:hover,.wgChoice:focus{background:#10391f;color:#fff;border-color:#83ffab;transform:translateY(-1px)}
+#wgExit{margin:6px;border:1px solid #ff583f;background:#290500;color:#ffd1c8;min-height:42px;font:11px "Courier New";font-weight:900;letter-spacing:1px}#wgExit:hover,#wgExit:focus{background:#5b0b02;color:#fff}
+.wgStage.danger{animation:wgStageDanger .55s ease-in-out 4}@keyframes wgStageDanger{50%{box-shadow:inset 0 0 70px rgba(255,45,25,.42)}}
+.wgStage.safe{animation:wgStageSafe .8s ease-out}@keyframes wgStageSafe{50%{box-shadow:inset 0 0 55px rgba(55,255,125,.28)}}
+@media(max-width:780px){#kbasicGameView{grid-template-columns:1fr;grid-template-rows:minmax(300px,1fr) auto}.wgPanel{max-height:255px}.wgMeters{grid-template-columns:repeat(4,1fr)}.wgMeter span{font-size:14px}.wgTelemetry{display:none}.kbasicShell.gamevisual .kbasicOutputWrap{min-height:42px}.wgHeader span:not(.grow):not(.wgLive):not(#wgClock){display:none}#wgEvent{width:84%;font-size:11px}}
 .kbasicShell.runtime .kbasicRunLamp{background:#69ff7b;box-shadow:0 0 8px #69ff7b}
 .kbasicStatus{display:flex;gap:12px;align-items:center;padding:4px 8px;background:#ff6b5d;color:#180000;font-size:10px;white-space:nowrap;overflow:hidden}
 .kbasicStatus .grow{flex:1;text-align:center}
@@ -487,26 +512,60 @@ html,body { overflow-x:hidden; }
 
 <div id="kbasicOverlay" aria-label="Kyronext KBASIC">
  <div class="kbasicShell">
-  <div class="kbasicTitle"><span id="kbasicTitle">KYRONEXT™ KBASIC 1.4</span><span class="grow"></span><span>GW/QBASIC COMPATIBLE STYLE</span><button id="kbasicClose">QUITTER</button></div>
+  <div class="kbasicTitle"><span id="kbasicTitle">KYRONEXT™ KBASIC 1.5</span><span class="grow"></span><span>GW/QBASIC COMPATIBLE STYLE</span><button id="kbasicClose">QUITTER</button></div>
   <div class="kbasicMenu"><span>FICHIER</span><span>ÉDITION</span><span>EXÉCUTER</span><span>DÉBOGUER</span><span>AIDE</span></div>
   <div class="kbasicWork"><div id="kbasicGutter">1</div><textarea id="kbasicCode" spellcheck="false" wrap="off"></textarea></div>
-  <div id="kbasicGameView" aria-label="K-BASIC graphical runtime">
-   <div class="wgStage">
-    <div class="wgHeader"><strong id="wgTitle">GLOBAL THERMONUCLEAR WAR</strong><span>EUROPEAN STRATEGIC DISPLAY</span><span class="grow"></span><span class="wgLive">● LIVE</span></div>
+  <div id="kbasicGameView" aria-label="K-BASIC cinematic graphical runtime">
+   <div class="wgStage" id="wgStage">
+    <div class="wgGridGlow"></div>
+    <div class="wgHeader"><strong id="wgTitle">GLOBAL THERMONUCLEAR WAR</strong><span>EUROPEAN STRATEGIC DISPLAY</span><span class="grow"></span><span id="wgClock">00:00:00</span><span class="wgLive">● LIVE</span></div>
     <svg id="wgMap" viewBox="0 0 860 510" role="img" aria-label="Carte stratégique stylisée de l'Europe">
-     <defs><radialGradient id="wgRadarFade"><stop offset="0" stop-color="#5cff94" stop-opacity=".17"/><stop offset="1" stop-color="#5cff94" stop-opacity="0"/></radialGradient></defs>
+     <defs><radialGradient id="wgRadarFade"><stop offset="0" stop-color="#5cff94" stop-opacity=".18"/><stop offset="1" stop-color="#5cff94" stop-opacity="0"/></radialGradient><filter id="wgGlow"><feGaussianBlur stdDeviation="2.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+     <rect x="8" y="8" width="844" height="494" rx="8" class="wgSea"/>
      <circle cx="430" cy="255" r="218" fill="url(#wgRadarFade)" stroke="#174f2e"/><circle cx="430" cy="255" r="150" class="wgNodeRing"/><circle cx="430" cy="255" r="75" class="wgNodeRing"/>
-     <g class="wgSweep"><line x1="430" y1="255" x2="430" y2="37" stroke="#6aff9b" stroke-width="2" opacity=".65"/><path d="M430 255 L410 40 A218 218 0 0 1 450 40 Z" fill="#6aff9b" opacity=".06"/></g>
+     <g class="wgSweep"><line x1="430" y1="255" x2="430" y2="37" stroke="#6aff9b" stroke-width="2" opacity=".72"/><path d="M430 255 L407 40 A218 218 0 0 1 453 40 Z" fill="#6aff9b" opacity=".075"/></g>
      <g id="wgEurope">
-      <path class="wgLand" d="M235 329 L201 302 L189 265 L204 231 L238 215 L273 219 L298 240 L305 275 L290 306 L263 326 Z"/><path class="wgLand" d="M287 214 L303 179 L337 165 L372 174 L397 199 L390 234 L363 260 L325 257 L302 240 Z"/><path class="wgLand" d="M399 174 L429 144 L474 146 L512 167 L522 205 L500 236 L461 248 L420 226 L397 199 Z"/><path class="wgLand" d="M513 166 L552 143 L602 154 L632 186 L623 224 L584 242 L538 229 L522 205 Z"/><path class="wgLand" d="M603 154 L650 139 L702 159 L735 194 L725 230 L682 246 L637 225 L632 186 Z"/><path class="wgLand" d="M341 152 L325 117 L336 77 L360 47 L379 59 L378 103 L367 145 Z"/><path class="wgLand" d="M388 144 L398 93 L425 47 L448 62 L447 108 L424 148 Z"/><path class="wgLand" d="M276 183 L253 159 L258 122 L278 102 L295 121 L293 160 Z"/><path class="wgLand" d="M245 171 L225 162 L221 139 L232 127 L246 143 Z"/><path class="wgLand" d="M437 250 L456 264 L467 294 L480 322 L469 355 L450 338 L443 307 L430 276 Z"/><path class="wgLand" d="M532 242 L557 251 L577 276 L570 300 L547 294 L526 270 Z"/><path class="wgLand" d="M575 244 L613 235 L647 252 L661 280 L636 306 L600 295 L571 274 Z"/>
-      <text class="wgLabel" x="218" y="279">IBERIA</text><text class="wgLabel" x="321" y="216">FRANCE</text><text class="wgLabel" x="422" y="192">CENTRAL</text><text class="wgLabel" x="553" y="190">EAST</text><text class="wgLabel" x="263" y="145">UK</text><text class="wgLabel" x="355" y="89">NORTH</text><text class="wgLabel" x="448" y="309">ITALY</text>
+      <path class="wgLand" d="M190 327 L172 303 L178 277 L166 255 L178 230 L211 218 L231 196 L267 201 L291 221 L302 252 L292 288 L271 315 L238 335 Z"/>
+      <path class="wgLand" d="M275 203 L294 179 L327 166 L353 171 L375 188 L392 213 L383 239 L355 257 L322 251 L300 229 Z"/>
+      <path class="wgLand" d="M390 178 L419 149 L454 143 L485 151 L514 171 L523 200 L511 225 L477 243 L442 239 L413 219 L394 200 Z"/>
+      <path class="wgLand" d="M518 167 L554 145 L594 149 L627 166 L647 194 L637 221 L606 239 L568 236 L539 220 L523 201 Z"/>
+      <path class="wgLand" d="M633 166 L666 148 L705 151 L739 171 L761 198 L751 226 L716 245 L681 244 L650 224 L644 194 Z"/>
+      <path class="wgLand" d="M325 159 L315 127 L324 91 L345 54 L364 40 L381 57 L380 91 L369 126 L355 157 Z"/>
+      <path class="wgLand" d="M383 149 L391 114 L407 77 L425 42 L447 55 L454 85 L447 119 L429 151 Z"/>
+      <path class="wgLand" d="M270 186 L249 164 L249 134 L263 109 L281 101 L299 122 L298 154 L288 180 Z"/>
+      <path class="wgLand" d="M239 174 L219 166 L214 145 L224 128 L241 132 L250 151 Z"/>
+      <path class="wgLand" d="M439 244 L456 260 L468 284 L472 310 L486 333 L475 360 L457 348 L448 321 L445 293 L429 271 Z"/>
+      <path class="wgLand" d="M523 235 L550 243 L571 259 L581 280 L570 302 L545 298 L526 279 L515 256 Z"/>
+      <path class="wgLand" d="M570 239 L603 232 L636 241 L663 260 L671 281 L653 304 L621 306 L594 294 L574 274 Z"/>
+      <path class="wgCountry" d="M302 207 L383 204 M392 201 L513 194 M523 200 L644 194 M355 171 L368 239 M454 151 L447 239 M554 145 L568 236"/>
+      <text class="wgLabel" x="195" y="278">IBERIA</text><text class="wgLabel" x="319" y="214">FRANCE</text><text class="wgLabel" x="419" y="190">CENTRAL</text><text class="wgLabel" x="553" y="188">EAST</text><text class="wgLabel" x="258" y="144">UK</text><text class="wgLabel" x="341" y="88">NORTH</text><text class="wgLabel" x="447" y="309">ITALY</text><text class="wgLabel" x="611" y="273">BALKANS</text>
      </g>
-     <g id="wgTraces"></g><g id="wgNodes"><circle class="wgNode" data-node="LONDON" cx="279" cy="161" r="4"/><circle class="wgNode" data-node="PARIS" cx="344" cy="210" r="4"/><circle class="wgNode" data-node="BRUSSELS" cx="373" cy="191" r="5"/><circle class="wgNode" data-node="BERLIN" cx="457" cy="178" r="4"/><circle class="wgNode" data-node="MADRID" cx="236" cy="278" r="4"/><circle class="wgNode" data-node="ROME" cx="462" cy="302" r="4"/><circle class="wgNode" data-node="WARSAW" cx="520" cy="185" r="4"/><circle class="wgNode" data-node="EAST-01" cx="634" cy="186" r="4"/><circle class="wgNode" data-node="NORTH-01" cx="407" cy="93" r="4"/></g>
-    </svg><div id="wgAlert">JOSHUA ONLINE — AUCUNE ALERTE ACTIVE</div>
+     <g id="wgTraces"></g>
+     <g id="wgNodes">
+      <g data-city="LONDON"><circle class="wgNode" data-node="LONDON" cx="279" cy="161" r="4"/><text class="wgCityLabel" x="287" y="158">LONDON</text></g>
+      <g data-city="PARIS"><circle class="wgNode" data-node="PARIS" cx="344" cy="210" r="4"/><text class="wgCityLabel" x="351" y="207">PARIS</text></g>
+      <g data-city="BRUSSELS"><circle class="wgNode" data-node="BRUSSELS" cx="373" cy="191" r="5"/><text class="wgCityLabel" x="381" y="188">BRUSSELS</text></g>
+      <g data-city="BERLIN"><circle class="wgNode" data-node="BERLIN" cx="457" cy="178" r="4"/><text class="wgCityLabel" x="465" y="175">BERLIN</text></g>
+      <g data-city="MADRID"><circle class="wgNode" data-node="MADRID" cx="236" cy="278" r="4"/><text class="wgCityLabel" x="244" y="275">MADRID</text></g>
+      <g data-city="ROME"><circle class="wgNode" data-node="ROME" cx="462" cy="302" r="4"/><text class="wgCityLabel" x="470" y="299">ROME</text></g>
+      <g data-city="WARSAW"><circle class="wgNode" data-node="WARSAW" cx="520" cy="185" r="4"/><text class="wgCityLabel" x="528" y="182">WARSAW</text></g>
+      <g data-city="EAST-01"><circle class="wgNode" data-node="EAST-01" cx="674" cy="190" r="4"/></g>
+      <g data-city="NORTH-01"><circle class="wgNode" data-node="NORTH-01" cx="407" cy="93" r="4"/></g>
+     </g>
+    </svg>
+    <div id="wgEvent">JOSHUA ONLINE</div><div id="wgFlash"></div><div id="wgAlert">JOSHUA ONLINE — AUCUNE ALERTE ACTIVE</div>
    </div>
-   <div class="wgPanel"><div class="wgPanelTitle">JOSHUA // STRATEGIC COMPUTER CORE</div><div class="wgMeters"><div class="wgMeter"><b>DEFCON</b><span id="wgDefcon">5</span></div><div class="wgMeter"><b>SCORE</b><span id="wgScore">0</span></div><div class="wgMeter"><b>TOUR</b><span id="wgTurn">0/6</span></div><div class="wgMeter"><b>CAMP</b><span id="wgSide">—</span></div></div><div class="wgLogHead">JOURNAL JOSHUA</div><div id="wgLog">INITIALISATION DU SYSTÈME...</div><div id="wgPrompt">EN ATTENTE DU PROGRAMME BASIC...</div><div id="wgChoices"></div><button id="wgExit" type="button">ESC / QUITTER LA PARTIE</button></div>
+   <div class="wgPanel">
+    <div class="wgPanelTitle">JOSHUA // STRATEGIC COMPUTER CORE</div>
+    <div class="wgMeters">
+     <div class="wgMeter"><b>DEFCON</b><span id="wgDefcon">5</span><span class="wgDefconScale" id="wgDefconScale"><i></i><i></i><i></i><i></i><i></i></span></div>
+     <div class="wgMeter"><b>SCORE</b><span id="wgScore">0</span></div><div class="wgMeter"><b>TOUR</b><span id="wgTurn">0/8</span></div><div class="wgMeter"><b>CAMP</b><span id="wgSide">—</span></div>
+    </div>
+    <div class="wgTelemetry"><div class="wgTele">SAT-LINK<strong id="wgSat">LOCKED</strong></div><div class="wgTele">TRACKS<strong id="wgTrackCount">00</strong></div><div class="wgTele">JOSHUA CPU<strong id="wgCpu">12%</strong></div></div>
+    <div class="wgLogHead">JOURNAL JOSHUA</div><div id="wgLog">INITIALISATION DU SYSTÈME...</div><div id="wgPrompt">EN ATTENTE DU PROGRAMME BASIC...</div><div id="wgChoices"></div><button id="wgExit" type="button">ESC / QUITTER LA PARTIE</button>
+   </div>
   </div>
-  <div class="kbasicOutputWrap"><div class="kbasicOutputHead"><span class="kbasicRunLamp"></span>SORTIE PROGRAMME</div><pre id="kbasicOutput">KBASIC 1.4 READY.\nOK</pre><div id="kbasicInputRow"><span id="kbasicInputLabel">?</span><input id="kbasicInput" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></div></div>
+  <div class="kbasicOutputWrap"><div class="kbasicOutputHead"><span class="kbasicRunLamp"></span>SORTIE PROGRAMME</div><pre id="kbasicOutput">KBASIC 1.5 READY.\nOK</pre><div id="kbasicInputRow"><span id="kbasicInputLabel">?</span><input id="kbasicInput" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></div></div>
   <div class="kbasicStatus"><span id="kbasicPos">LIGNE 1 · COL 1</span><span id="kbasicState">PRÊT</span><span class="grow" id="kbasicFile">NONAME.KXB</span><span>F2 SAVE · F5 RUN · F6 STOP · ESC EXIT</span></div>
   <div class="kbasicButtons"><button id="kbasicKeyboard">⌨ CLAVIER KX</button><button id="kbasicSave">F2 SAUVER</button><button id="kbasicCodeView">F4 CODE</button><button id="kbasicRun">F5 RUN</button><button id="kbasicStop">F6 STOP</button><button id="kbasicNew">NOUVEAU</button><button id="kbasicExit">SYSTEM</button></div>
  </div>
@@ -691,7 +750,7 @@ const fs={
  'K:\\KYRONEXT\\BASIC':{type:'dir',children:['HELLO.KXB','DEMO.KXB','WARGAME.KXB']},
  'K:\\KYRONEXT\\BASIC\\HELLO.KXB':{type:'file',text:'10 CLS\n20 PRINT "KYRONEXT KBASIC READY"\n30 FOR I = 1 TO 5\n40 PRINT "SCANNER "; I\n50 NEXT I\n60 PRINT "PROGRAMME TERMINE"\n70 END'},
  'K:\\KYRONEXT\\BASIC\\DEMO.KXB':{type:'file',text:'10 PRINT "KNIGHT INDUSTRIES"\n20 LET X = 4\n30 GOSUB 100\n40 IF X > 0 THEN 60\n50 END\n60 PRINT "X="; X\n70 LET X = X - 1\n80 GOTO 40\n100 PRINT "KYRONEXT BASIC DEMO"\n110 RETURN'},
- 'K:\\KYRONEXT\\BASIC\\WARGAME.KXB':{type:'file',text:'10 SCREEN 1\n20 TITLE "GLOBAL THERMONUCLEAR WAR"\n30 MAP "EUROPE"\n40 CLS\n50 PRINT "JOSHUA / KYRONEXT EDITION"\n60 PRINT "K-BASIC 1.4 GRAPHICS RUNTIME"\n70 PRINT "OBJECTIF: EVITER L ESCALADE ET GARDER LE CONTROLE."\n80 RANDOMIZE TIMER\n90 INPUT "IDENTIFICATION"; N$\n100 PRINT "BONJOUR "; N$\n110 INPUT "CHOISISSEZ VOTRE CAMP 1=OUEST 2=EST"; SIDE\n120 LET DEFCON = 5\n130 LET SCORE = 0\n140 LET TURN = 1\n150 HUD "CAMP", SIDE\n160 GOSUB 1000\n170 RADAR\n180 LET THREAT = INT(RND*100)\n190 IF THREAT < 24 THEN 300\n200 IF THREAT < 49 THEN 400\n210 IF THREAT < 74 THEN 500\n220 GOTO 600\n300 ALERT "TRAJECTOIRES INCONNUES DETECTEES"\n310 BEEP\n320 INPUT "1=VERIFIER 2=REPONDRE IMMEDIATEMENT"; C\n330 IF C = 1 THEN 340 ELSE 370\n340 TRACE\n350 PRINT "JOSHUA VERIFIE LES DONNEES..."\n360 SLEEP .5: PRINT "FAUSSE ALERTE CONFIRMEE. +20 POINTS": LET SCORE = SCORE + 20: GOTO 700\n370 ALERT "REPONSE PREMATUREE - DEFCON EN BAISSE"\n380 LET DEFCON = DEFCON - 2: LET SCORE = SCORE - 25: GOTO 700\n400 ALERT "CANAL DIPLOMATIQUE PRIORITAIRE OUVERT"\n410 INPUT "1=NEGOCIER 2=COUPER LE CANAL"; C\n420 IF C = 1 THEN 430 ELSE 460\n430 PRINT "MESSAGE RECU. TENSION EN BAISSE.": LET SCORE = SCORE + 25: GOTO 700\n460 ALERT "CANAL FERME - INCERTITUDE STRATEGIQUE"\n470 LET DEFCON = DEFCON - 1: LET SCORE = SCORE - 10: GOTO 700\n500 ALERT "EXERCICE MILITAIRE NON ANNONCE DETECTE"\n510 INPUT "1=OBSERVER 2=DECLARER ALERTE MAXIMALE"; C\n520 IF C = 1 THEN 530 ELSE 560\n530 PRINT "OBSERVATION MAINTENUE. AUCUN LANCEMENT.": LET SCORE = SCORE + 15: GOTO 700\n560 ALERT "ALERTE MAXIMALE DECLENCHEE"\n570 LET DEFCON = DEFCON - 2: LET SCORE = SCORE - 20: GOTO 700\n600 PRINT "JOSHUA: AUCUNE MENACE CREDIBLE CE TOUR."\n610 SLEEP .25: LET SCORE = SCORE + 5\n700 IF DEFCON <= 1 THEN 900\n710 LET TURN = TURN + 1\n720 IF TURN <= 6 THEN 160\n730 GOTO 800\n800 ALERT "FIN DE PARTIE - ANALYSE JOSHUA"\n810 HUD "DEFCON", DEFCON\n820 HUD "SCORE", SCORE\n830 PRINT "SCORE JOSHUA = "; SCORE\n840 PRINT "DEFCON FINAL = "; DEFCON\n850 IF SCORE >= 60 THEN 860 ELSE 870\n860 PRINT "RESULTAT: CRISE DESAMORCEE PAR ANALYSE ET PATIENCE.": GOTO 880\n870 PRINT "RESULTAT: EQUILIBRE FRAGILE. AUCUN GAGNANT."\n880 ALERT "LA MEILLEURE STRATEGIE EST DE NE PAS JOUER"\n890 PRINT "JOSHUA: LA MEILLEURE STRATEGIE EST DE NE PAS JOUER.": END\n900 ALERT "ESCALADE THERMONUCLEAIRE - DESTRUCTION MUTUELLE"\n910 FOR I = 1 TO 6\n920 BEEP\n930 TRACE\n940 PRINT "ECHANGE "; I; " : DESTRUCTION MUTUELLE"\n950 SLEEP .25\n960 NEXT I\n970 PRINT "JOSHUA: AUCUN GAGNANT. PARTIE TERMINEE.": END\n1000 HUD "TOUR", TURN\n1010 HUD "DEFCON", DEFCON\n1020 HUD "SCORE", SCORE\n1030 PRINT "TOUR "; TURN; "/6  DEFCON "; DEFCON; "  SCORE "; SCORE\n1040 RETURN'},
+ 'K:\\KYRONEXT\\BASIC\\WARGAME.KXB':{type:'file',text:'10 SCREEN 1\n20 TITLE "GLOBAL THERMONUCLEAR WAR"\n30 MAP "EUROPE"\n40 CLS\n50 STATUS "WOPR / JOSHUA STRATEGIC NETWORK ONLINE"\n60 PRINT "JOSHUA / KYRONEXT EDITION"\n70 PRINT "K-BASIC 1.5 CINEMATIC RUNTIME"\n80 PRINT "OBJECTIF: EVITER L ESCALADE ET GARDER LE CONTROLE."\n90 RANDOMIZE TIMER\n100 INPUT "IDENTIFICATION"; N$\n110 PRINT "BONJOUR "; N$\n120 INPUT "CHOISISSEZ VOTRE CAMP 1=OUEST 2=EST"; SIDE\n130 LET DEFCON = 5\n140 LET SCORE = 0\n150 LET TURN = 1\n160 HUD "CAMP", SIDE\n170 GOSUB 1200\n180 THINK "JOSHUA ANALYSE LE RESEAU SATELLITE"\n190 RADAR\n200 LET THREAT = INT(RND*100)\n210 IF THREAT < 22 THEN 300\n220 IF THREAT < 45 THEN 430\n230 IF THREAT < 68 THEN 560\n240 IF THREAT < 86 THEN 690\n250 GOTO 820\n300 ALERT "TRAJECTOIRES INCONNUES DETECTEES"\n310 TRACE "DANGER"\n320 BEEP\n330 INPUT "1=VERIFIER 2=REPONDRE IMMEDIATEMENT"; C\n340 IF C = 1 THEN 350 ELSE 400\n350 THINK "CORRELATION RADAR / SATELLITE"\n360 RADAR\n370 PRINT "FAUSSE ALERTE CONFIRMEE. +25 POINTS"\n380 LET SCORE = SCORE + 25\n390 GOTO 900\n400 ALERT "REPONSE PREMATUREE - ESCALADE"\n410 LET DEFCON = DEFCON - 2: LET SCORE = SCORE - 30\n420 GOTO 900\n430 ALERT "CANAL DIPLOMATIQUE PRIORITAIRE OUVERT"\n440 INPUT "1=NEGOCIER 2=COUPER LE CANAL"; C\n450 IF C = 1 THEN 460 ELSE 520\n460 THINK "DECODAGE DU MESSAGE DIPLOMATIQUE"\n470 STATUS "MESSAGE RECU - TENSION EN BAISSE"\n480 PRINT "NEGOCIATION REUSSIE. +30 POINTS"\n490 LET SCORE = SCORE + 30\n500 IF DEFCON < 5 THEN LET DEFCON = DEFCON + 1\n510 GOTO 900\n520 ALERT "CANAL FERME - INCERTITUDE STRATEGIQUE"\n530 LET DEFCON = DEFCON - 1: LET SCORE = SCORE - 12\n540 TRACE "TRACK"\n550 GOTO 900\n560 ALERT "EXERCICE MILITAIRE NON ANNONCE DETECTE"\n570 TRACE "TRACK"\n580 INPUT "1=OBSERVER 2=DECLARER ALERTE MAXIMALE"; C\n590 IF C = 1 THEN 600 ELSE 650\n600 THINK "JOSHUA COMPARE LES SIGNATURES"\n610 STATUS "AUCUN LANCEMENT CONFIRME"\n620 PRINT "OBSERVATION MAINTENUE. +20 POINTS"\n630 LET SCORE = SCORE + 20\n640 GOTO 900\n650 ALERT "ALERTE MAXIMALE DECLENCHEE"\n660 LET DEFCON = DEFCON - 2: LET SCORE = SCORE - 22\n670 TRACE "DANGER"\n680 GOTO 900\n690 ALERT "SATELLITE PERDU - DONNEES INCOMPLETES"\n700 INPUT "1=ATTENDRE REACQUISITION 2=AGIR SUR DONNEES PARTIELLES"; C\n710 IF C = 1 THEN 720 ELSE 780\n720 THINK "REACQUISITION SATELLITE"\n730 RADAR\n740 STATUS "SATELLITE REACQUIS - MENACE NON CONFIRMEE"\n750 LET SCORE = SCORE + 18\n760 GOTO 900\n780 ALERT "DECISION SUR DONNEES INCOMPLETES"\n790 LET DEFCON = DEFCON - 1: LET SCORE = SCORE - 18\n800 TRACE "DANGER"\n810 GOTO 900\n820 STATUS "AUCUNE MENACE CREDIBLE CE TOUR"\n830 THINK "JOSHUA MET A JOUR LE MODELE"\n840 LET SCORE = SCORE + 7\n900 HUD "DEFCON", DEFCON\n910 HUD "SCORE", SCORE\n920 IF DEFCON <= 1 THEN 1100\n930 LET TURN = TURN + 1\n940 IF TURN <= 8 THEN 170\n950 GOTO 1000\n1000 ALERT "FIN DE PARTIE - ANALYSE JOSHUA"\n1010 THINK "CALCUL DU RESULTAT STRATEGIQUE"\n1020 HUD "DEFCON", DEFCON\n1030 HUD "SCORE", SCORE\n1040 PRINT "SCORE JOSHUA = "; SCORE\n1050 PRINT "DEFCON FINAL = "; DEFCON\n1060 IF SCORE >= 85 THEN 1070 ELSE 1080\n1070 STATUS "CRISE DESAMORCEE - CONTROLE CONSERVE": PRINT "RESULTAT: CRISE DESAMORCEE PAR ANALYSE ET PATIENCE.": GOTO 1090\n1080 STATUS "EQUILIBRE FRAGILE - AUCUN GAGNANT": PRINT "RESULTAT: EQUILIBRE FRAGILE. AUCUN GAGNANT."\n1090 ALERT "LA MEILLEURE STRATEGIE EST DE NE PAS JOUER": PRINT "JOSHUA: LA MEILLEURE STRATEGIE EST DE NE PAS JOUER.": END\n1100 ALERT "ESCALADE THERMONUCLEAIRE - DESTRUCTION MUTUELLE"\n1110 FOR I = 1 TO 6\n1120 BEEP\n1130 TRACE "DANGER"\n1140 IMPACT\n1150 PRINT "ECHANGE "; I; " : DESTRUCTION MUTUELLE"\n1160 SLEEP .2\n1170 NEXT I\n1180 PRINT "JOSHUA: AUCUN GAGNANT. PARTIE TERMINEE."\n1190 END\n1200 HUD "TOUR", TURN\n1210 HUD "DEFCON", DEFCON\n1220 HUD "SCORE", SCORE\n1230 PRINT "TOUR "; TURN; "/8  DEFCON "; DEFCON; "  SCORE "; SCORE\n1240 RETURN'},
  'K:\\KYRONEXT\\SYSTEME\\KEDIT.KXE':{type:'file',text:'PROGRAM=KEDIT\nTYPE=TEXT EDITOR\nSTYLE=MS-DOS EDIT\nSTATE=READY'},
  'K:\\KYRONEXT\\SYSTEME\\KBASIC.KXE':{type:'file',text:'PROGRAM=KBASIC\nTYPE=STANDALONE BASIC INTERPRETER/RUNTIME\nVERSION=1.4\nINPUT=INTERNAL CONSOLE\nGRAPHICS=EUROPE MAP/RADAR/HUD/CHOICE\nPERSISTENCE=LOCAL KX-FS\nSTATE=READY'},
  'K:\\KYRONEXT\\SYSTEME\\KNORTON.KXE':{type:'file',text:'PROGRAM=K-NORTON COMMANDER\nTYPE=DUAL-PANE FILE MANAGER\nMOUSE=ACTIVE\nKEYS=F3/F4/F5/F6/F7/F8/F10\nSTATE=READY'},
@@ -993,8 +1052,8 @@ function mapShellInput(text){
 }
 
 const BO=document.getElementById('kbasicOverlay'),BSH=BO.querySelector('.kbasicShell'),BC=document.getElementById('kbasicCode'),BOUT=document.getElementById('kbasicOutput'),BG=document.getElementById('kbasicGutter'),BPOS=document.getElementById('kbasicPos'),BSTATE=document.getElementById('kbasicState'),BFILE=document.getElementById('kbasicFile'),BTITLE=document.getElementById('kbasicTitle'),BINROW=document.getElementById('kbasicInputRow'),BIN=document.getElementById('kbasicInput'),BINLABEL=document.getElementById('kbasicInputLabel');
-const WGTITLE=document.getElementById('wgTitle'),WGDEF=document.getElementById('wgDefcon'),WGSCORE=document.getElementById('wgScore'),WGTURN=document.getElementById('wgTurn'),WGSIDE=document.getElementById('wgSide'),WGLOG=document.getElementById('wgLog'),WGPROMPT=document.getElementById('wgPrompt'),WGCHOICES=document.getElementById('wgChoices'),WGALERT=document.getElementById('wgAlert'),WGTRACES=document.getElementById('wgTraces');
-let basicVisual=false,wgLogLines=[];
+const WGTITLE=document.getElementById('wgTitle'),WGDEF=document.getElementById('wgDefcon'),WGSCORE=document.getElementById('wgScore'),WGTURN=document.getElementById('wgTurn'),WGSIDE=document.getElementById('wgSide'),WGLOG=document.getElementById('wgLog'),WGPROMPT=document.getElementById('wgPrompt'),WGCHOICES=document.getElementById('wgChoices'),WGALERT=document.getElementById('wgAlert'),WGTRACES=document.getElementById('wgTraces'),WGSTAGE=document.getElementById('wgStage'),WGEVENT=document.getElementById('wgEvent'),WGFLASH=document.getElementById('wgFlash'),WGCLOCK=document.getElementById('wgClock'),WGSAT=document.getElementById('wgSat'),WGTRACKCOUNT=document.getElementById('wgTrackCount'),WGCPU=document.getElementById('wgCpu'),WGDEFSCALE=document.getElementById('wgDefconScale');
+let basicVisual=false,wgLogLines=[],wgClockTimer=0,wgTrackSerial=0,wgEventTimer=0;
 
 let basicVars={},basicProg=[],basicPc=0,basicGosub=[],basicFors=[],basicInputResolve=null;
 function basicInsertText(text){let st=BC.selectionStart||0,en=BC.selectionEnd||st;BC.setRangeText(text,st,en,'end');BC.dispatchEvent(new Event('input',{bubbles:true}))}
@@ -1005,11 +1064,60 @@ function basicUi(){
 }
 function wgLog(text){if(!basicVisual)return;let t=String(text??'').trim();if(!t)return;wgLogLines.push(t);if(wgLogLines.length>11)wgLogLines=wgLogLines.slice(-11);WGLOG.textContent=wgLogLines.join('\n')}
 function basicPrint(x=''){BOUT.textContent+=String(x)+'\n';BOUT.scrollTop=BOUT.scrollHeight;wgLog(x)}
-function basicVisualSet(on=true){basicVisual=!!on;BSH.classList.toggle('gamevisual',basicVisual);if(!basicVisual){WGCHOICES.innerHTML='';WGPROMPT.textContent='EN ATTENTE DU PROGRAMME BASIC...';return}wgLogLines=[];WGLOG.textContent='INITIALISATION DU SYSTÈME...';WGALERT.textContent='JOSHUA ONLINE — AUCUNE ALERTE ACTIVE';WGDEF.textContent='5';WGSCORE.textContent='0';WGTURN.textContent='0/6';WGSIDE.textContent='—';document.querySelectorAll('#wgNodes .wgNode').forEach(n=>n.classList.remove('active'));WGTRACES.innerHTML=''}
-function basicVisualHud(key,val){let k=norm(String(key));if(k==='DEFCON')WGDEF.textContent=String(val);else if(k==='SCORE')WGSCORE.textContent=String(val);else if(k==='TOUR')WGTURN.textContent=String(val)+'/6';else if(k==='CAMP'||k==='SIDE')WGSIDE.textContent=Number(val)===1?'OUEST':Number(val)===2?'EST':String(val)}
-function basicVisualAlert(text){if(!basicVisual)basicVisualSet(true);WGALERT.textContent=String(text);wgLog('ALERTE: '+text);sfx.tick()}
-function basicVisualRadar(){if(!basicVisual)basicVisualSet(true);let nodes=[...document.querySelectorAll('#wgNodes .wgNode')];nodes.forEach(n=>n.classList.remove('active'));let n=nodes[Math.floor(Math.random()*nodes.length)];if(n){n.classList.add('active');n.classList.add('wgPulse');setTimeout(()=>n.classList.remove('wgPulse'),1500);WGALERT.textContent='RADAR: CONTACT '+(n.dataset.node||'INCONNU')}}
-function basicVisualTrace(){if(!basicVisual)basicVisualSet(true);let nodes=[...document.querySelectorAll('#wgNodes .wgNode')],a=document.querySelector('#wgNodes [data-node="BRUSSELS"]')||nodes[0],b=nodes[Math.floor(Math.random()*nodes.length)];if(!a||!b||a===b)return;let line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',a.getAttribute('cx'));line.setAttribute('y1',a.getAttribute('cy'));line.setAttribute('x2',b.getAttribute('cx'));line.setAttribute('y2',b.getAttribute('cy'));WGTRACES.appendChild(line);setTimeout(()=>line.remove(),2400)}
+function wgDefconPaint(v){
+ let n=Math.max(1,Math.min(5,Number(v)||5));WGDEF.textContent=String(n);
+ [...WGDEFSCALE.children].forEach((el,i)=>{el.className=i<(6-n)?(n<=2?'hot':'on'):''});
+ WGSTAGE.classList.toggle('danger',n<=2)
+}
+function wgShowEvent(text,danger=false,ms=950){
+ if(!basicVisual)return;clearTimeout(wgEventTimer);WGEVENT.textContent=String(text);WGEVENT.classList.toggle('danger',!!danger);WGEVENT.classList.add('show');
+ wgEventTimer=setTimeout(()=>WGEVENT.classList.remove('show'),ms)
+}
+function wgFlash(danger=true){
+ WGFLASH.classList.remove('burst');void WGFLASH.offsetWidth;WGFLASH.classList.add('burst');
+ WGSTAGE.classList.remove(danger?'danger':'safe');void WGSTAGE.offsetWidth;WGSTAGE.classList.add(danger?'danger':'safe')
+}
+function wgStartClock(){
+ clearInterval(wgClockTimer);const tick=()=>{let d=new Date();WGCLOCK.textContent=d.toLocaleTimeString('fr-BE',{hour12:false})};tick();wgClockTimer=setInterval(tick,1000)
+}
+function basicVisualSet(on=true){
+ basicVisual=!!on;BSH.classList.toggle('gamevisual',basicVisual);
+ if(!basicVisual){clearInterval(wgClockTimer);clearTimeout(wgEventTimer);WGCHOICES.innerHTML='';WGPROMPT.textContent='EN ATTENTE DU PROGRAMME BASIC...';WGEVENT.classList.remove('show');return}
+ wgLogLines=[];wgTrackSerial=0;WGLOG.textContent='INITIALISATION DU SYSTÈME...';WGALERT.textContent='JOSHUA ONLINE — SYNCHRONISATION SATELLITE';WGALERT.classList.remove('hot');WGSCORE.textContent='0';WGTURN.textContent='0/8';WGSIDE.textContent='—';WGSAT.textContent='LOCKED';WGTRACKCOUNT.textContent='00';WGCPU.textContent='12%';wgDefconPaint(5);document.querySelectorAll('#wgNodes .wgNode').forEach(n=>n.classList.remove('active'));WGTRACES.innerHTML='';wgStartClock();wgShowEvent('WOPR / JOSHUA ONLINE',false,1150);setTimeout(()=>basicVisualRadar(false),120)
+}
+function basicVisualHud(key,val){
+ let k=norm(String(key));
+ if(k==='DEFCON')wgDefconPaint(val);
+ else if(k==='SCORE')WGSCORE.textContent=String(val);
+ else if(k==='TOUR')WGTURN.textContent=String(val)+'/8';
+ else if(k==='CAMP'||k==='SIDE')WGSIDE.textContent=Number(val)===1?'OUEST':Number(val)===2?'EST':String(val)
+}
+function basicVisualAlert(text){
+ if(!basicVisual)basicVisualSet(true);let msg=String(text);WGALERT.textContent=msg;WGALERT.classList.remove('hot');void WGALERT.offsetWidth;WGALERT.classList.add('hot');wgShowEvent(msg,true,1050);wgLog('ALERTE: '+msg);wgFlash(true);sfx.err()
+}
+async function basicVisualThink(text='JOSHUA ANALYSE'){
+ if(!basicVisual)basicVisualSet(true);let msg=String(text);WGPROMPT.textContent=msg+' ...';WGCPU.textContent=(54+Math.floor(Math.random()*42))+'%';wgShowEvent(msg,false,650);
+ for(let i=0;i<4&&!basicStop;i++){await sleep(120);let nodes=[...document.querySelectorAll('#wgNodes .wgNode')];let n=nodes[(wgTrackSerial+i)%nodes.length];n?.classList.add('active');setTimeout(()=>n?.classList.remove('active'),180)}
+ WGCPU.textContent=(18+Math.floor(Math.random()*22))+'%'
+}
+async function basicVisualRadar(logIt=true){
+ if(!basicVisual)basicVisualSet(true);let nodes=[...document.querySelectorAll('#wgNodes .wgNode')];if(!nodes.length)return;
+ if(logIt)wgLog('RADAR: balayage européen en cours');
+ for(let i=0;i<6&&!basicStop;i++){nodes.forEach(n=>n.classList.remove('active'));let n=nodes[(wgTrackSerial+i)%nodes.length];n.classList.add('active');await sleep(85)}
+ nodes.forEach(n=>n.classList.remove('active'));let n=nodes[Math.floor(Math.random()*nodes.length)];n.classList.add('active');n.classList.add('wgPulse');setTimeout(()=>{n.classList.remove('wgPulse');n.classList.remove('active')},1300);WGALERT.textContent='RADAR: CONTACT '+(n.dataset.node||'INCONNU')
+}
+function basicVisualTrace(mode='TRACK'){
+ if(!basicVisual)basicVisualSet(true);let nodes=[...document.querySelectorAll('#wgNodes .wgNode')],a=document.querySelector('#wgNodes [data-node="BRUSSELS"]')||nodes[0],choices=nodes.filter(n=>n!==a),b=choices[Math.floor(Math.random()*choices.length)];if(!a||!b)return;
+ let x1=Number(a.getAttribute('cx')),y1=Number(a.getAttribute('cy')),x2=Number(b.getAttribute('cx')),y2=Number(b.getAttribute('cy')),mx=(x1+x2)/2,my=Math.min(y1,y2)-70-Math.random()*45,pathD='M '+x1+' '+y1+' Q '+mx+' '+my+' '+x2+' '+y2,danger=norm(mode).includes('DANGER')||norm(mode).includes('ATTACK');
+ let path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',pathD);path.setAttribute('class','wgArc'+(danger?' wgArcDanger':''));path.id='wgArc'+(++wgTrackSerial);WGTRACES.appendChild(path);
+ let dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('r','4');dot.setAttribute('class','wgTrackDot');let motion=document.createElementNS('http://www.w3.org/2000/svg','animateMotion');motion.setAttribute('dur',danger?'1.15s':'1.65s');motion.setAttribute('fill','freeze');motion.setAttribute('path',pathD);dot.appendChild(motion);WGTRACES.appendChild(dot);if(motion.beginElement)motion.beginElement();
+ WGTRACKCOUNT.textContent=String(wgTrackSerial).padStart(2,'0');b.classList.add('active');setTimeout(()=>b.classList.remove('active'),1900);setTimeout(()=>{path.remove();dot.remove()},3600);return b
+}
+function basicVisualImpact(){
+ if(!basicVisual)basicVisualSet(true);let target=basicVisualTrace('DANGER')||[...document.querySelectorAll('#wgNodes .wgNode')][0];if(!target)return;let cx=target.getAttribute('cx'),cy=target.getAttribute('cy');
+ setTimeout(()=>{for(let i=0;i<3;i++){let c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r',String(12+i*12));c.setAttribute('class','wgShock');c.style.animationDelay=(i*.12)+'s';WGTRACES.appendChild(c);setTimeout(()=>c.remove(),1500)}wgFlash(true);sfx.err()},900)
+}
+function basicVisualStatus(text){if(!basicVisual)basicVisualSet(true);let msg=String(text);WGALERT.textContent=msg;wgLog(msg)}
 function basicClear(){BOUT.textContent=''}
 function basicRuntime(on=true){BSH.classList.toggle('runtime',!!on);if(!on){BINROW.classList.remove('show');BIN.value=''}}
 function basicCancelInput(value=''){if(basicInputResolve){let r=basicInputResolve;basicInputResolve=null;BINROW.classList.remove('show');BIN.value='';r(value)}}
@@ -1023,11 +1131,11 @@ function openBasic(path){
  if(!p.endsWith('.KXB'))p+='.KXB';
  if(!fs[p]){let parent=p.slice(0,p.lastIndexOf('\\'));if(!fs[parent]){print('Répertoire introuvable : '+parent);sfx.err();return}addFile(p,'10 PRINT "KYRONEXT KBASIC READY"\\n20 END')}
  if(fs[p].type!=='file'){print('KBASIC : destination invalide.');sfx.err();return}
- basicCancelInput('');basicRuntime(false);basicFile=p;BC.value=fs[p].text;BTITLE.textContent='KYRONEXT™ KBASIC 1.4 — '+p;BFILE.textContent=p.slice(p.lastIndexOf('\\')+1);BO.classList.add('show');basicUi();BC.focus();sfx.ok()
+ basicCancelInput('');basicRuntime(false);basicFile=p;BC.value=fs[p].text;BTITLE.textContent='KYRONEXT™ KBASIC 1.5 — '+p;BFILE.textContent=p.slice(p.lastIndexOf('\\')+1);BO.classList.add('show');basicUi();BC.focus();sfx.ok()
 }
 function closeBasic(){basicStop=true;basicCancelInput('');basicRunning=false;basicRuntime(false);basicVisualSet(false);BO.classList.remove('show');hideKb();if(tty)renderTTY();else I.focus()}
 function saveBasic(){if(!basicFile)basicFile=basicCreate('BASIC\\NONAME.KXB');fs[basicFile].text=BC.value;persistBasicFiles();BFILE.textContent=basicFile.slice(basicFile.lastIndexOf('\\')+1);basicPrint('SAVED '+basicFile);sfx.ok()}
-function newBasic(){basicStop=true;basicCancelInput('');basicRuntime(false);basicFile=basicCreate('BASIC\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.4 READY.');basicPrint('OK');basicUi();BC.focus()}
+function newBasic(){basicStop=true;basicCancelInput('');basicRuntime(false);basicFile=basicCreate('BASIC\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.5 READY.');basicPrint('OK');basicUi();BC.focus()}
 function basicSplit(src){
  let out=[],cur='',q=false;
  for(let i=0;i<src.length;i++){let c=src[i];if(c==='"')q=!q;if(!q&&(c===';'||c===',')){out.push(cur.trim());cur='';continue}cur+=c}
@@ -1162,11 +1270,15 @@ async function basicExec(code){
  }
  if((m=t.match(/^SCREEN\s+([01])$/i))){basicVisualSet(Number(m[1])===1);return null}
  if((m=t.match(/^TITLE\s+(.+)$/i))){WGTITLE.textContent=String(basicEval(m[1]));return null}
- if((m=t.match(/^MAP\s+(.+)$/i))){basicVisualSet(true);WGALERT.textContent='CARTE '+String(basicEval(m[1])).toUpperCase()+' CHARGÉE';return null}
+ if((m=t.match(/^MAP\s+(.+)$/i))){basicVisualSet(true);basicVisualStatus('CARTE '+String(basicEval(m[1])).toUpperCase()+' CHARGÉE');wgShowEvent('EUROPEAN STRATEGIC GRID',false,850);return null}
  if((m=t.match(/^HUD\s+(.+?)\s*,\s*(.+)$/i))){basicVisualHud(basicEval(m[1]),basicEval(m[2]));return null}
  if((m=t.match(/^ALERT\s+(.+)$/i))){basicVisualAlert(basicEval(m[1]));return null}
- if(/^RADAR$/i.test(t)){basicVisualRadar();return null}
- if(/^TRACE$/i.test(t)){basicVisualTrace();return null}
+ if((m=t.match(/^STATUS\s+(.+)$/i))){basicVisualStatus(basicEval(m[1]));return null}
+ if((m=t.match(/^THINK\s+(.+)$/i))){await basicVisualThink(basicEval(m[1]));return null}
+ if(/^RADAR$/i.test(t)){await basicVisualRadar();return null}
+ if((m=t.match(/^TRACE(?:\s+(.+))?$/i))){basicVisualTrace(m[1]?String(basicEval(m[1])):'TRACK');return null}
+ if(/^IMPACT$/i.test(t)){basicVisualImpact();await sleep(1150);return null}
+ if(/^CLEARTRACE$/i.test(t)){WGTRACES.innerHTML='';WGTRACKCOUNT.textContent='00';return null}
  if(/^CLS$/i.test(t)){basicClear();return null}
  if(/^BEEP$/i.test(t)){sfx.tick();return null}
  if(/^RANDOMIZE(?:\s+TIMER)?$/i.test(t))return null;
@@ -1176,7 +1288,7 @@ async function basicExec(code){
  throw new Error('Commande inconnue : '+t)
 }
 async function runBasic(){
- if(basicRunning)return;saveBasic();parseBasic();basicVars={};basicGosub=[];basicFors=[];basicPc=0;basicStop=false;basicRunning=true;basicRuntime(true);BSTATE.textContent='EXÉCUTION';basicClear();basicPrint('KBASIC 1.4 RUNTIME');basicPrint('RUN '+(basicFile||'PROGRAMME'));basicPrint('');
+ if(basicRunning)return;saveBasic();parseBasic();basicVars={};basicGosub=[];basicFors=[];basicPc=0;basicStop=false;basicRunning=true;basicRuntime(true);BSTATE.textContent='EXÉCUTION';basicClear();basicPrint('KBASIC 1.5 RUNTIME');basicPrint('RUN '+(basicFile||'PROGRAMME'));basicPrint('');
  let steps=0;
  try{
   while(basicPc<basicProg.length&&!basicStop){
