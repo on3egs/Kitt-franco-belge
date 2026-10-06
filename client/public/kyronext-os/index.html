@@ -368,10 +368,10 @@ html,body { overflow-x:hidden; }
 
 <div id="kbasicOverlay" aria-label="Kyronext KBASIC">
  <div class="kbasicShell">
-  <div class="kbasicTitle"><span id="kbasicTitle">KYRONEXT™ KBASIC 1.0</span><span class="grow"></span><span>GW/QBASIC COMPATIBLE STYLE</span><button id="kbasicClose">QUITTER</button></div>
+  <div class="kbasicTitle"><span id="kbasicTitle">KYRONEXT™ KBASIC 1.1</span><span class="grow"></span><span>GW/QBASIC COMPATIBLE STYLE</span><button id="kbasicClose">QUITTER</button></div>
   <div class="kbasicMenu"><span>FICHIER</span><span>ÉDITION</span><span>EXÉCUTER</span><span>DÉBOGUER</span><span>AIDE</span></div>
   <div class="kbasicWork"><div id="kbasicGutter">1</div><textarea id="kbasicCode" spellcheck="false" wrap="off"></textarea></div>
-  <div class="kbasicOutputWrap"><div class="kbasicOutputHead">SORTIE PROGRAMME</div><pre id="kbasicOutput">KBASIC 1.0 READY.\nOK</pre></div>
+  <div class="kbasicOutputWrap"><div class="kbasicOutputHead">SORTIE PROGRAMME</div><pre id="kbasicOutput">KBASIC 1.1 READY.\nOK</pre></div>
   <div class="kbasicStatus"><span id="kbasicPos">LIGNE 1 · COL 1</span><span id="kbasicState">PRÊT</span><span class="grow" id="kbasicFile">NONAME.KXB</span><span>F2 SAVE · F5 RUN · F6 STOP · ESC EXIT</span></div>
   <div class="kbasicButtons"><button id="kbasicKeyboard">⌨ CLAVIER KX</button><button id="kbasicSave">F2 SAUVER</button><button id="kbasicRun">F5 EXÉCUTER</button><button id="kbasicStop">F6 STOP</button><button id="kbasicNew">NOUVEAU</button><button id="kbasicExit">SYSTEM</button></div>
  </div>
@@ -816,11 +816,11 @@ function openBasic(path){
  if(!p.endsWith('.KXB'))p+='.KXB';
  if(!fs[p]){let parent=p.slice(0,p.lastIndexOf('\\\\'));if(!fs[parent]){print('Répertoire introuvable : '+parent);sfx.err();return}addFile(p,'10 PRINT "KYRONEXT KBASIC READY"\\n20 END')}
  if(fs[p].type!=='file'){print('KBASIC : destination invalide.');sfx.err();return}
- basicFile=p;BC.value=fs[p].text;BTITLE.textContent='KYRONEXT™ KBASIC 1.0 — '+p;BFILE.textContent=p.slice(p.lastIndexOf('\\\\')+1);BO.classList.add('show');basicUi();BC.focus();sfx.ok()
+ basicFile=p;BC.value=fs[p].text;BTITLE.textContent='KYRONEXT™ KBASIC 1.1 — '+p;BFILE.textContent=p.slice(p.lastIndexOf('\\\\')+1);BO.classList.add('show');basicUi();BC.focus();sfx.ok()
 }
 function closeBasic(){basicStop=true;basicRunning=false;BO.classList.remove('show');hideKb();if(tty)renderTTY();else I.focus()}
 function saveBasic(){if(!basicFile)basicFile=basicCreate('BASIC\\\\NONAME.KXB');fs[basicFile].text=BC.value;BFILE.textContent=basicFile.slice(basicFile.lastIndexOf('\\\\')+1);basicPrint('SAVED '+basicFile);sfx.ok()}
-function newBasic(){basicFile=basicCreate('BASIC\\\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.0 READY.');basicPrint('OK');basicUi();BC.focus()}
+function newBasic(){basicFile=basicCreate('BASIC\\\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.1 READY.');basicPrint('OK');basicUi();BC.focus()}
 function basicSplit(src){
  let out=[],cur='',q=false;
  for(let i=0;i<src.length;i++){let c=src[i];if(c==='"')q=!q;if(!q&&(c===';'||c===',')){out.push(cur.trim());cur='';continue}cur+=c}
@@ -830,11 +830,12 @@ function basicEval(expr,condition=false){
  let strings=[];
  let x=expr.trim().replace(/"([^"]*)"/g,(_,v)=>'__KXQ'+(strings.push(v)-1)+'__');
  x=x.replace(/\bRND\b/gi,'Math.random()').replace(/\bINT\s*\(/gi,'Math.floor(').replace(/\bABS\s*\(/gi,'Math.abs(').replace(/\bSQR\s*\(/gi,'Math.sqrt(');
- x=x.replace(/\b([A-Za-z][A-Za-z0-9_]*\$?)\b/g,(m,n)=>{
-   if(/^__KXQ\d+__$/.test(n))return n;
-   let u=n.toUpperCase();if(['MATH','RANDOM','FLOOR','ABS','SQRT','TRUE','FALSE'].includes(u))return m;
-   if(Object.prototype.hasOwnProperty.call(basicVars,u))return JSON.stringify(basicVars[u]);
-   return u.endsWith('$')?'""':'0'
+ x=x.replace(/(^|[^A-Za-z0-9_])([A-Za-z][A-Za-z0-9_]*\$?)(?=$|[^A-Za-z0-9_])/g,(m,prefix,n)=>{
+   if(/^__KXQ\d+__$/.test(n))return m;
+   let u=n.toUpperCase();
+   if(['MATH','RANDOM','FLOOR','ABS','SQRT','TRUE','FALSE'].includes(u))return prefix+n;
+   if(Object.prototype.hasOwnProperty.call(basicVars,u))return prefix+JSON.stringify(basicVars[u]);
+   return prefix+(u.endsWith('$')?'""':'0')
  });
  x=x.replace(/__KXQ(\d+)__/g,(_,i)=>JSON.stringify(strings[Number(i)]??''));
  if(condition)x=x.replace(/<>/g,'!=').replace(/(^|[^<>=!])=([^=])/g,'$1==$2');
