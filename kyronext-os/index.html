@@ -115,6 +115,31 @@ button:active{background:#450805}
 .kbasicShell.runtime #kbasicOutput{font-size:14px;line-height:1.45}
 .kbasicShell.runtime .kbasicOutputHead:after{content:"  •  PROGRAMME EN COURS";color:#69ff7b}
 .kbasicRunLamp{display:inline-block;width:7px;height:7px;border-radius:50%;background:#40100c;margin-right:5px}
+/* --- KBASIC 1.4 graphical runtime --- */
+#kbasicGameView{display:none;flex:1;min-height:0;grid-template-columns:minmax(0,2.25fr) minmax(230px,.8fr);gap:6px;padding:6px;background:#010302}
+.kbasicShell.gamevisual #kbasicGameView{display:grid}
+.kbasicShell.gamevisual .kbasicWork{display:none}
+.kbasicShell.gamevisual .kbasicOutputWrap{height:auto;flex:0 0 auto;min-height:48px}
+.kbasicShell.gamevisual #kbasicOutput{display:none}
+.wgStage{position:relative;min-width:0;min-height:0;border:1px solid #1f6f45;background:radial-gradient(circle at 50% 48%,#062815 0,#021409 48%,#000 100%);overflow:hidden}
+.wgStage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(55,255,132,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(55,255,132,.055) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
+.wgHeader{position:absolute;z-index:5;left:8px;right:8px;top:7px;display:flex;align-items:center;gap:10px;color:#8dffb1;font-size:10px;letter-spacing:1px;text-shadow:0 0 8px #1cff67}
+.wgHeader strong{font-size:13px;color:#e5ffe9}.wgHeader .grow{flex:1}.wgLive{color:#ffcb50}
+#wgMap{position:absolute;inset:28px 4px 50px;width:calc(100% - 8px);height:calc(100% - 78px)}
+.wgLand{fill:#06351c;stroke:#4dff8b;stroke-width:1.4;filter:drop-shadow(0 0 4px rgba(50,255,120,.28))}
+.wgCountry{fill:none;stroke:#1d7544;stroke-width:.8;opacity:.9}.wgLabel{fill:#54c57e;font:9px "Courier New";letter-spacing:.6px}
+.wgNode{fill:#8bffae;stroke:#eaffef;stroke-width:1;opacity:.78}.wgNode.active{fill:#ff5b46;stroke:#fff;filter:drop-shadow(0 0 7px #ff3928)}
+.wgNodeRing{fill:none;stroke:#7cff9f;stroke-width:1;opacity:.55}.wgSweep{transform-origin:430px 255px;animation:wgSweep 3.6s linear infinite}
+@keyframes wgSweep{to{transform:rotate(360deg)}}.wgPulse{animation:wgPulse .7s ease-out 2}@keyframes wgPulse{50%{r:12;opacity:.22}}
+#wgTraces line{stroke:#ff8a56;stroke-width:1.6;stroke-dasharray:7 5;animation:wgDash .7s linear infinite;filter:drop-shadow(0 0 3px #ff5b35)}@keyframes wgDash{to{stroke-dashoffset:-12}}
+#wgAlert{position:absolute;left:10px;right:10px;bottom:9px;z-index:6;min-height:32px;border:1px solid #b9472d;background:rgba(30,4,0,.86);color:#ffb18f;padding:7px 10px;font-size:11px;font-weight:900;letter-spacing:.5px;text-align:center}
+.wgPanel{min-width:0;border:1px solid #1f6f45;background:#020a05;display:flex;flex-direction:column;overflow:hidden}.wgPanelTitle{padding:7px 8px;background:#0a2d19;color:#9effb8;border-bottom:1px solid #1f6f45;font-size:11px;font-weight:900;letter-spacing:1px}
+.wgMeters{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:6px}.wgMeter{border:1px solid #174b2d;background:#010703;padding:6px;min-width:0}.wgMeter b{display:block;color:#66d98b;font-size:8px}.wgMeter span{display:block;color:#d8ffe2;font-size:19px;font-weight:900;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wgDefcon{color:#ffcb50}.wgLogHead{padding:5px 7px;border-top:1px solid #174b2d;border-bottom:1px solid #174b2d;color:#66d98b;font-size:9px}#wgLog{flex:1;min-height:68px;overflow:hidden;padding:6px 7px;color:#65ff91;font-size:10px;line-height:1.35;white-space:pre-wrap}
+#wgPrompt{padding:6px 7px;border-top:1px solid #174b2d;color:#ffcb50;font-size:10px;min-height:30px}#wgChoices{display:flex;flex-wrap:wrap;gap:5px;padding:6px;border-top:1px solid #174b2d}#wgChoices:empty{display:none}
+.wgChoice{flex:1 1 100px;min-height:40px;border:1px solid #4e9a66;background:#06160c;color:#baffc9;font:10px "Courier New";font-weight:900;cursor:pointer}.wgChoice:hover,.wgChoice:focus{background:#10391f;color:#fff;border-color:#83ffab}
+#wgExit{margin:6px;border:1px solid #ff583f;background:#290500;color:#ffd1c8;min-height:40px;font:11px "Courier New";font-weight:900;letter-spacing:1px}#wgExit:hover,#wgExit:focus{background:#5b0b02;color:#fff}
+@media(max-width:780px){#kbasicGameView{grid-template-columns:1fr;grid-template-rows:minmax(290px,1fr) auto}.wgPanel{max-height:240px}.wgMeters{grid-template-columns:repeat(4,1fr)}.wgMeter span{font-size:14px}.kbasicShell.gamevisual .kbasicOutputWrap{min-height:44px}}
 .kbasicShell.runtime .kbasicRunLamp{background:#69ff7b;box-shadow:0 0 8px #69ff7b}
 .kbasicStatus{display:flex;gap:12px;align-items:center;padding:4px 8px;background:#ff6b5d;color:#180000;font-size:10px;white-space:nowrap;overflow:hidden}
 .kbasicStatus .grow{flex:1;text-align:center}
@@ -406,10 +431,26 @@ html,body { overflow-x:hidden; }
 
 <div id="kbasicOverlay" aria-label="Kyronext KBASIC">
  <div class="kbasicShell">
-  <div class="kbasicTitle"><span id="kbasicTitle">KYRONEXT™ KBASIC 1.3</span><span class="grow"></span><span>GW/QBASIC COMPATIBLE STYLE</span><button id="kbasicClose">QUITTER</button></div>
+  <div class="kbasicTitle"><span id="kbasicTitle">KYRONEXT™ KBASIC 1.4</span><span class="grow"></span><span>GW/QBASIC COMPATIBLE STYLE</span><button id="kbasicClose">QUITTER</button></div>
   <div class="kbasicMenu"><span>FICHIER</span><span>ÉDITION</span><span>EXÉCUTER</span><span>DÉBOGUER</span><span>AIDE</span></div>
   <div class="kbasicWork"><div id="kbasicGutter">1</div><textarea id="kbasicCode" spellcheck="false" wrap="off"></textarea></div>
-  <div class="kbasicOutputWrap"><div class="kbasicOutputHead"><span class="kbasicRunLamp"></span>SORTIE PROGRAMME</div><pre id="kbasicOutput">KBASIC 1.3 READY.\nOK</pre><div id="kbasicInputRow"><span id="kbasicInputLabel">?</span><input id="kbasicInput" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></div></div>
+  <div id="kbasicGameView" aria-label="K-BASIC graphical runtime">
+   <div class="wgStage">
+    <div class="wgHeader"><strong id="wgTitle">GLOBAL THERMONUCLEAR WAR</strong><span>EUROPEAN STRATEGIC DISPLAY</span><span class="grow"></span><span class="wgLive">● LIVE</span></div>
+    <svg id="wgMap" viewBox="0 0 860 510" role="img" aria-label="Carte stratégique stylisée de l'Europe">
+     <defs><radialGradient id="wgRadarFade"><stop offset="0" stop-color="#5cff94" stop-opacity=".17"/><stop offset="1" stop-color="#5cff94" stop-opacity="0"/></radialGradient></defs>
+     <circle cx="430" cy="255" r="218" fill="url(#wgRadarFade)" stroke="#174f2e"/><circle cx="430" cy="255" r="150" class="wgNodeRing"/><circle cx="430" cy="255" r="75" class="wgNodeRing"/>
+     <g class="wgSweep"><line x1="430" y1="255" x2="430" y2="37" stroke="#6aff9b" stroke-width="2" opacity=".65"/><path d="M430 255 L410 40 A218 218 0 0 1 450 40 Z" fill="#6aff9b" opacity=".06"/></g>
+     <g id="wgEurope">
+      <path class="wgLand" d="M235 329 L201 302 L189 265 L204 231 L238 215 L273 219 L298 240 L305 275 L290 306 L263 326 Z"/><path class="wgLand" d="M287 214 L303 179 L337 165 L372 174 L397 199 L390 234 L363 260 L325 257 L302 240 Z"/><path class="wgLand" d="M399 174 L429 144 L474 146 L512 167 L522 205 L500 236 L461 248 L420 226 L397 199 Z"/><path class="wgLand" d="M513 166 L552 143 L602 154 L632 186 L623 224 L584 242 L538 229 L522 205 Z"/><path class="wgLand" d="M603 154 L650 139 L702 159 L735 194 L725 230 L682 246 L637 225 L632 186 Z"/><path class="wgLand" d="M341 152 L325 117 L336 77 L360 47 L379 59 L378 103 L367 145 Z"/><path class="wgLand" d="M388 144 L398 93 L425 47 L448 62 L447 108 L424 148 Z"/><path class="wgLand" d="M276 183 L253 159 L258 122 L278 102 L295 121 L293 160 Z"/><path class="wgLand" d="M245 171 L225 162 L221 139 L232 127 L246 143 Z"/><path class="wgLand" d="M437 250 L456 264 L467 294 L480 322 L469 355 L450 338 L443 307 L430 276 Z"/><path class="wgLand" d="M532 242 L557 251 L577 276 L570 300 L547 294 L526 270 Z"/><path class="wgLand" d="M575 244 L613 235 L647 252 L661 280 L636 306 L600 295 L571 274 Z"/>
+      <text class="wgLabel" x="218" y="279">IBERIA</text><text class="wgLabel" x="321" y="216">FRANCE</text><text class="wgLabel" x="422" y="192">CENTRAL</text><text class="wgLabel" x="553" y="190">EAST</text><text class="wgLabel" x="263" y="145">UK</text><text class="wgLabel" x="355" y="89">NORTH</text><text class="wgLabel" x="448" y="309">ITALY</text>
+     </g>
+     <g id="wgTraces"></g><g id="wgNodes"><circle class="wgNode" data-node="LONDON" cx="279" cy="161" r="4"/><circle class="wgNode" data-node="PARIS" cx="344" cy="210" r="4"/><circle class="wgNode" data-node="BRUSSELS" cx="373" cy="191" r="5"/><circle class="wgNode" data-node="BERLIN" cx="457" cy="178" r="4"/><circle class="wgNode" data-node="MADRID" cx="236" cy="278" r="4"/><circle class="wgNode" data-node="ROME" cx="462" cy="302" r="4"/><circle class="wgNode" data-node="WARSAW" cx="520" cy="185" r="4"/><circle class="wgNode" data-node="EAST-01" cx="634" cy="186" r="4"/><circle class="wgNode" data-node="NORTH-01" cx="407" cy="93" r="4"/></g>
+    </svg><div id="wgAlert">JOSHUA ONLINE — AUCUNE ALERTE ACTIVE</div>
+   </div>
+   <div class="wgPanel"><div class="wgPanelTitle">JOSHUA // STRATEGIC COMPUTER CORE</div><div class="wgMeters"><div class="wgMeter"><b>DEFCON</b><span id="wgDefcon">5</span></div><div class="wgMeter"><b>SCORE</b><span id="wgScore">0</span></div><div class="wgMeter"><b>TOUR</b><span id="wgTurn">0/6</span></div><div class="wgMeter"><b>CAMP</b><span id="wgSide">—</span></div></div><div class="wgLogHead">JOURNAL JOSHUA</div><div id="wgLog">INITIALISATION DU SYSTÈME...</div><div id="wgPrompt">EN ATTENTE DU PROGRAMME BASIC...</div><div id="wgChoices"></div><button id="wgExit" type="button">ESC / QUITTER LA PARTIE</button></div>
+  </div>
+  <div class="kbasicOutputWrap"><div class="kbasicOutputHead"><span class="kbasicRunLamp"></span>SORTIE PROGRAMME</div><pre id="kbasicOutput">KBASIC 1.4 READY.\nOK</pre><div id="kbasicInputRow"><span id="kbasicInputLabel">?</span><input id="kbasicInput" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></div></div>
   <div class="kbasicStatus"><span id="kbasicPos">LIGNE 1 · COL 1</span><span id="kbasicState">PRÊT</span><span class="grow" id="kbasicFile">NONAME.KXB</span><span>F2 SAVE · F5 RUN · F6 STOP · ESC EXIT</span></div>
   <div class="kbasicButtons"><button id="kbasicKeyboard">⌨ CLAVIER KX</button><button id="kbasicSave">F2 SAUVER</button><button id="kbasicCodeView">F4 CODE</button><button id="kbasicRun">F5 RUN</button><button id="kbasicStop">F6 STOP</button><button id="kbasicNew">NOUVEAU</button><button id="kbasicExit">SYSTEM</button></div>
  </div>
@@ -594,9 +635,9 @@ const fs={
  'K:\\KYRONEXT\\BASIC':{type:'dir',children:['HELLO.KXB','DEMO.KXB','WARGAME.KXB']},
  'K:\\KYRONEXT\\BASIC\\HELLO.KXB':{type:'file',text:'10 CLS\n20 PRINT "KYRONEXT KBASIC READY"\n30 FOR I = 1 TO 5\n40 PRINT "SCANNER "; I\n50 NEXT I\n60 PRINT "PROGRAMME TERMINE"\n70 END'},
  'K:\\KYRONEXT\\BASIC\\DEMO.KXB':{type:'file',text:'10 PRINT "KNIGHT INDUSTRIES"\n20 LET X = 4\n30 GOSUB 100\n40 IF X > 0 THEN 60\n50 END\n60 PRINT "X="; X\n70 LET X = X - 1\n80 GOTO 40\n100 PRINT "KYRONEXT BASIC DEMO"\n110 RETURN'},
- 'K:\\KYRONEXT\\BASIC\\WARGAME.KXB':{type:'file',text:'10 CLS\n20 PRINT "=================================================="\n30 PRINT "          GLOBAL THERMONUCLEAR WAR"\n40 PRINT "          JOSHUA / KYRONEXT EDITION"\n50 PRINT "=================================================="\n60 PRINT "PROGRAMME K-BASIC EXECUTABLE - SOURCE WARGAME.KXB"\n70 PRINT "OBJECTIF: EVITER L ESCALADE ET GARDER LE CONTROLE."\n80 PRINT ""\n90 RANDOMIZE TIMER\n100 INPUT "IDENTIFICATION"; N$\n110 PRINT "BONJOUR "; N$\n120 INPUT "CHOISISSEZ VOTRE CAMP 1=OUEST 2=EST"; SIDE\n130 LET DEFCON = 5\n140 LET SCORE = 0\n150 LET TURN = 1\n160 GOSUB 1000\n170 LET THREAT = INT(RND*100)\n180 IF THREAT < 24 THEN 300\n190 IF THREAT < 49 THEN 400\n200 IF THREAT < 74 THEN 500\n210 GOTO 600\n300 PRINT ""\n310 PRINT "ALERTE: TRAJECTOIRES INCONNUES DETECTEES."\n320 BEEP\n330 INPUT "1=VERIFIER 2=REPONDRE IMMEDIATEMENT"; C\n340 IF C = 1 THEN 350 ELSE 380\n350 PRINT "JOSHUA VERIFIE LES DONNEES..."\n360 SLEEP .5\n370 PRINT "FAUSSE ALERTE CONFIRMEE. +20 POINTS": LET SCORE = SCORE + 20: GOTO 700\n380 PRINT "REPONSE PREMATUREE. DEFCON AUGMENTE."\n390 LET DEFCON = DEFCON - 2: LET SCORE = SCORE - 25: GOTO 700\n400 PRINT ""\n410 PRINT "CANAL DIPLOMATIQUE PRIORITAIRE OUVERT."\n420 INPUT "1=NEGOCIER 2=COUPER LE CANAL"; C\n430 IF C = 1 THEN 440 ELSE 470\n440 PRINT "MESSAGE RECU. TENSION EN BAISSE.": LET SCORE = SCORE + 25: GOTO 700\n470 PRINT "CANAL FERME. INCERTITUDE STRATEGIQUE.": LET DEFCON = DEFCON - 1: LET SCORE = SCORE - 10: GOTO 700\n500 PRINT ""\n510 PRINT "RADAR: EXERCICE MILITAIRE NON ANNONCE."\n520 INPUT "1=OBSERVER 2=DECLARER ALERTE MAXIMALE"; C\n530 IF C = 1 THEN 540 ELSE 570\n540 PRINT "OBSERVATION MAINTENUE. AUCUN LANCEMENT.": LET SCORE = SCORE + 15: GOTO 700\n570 PRINT "ALERTE MAXIMALE DECLENCHEE.": LET DEFCON = DEFCON - 2: LET SCORE = SCORE - 20\n600 PRINT ""\n610 PRINT "JOSHUA: AUCUNE MENACE CREDIBLE CE TOUR."\n620 PRINT "CALCUL DES SCENARIOS EN COURS..."\n630 SLEEP .3\n640 LET SCORE = SCORE + 5\n700 IF DEFCON <= 1 THEN 900\n710 LET TURN = TURN + 1\n720 IF TURN <= 6 THEN 160\n730 GOTO 800\n800 CLS\n810 PRINT "=================================================="\n820 PRINT "             FIN DE PARTIE"\n830 PRINT "=================================================="\n840 PRINT "SCORE JOSHUA = "; SCORE\n850 PRINT "DEFCON FINAL = "; DEFCON\n860 IF SCORE >= 60 THEN 870 ELSE 880\n870 PRINT "RESULTAT: CRISE DESAMORCEE PAR ANALYSE ET PATIENCE.": GOTO 890\n880 PRINT "RESULTAT: EQUILIBRE FRAGILE. AUCUN GAGNANT."\n890 PRINT "JOSHUA: LA MEILLEURE STRATEGIE EST DE NE PAS JOUER.": END\n900 CLS\n910 PRINT "=================================================="\n920 PRINT "         ESCALADE THERMONUCLEAIRE"\n930 PRINT "=================================================="\n940 FOR I = 1 TO 6\n950 BEEP\n960 PRINT "ECHANGE "; I; " : DESTRUCTION MUTUELLE"\n970 SLEEP .25\n980 NEXT I\n990 PRINT "JOSHUA: AUCUN GAGNANT. PARTIE TERMINEE.": END\n1000 PRINT ""\n1010 PRINT "------ TOUR "; TURN; " / 6 ------"\n1020 PRINT "DEFCON = "; DEFCON; "   SCORE = "; SCORE\n1030 IF SIDE = 1 THEN 1040 ELSE 1060\n1040 PRINT "CAMP: OUEST": GOTO 1070\n1060 PRINT "CAMP: EST"\n1070 RETURN'},
+ 'K:\\KYRONEXT\\BASIC\\WARGAME.KXB':{type:'file',text:'10 SCREEN 1\n20 TITLE "GLOBAL THERMONUCLEAR WAR"\n30 MAP "EUROPE"\n40 CLS\n50 PRINT "JOSHUA / KYRONEXT EDITION"\n60 PRINT "K-BASIC 1.4 GRAPHICS RUNTIME"\n70 PRINT "OBJECTIF: EVITER L ESCALADE ET GARDER LE CONTROLE."\n80 RANDOMIZE TIMER\n90 INPUT "IDENTIFICATION"; N$\n100 PRINT "BONJOUR "; N$\n110 INPUT "CHOISISSEZ VOTRE CAMP 1=OUEST 2=EST"; SIDE\n120 LET DEFCON = 5\n130 LET SCORE = 0\n140 LET TURN = 1\n150 HUD "CAMP", SIDE\n160 GOSUB 1000\n170 RADAR\n180 LET THREAT = INT(RND*100)\n190 IF THREAT < 24 THEN 300\n200 IF THREAT < 49 THEN 400\n210 IF THREAT < 74 THEN 500\n220 GOTO 600\n300 ALERT "TRAJECTOIRES INCONNUES DETECTEES"\n310 BEEP\n320 INPUT "1=VERIFIER 2=REPONDRE IMMEDIATEMENT"; C\n330 IF C = 1 THEN 340 ELSE 370\n340 TRACE\n350 PRINT "JOSHUA VERIFIE LES DONNEES..."\n360 SLEEP .5: PRINT "FAUSSE ALERTE CONFIRMEE. +20 POINTS": LET SCORE = SCORE + 20: GOTO 700\n370 ALERT "REPONSE PREMATUREE - DEFCON EN BAISSE"\n380 LET DEFCON = DEFCON - 2: LET SCORE = SCORE - 25: GOTO 700\n400 ALERT "CANAL DIPLOMATIQUE PRIORITAIRE OUVERT"\n410 INPUT "1=NEGOCIER 2=COUPER LE CANAL"; C\n420 IF C = 1 THEN 430 ELSE 460\n430 PRINT "MESSAGE RECU. TENSION EN BAISSE.": LET SCORE = SCORE + 25: GOTO 700\n460 ALERT "CANAL FERME - INCERTITUDE STRATEGIQUE"\n470 LET DEFCON = DEFCON - 1: LET SCORE = SCORE - 10: GOTO 700\n500 ALERT "EXERCICE MILITAIRE NON ANNONCE DETECTE"\n510 INPUT "1=OBSERVER 2=DECLARER ALERTE MAXIMALE"; C\n520 IF C = 1 THEN 530 ELSE 560\n530 PRINT "OBSERVATION MAINTENUE. AUCUN LANCEMENT.": LET SCORE = SCORE + 15: GOTO 700\n560 ALERT "ALERTE MAXIMALE DECLENCHEE"\n570 LET DEFCON = DEFCON - 2: LET SCORE = SCORE - 20: GOTO 700\n600 PRINT "JOSHUA: AUCUNE MENACE CREDIBLE CE TOUR."\n610 SLEEP .25: LET SCORE = SCORE + 5\n700 IF DEFCON <= 1 THEN 900\n710 LET TURN = TURN + 1\n720 IF TURN <= 6 THEN 160\n730 GOTO 800\n800 ALERT "FIN DE PARTIE - ANALYSE JOSHUA"\n810 HUD "DEFCON", DEFCON\n820 HUD "SCORE", SCORE\n830 PRINT "SCORE JOSHUA = "; SCORE\n840 PRINT "DEFCON FINAL = "; DEFCON\n850 IF SCORE >= 60 THEN 860 ELSE 870\n860 PRINT "RESULTAT: CRISE DESAMORCEE PAR ANALYSE ET PATIENCE.": GOTO 880\n870 PRINT "RESULTAT: EQUILIBRE FRAGILE. AUCUN GAGNANT."\n880 ALERT "LA MEILLEURE STRATEGIE EST DE NE PAS JOUER"\n890 PRINT "JOSHUA: LA MEILLEURE STRATEGIE EST DE NE PAS JOUER.": END\n900 ALERT "ESCALADE THERMONUCLEAIRE - DESTRUCTION MUTUELLE"\n910 FOR I = 1 TO 6\n920 BEEP\n930 TRACE\n940 PRINT "ECHANGE "; I; " : DESTRUCTION MUTUELLE"\n950 SLEEP .25\n960 NEXT I\n970 PRINT "JOSHUA: AUCUN GAGNANT. PARTIE TERMINEE.": END\n1000 HUD "TOUR", TURN\n1010 HUD "DEFCON", DEFCON\n1020 HUD "SCORE", SCORE\n1030 PRINT "TOUR "; TURN; "/6  DEFCON "; DEFCON; "  SCORE "; SCORE\n1040 RETURN'},
  'K:\\KYRONEXT\\SYSTEME\\KEDIT.KXE':{type:'file',text:'PROGRAM=KEDIT\nTYPE=TEXT EDITOR\nSTYLE=MS-DOS EDIT\nSTATE=READY'},
- 'K:\\KYRONEXT\\SYSTEME\\KBASIC.KXE':{type:'file',text:'PROGRAM=KBASIC\nTYPE=STANDALONE BASIC INTERPRETER/RUNTIME\nVERSION=1.3\nINPUT=INTERNAL CONSOLE\nPERSISTENCE=LOCAL KX-FS\nSTATE=READY'},
+ 'K:\\KYRONEXT\\SYSTEME\\KBASIC.KXE':{type:'file',text:'PROGRAM=KBASIC\nTYPE=STANDALONE BASIC INTERPRETER/RUNTIME\nVERSION=1.4\nINPUT=INTERNAL CONSOLE\nGRAPHICS=EUROPE MAP/RADAR/HUD/CHOICE\nPERSISTENCE=LOCAL KX-FS\nSTATE=READY'},
  'K:\\KYRONEXT\\SYSTEME\\KNORTON.KXE':{type:'file',text:'PROGRAM=K-NORTON COMMANDER\nTYPE=DUAL-PANE FILE MANAGER\nMOUSE=ACTIVE\nKEYS=F3/F4/F5/F6/F7/F8/F10\nSTATE=READY'},
  'K:\\KYRONEXT\\SYSTEME\\SHELL.KXM':{type:'file',text:'MODULE=KYRONEXT SHELL\nDIRECT_COMMANDS=ON\nSTATE=READY'},
  'K:\\KYRONEXT\\KYRONEXT.KXK':{type:'file',text:'KYRONEXT KERNEL IMAGE\nVERSION=1.2\nMODE=EMBEDDED'},
@@ -672,7 +713,7 @@ const BASIC_STORE_KEY='kyronext.kbasic.files.v2';
 const BASIC_LEGACY_STORE_KEY='kyronext.kbasic.files.v1';
 const BASIC_STORE_DIR='K:\\KYRONEXT\\BASIC';
 const BASIC_BUILTINS=new Set(['HELLO.KXB','DEMO.KXB','WARGAME.KXB']);
-const BASIC_SYSTEM_BUILD='1.3.1';
+const BASIC_SYSTEM_BUILD='1.4.0';
 const BASIC_SYSTEM_KEY='kyronext.kbasic.systembuild';
 function restoreBasicFiles(){
  try{
@@ -896,6 +937,9 @@ function mapShellInput(text){
 }
 
 const BO=document.getElementById('kbasicOverlay'),BSH=BO.querySelector('.kbasicShell'),BC=document.getElementById('kbasicCode'),BOUT=document.getElementById('kbasicOutput'),BG=document.getElementById('kbasicGutter'),BPOS=document.getElementById('kbasicPos'),BSTATE=document.getElementById('kbasicState'),BFILE=document.getElementById('kbasicFile'),BTITLE=document.getElementById('kbasicTitle'),BINROW=document.getElementById('kbasicInputRow'),BIN=document.getElementById('kbasicInput'),BINLABEL=document.getElementById('kbasicInputLabel');
+const WGTITLE=document.getElementById('wgTitle'),WGDEF=document.getElementById('wgDefcon'),WGSCORE=document.getElementById('wgScore'),WGTURN=document.getElementById('wgTurn'),WGSIDE=document.getElementById('wgSide'),WGLOG=document.getElementById('wgLog'),WGPROMPT=document.getElementById('wgPrompt'),WGCHOICES=document.getElementById('wgChoices'),WGALERT=document.getElementById('wgAlert'),WGTRACES=document.getElementById('wgTraces');
+let basicVisual=false,wgLogLines=[];
+
 let basicVars={},basicProg=[],basicPc=0,basicGosub=[],basicFors=[],basicInputResolve=null;
 function basicInsertText(text){let st=BC.selectionStart||0,en=BC.selectionEnd||st;BC.setRangeText(text,st,en,'end');BC.dispatchEvent(new Event('input',{bubbles:true}))}
 function basicUi(){
@@ -903,12 +947,18 @@ function basicUi(){
  BPOS.textContent='LIGNE '+ln.length+' · COL '+(ln[ln.length-1].length+1);
  BG.textContent=Array.from({length:count},(_,i)=>i+1).join('\n');BG.scrollTop=BC.scrollTop
 }
-function basicPrint(x=''){BOUT.textContent+=String(x)+'\n';BOUT.scrollTop=BOUT.scrollHeight}
+function wgLog(text){if(!basicVisual)return;let t=String(text??'').trim();if(!t)return;wgLogLines.push(t);if(wgLogLines.length>11)wgLogLines=wgLogLines.slice(-11);WGLOG.textContent=wgLogLines.join('\n')}
+function basicPrint(x=''){BOUT.textContent+=String(x)+'\n';BOUT.scrollTop=BOUT.scrollHeight;wgLog(x)}
+function basicVisualSet(on=true){basicVisual=!!on;BSH.classList.toggle('gamevisual',basicVisual);if(!basicVisual){WGCHOICES.innerHTML='';WGPROMPT.textContent='EN ATTENTE DU PROGRAMME BASIC...';return}wgLogLines=[];WGLOG.textContent='INITIALISATION DU SYSTÈME...';WGALERT.textContent='JOSHUA ONLINE — AUCUNE ALERTE ACTIVE';WGDEF.textContent='5';WGSCORE.textContent='0';WGTURN.textContent='0/6';WGSIDE.textContent='—';document.querySelectorAll('#wgNodes .wgNode').forEach(n=>n.classList.remove('active'));WGTRACES.innerHTML=''}
+function basicVisualHud(key,val){let k=norm(String(key));if(k==='DEFCON')WGDEF.textContent=String(val);else if(k==='SCORE')WGSCORE.textContent=String(val);else if(k==='TOUR')WGTURN.textContent=String(val)+'/6';else if(k==='CAMP'||k==='SIDE')WGSIDE.textContent=Number(val)===1?'OUEST':Number(val)===2?'EST':String(val)}
+function basicVisualAlert(text){if(!basicVisual)basicVisualSet(true);WGALERT.textContent=String(text);wgLog('ALERTE: '+text);sfx.tick()}
+function basicVisualRadar(){if(!basicVisual)basicVisualSet(true);let nodes=[...document.querySelectorAll('#wgNodes .wgNode')];nodes.forEach(n=>n.classList.remove('active'));let n=nodes[Math.floor(Math.random()*nodes.length)];if(n){n.classList.add('active');n.classList.add('wgPulse');setTimeout(()=>n.classList.remove('wgPulse'),1500);WGALERT.textContent='RADAR: CONTACT '+(n.dataset.node||'INCONNU')}}
+function basicVisualTrace(){if(!basicVisual)basicVisualSet(true);let nodes=[...document.querySelectorAll('#wgNodes .wgNode')],a=document.querySelector('#wgNodes [data-node="BRUSSELS"]')||nodes[0],b=nodes[Math.floor(Math.random()*nodes.length)];if(!a||!b||a===b)return;let line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',a.getAttribute('cx'));line.setAttribute('y1',a.getAttribute('cy'));line.setAttribute('x2',b.getAttribute('cx'));line.setAttribute('y2',b.getAttribute('cy'));WGTRACES.appendChild(line);setTimeout(()=>line.remove(),2400)}
 function basicClear(){BOUT.textContent=''}
 function basicRuntime(on=true){BSH.classList.toggle('runtime',!!on);if(!on){BINROW.classList.remove('show');BIN.value=''}}
 function basicCancelInput(value=''){if(basicInputResolve){let r=basicInputResolve;basicInputResolve=null;BINROW.classList.remove('show');BIN.value='';r(value)}}
-function basicReadInput(label,name){return new Promise(resolve=>{basicInputResolve=resolve;BINLABEL.textContent=(label||name)+' ?';BIN.value='';BINROW.classList.add('show');requestAnimationFrame(()=>BIN.focus({preventScroll:true}))})}
-function basicSubmitInput(){if(!basicInputResolve)return;const value=BIN.value;basicPrint((BINLABEL.textContent||'?')+' '+value);let r=basicInputResolve;basicInputResolve=null;BINROW.classList.remove('show');BIN.value='';r(value)}
+function basicReadInput(label,name){return new Promise(resolve=>{basicInputResolve=resolve;let prompt=String(label||name);BINLABEL.textContent=prompt+' ?';BIN.value='';BINROW.classList.add('show');if(basicVisual){WGPROMPT.textContent=prompt;WGCHOICES.innerHTML='';let opts=[...prompt.matchAll(/(\d+)\s*=\s*([^0-9]+?)(?=\s+\d+\s*=|$)/gi)];opts.forEach(o=>{let b=document.createElement('button');b.type='button';b.className='wgChoice';b.textContent=o[1]+' · '+o[2].trim();b.dataset.value=o[1];b.addEventListener('click',()=>{BIN.value=b.dataset.value;basicSubmitInput()});WGCHOICES.appendChild(b)})}requestAnimationFrame(()=>BIN.focus({preventScroll:true}))})}
+function basicSubmitInput(){if(!basicInputResolve)return;const value=BIN.value;basicPrint((BINLABEL.textContent||'?')+' '+value);let r=basicInputResolve;basicInputResolve=null;BINROW.classList.remove('show');BIN.value='';WGCHOICES.innerHTML='';if(basicVisual)WGPROMPT.textContent='JOSHUA CALCULE...';r(value)}
 function basicCreate(path,text=''){
  let p=resolve(path);if(!fs[p])addFile(path,text);return p
 }
@@ -917,11 +967,11 @@ function openBasic(path){
  if(!p.endsWith('.KXB'))p+='.KXB';
  if(!fs[p]){let parent=p.slice(0,p.lastIndexOf('\\'));if(!fs[parent]){print('Répertoire introuvable : '+parent);sfx.err();return}addFile(p,'10 PRINT "KYRONEXT KBASIC READY"\\n20 END')}
  if(fs[p].type!=='file'){print('KBASIC : destination invalide.');sfx.err();return}
- basicCancelInput('');basicRuntime(false);basicFile=p;BC.value=fs[p].text;BTITLE.textContent='KYRONEXT™ KBASIC 1.3 — '+p;BFILE.textContent=p.slice(p.lastIndexOf('\\')+1);BO.classList.add('show');basicUi();BC.focus();sfx.ok()
+ basicCancelInput('');basicRuntime(false);basicFile=p;BC.value=fs[p].text;BTITLE.textContent='KYRONEXT™ KBASIC 1.4 — '+p;BFILE.textContent=p.slice(p.lastIndexOf('\\')+1);BO.classList.add('show');basicUi();BC.focus();sfx.ok()
 }
-function closeBasic(){basicStop=true;basicCancelInput('');basicRunning=false;basicRuntime(false);BO.classList.remove('show');hideKb();if(tty)renderTTY();else I.focus()}
+function closeBasic(){basicStop=true;basicCancelInput('');basicRunning=false;basicRuntime(false);basicVisualSet(false);BO.classList.remove('show');hideKb();if(tty)renderTTY();else I.focus()}
 function saveBasic(){if(!basicFile)basicFile=basicCreate('BASIC\\NONAME.KXB');fs[basicFile].text=BC.value;persistBasicFiles();BFILE.textContent=basicFile.slice(basicFile.lastIndexOf('\\')+1);basicPrint('SAVED '+basicFile);sfx.ok()}
-function newBasic(){basicStop=true;basicCancelInput('');basicRuntime(false);basicFile=basicCreate('BASIC\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.3 READY.');basicPrint('OK');basicUi();BC.focus()}
+function newBasic(){basicStop=true;basicCancelInput('');basicRuntime(false);basicFile=basicCreate('BASIC\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.4 READY.');basicPrint('OK');basicUi();BC.focus()}
 function basicSplit(src){
  let out=[],cur='',q=false;
  for(let i=0;i<src.length;i++){let c=src[i];if(c==='"')q=!q;if(!q&&(c===';'||c===',')){out.push(cur.trim());cur='';continue}cur+=c}
@@ -1054,6 +1104,13 @@ async function basicExec(code){
    if(!basicFors.length)throw new Error('NEXT sans FOR');let f=basicFors[basicFors.length-1];if(m[1]&&norm(m[1])!==f.v)throw new Error('NEXT variable incorrect');
    basicVars[f.v]=Number(basicVars[f.v]||0)+f.step;let keep=f.step>=0?basicVars[f.v]<=f.end:basicVars[f.v]>=f.end;if(keep)return {pc:f.pc};basicFors.pop();return null
  }
+ if((m=t.match(/^SCREEN\s+([01])$/i))){basicVisualSet(Number(m[1])===1);return null}
+ if((m=t.match(/^TITLE\s+(.+)$/i))){WGTITLE.textContent=String(basicEval(m[1]));return null}
+ if((m=t.match(/^MAP\s+(.+)$/i))){basicVisualSet(true);WGALERT.textContent='CARTE '+String(basicEval(m[1])).toUpperCase()+' CHARGÉE';return null}
+ if((m=t.match(/^HUD\s+(.+?)\s*,\s*(.+)$/i))){basicVisualHud(basicEval(m[1]),basicEval(m[2]));return null}
+ if((m=t.match(/^ALERT\s+(.+)$/i))){basicVisualAlert(basicEval(m[1]));return null}
+ if(/^RADAR$/i.test(t)){basicVisualRadar();return null}
+ if(/^TRACE$/i.test(t)){basicVisualTrace();return null}
  if(/^CLS$/i.test(t)){basicClear();return null}
  if(/^BEEP$/i.test(t)){sfx.tick();return null}
  if(/^RANDOMIZE(?:\s+TIMER)?$/i.test(t))return null;
@@ -1063,7 +1120,7 @@ async function basicExec(code){
  throw new Error('Commande inconnue : '+t)
 }
 async function runBasic(){
- if(basicRunning)return;saveBasic();parseBasic();basicVars={};basicGosub=[];basicFors=[];basicPc=0;basicStop=false;basicRunning=true;basicRuntime(true);BSTATE.textContent='EXÉCUTION';basicClear();basicPrint('KBASIC 1.3 RUNTIME');basicPrint('RUN '+(basicFile||'PROGRAMME'));basicPrint('');
+ if(basicRunning)return;saveBasic();parseBasic();basicVars={};basicGosub=[];basicFors=[];basicPc=0;basicStop=false;basicRunning=true;basicRuntime(true);BSTATE.textContent='EXÉCUTION';basicClear();basicPrint('KBASIC 1.4 RUNTIME');basicPrint('RUN '+(basicFile||'PROGRAMME'));basicPrint('');
  let steps=0;
  try{
   while(basicPc<basicProg.length&&!basicStop){
@@ -2205,20 +2262,22 @@ BC.addEventListener('keydown',e=>{
  if(e.key==='F2'){e.preventDefault();saveBasic()}
  else if(e.key==='F5'){e.preventDefault();runBasic()}
  else if(e.key==='F6'){e.preventDefault();basicStop=true;basicCancelInput('');BSTATE.textContent='ARRÊTÉ'}
- else if(e.key==='F4'){e.preventDefault();basicRuntime(false);BC.focus({preventScroll:true})}
+ else if(e.key==='F4'){e.preventDefault();basicRuntime(false);basicVisualSet(false);BC.focus({preventScroll:true})}
  else if(e.key==='Escape'){e.preventDefault();closeBasic()}
  else if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();runBasic()}
  else if(e.key==='Tab'){e.preventDefault();basicInsertText('  ')}
 });
 document.getElementById('kbasicKeyboard').addEventListener('click',()=>{BC.setAttribute('inputmode','none');BC.focus({preventScroll:true});showKb()});
 document.getElementById('kbasicSave').addEventListener('click',saveBasic);
-document.getElementById('kbasicCodeView').addEventListener('click',()=>{basicRuntime(false);BC.focus({preventScroll:true})});
+document.getElementById('kbasicCodeView').addEventListener('click',()=>{basicRuntime(false);basicVisualSet(false);BC.focus({preventScroll:true})});
 document.getElementById('kbasicRun').addEventListener('click',runBasic);
 document.getElementById('kbasicStop').addEventListener('click',()=>{basicStop=true;basicCancelInput('');BSTATE.textContent='ARRÊTÉ';sfx.err()});
 BIN.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();basicSubmitInput()}else if(e.key==='Escape'){e.preventDefault();basicStop=true;basicCancelInput('');BSTATE.textContent='ARRÊTÉ'}});
 document.getElementById('kbasicNew').addEventListener('click',newBasic);
 document.getElementById('kbasicExit').addEventListener('click',closeBasic);
 document.getElementById('kbasicClose').addEventListener('click',closeBasic);
+document.getElementById('wgExit').addEventListener('click',closeBasic);
+document.addEventListener('keydown',e=>{if(BO.classList.contains('show')&&e.key==='Escape'){e.preventDefault();e.stopPropagation();closeBasic()}},true);
 
 prompt();
 })();
