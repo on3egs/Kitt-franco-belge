@@ -259,21 +259,6 @@ function NavBar() {
             {t("nav.access")}
           </a>
           <a
-            href="https://kitt-franco-belge.be/kyronext-os/"
-            className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.6rem",
-              color: "#ff4a3d",
-              border: "1px solid #ff4a3d",
-              background: "rgba(255,40,30,0.12)",
-              boxShadow: "0 0 12px rgba(255,40,30,0.28)",
-            }}
-            onMouseEnter={() => play("hover")}
-          >
-            KIRONEX OS 1982
-          </a>
-          <a
             href="/kyronext-studio/"
             className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
             style={{
@@ -320,6 +305,35 @@ function NavBar() {
       </div>
 
       {/* Mobile menu */}
+      {/* Single persistent Kyronext OS access — visible on desktop and mobile */}
+      <a
+        href="/kyronext-os/"
+        aria-label="Accéder à Kyronext OS"
+        onMouseEnter={() => play("hover")}
+        onClick={() => play("click")}
+        style={{
+          position: "fixed",
+          right: "16px",
+          bottom: "16px",
+          zIndex: 70,
+          fontFamily: "Orbitron, monospace",
+          fontSize: "0.68rem",
+          fontWeight: 700,
+          color: "#ffffff",
+          border: "1px solid #ff2222",
+          background: "rgba(22, 0, 0, 0.94)",
+          boxShadow: "0 0 18px rgba(255,34,34,0.55), inset 0 0 10px rgba(255,34,34,0.16)",
+          padding: "11px 15px",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          textDecoration: "none",
+          whiteSpace: "nowrap",
+          backdropFilter: "blur(8px)",
+        }}
+      >
+        KYRONEXT OS
+      </a>
+
       {menuOpen && (
         <div
           className="md:hidden py-4 px-6 flex flex-col gap-4"
