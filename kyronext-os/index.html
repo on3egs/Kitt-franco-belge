@@ -376,7 +376,7 @@ html,body { overflow-x:hidden; }
     <div class="pw-knight">KNIGHT INDUSTRIES</div>
     <div class="pw-sub">KYRONEXT™ POWER CONTROL — UNITÉ 2000</div>
     <div class="pw-touch">TOUCHER POUR INITIALISER</div>
-    <div class="pw-modes"><button type="button" data-boot-mode="normal">BOOT NORMAL</button><button type="button" data-boot-mode="cinema">BOOT CINÉMA</button><button type="button" data-boot-mode="tech">BOOT TECHNIQUE</button></div>
+    <div class="pw-modes"><button type="button" data-boot-mode="normal">BOOT NORMAL · RAPIDE</button><button type="button" data-boot-mode="cinema">BOOT CINÉMA · COMPLET</button><button type="button" data-boot-mode="tech">BOOT TECHNIQUE · DÉTAILLÉ</button></div>
     <div class="pw-cr">KNIGHT INDUSTRIES 2000 · KYRONEXT™ OS · Created by Manix</div>
   </div>
   <div id="bootHud"><span id="bootPhase">INITIALISATION</span><span id="bootModeLabel">CINÉMA</span><div class="bootProgress"><div id="bootProgressFill"></div></div><span id="bootPct">0%</span><button id="bootSkip" type="button">SKIP</button></div>
@@ -1868,7 +1868,7 @@ document.addEventListener('keyup',e=>{if(!game)return;let m={ArrowLeft:'left',Ar
 
 /* ── KYRONEXT CINEMATIC BOOT CONTROLLER ── */
 let bootAbort=false,bootFinished=false,bootMode='cinema',bootMatrixRAF=0;
-function bootScale(){return bootMode==='tech'?.54:(bootMode==='normal'?.18:.28)}
+function bootScale(){return bootMode==='tech'?.72:(bootMode==='normal'?.21:.48)}
 function bootDelay(ms){return new Promise(resolve=>{if(bootAbort){resolve();return}const end=performance.now()+ms*bootScale();const tick=()=>{if(bootAbort||performance.now()>=end)resolve();else setTimeout(tick,24)};tick()})}
 function bootHud(phase,pct){const ph=document.getElementById('bootPhase'),f=document.getElementById('bootProgressFill'),p=document.getElementById('bootPct'),m=document.getElementById('bootModeLabel');if(ph)ph.textContent=phase;if(f)f.style.width=Math.max(0,Math.min(100,pct))+'%';if(p)p.textContent=Math.round(pct)+'%';if(m)m.textContent=bootMode.toUpperCase()}
 function bootFxMode(mode){const fx=document.getElementById('bootFx');if(!fx)return;fx.className='';if(mode){fx.classList.add('show',mode)}}
@@ -1882,16 +1882,16 @@ function startBootMatrix(){
 async function bootMatrixSequence(){
  if(bootAbort)return;bootHud('CYBER LINK',7);bootFxMode('matrix');startBootMatrix();const tr=document.getElementById('matrixTrace');
  const rows=['[KX-LINK] secure handshake ........ ACCEPTED','[CORE] neural address space ........ MAPPED','[CRYPT] voice matrix ............... DECRYPTED','[BUS] vehicle channel .............. ISOLATED','[NET] satellite relay .............. STANDBY','[AUTH] KNIGHT INDUSTRIES ........... VERIFIED','[ROOT] KYRONEXT kernel ............. ACCESS GRANTED'];
- let shown=[];for(let i=0;i<rows.length;i++){if(bootAbort)break;shown.push(rows[i]);tr.textContent=shown.join('\\n');bootHud('CYBER LINK',7+i*2.4);tone(620+i*55,.025,'square',.15);await bootDelay(290)}
- await bootDelay(350);stopBootMatrix();bootFxMode('')
+ let shown=[];for(let i=0;i<rows.length;i++){if(bootAbort)break;shown.push(rows[i]);tr.textContent=shown.join('\\n');bootHud('CYBER LINK',7+i*2.4);tone(620+i*55,.025,'square',.15);await bootDelay(380)}
+ if(!bootAbort){tr.textContent=shown.join('\\n')+'\\n\\n>> CYBERNETIC LINK LOCKED';bootHud('LINK LOCKED',24);await bootDelay(1050)}stopBootMatrix();bootFxMode('')
 }
 async function bootCdSequence(){
  if(bootAbort)return;bootHud('OPTICAL BOOT',58);bootFxMode('cd');const fill=document.getElementById('cdReadFill'),sec=document.getElementById('cdSector');
- for(let i=0;i<=100;i+=5){if(bootAbort)break;fill.style.width=i+'%';sec.textContent='SECTOR '+String(18432+i*337).padStart(6,'0')+' — '+(i<25?'SPIN UP':i<80?'READ TRACK 01':'VERIFY SYSTEM DISC');if(i%20===0)tone(420+i*3,.035,'square',.16);bootHud('OPTICAL BOOT',58+i*.12);await bootDelay(105)}
- await bootDelay(320);bootFxMode('')
+ for(let i=0;i<=100;i+=5){if(bootAbort)break;fill.style.width=i+'%';sec.textContent='SECTOR '+String(18432+i*337).padStart(6,'0')+' — '+(i<20?'SPINDLE 8X / FOCUS':i<70?'READ TRACK 01 / BUFFERING':i<95?'CRC VERIFY':'SYSTEM DISC READY');if(i%20===0)tone(420+i*3,.035,'square',.16);bootHud('OPTICAL BOOT',58+i*.12);await bootDelay(145)}
+ if(!bootAbort){sec.textContent='SYSTEM DISC VERIFIED — BOOT IMAGE READY';bootHud('DISC VERIFIED',72);await bootDelay(950)}bootFxMode('')
 }
 async function bootFinalSequence(){
- if(bootAbort)return;bootHud('K.I.T.T. ONLINE',96);bootFxMode('final');sfx.scan();await bootDelay(1500);bootHud('SYSTEM READY',100);await bootDelay(550);bootFxMode('')
+ if(bootAbort)return;bootHud('K.I.T.T. ONLINE',96);bootFxMode('final');sfx.scan();await bootDelay(2200);bootHud('SYSTEM READY',100);await bootDelay(1250);bootFxMode('')
 }
 function finishBoot(){
  if(bootFinished)return;bootFinished=true;stopBootMatrix();bootFxMode('');const cs=document.getElementById('coreStage');if(cs)cs.classList.remove('show','fade');const B=document.getElementById('boot');B.classList.add('hide');
@@ -2189,8 +2189,8 @@ async function powerOn(mode='cinema'){
  line('');
  line('MISE SOUS TENSION DU MICROPROCESSEUR CENTRAL...');
  await coreStageSequence();
- line('MICROPROCESSEUR CENTRAL : CHARGE 100% — CIRCUITS ALIMENTES');
- await bootDelay(380);
+ line('MICROPROCESSEUR CENTRAL : CHARGE 100% — CIRCUITS ALIMENTES');bootHud('CORE ONLINE',54);
+ await bootDelay(900);
  line('');
  await ok('STORAGE K:  KYRONEXT-HDD 32 Mo',520);
  await ok('PARITY CHECK',400);
@@ -2238,7 +2238,7 @@ async function powerOn(mode='cinema'){
  line('  CORE START ............................... OK');sfx.tick();await bootDelay(400);
  line('  AUDIO START .............................. OK');sfx.tick();await bootDelay(400);
  line('  KX-LINK START ............................ OK');sfx.tick();await bootDelay(400);
- line('  K.I.T.T. ONLINE .......................... OK');await bootDelay(560);
+ line('  K.I.T.T. ONLINE .......................... OK');bootHud('SERVICES ONLINE',92);await bootDelay(1050);
  line('');
  line('KYRONEXT OS PRET.');sfx.boot();await bootFinalSequence();if(bootAbort)return;
  finishBoot();
