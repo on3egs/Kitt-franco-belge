@@ -276,7 +276,7 @@ body.tty .screen{border:0;min-height:100vh;padding:14px;box-shadow:none}
 body.tty .promptrow{bottom:0}
 body.tty #history{font-size:clamp(14px,2vw,19px)}
 body.tty .screen:before{content:"KYRONEXT TTY 80x25  |  tape KINTERFACE pour quitter";display:block;color:#8c3e38;border-bottom:1px solid #35100d;padding-bottom:7px;margin-bottom:8px;font-size:11px}
-@media(max-width:780px){.layout{grid-template-columns:1fr}aside{display:none}.screen{min-height:70vh}main{padding:9px 9px 122px}.promptrow{bottom:70px}.brand{font-size:18px}.sub{font-size:8px}.headerRight{min-width:0;gap:7px}.scannerWrap{display:none}.kxKnightBadge{width:54px;height:44px;flex-basis:54px}}
+@media(max-width:780px){.layout{grid-template-columns:minmax(0,1fr)}main{min-width:0;padding:9px 9px 122px}.screen{width:100%;min-width:0;min-height:70vh;padding:10px}.promptrow{width:100%;min-width:0;gap:5px;bottom:70px}#history{min-width:0;overflow-wrap:anywhere}#prompt{flex:0 1 42%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#cmd{width:0;min-width:0;padding:10px 6px}.promptrow button{flex:0 0 auto;padding:9px 6px;font-size:10px}.brand{font-size:18px}.sub{font-size:8px}.headerRight{min-width:0;gap:7px}.scannerWrap{display:none}.kxKnightBadge{width:54px;height:44px;flex-basis:54px}}
 
 /* --- KYRONEXT TTY DIRECT + NEURAL KEYBOARD + GAMES --- */
 body.tty .promptrow{display:none!important}
@@ -662,7 +662,7 @@ button,#kitt-kb,#gameOverlay,#kbasicOverlay,#knortonOverlay,.bar,.quick{-webkit-
 
 <div id="gameOverlay">
  <div class="gameShell">
-  <div class="gameHead"><span id="gameTitle">KYRONEXT GAME</span><span id="gameScore">SCORE 000000</span><button id="gameExit">QUITTER</button></div>
+  <div class="gameHead"><span id="gameTitle">KYRONEXT GAME</span><span id="gameScore">SCORE 000000</span><button id="gamePause" type="button" aria-pressed="false">PAUSE</button><button id="gameExit">QUITTER</button></div>
   <canvas id="gameCanvas" width="480" height="480"></canvas>
   <div class="gameControls"><button data-gk="left">◀</button><button data-gk="up">▲</button><button data-gk="action">●</button><button data-gk="down">▼</button><button data-gk="right">▶</button></div>
   <div class="gameHelp" id="gameHelp">Flèches : déplacement · Action : tir/rotation · QUITTER : retour Kyronext</div>
@@ -1202,13 +1202,13 @@ function basicCreate(path,text=''){
 function openBasic(path){
  let target=path&&path.trim()?path:'BASIC\\NONAME.KXB',p=resolve(target);
  if(!p.endsWith('.KXB'))p+='.KXB';
- if(!fs[p]){let parent=p.slice(0,p.lastIndexOf('\\'));if(!fs[parent]){print('Répertoire introuvable : '+parent);sfx.err();return}addFile(p,'10 PRINT "KYRONEXT KBASIC READY"\\n20 END')}
+ if(!fs[p]){let parent=p.slice(0,p.lastIndexOf('\\'));if(!fs[parent]){print('Répertoire introuvable : '+parent);sfx.err();return}addFile(p,'10 PRINT "KYRONEXT KBASIC READY"\n20 END')}
  if(fs[p].type!=='file'){print('KBASIC : destination invalide.');sfx.err();return}
  basicCancelInput('');basicRuntime(false);basicFile=p;BC.value=fs[p].text;BTITLE.textContent='KYRONEXT™ KBASIC 1.5 — '+p;BFILE.textContent=p.slice(p.lastIndexOf('\\')+1);BO.classList.add('show');basicUi();BC.focus();sfx.ok()
 }
 function closeBasic(){basicStop=true;basicCancelInput('');basicRunning=false;basicRuntime(false);basicVisualSet(false);BO.classList.remove('show');hideKb();if(tty)renderTTY();else I.focus()}
 function saveBasic(){if(!basicFile)basicFile=basicCreate('BASIC\\NONAME.KXB');fs[basicFile].text=BC.value;persistBasicFiles();BFILE.textContent=basicFile.slice(basicFile.lastIndexOf('\\')+1);basicPrint('SAVED '+basicFile);sfx.ok()}
-function newBasic(){basicStop=true;basicCancelInput('');basicRuntime(false);basicFile=basicCreate('BASIC\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.5 READY.');basicPrint('OK');basicUi();BC.focus()}
+function newBasic(){basicStop=true;basicCancelInput('');basicRuntime(false);basicFile=basicCreate('BASIC\\NONAME.KXB','');BC.value='10 PRINT "KYRONEXT KBASIC READY"\n20 END';fs[basicFile].text=BC.value;basicClear();basicPrint('KBASIC 1.5 READY.');basicPrint('OK');basicUi();BC.focus()}
 function basicSplit(src){
  let out=[],cur='',q=false;
  for(let i=0;i<src.length;i++){let c=src[i];if(c==='"')q=!q;if(!q&&(c===';'||c===',')){out.push(cur.trim());cur='';continue}cur+=c}
@@ -1256,7 +1256,7 @@ function basicEval(expr,condition=false){
     .replace(/\bMID\$\s*\(/gi,'__mid(').replace(/\bSTR\$\s*\(/gi,'__str(').replace(/\bVAL\s*\(/gi,'__val(')
     .replace(/\bCHR\$\s*\(/gi,'__chr(').replace(/\bASC\s*\(/gi,'__asc(').replace(/\bUCASE\$\s*\(/gi,'__ucase(')
     .replace(/\bLCASE\$\s*\(/gi,'__lcase(');
- x=x.replace(/\^/g,'**').replace(/\bMOD\b/gi,'%').replace(/\bAND\b/gi,'&&').replace(/\bOR\b/gi,'||').replace(/\bNOT\b/gi,'!');
+ x=x.replace(/\^/g,'**').replace(/\bMOD\b/gi,'%').replace(/\bAND\b/gi,'&').replace(/\bOR\b/gi,'|').replace(/\bNOT\b/gi,'~');
  x=x.replace(/\bXOR\b/gi,'^');
  x=x.replace(/(^|[^A-Za-z0-9_])([A-Za-z][A-Za-z0-9_]*\$?)(?=$|[^A-Za-z0-9_])/g,(m,prefix,n)=>{
    if(/^__KXQ\d+__$/.test(n))return m;
@@ -1307,7 +1307,11 @@ async function basicExec(code){
  if(/^PRINT\b/i.test(t)||t.startsWith('?')){
    let body=t.startsWith('?')?t.slice(1):t.replace(/^PRINT\b/i,'');
    let out='';
-   basicPrintParts(body).forEach(part=>{if(part.expr)out+=String(basicEval(part.expr));if(part.sep===',')out+='    '});
+   let previousWasNumber=false;
+   basicPrintParts(body).forEach(part=>{
+    if(part.expr){let value=basicEval(part.expr),numeric=typeof value==='number';if(previousWasNumber&&numeric)out+=' ';out+=String(value);previousWasNumber=numeric}
+    if(part.sep===','){out+='    ';previousWasNumber=false}
+   });
    basicPrint(out);return null
  }
  if(/^LET\b/i.test(t)){if(!basicAssignment(t.replace(/^LET\b/i,'').trim()))throw new Error('LET invalide');return null}
@@ -1662,9 +1666,9 @@ function command(raw){
  if(cmd==='PWD'){print(cwd);sfx.ok();return}
  if(cmd==='TYPE'){let p=resolve(args),e=fs[p];if(e&&e.type==='file'){print(e.text);sfx.ok()}else{print('Fichier introuvable.');sfx.err()}return}
  if(cmd==='EDIT'||cmd==='CODE'){if(args)edit(args);else edit(cmd==='EDIT'?'README.KXT':'STARTUP.KXA');return}
- if(['MD','MKDIR'].includes(cmd)){if(!args){print('Syntaxe : KMD <nom>');sfx.err();return}let p=resolve(args);if(fs[p]){print('Existe déjà.');sfx.err();return}fs[p]={type:'dir',children:[]};let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);fs[parent].children.push(name);print('Répertoire créé : '+p);sfx.ok();return}
- if(['RD','RMDIR'].includes(cmd)){let p=resolve(args),e=fs[p];if(e&&e.type==='dir'&&(!e.children||!e.children.length)){let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);fs[parent].children=fs[parent].children.filter(x=>x!==name);delete fs[p];print('Répertoire supprimé.');sfx.ok()}else{print('Répertoire absent ou non vide.');sfx.err()}return}
- if(['DEL','ERASE'].includes(cmd)){let p=resolve(args),e=fs[p];if(e&&e.type==='file'){let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);fs[parent].children=fs[parent].children.filter(x=>x!==name);delete fs[p];print('Fichier supprimé.');sfx.ok()}else{print('Fichier introuvable.');sfx.err()}return}
+ if(['MD','MKDIR'].includes(cmd)){if(!args){print('Syntaxe : KMD <nom>');sfx.err();return}let p=resolve(args);if(fs[p]){print('Existe déjà.');sfx.err();return}let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);if(!fs[parent]||fs[parent].type!=='dir'){print('Répertoire parent introuvable : '+parent);sfx.err();return}fs[p]={type:'dir',children:[]};fs[parent].children.push(name);print('Répertoire créé : '+p);sfx.ok();return}
+ if(['RD','RMDIR'].includes(cmd)){let p=resolve(args),e=fs[p];if(e&&e.type==='dir'&&(!e.children||!e.children.length)){let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);if(!fs[parent]||fs[parent].type!=='dir'){print('Répertoire parent introuvable.');sfx.err();return}fs[parent].children=fs[parent].children.filter(x=>x!==name);delete fs[p];print('Répertoire supprimé.');sfx.ok()}else{print('Répertoire absent ou non vide.');sfx.err()}return}
+ if(['DEL','ERASE'].includes(cmd)){let p=resolve(args),e=fs[p];if(e&&e.type==='file'){let parent=p.slice(0,p.lastIndexOf('\\')),name=p.slice(p.lastIndexOf('\\')+1);if(!fs[parent]||fs[parent].type!=='dir'){print('Répertoire parent introuvable.');sfx.err();return}fs[parent].children=fs[parent].children.filter(x=>x!==name);delete fs[p];print('Fichier supprimé.');sfx.ok()}else{print('Fichier introuvable.');sfx.err()}return}
  if(cmd==='COPY'){if(parts.length<2){print('Syntaxe : KCOPY <source> <destination>');sfx.err();return}let s=resolve(parts[0]),d=resolve(parts[1]);if(fs[s]&&fs[s].type==='file'){fs[d]={type:'file',text:fs[s].text};let par=d.slice(0,d.lastIndexOf('\\')),name=d.slice(d.lastIndexOf('\\')+1);if(fs[par]&&!fs[par].children.includes(name))fs[par].children.push(name);print('1 fichier copié.');sfx.ok()}else{print('Source introuvable.');sfx.err()}return}
  if(['REN','RENAME'].includes(cmd)){if(parts.length<2){print('Syntaxe : KREN <source> <nouveau nom>');sfx.err();return}let s=resolve(parts[0]),par=s.slice(0,s.lastIndexOf('\\')),old=s.slice(s.lastIndexOf('\\')+1),d=par+'\\'+parts[1].toUpperCase();if(fs[s]){fs[d]=fs[s];delete fs[s];fs[par].children=fs[par].children.map(x=>x===old?parts[1].toUpperCase():x);print('Renommé.');sfx.ok()}else{print('Fichier introuvable.');sfx.err()}return}
  if(cmd==='ECHO'){print(line.replace(/^echo\s*/i,''));sfx.ok();return}
@@ -1977,18 +1981,20 @@ function gameMessage(t){GX.fillStyle='#000';GX.fillRect(0,0,GC.width,GC.height);
 function closeGame(){cancelAnimationFrame(gameRAF);game=null;GO.classList.remove('show');if(tty)showKb();else I.focus();print('Retour au système Kyronext™.');sfx.ok()}
 function launchGame(name){
  cancelAnimationFrame(gameRAF);hideKb();GO.classList.add('show');
- game={name,keys:{},score:0,over:false,last:performance.now(),acc:0};
+ game={name,keys:{},score:0,over:false,paused:false,last:performance.now(),acc:0};
+ document.getElementById('gamePause').textContent='PAUSE';document.getElementById('gamePause').setAttribute('aria-pressed','false');
  GTitle.textContent='KYRONEXT™ // '+name+'.KXE';gScore();
  if(name==='PACMAN')initPacman(); else if(name==='TETRIS')initTetris(); else if(name==='SPACEKR')initSpace(); else if(name==='TRONKR')initTron();
  gameRAF=requestAnimationFrame(gameLoop);sfx.scan()
 }
 function gameLoop(t){
  if(!game)return;let dt=Math.min(50,t-game.last);game.last=t;
- if(!game.over){if(game.name==='PACMAN')updatePacman(dt);else if(game.name==='TETRIS')updateTetris(dt);else if(game.name==='SPACEKR')updateSpace(dt);else if(game.name==='TRONKR')updateTron(dt)}
+ if(!game.over&&!game.paused){if(game.name==='PACMAN')updatePacman(dt);else if(game.name==='TETRIS')updateTetris(dt);else if(game.name==='SPACEKR')updateSpace(dt);else if(game.name==='TRONKR')updateTron(dt)}
  if(game.name==='PACMAN')drawPacman();else if(game.name==='TETRIS')drawTetris();else if(game.name==='SPACEKR')drawSpace();else if(game.name==='TRONKR')drawTron();
- gScore();gameRAF=requestAnimationFrame(gameLoop)
+ if(game.paused)gameMessage('PAUSE — P / ACTION POUR REPRENDRE');gScore();gameRAF=requestAnimationFrame(gameLoop)
 }
-function gameAction(k,on=true){if(!game)return;if(game.over&&on&&k==='action'){launchGame(game.name);return}game.keys[k]=on;if(on&&game.name==='TETRIS'&&k==='action')tRotate();if(on&&game.name==='SPACEKR'&&k==='action')spaceFire()}
+function gameAction(k,on=true){if(!game)return;if(game.over&&on&&k==='action'){launchGame(game.name);return}if(game.paused&&on&&k==='action'){toggleGamePause();return}game.keys[k]=on;if(on&&game.name==='TETRIS'&&k==='action')tRotate();if(on&&game.name==='SPACEKR'&&k==='action')spaceFire()}
+function toggleGamePause(force){if(!game||game.over)return;game.paused=typeof force==='boolean'?force:!game.paused;game.last=performance.now();document.getElementById('gamePause').textContent=game.paused?'REPRENDRE':'PAUSE';document.getElementById('gamePause').setAttribute('aria-pressed',String(game.paused));if(!game.paused)sfx.ok()}
 
 /* PAC-MAN */
 const PMAP=['###############','#.............#','#.###.###.###.#','#.............#','#.#.###.###.#.#','#.#.........#.#','#.###.#.#.###.#','#.....#.#.....#','###.#.....#.###','#...#.###.#...#','#.#.........#.#','#.###.###.###.#','#.............#','#.###.#.#.###.#','###############'];
@@ -2046,14 +2052,15 @@ document.addEventListener('selectionchange',()=>{
 });
 
 document.getElementById('gameExit').addEventListener('click',closeGame);
+document.getElementById('gamePause').addEventListener('click',()=>toggleGamePause());
 document.querySelectorAll('[data-gk]').forEach(b=>{const k=b.dataset.gk;b.addEventListener('pointerdown',e=>{e.preventDefault();gameAction(k,true)});b.addEventListener('pointerup',e=>{e.preventDefault();gameAction(k,false)});b.addEventListener('pointercancel',()=>gameAction(k,false))});
-document.addEventListener('keydown',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(e.key==='Escape'){e.preventDefault();closeGame();return}if(m[e.key]){e.preventDefault();gameAction(m[e.key],true)}});
+document.addEventListener('keydown',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(e.key==='Escape'){e.preventDefault();closeGame();return}if(e.key.toLowerCase()==='p'){e.preventDefault();if(!e.repeat)toggleGamePause();return}if(m[e.key]){e.preventDefault();gameAction(m[e.key],true)}});
 document.addEventListener('keyup',e=>{if(!game)return;let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',' ':'action'};if(m[e.key])gameAction(m[e.key],false)});
 
 
 /* ── KYRONEXT CINEMATIC BOOT CONTROLLER ── */
 let bootAbort=false,bootFinished=false,bootMode='cinema',bootMatrixRAF=0;
-function bootScale(){return bootMode==='tech'?1.02:(bootMode==='normal'?.24:.72)}
+function bootScale(){return bootMode==='tech'?1.02:(bootMode==='normal'?.12:.72)}
 function bootDelay(ms){return new Promise(resolve=>{if(bootAbort){resolve();return}const end=performance.now()+ms*bootScale();const tick=()=>{if(bootAbort||performance.now()>=end)resolve();else setTimeout(tick,24)};tick()})}
 function bootHud(phase,pct){const ph=document.getElementById('bootPhase'),f=document.getElementById('bootProgressFill'),p=document.getElementById('bootPct'),m=document.getElementById('bootModeLabel');if(ph)ph.textContent=phase;if(f)f.style.width=Math.max(0,Math.min(100,pct))+'%';if(p)p.textContent=Math.round(pct)+'%';if(m)m.textContent=bootMode.toUpperCase()}
 function bootFxMode(mode){const fx=document.getElementById('bootFx');if(!fx)return;fx.className='';if(mode){fx.classList.add('show',mode)}}

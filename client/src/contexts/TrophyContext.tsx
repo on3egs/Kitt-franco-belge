@@ -162,7 +162,7 @@ function loadUnlocked(pseudo: string | null): Set<string> {
 
 function saveUnlocked(pseudo: string, unlocked: Set<string>): void {
   try {
-    localStorage.setItem(unlockedKey(pseudo), JSON.stringify([...unlocked]));
+    localStorage.setItem(unlockedKey(pseudo), JSON.stringify(Array.from(unlocked)));
   } catch {
     // ignore
   }
