@@ -308,6 +308,11 @@ body.tty.kb-open .screen{padding-bottom:calc(var(--kitt-kb-height,222px) + 18px)
 }
 #gameOverlay button,#gameCanvas{touch-action:none!important}
 #gameCanvas{cursor:default}
+#gamePlayArea{display:flex;align-items:center;justify-content:center;gap:10px;min-height:0;flex:1;width:100%;overflow:hidden}
+#gameCanvas{margin:0;flex:none}
+#tetrisNextPanel{display:none;align-self:center;width:82px;padding:6px;border:1px solid #46100b;color:#b95b51;font-size:9px;letter-spacing:1px;text-align:center}
+#tetrisNextCanvas{display:block;width:64px;height:64px;margin:8px auto 0;image-rendering:pixelated}
+.gameShell.tetris #tetrisNextPanel{display:block}
 
 #gameOverlay.show{display:flex}
 .gameShell{width:min(760px,100%);height:min(94vh,760px);border:2px solid #7b160f;background:#050000;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(255,35,20,.22)}
@@ -663,7 +668,7 @@ button,#kitt-kb,#gameOverlay,#kbasicOverlay,#knortonOverlay,.bar,.quick{-webkit-
 <div id="gameOverlay">
  <div class="gameShell">
   <div class="gameHead"><span id="gameTitle">KYRONEXT GAME</span><span id="gameScore">SCORE 000000</span><button id="gamePause" type="button" aria-pressed="false">PAUSE</button><button id="gameExit">QUITTER</button></div>
-  <canvas id="gameCanvas" width="480" height="480"></canvas>
+  <div id="gamePlayArea"><canvas id="gameCanvas" width="480" height="480"></canvas><div id="tetrisNextPanel">SUIVANT<canvas id="tetrisNextCanvas" width="64" height="64" aria-label="Pièce suivante"></canvas></div></div>
   <div class="gameControls"><button data-gk="left">◀</button><button data-gk="up">▲</button><button data-gk="action">●</button><button data-gk="down">▼</button><button data-gk="right">▶</button></div>
   <div class="gameHelp" id="gameHelp">Flèches : déplacement · Action : tir/rotation · QUITTER : retour Kyronext</div>
  </div>
@@ -1982,6 +1987,7 @@ function closeGame(){cancelAnimationFrame(gameRAF);game=null;GO.classList.remove
 function launchGame(name){
  cancelAnimationFrame(gameRAF);hideKb();GO.classList.add('show');
  game={name,keys:{},score:0,over:false,paused:false,last:performance.now(),acc:0};
+ document.querySelector('.gameShell').classList.toggle('tetris',name==='TETRIS');
  document.getElementById('gamePause').textContent='PAUSE';document.getElementById('gamePause').setAttribute('aria-pressed','false');
  GTitle.textContent='KYRONEXT™ // '+name+'.KXE';gScore();
  if(name==='PACMAN')initPacman(); else if(name==='TETRIS')initTetris(); else if(name==='SPACEKR')initSpace(); else if(name==='TRONKR')initTron();
@@ -1998,26 +2004,27 @@ function toggleGamePause(force){if(!game||game.over)return;game.paused=typeof fo
 
 /* PAC-MAN */
 const PMAP=['###############','#.............#','#.###.###.###.#','#.............#','#.#.###.###.#.#','#.#.........#.#','#.###.#.#.###.#','#.....#.#.....#','###.#.....#.###','#...#.###.#...#','#.#.........#.#','#.###.###.###.#','#.............#','#.###.#.#.###.#','###############'];
-function initPacman(){GC.width=480;GC.height=480;GHelp.textContent='PAC-MAN — flèches pour bouger · mange tous les points';game.map=PMAP;game.p={x:1,y:1};game.ghost={x:13,y:13};game.pel=new Set();game.moveT=0;game.ghostT=0;game.lives=3;for(let y=0;y<15;y++)for(let x=0;x<15;x++)if(PMAP[y][x]==='.')game.pel.add(x+','+y)}
+function initPacman(){GC.width=480;GC.height=480;GHelp.textContent='PAC-MAN — flèches pour bouger · mange les pastilles';game.map=PMAP;game.p={x:1,y:1};game.ghost={x:13,y:13};game.pel=new Set();game.powerPellets=new Set(['1,13','13,1']);game.fright=0;game.moveT=0;game.ghostT=0;game.lives=3;for(let y=0;y<15;y++)for(let x=0;x<15;x++)if(PMAP[y][x]==='.')game.pel.add(x+','+y)}
 function pmFree(x,y){return y>=0&&y<15&&x>=0&&x<15&&game.map[y][x]!=='#'}
 function updatePacman(dt){
- game.moveT+=dt;game.ghostT+=dt;
- if(game.moveT>115){game.moveT=0;let dx=0,dy=0;if(game.keys.left)dx=-1;else if(game.keys.right)dx=1;else if(game.keys.up)dy=-1;else if(game.keys.down)dy=1;if(pmFree(game.p.x+dx,game.p.y+dy)){game.p.x+=dx;game.p.y+=dy}let key=game.p.x+','+game.p.y;if(game.pel.delete(key)){game.score+=10;sfx.tick()}}
- if(game.ghostT>210){game.ghostT=0;let dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(d=>pmFree(game.ghost.x+d[0],game.ghost.y+d[1]));dirs.sort((a,b)=>((Math.abs(game.p.x-(game.ghost.x+a[0]))+Math.abs(game.p.y-(game.ghost.y+a[1])))-(Math.abs(game.p.x-(game.ghost.x+b[0]))+Math.abs(game.p.y-(game.ghost.y+b[1]))))+(Math.random()-.5)*3);let d=dirs[0];if(d){game.ghost.x+=d[0];game.ghost.y+=d[1]}}
- if(game.p.x===game.ghost.x&&game.p.y===game.ghost.y){game.lives--;sfx.err();game.p={x:1,y:1};game.ghost={x:13,y:13};if(game.lives<=0)game.over=true}
+ game.moveT+=dt;game.ghostT+=dt;game.fright=Math.max(0,game.fright-dt);
+ if(game.moveT>115){game.moveT=0;let dx=0,dy=0;if(game.keys.left)dx=-1;else if(game.keys.right)dx=1;else if(game.keys.up)dy=-1;else if(game.keys.down)dy=1;if(pmFree(game.p.x+dx,game.p.y+dy)){game.p.x+=dx;game.p.y+=dy}let key=game.p.x+','+game.p.y;if(game.pel.delete(key)){game.score+=10;sfx.tick()}if(game.powerPellets.delete(key)){game.fright=7000;game.score+=50;sfx.scan()}}
+ if(game.ghostT>210){game.ghostT=0;let dirs=[[1,0],[-1,0],[0,1],[0,-1]].filter(d=>pmFree(game.ghost.x+d[0],game.ghost.y+d[1]));dirs.sort((a,b)=>((Math.abs(game.p.x-(game.ghost.x+a[0]))+Math.abs(game.p.y-(game.ghost.y+a[1])))-(Math.abs(game.p.x-(game.ghost.x+b[0]))+Math.abs(game.p.y-(game.ghost.y+b[1]))))*(game.fright?-1:1)+(Math.random()-.5)*3);let d=dirs[0];if(d){game.ghost.x+=d[0];game.ghost.y+=d[1]}}
+ if(game.p.x===game.ghost.x&&game.p.y===game.ghost.y){if(game.fright){game.score+=200;game.ghost={x:13,y:13};game.fright=0;sfx.scan()}else{game.lives--;sfx.err();game.p={x:1,y:1};game.ghost={x:13,y:13};if(game.lives<=0)game.over=true}}
  if(game.pel.size===0){game.score+=1000;game.over=true;sfx.scan()}
 }
-function drawPacman(){let c=32;GX.fillStyle='#000';GX.fillRect(0,0,480,480);for(let y=0;y<15;y++)for(let x=0;x<15;x++){if(game.map[y][x]==='#'){GX.strokeStyle='#932018';GX.strokeRect(x*c+2,y*c+2,c-4,c-4)}else if(game.pel.has(x+','+y)){GX.fillStyle='#ffb4a9';GX.beginPath();GX.arc(x*c+16,y*c+16,3,0,Math.PI*2);GX.fill()}}GX.fillStyle='#ffd64d';GX.beginPath();GX.arc(game.p.x*c+16,game.p.y*c+16,11,.2,Math.PI*1.8);GX.lineTo(game.p.x*c+16,game.p.y*c+16);GX.fill();GX.fillStyle='#ff3b2f';GX.beginPath();GX.arc(game.ghost.x*c+16,game.ghost.y*c+16,11,Math.PI,0);GX.lineTo(game.ghost.x*c+27,game.ghost.y*c+27);GX.lineTo(game.ghost.x*c+5,game.ghost.y*c+27);GX.fill();GX.fillStyle='#69ff7b';GX.font='12px Courier New';GX.textAlign='left';GX.fillText('VIES '+game.lives,5,476);if(game.over)gameMessage(game.pel.size===0?'SECTEUR NETTOYÉ':'GAME OVER')}
+function drawPacman(){let c=32;GX.fillStyle='#000';GX.fillRect(0,0,480,480);for(let y=0;y<15;y++)for(let x=0;x<15;x++){if(game.map[y][x]==='#'){GX.strokeStyle='#932018';GX.strokeRect(x*c+2,y*c+2,c-4,c-4)}else if(game.pel.has(x+','+y)){GX.fillStyle='#ffb4a9';GX.beginPath();GX.arc(x*c+16,y*c+16,3,0,Math.PI*2);GX.fill()}}game.powerPellets.forEach(k=>{let[x,y]=k.split(',').map(Number);GX.fillStyle='#fff2ac';GX.beginPath();GX.arc(x*c+16,y*c+16,6+Math.sin(performance.now()/120)*1.5,0,Math.PI*2);GX.fill()});GX.fillStyle='#ffd64d';GX.beginPath();GX.arc(game.p.x*c+16,game.p.y*c+16,11,.2,Math.PI*1.8);GX.lineTo(game.p.x*c+16,game.p.y*c+16);GX.fill();GX.fillStyle=game.fright?'#57d9ff':'#ff3b2f';GX.beginPath();GX.arc(game.ghost.x*c+16,game.ghost.y*c+16,11,Math.PI,0);GX.lineTo(game.ghost.x*c+27,game.ghost.y*c+27);GX.lineTo(game.ghost.x*c+5,game.ghost.y*c+27);GX.fill();GX.fillStyle='#69ff7b';GX.font='12px Courier New';GX.textAlign='left';GX.fillText('VIES '+game.lives,5,476);if(game.over)gameMessage(game.pel.size===0?'SECTEUR NETTOYÉ':'GAME OVER')}
 
 /* TETRIS */
 const TSHAPES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];
-function initTetris(){GC.width=240;GC.height=480;GHelp.textContent='TETRIS — ◀ ▶ déplacer · ▲/ACTION rotation · ▼ descendre';game.board=Array.from({length:20},()=>Array(10).fill(0));game.dropT=0;tNew()}
-function tNew(){game.piece={m:JSON.parse(JSON.stringify(TSHAPES[Math.floor(Math.random()*TSHAPES.length)])),x:3,y:0};if(tCollide(0,0,game.piece.m)){game.over=true;sfx.err()}}
+function initTetris(){GC.width=240;GC.height=480;GHelp.textContent='TETRIS — ◀ ▶ · ▲ rotation · ▼ chute · P pause';game.board=Array.from({length:20},()=>Array(10).fill(0));game.dropT=0;game.lines=0;game.level=1;game.nextShape=Math.floor(Math.random()*TSHAPES.length);tNew()}
+function drawTetrisNext(){let c=document.getElementById('tetrisNextCanvas'),x=c.getContext('2d'),m=TSHAPES[game.nextShape];x.clearRect(0,0,64,64);x.fillStyle='#090100';x.fillRect(0,0,64,64);x.fillStyle='#ff493a';let ox=(4-m[0].length)*8,oy=(4-m.length)*8;m.forEach((row,y)=>row.forEach((v,i)=>{if(v)x.fillRect(ox+i*16+1,oy+y*16+1,14,14)}))}
+function tNew(){let shape=game.nextShape??Math.floor(Math.random()*TSHAPES.length);game.piece={m:JSON.parse(JSON.stringify(TSHAPES[shape])),x:3,y:0};game.nextShape=Math.floor(Math.random()*TSHAPES.length);drawTetrisNext();if(tCollide(0,0,game.piece.m)){game.over=true;sfx.err()}}
 function tCollide(dx,dy,m){for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++)if(m[y][x]){let xx=game.piece.x+x+dx,yy=game.piece.y+y+dy;if(xx<0||xx>=10||yy>=20||(yy>=0&&game.board[yy][xx]))return true}return false}
-function tMerge(){let m=game.piece.m;for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++)if(m[y][x])game.board[game.piece.y+y][game.piece.x+x]=1;let n=0;for(let y=19;y>=0;y--)if(game.board[y].every(Boolean)){game.board.splice(y,1);game.board.unshift(Array(10).fill(0));n++;y++}if(n){game.score+=100*n*n;sfx.scan()}tNew()}
+function tMerge(){let m=game.piece.m;for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++)if(m[y][x])game.board[game.piece.y+y][game.piece.x+x]=1;let n=0;for(let y=19;y>=0;y--)if(game.board[y].every(Boolean)){game.board.splice(y,1);game.board.unshift(Array(10).fill(0));n++;y++}if(n){game.lines+=n;game.level=1+Math.floor(game.lines/10);game.score+=[0,100,300,500,800][Math.min(4,n)]*game.level;GHelp.textContent='LIGNES '+game.lines+' · NIVEAU '+game.level+' — ◀ ▶ · ▲ rotation · ▼ chute · P pause';sfx.scan()}tNew()}
 function tRotate(){if(!game||game.name!=='TETRIS'||game.over)return;let m=game.piece.m[0].map((_,i)=>game.piece.m.map(r=>r[i]).reverse());if(!tCollide(0,0,m)){game.piece.m=m;sfx.tick()}}
-function updateTetris(dt){game.dropT+=dt;if(game.keys.left&&!game.lr){if(!tCollide(-1,0,game.piece.m))game.piece.x--;game.lr=true}else if(game.keys.right&&!game.lr){if(!tCollide(1,0,game.piece.m))game.piece.x++;game.lr=true}if(!game.keys.left&&!game.keys.right)game.lr=false;let lim=game.keys.down?70:500;if(game.dropT>lim){game.dropT=0;if(!tCollide(0,1,game.piece.m))game.piece.y++;else tMerge()}}
-function drawTetris(){let c=24;GX.fillStyle='#000';GX.fillRect(0,0,240,480);GX.strokeStyle='#240604';for(let x=0;x<=10;x++){GX.beginPath();GX.moveTo(x*c,0);GX.lineTo(x*c,480);GX.stroke()}for(let y=0;y<=20;y++){GX.beginPath();GX.moveTo(0,y*c);GX.lineTo(240,y*c);GX.stroke()}GX.fillStyle='#b62a1f';for(let y=0;y<20;y++)for(let x=0;x<10;x++)if(game.board[y][x])GX.fillRect(x*c+2,y*c+2,c-4,c-4);if(!game.over){GX.fillStyle='#ff493a';let m=game.piece.m;for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++)if(m[y][x])GX.fillRect((game.piece.x+x)*c+2,(game.piece.y+y)*c+2,c-4,c-4)}if(game.over)gameMessage('GAME OVER')}
+function updateTetris(dt){game.dropT+=dt;if(game.keys.left&&!game.lr){if(!tCollide(-1,0,game.piece.m))game.piece.x--;game.lr=true}else if(game.keys.right&&!game.lr){if(!tCollide(1,0,game.piece.m))game.piece.x++;game.lr=true}if(!game.keys.left&&!game.keys.right)game.lr=false;let lim=game.keys.down?70:Math.max(90,500*Math.pow(.84,game.level-1));if(game.dropT>lim){game.dropT=0;if(!tCollide(0,1,game.piece.m))game.piece.y++;else tMerge()}}
+function drawTetris(){let c=24;GX.fillStyle='#000';GX.fillRect(0,0,240,480);GX.strokeStyle='#240604';for(let x=0;x<=10;x++){GX.beginPath();GX.moveTo(x*c,0);GX.lineTo(x*c,480);GX.stroke()}for(let y=0;y<=20;y++){GX.beginPath();GX.moveTo(0,y*c);GX.lineTo(240,y*c);GX.stroke()}GX.fillStyle='#b62a1f';for(let y=0;y<20;y++)for(let x=0;x<10;x++)if(game.board[y][x])GX.fillRect(x*c+2,y*c+2,c-4,c-4);if(!game.over){let m=game.piece.m,ghostY=game.piece.y;while(!tCollide(0,ghostY-game.piece.y+1,m))ghostY++;GX.fillStyle='rgba(255,73,58,.24)';for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++)if(m[y][x])GX.fillRect((game.piece.x+x)*c+2,(ghostY+y)*c+2,c-4,c-4);GX.fillStyle='#ff493a';for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++)if(m[y][x])GX.fillRect((game.piece.x+x)*c+2,(game.piece.y+y)*c+2,c-4,c-4)}if(game.over)gameMessage('GAME OVER')}
 
 /* SPACE KNIGHT RIDER */
 function initSpace(){GC.width=480;GC.height=480;GHelp.textContent='SPACE KNIGHT RIDER — ◀ ▶ déplacement · ACTION tir';game.ship={x:230,y:438};game.bul=[];game.eb=[];game.en=[];game.dir=1;game.fireCd=0;game.enemyFire=0;game.lives=3;for(let r=0;r<4;r++)for(let c=0;c<8;c++)game.en.push({x:55+c*48,y:55+r*38,alive:true})}
