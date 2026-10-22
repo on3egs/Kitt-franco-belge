@@ -4,7 +4,7 @@ const units = [
   ["K.A.R.R.", "01 // KARR", "KARR · ORIN NX 16GB", "https://karr.kitt-franco-belge.be", "hover_karr.mp3"],
   ["K.I.T.T.", "02 // KITT", "KITT · ORIN NANO 8GB", "https://kitt.kitt-franco-belge.be", "hover_kitt.mp3"],
   ["SUPER K.I.T.T. V3", "03 // FLAGSHIP", "AGX ORIN · NEURAL NODE", "https://kitt.kitt-franco-belge.be", "hover_kitt.mp3"],
-  ["KARR De Dadoo", "04 // DADOO", "JETSON ORIN NX · LOCAL NET", "http://192.168.129.25:3001?ai=karr_dadoo", "hover_karr.mp3"],
+  ["KARR De Dadoo", "04 // DADOO", "JETSON ORIN NX · REMOTE ACCESS", "https://karr-dadoo.kitt-franco-belge.be/?ai=karr_dadoo", "hover_karr.mp3"],
   ["K-4000", "05 // KR-95", "KIRONEX · FRANK / KR-95", "https://k4000.kitt-franco-belge.be", "hover_kitt.mp3"],
   ["K.I.T.T. PASCAL", "06 // PASCAL", "ORIN NANO 8GB · NEMOTRON", "https://kitt-pascal.kitt-franco-belge.be", "hover_kitt.mp3"],
   ["JO KNIGHT RIDER", "07 // NEURAL NODE", "KYRONEX · EN CONSTRUCTION", "#", "hover_kitt.mp3"],
