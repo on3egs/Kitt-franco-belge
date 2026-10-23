@@ -273,6 +273,8 @@ function NavBar() {
           >
             {t("nav.studio")}
           </a>
+          <a href="/sentinel/" className="text-xs text-red-400 px-2 py-2">SENTINEL</a>
+          <a href="/soutenir/" className="text-xs text-red-400 px-2 py-2">SOUTENIR</a>
         </div>
 
         {/* Mobile menu button */}
@@ -417,6 +419,8 @@ function NavBar() {
           >
             {t("nav.studio")}
           </a>
+          <a href="/sentinel/" className="text-xs text-red-400 px-2 py-2">SENTINEL</a>
+          <a href="/soutenir/" className="text-xs text-red-400 px-2 py-2">SOUTENIR</a>
         </div>
       )}
     </nav>
