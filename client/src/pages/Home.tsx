@@ -14,14 +14,17 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { toast } from "sonner";
 import LangSelector from "@/components/LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
+import SiteNavigation from "@/components/SiteNavigation";
+import SoftwareSection from "@/components/SoftwareSection";
+import { soundEnabled } from "@/hooks/useSoundEffects";
 import { getApiBase } from "@/lib/tunnel";
 
 // ─── Image Assets ─────────────────────────────────────────────────────────────
 // Kept locally in `client/public` so the hero works on GitHub Pages too.
 const HERO_BG = "/kitt-blueprint.png";
-const DASHBOARD_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_dashboard-MBu2T8YT7YQFLUit2bKW4b.webp";
-const AI_CIRCUIT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_ai_circuit-G9xZKptt82zWpuBQmQfjTS.webp";
-const SCANNER_BAR_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_scanner_bar-Aeu2AWXPNCnZyHCTLJvSVC.webp";
+const DASHBOARD_IMG = "/kitt-blueprint.png";
+const AI_CIRCUIT_IMG = "/kitt-blueprint.png";
+const SCANNER_BAR_IMG = "/site-assets/knight-rider-france.jpg";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const SERVICES = [
@@ -30,7 +33,7 @@ const SERVICES = [
     title: "Intelligence Artificielle Locale",
     subtitle: "KYRONEX A.I. System",
     description:
-      "Développement d'une IA locale expérimentale fonctionnant sur architecture Jetson AJX 32/64. Traitement autonome, sans dépendance cloud, pour une réactivité maximale.",
+      "Développement d'une IA locale expérimentale fonctionnant sur architecture Jetson AGX. Traitement autonome, sans dépendance cloud, pour une réactivité maximale.",
     icon: "🧠",
     tag: "JETSON / LOCAL",
   },
@@ -130,303 +133,6 @@ function useIntersection(ref: React.RefObject<Element | null>, threshold = 0.15)
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function NavBar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { play } = useSoundEffects();
-  const { t } = useLanguage();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const scrollTo = (id: string) => {
-    play("click");
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    setMenuOpen(false);
-  };
-
-  return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-      style={{
-        background: scrolled
-          ? "rgba(10, 0, 0, 0.95)"
-          : "transparent",
-        backdropFilter: scrolled ? "blur(10px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255, 34, 34, 0.2)" : "none",
-      }}
-    >
-      <div className="container flex items-center justify-between py-4" style={{ position: "relative" }}>
-        {/* LangSelector mobile — centré en haut */}
-        <div className="md:hidden" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", zIndex: 40 }}>
-          <LangSelector />
-        </div>
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 relative flex-shrink-0">
-            <div
-              className="w-full h-full"
-              style={{
-                background: "linear-gradient(135deg, #cc1111, #ff2222)",
-                clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-              }}
-            />
-          </div>
-          <div>
-            <div
-              className="text-white font-bold text-sm tracking-widest"
-              style={{ fontFamily: "Orbitron, monospace" }}
-            >
-              KITT
-            </div>
-            <div
-              className="text-xs tracking-widest"
-              style={{ fontFamily: "Space Mono, monospace", color: "#ff2222", fontSize: "0.55rem" }}
-            >
-              FRANCO-BELGE
-            </div>
-          </div>
-        </div>
-
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
-          {(["histoire", "services", "videos", "avis", "contact"] as const).map((id) => (
-            <button
-              key={id}
-              onClick={() => scrollTo(id)}
-              className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
-              style={{
-                fontFamily: "Space Mono, monospace",
-                color: "rgba(192, 192, 192, 0.7)",
-                fontSize: "0.65rem",
-              }}
-            >
-              {t(`nav.${id}`)}
-            </button>
-          ))}
-          <Link
-            href="/karr"
-            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.karr")}
-          </Link>
-          <Link
-            href="/soumettre"
-            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.soumettre")}
-          </Link>
-          <Link
-            href="/videos"
-            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.galerie")}
-          </Link>
-          <Link
-            href="/musique"
-            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.musique")}
-          </Link>
-          <Link
-            href="/documents"
-            className="text-xs tracking-widest uppercase transition-colors hover:text-red-500"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.docs")}
-          </Link>
-          <LangSelector />
-          <a
-            href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="kitt-btn text-xs px-4 py-2 hover:play-sound"
-            style={{ fontSize: "0.6rem" }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.access")}
-          </a>
-          <a
-            href="/kyronext-studio/"
-            className="text-xs px-4 py-2 tracking-widest uppercase transition-all hover:brightness-125"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.6rem",
-              color: "#ff2222",
-              border: "1px solid #ff2222",
-              background: "rgba(255,34,34,0.08)",
-              boxShadow: "0 0 8px rgba(255,34,34,0.2)",
-            }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.studio")}
-          </a>
-          <a href="/sentinel/" className="text-xs text-red-400 px-2 py-2">SENTINEL</a>
-          <a href="/soutenir/" className="text-xs text-red-400 px-2 py-2">SOUTENIR</a>
-        </div>
-
-        {/* Mobile menu button */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => {
-            play("hover");
-            setMenuOpen(!menuOpen);
-          }}
-        >
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="block h-0.5 w-6 transition-all duration-300"
-              style={{
-                background: "#ff2222",
-                transform:
-                  menuOpen
-                    ? i === 0
-                      ? "rotate(45deg) translate(4px, 4px)"
-                      : i === 2
-                      ? "rotate(-45deg) translate(4px, -4px)"
-                      : "opacity: 0"
-                    : "none",
-                opacity: menuOpen && i === 1 ? 0 : 1,
-              }}
-            />
-          ))}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {/* Single persistent Kyronext OS access — visible on desktop and mobile */}
-      <a
-        href="/kyronext-os/?v=9.4"
-        aria-label="Accéder à Kyronext OS"
-        onMouseEnter={() => play("hover")}
-        onClick={() => play("click")}
-        style={{
-          position: "fixed",
-          right: "16px",
-          bottom: "16px",
-          zIndex: 70,
-          fontFamily: "Orbitron, monospace",
-          fontSize: "0.68rem",
-          fontWeight: 700,
-          color: "#ffffff",
-          border: "1px solid #ff2222",
-          background: "rgba(22, 0, 0, 0.94)",
-          boxShadow: "0 0 18px rgba(255,34,34,0.55), inset 0 0 10px rgba(255,34,34,0.16)",
-          padding: "11px 15px",
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          textDecoration: "none",
-          whiteSpace: "nowrap",
-          backdropFilter: "blur(8px)",
-        }}
-      >
-        KYRONEXT OS
-      </a>
-
-      {menuOpen && (
-        <div
-          className="md:hidden py-4 px-6 flex flex-col gap-4"
-          style={{ background: "rgba(10, 0, 0, 0.98)", borderTop: "1px solid rgba(255,34,34,0.2)" }}
-        >
-          {(["histoire", "services", "videos", "avis", "contact"] as const).map((id) => (
-            <button
-              key={id}
-              onClick={() => { scrollTo(id); setMenuOpen(false); }}
-              className="text-left text-xs tracking-widest uppercase"
-              style={{ fontFamily: "Space Mono, monospace", color: "#c0c0c0" }}
-            >
-              {t(`nav.${id}`)}
-            </button>
-          ))}
-          <Link
-            href="/karr"
-            className="text-left text-xs tracking-widest uppercase"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onClick={() => setMenuOpen(false)}
-          >
-            {t("nav.karr")}
-          </Link>
-          <Link
-            href="/soumettre"
-            className="text-left text-xs tracking-widest uppercase"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onClick={() => setMenuOpen(false)}
-          >
-            {t("nav.soumettre")}
-          </Link>
-          <Link
-            href="/videos"
-            className="text-left text-xs tracking-widest uppercase"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onClick={() => setMenuOpen(false)}
-          >
-            {t("nav.galerie")}
-          </Link>
-          <Link
-            href="/musique"
-            className="text-left text-xs tracking-widest uppercase"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onClick={() => setMenuOpen(false)}
-          >
-            {t("nav.musique")}
-          </Link>
-          <Link
-            href="/documents"
-            className="text-left text-xs tracking-widest uppercase"
-            style={{ fontFamily: "Space Mono, monospace", color: "rgba(192,192,192,0.7)", fontSize: "0.65rem" }}
-            onClick={() => setMenuOpen(false)}
-          >
-            {t("nav.docs")}
-          </Link>
-          <a
-            href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="kitt-btn text-center"
-            style={{ fontSize: "0.6rem" }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.access")}
-          </a>
-          <a
-            href="/kyronext-studio/"
-            className="text-center block"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              fontSize: "0.6rem",
-              color: "#ff2222",
-              border: "1px solid #ff2222",
-              background: "rgba(255,34,34,0.08)",
-              boxShadow: "0 0 8px rgba(255,34,34,0.2)",
-              padding: "14px 22px",
-              letterSpacing: "0.12em",
-              textDecoration: "none",
-            }}
-            onMouseEnter={() => play("hover")}
-          >
-            {t("nav.studio")}
-          </a>
-          <a href="/sentinel/" className="text-xs text-red-400 px-2 py-2">SENTINEL</a>
-          <a href="/soutenir/" className="text-xs text-red-400 px-2 py-2">SOUTENIR</a>
-        </div>
-      )}
-    </nav>
-  );
-}
-
 function HeroSection() {
   const [phase, setPhase] = useState(0);
   const { play } = useSoundEffects();
@@ -441,9 +147,9 @@ function HeroSection() {
   const carScannerAnimRef = useRef<number>(0);
 
   useEffect(() => {
-    const t1 = setTimeout(() => { setPhase(1); play("glitch"); }, 300);
-    const t2 = setTimeout(() => { setPhase(2); play("boot"); }, 1200);
-    const t3 = setTimeout(() => { setPhase(3); play("scanner"); }, 2500);
+    const t1 = setTimeout(() => { setPhase(1); play("glitch"); }, 80);
+    const t2 = setTimeout(() => { setPhase(2); play("boot"); }, 220);
+    const t3 = setTimeout(() => { setPhase(3); play("scanner"); }, 450);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
@@ -494,8 +200,10 @@ function HeroSection() {
       bgScannerAnimRef.current = requestAnimationFrame(draw);
     };
 
-    draw();
-    return () => cancelAnimationFrame(bgScannerAnimRef.current);
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const refresh = () => { cancelAnimationFrame(bgScannerAnimRef.current); if (!document.hidden && !motion.matches) draw(); };
+    refresh(); document.addEventListener("visibilitychange", refresh); motion.addEventListener("change", refresh);
+    return () => { cancelAnimationFrame(bgScannerAnimRef.current); document.removeEventListener("visibilitychange", refresh); motion.removeEventListener("change", refresh); };
   }, []);
 
   // ── Scanner KITT — superposé pixel-perfect sur le scanner de la photo ────
@@ -650,11 +358,10 @@ function HeroSection() {
       carScannerAnimRef.current = requestAnimationFrame(draw);
     };
 
-    draw();
-    return () => {
-      cancelAnimationFrame(carScannerAnimRef.current);
-      window.removeEventListener("resize", resize);
-    };
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const refresh = () => { cancelAnimationFrame(carScannerAnimRef.current); if (!document.hidden && !motion.matches) draw(); };
+    refresh(); document.addEventListener("visibilitychange", refresh); motion.addEventListener("change", refresh);
+    return () => { cancelAnimationFrame(carScannerAnimRef.current); window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", refresh); motion.removeEventListener("change", refresh); };
   }, []);
 
   return (
@@ -729,8 +436,8 @@ function HeroSection() {
         }}
       >
         <div>SYS_ID: KFB-2026</div>
-        <div>ARCH: JETSON AJX 32/64</div>
-        <div>STATUS: <span style={{ color: "#ff2222" }}>ONLINE</span></div>
+        <div>ARCH: NVIDIA JETSON AGX</div>
+        <div>PORTAIL: <span style={{ color: "#ff2222" }}>KITT FRANCO-BELGE</span></div>
         <div>MEMBRES: 5.0K+</div>
       </div>
 
@@ -818,7 +525,7 @@ function HeroSection() {
           }}
         >
           <a
-            href="https://on3egs.github.io/Kitt-franco-belge/kyronex/"
+            href="/kyronex/"
             target="_blank"
             rel="noopener noreferrer"
             className="kitt-btn"
@@ -1038,7 +745,7 @@ function StorySection() {
               {[
                 [t("story.key.projet"), "KITT Franco-Belge"],
                 [t("story.key.auteur"), "KITT Franco-Belge"],
-                [t("story.key.arch"), "Jetson AJX 32/64"],
+                [t("story.key.arch"), "Jetson AGX"],
                 [t("story.key.statut"), t("story.val.statut")],
                 [t("story.key.cadre"), t("story.val.cadre")],
                 [t("story.key.licence"), t("story.val.licence")],
@@ -1682,6 +1389,7 @@ function VideosSection() {
                         <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
                           {fb ? (
                             <iframe
+                              loading="lazy"
                               src={getFbEmbedHome(v.url)}
                               title="Facebook video"
                               allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
@@ -1690,6 +1398,7 @@ function VideosSection() {
                             />
                           ) : (
                             <iframe
+                              loading="lazy"
                               src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
                               title="YouTube video"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1814,6 +1523,7 @@ function VideosSection() {
                 {/* Video player */}
                 {active === v.id ? (
                   <iframe
+                              loading="lazy"
                     src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
                     title={v.title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -2038,7 +1748,7 @@ function ContactSection() {
                   icon: "🌐",
                   label: "INTERFACE KITT",
                   value: "on3egs.github.io/Kitt-franco-belge",
-                  href: "https://on3egs.github.io/Kitt-franco-belge/kyronex/",
+                  href: "/kyronex/",
                 },
                 {
                   icon: "🔑",
@@ -2214,6 +1924,7 @@ function ContactSection() {
 }
 
 function Footer() {
+  const { play: playSound } = useSoundEffects();
   const { t } = useLanguage();
   return (
     <footer
@@ -2254,7 +1965,6 @@ function Footer() {
                 { label: t("footer.nav.3"), id: "avis" },
                 { label: t("footer.nav.4"), id: "contact" },
               ].map(({ label, id }) => {
-                const { play: playSound } = useSoundEffects();
                 return (
                   <button
                     key={id}
@@ -2278,7 +1988,7 @@ function Footer() {
             <div className="section-label mb-4">{t("footer.external")}</div>
             <div className="space-y-2">
               {[
-                { label: t("footer.ext.1"), href: "https://on3egs.github.io/Kitt-franco-belge/kyronex/" },
+                { label: t("footer.ext.1"), href: "/kyronex/" },
                 { label: t("footer.ext.2"), href: "https://www.facebook.com/groups/757797724622219/" },
                 { label: t("footer.ext.3"), href: "https://www.youtube.com/@KITTK2000" },
               ].map(({ label, href }) => (
@@ -2489,7 +2199,7 @@ function SubscribePopup() {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 max-w-xs w-full"
+      className="subscribe-popup fixed bottom-6 right-6 z-50 max-w-xs w-full"
       style={{
         background: "rgba(10,0,0,0.97)",
         border: "1px solid #ff2222",
@@ -2505,6 +2215,7 @@ function SubscribePopup() {
       <div className="p-4">
         <button
           onClick={() => { setDismissed(true); sessionStorage.setItem("kitt_sub_popup","1"); }}
+          aria-label="Fermer la suggestion YouTube"
           className="absolute top-3 right-3"
           style={{ color: "rgba(192,192,192,0.4)", fontSize: "1rem", lineHeight: 1, background: "none", border: "none", cursor: "pointer" }}
         >✕</button>
@@ -2544,18 +2255,14 @@ function SubscribePopup() {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 // ─── Welcome Voice KITT (Manix | Kyronext Studio) ───────────────────────────────────────
-const WELCOME_AUDIO: Record<string, string> = {
-  fr: "/assets/welcome_fr.wav",
-  en: "/assets/welcome_en.wav",
-  nl: "/assets/welcome_nl.wav",
-  de: "/assets/welcome_de.wav",
-};
+const WELCOME_AUDIO: Record<string, string> = { fr: "/site-assets/welcome-fr.wav" };
 
 function useWelcomeVoice() {
   useEffect(() => {
     if (sessionStorage.getItem("kitt_welcomed")) return;
     const lang = (navigator.language || "fr").toLowerCase().slice(0, 2);
-    const src = WELCOME_AUDIO[lang] || WELCOME_AUDIO["fr"];
+    const src = WELCOME_AUDIO[lang];
+    if (!src) return;
 
     // Pré-charger le fichier audio immédiatement
     const audio = new Audio(src);
@@ -2564,16 +2271,16 @@ function useWelcomeVoice() {
 
     // Déclencher au premier clic/toucher utilisateur (contourne l'autoplay policy)
     function playOnce() {
-      audio.play().catch(() => {});
-      sessionStorage.setItem("kitt_welcomed", "1");
+      if (!soundEnabled()) return;
+      audio.play().then(() => sessionStorage.setItem("kitt_welcomed", "1")).catch(() => {});
       document.removeEventListener("click", playOnce);
     }
 
     document.addEventListener("click", playOnce, { once: true });
 
-    return () => {
-      document.removeEventListener("click", playOnce);
-    };
+    const mute = () => { if (!soundEnabled()) audio.pause(); };
+    window.addEventListener("kitt-sound-change", mute);
+    return () => { audio.pause(); document.removeEventListener("click", playOnce); window.removeEventListener("kitt-sound-change", mute); };
   }, []);
 }
 
@@ -2581,8 +2288,10 @@ export default function Home() {
   useWelcomeVoice();
   return (
     <div className="min-h-screen" style={{ background: "#0a0000" }}>
-      <NavBar />
+      <SiteNavigation />
+      <main id="main-content" tabIndex={-1}>
       <HeroSection />
+      <SoftwareSection />
       <VisitorCounter />
       <StorySection />
       <ServicesSection />
@@ -2590,6 +2299,7 @@ export default function Home() {
       <VideosSection />
       <SocialProofSection />
       <ContactSection />
+      </main>
       <Footer />
       <SubscribePopup />
     </div>

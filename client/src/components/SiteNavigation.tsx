@@ -1,0 +1,50 @@
+import { useEffect, useRef, useState } from "react";
+import { Menu, X, ArrowUpRight, Search } from "lucide-react";
+import LangSelector from "./LangSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+export const SITE_LINKS = [
+  { href: "/#histoire", label: "Le projet", detail: "L’histoire de KITT Franco-Belge" },
+  { href: "/#services", label: "Technologies", detail: "IA locale, électronique et répliques" },
+  { href: "/videos", label: "Vidéos", detail: "La galerie de la communauté" },
+  { href: "/musique", label: "Musique", detail: "Écouter les créations partagées" },
+  { href: "/documents", label: "Documents", detail: "Documentation et ressources PDF" },
+  { href: "/kyronext-studio/", label: "Kyronext Studio", detail: "Lecteur Hi-Fi et téléchargements · Windows" },
+  { href: "/sentinel/", label: "KITT Sentinel", detail: "Supervision de vos Jetson · Windows" },
+  { href: "/karr", label: "KARR", detail: "Découvrir l’univers KARR" },
+  { href: "/soumettre", label: "Participer", detail: "Partager une vidéo avec la communauté" },
+  { href: "/soutenir/", label: "Soutenir", detail: "Aider le projet à avancer" },
+  { href: "/#contact", label: "Contact", detail: "Échanger avec KITT Franco-Belge" },
+];
+
+export default function SiteNavigation() {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLElement>(null);
+  const toggle = useRef<HTMLButtonElement>(null);
+  const { t } = useLanguage();
+  useEffect(() => {
+    if (!open) return;
+    const escape = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); toggle.current?.focus(); } };
+    const outside = (e: PointerEvent) => { if (!root.current?.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("keydown", escape);
+    document.addEventListener("pointerdown", outside);
+    return () => { document.removeEventListener("keydown", escape); document.removeEventListener("pointerdown", outside); };
+  }, [open]);
+  return <header className="site-header" ref={root}>
+    <a className="site-brand" href="/" aria-label="KITT Franco-Belge — accueil"><span className="brand-led" aria-hidden="true" /><span>KITT <small>FRANCO-BELGE</small></span></a>
+    <nav className="site-desktop-links" aria-label="Navigation principale">
+      <a href="#histoire">{t("nav.histoire")}</a><a href="/videos">{t("nav.videos")}</a><a href="/musique">{t("nav.musique")}</a><a href="#logiciels">Logiciels</a><a href="#contact">{t("nav.contact")}</a>
+    </nav>
+    <div className="site-header-actions">
+      <button className="site-icon-button nav-search" onClick={() => window.dispatchEvent(new Event("kitt-open-search"))} aria-label="Rechercher dans le site"><Search size={18}/></button>
+      <LangSelector />
+      <a className="site-access" href="/kyronex/">{t("nav.access")} <ArrowUpRight size={15}/></a>
+      <button ref={toggle} className="site-icon-button" aria-label={open ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={open} aria-controls="site-menu" onClick={() => setOpen(!open)}>{open ? <X size={20}/> : <Menu size={20}/>}</button>
+    </div>
+    {open && <nav id="site-menu" className="site-mega-menu" aria-label="Toutes les rubriques">
+      <div className="site-menu-heading">EXPLOREZ L’UNIVERS KITT <span>KYRONEXT SYSTEM BY MANIX</span></div>
+      <div className="site-menu-grid">{SITE_LINKS.map(link => <a href={link.href} key={link.href} onClick={() => setOpen(false)}><span>{link.label} <ArrowUpRight size={15}/></span><small>{link.detail}</small></a>)}</div>
+      <a className="site-partner" href="https://kyronext.eu" target="_blank" rel="noopener noreferrer">Kyronext.eu <ArrowUpRight size={15}/> <small>IA, robotique et électronique</small></a>
+    </nav>}
+  </header>;
+}

@@ -1,0 +1,1 @@
+document.querySelectorAll('[data-copy]').forEach(button=>button.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(button.dataset.copy);button.textContent='Empreinte copiée';}catch{button.textContent='Sélectionnez et copiez l’empreinte ci-dessus';}}));

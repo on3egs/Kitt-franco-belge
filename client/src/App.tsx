@@ -1,3 +1,6 @@
+import { lazy, Suspense } from "react";
+import SiteTools from "./components/SiteTools";
+import "./site-polish.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -10,26 +13,28 @@ import { TrophyProvider, useTrophies } from "./contexts/TrophyContext";
 import { FolderProvider } from "./contexts/FolderContext";
 import TrophyNotification from "./components/TrophyNotification";
 import Home from "./pages/Home";
-import Privacy from "./pages/Privacy";
-import DataDeletion from "./pages/DataDeletion";
-import Karr from "./pages/Karr";
-import Manix from "./pages/Manix";
-import Soumettre from "./pages/Soumettre";
-import AdminVideos from "./pages/AdminVideos";
-import Videos from "./pages/Videos";
-import Musique from "./pages/Musique";
-import SoumettreMusique from "./pages/SoumettreMusique";
-import AdminMusique from "./pages/AdminMusique";
-import Pdfs from "./pages/Pdfs";
-import SoumettrePdf from "./pages/SoumettrePdf";
-import AdminPdfs from "./pages/AdminPdfs";
-import Admin from "./pages/Admin";
-import MentionsLegales from "./pages/MentionsLegales";
-import KyronexDashboard from "./pages/KyronexDashboard";
+const Privacy = lazy(() => import("./pages/Privacy"));
+const DataDeletion = lazy(() => import("./pages/DataDeletion"));
+const Karr = lazy(() => import("./pages/Karr"));
+const Manix = lazy(() => import("./pages/Manix"));
+const Soumettre = lazy(() => import("./pages/Soumettre"));
+const AdminVideos = lazy(() => import("./pages/AdminVideos"));
+const Videos = lazy(() => import("./pages/Videos"));
+const Musique = lazy(() => import("./pages/Musique"));
+const SoumettreMusique = lazy(() => import("./pages/SoumettreMusique"));
+const AdminMusique = lazy(() => import("./pages/AdminMusique"));
+const Pdfs = lazy(() => import("./pages/Pdfs"));
+const SoumettrePdf = lazy(() => import("./pages/SoumettrePdf"));
+const AdminPdfs = lazy(() => import("./pages/AdminPdfs"));
+const Admin = lazy(() => import("./pages/Admin"));
+const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
+const KyronexDashboard = lazy(() => import("./pages/KyronexDashboard"));
 
 function AppRouter() {
   return (
     <Router base={import.meta.env.BASE_URL}>
+      <SiteTools />
+      <Suspense fallback={<div role="status" className="route-loading">Chargement de l’interface…</div>}>
       <Switch>
         <Route path={"/"} component={Home} />
         <Route path={"/privacy"} component={Privacy} />
@@ -51,6 +56,7 @@ function AppRouter() {
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
+      </Suspense>
     </Router>
   );
 }

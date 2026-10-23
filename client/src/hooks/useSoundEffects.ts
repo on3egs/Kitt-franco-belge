@@ -1,46 +1,26 @@
-/*
- * useSoundEffects — Hook pour gérer les effets sonores futuristes KITT
- * Sons discrets et immersifs sans être envahissants
- */
-
-import { useEffect, useRef } from "react";
-
-// URLs CDN des SFX
-const SFX_URLS = {
-  scanner: "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_sfx_scanner_beep_1f0790ec.wav",
-  boot: "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_sfx_boot_d1374749.wav",
-  hover: "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_sfx_hover_6e47479f.wav",
-  click: "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_sfx_click_3621201c.wav",
-  glitch: "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_sfx_glitch_f8d376d1.wav",
-  notification: "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_sfx_notification_1a5e666e.wav",
-  ambient: "https://d2xsxph8kpxj0f.cloudfront.net/310519663464451480/29pRsRx59VejicpTpZcwq3/kitt_sfx_ambient_hum_1d14a67a.wav",
-};
-
+// Local synthesis avoids broken remote audio and duplicate downloads.
+const sounds = { scanner:[840,1040,.12], boot:[180,680,.3], hover:[600,620,.035], click:[420,700,.06], glitch:[180,80,.1], notification:[520,920,.18], ambient:[90,120,.2] } as const;
+let context: AudioContext | undefined;
+let lastHover = 0;
+const active = new Set<OscillatorNode>();
+export function soundEnabled() { try { return localStorage.getItem("kitt-sound") !== "off"; } catch { return true; } }
+window.addEventListener("kitt-sound-change", () => { if (!soundEnabled()) { active.forEach(o => { try { o.stop(); } catch {} }); active.clear(); } });
 export function useSoundEffects() {
-  const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
-  const ambientRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    // Pré-charger tous les SFX
-    Object.entries(SFX_URLS).forEach(([key, url]) => {
-      const audio = new Audio(url);
-      audio.preload = "auto";
-      audio.volume = 0.3; // Volume discret
-      audioRefs.current[key] = audio;
-    });
-
-    return () => {};
-  }, []);
-
-  const play = (soundKey: keyof typeof SFX_URLS) => {
-    const audio = audioRefs.current[soundKey];
-    if (audio) {
-      audio.currentTime = 0;
-      audio.play().catch(() => {
-        // Silencieusement ignorer les erreurs de lecture
-      });
-    }
-  };
-
-  return { play };
+ const play = (key: keyof typeof sounds) => {
+  if (!soundEnabled() || document.hidden) return;
+  if (key === "hover") { if (Date.now()-lastHover < 120) return; lastHover=Date.now(); }
+  try {
+   context ??= new AudioContext(); const ctx=context;
+   void ctx.resume().then(() => {
+    if (!soundEnabled() || document.hidden) return;
+    const [from,to,duration]=sounds[key], now=ctx.currentTime;
+    const oscillator=ctx.createOscillator(), gain=ctx.createGain();
+    oscillator.type="sine"; oscillator.frequency.setValueAtTime(from,now); oscillator.frequency.exponentialRampToValueAtTime(to,now+duration);
+    gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(.045,now+.008);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+    oscillator.connect(gain);gain.connect(ctx.destination);active.add(oscillator);
+    oscillator.onended=()=>{active.delete(oscillator);oscillator.disconnect();gain.disconnect();};
+    oscillator.start(now);oscillator.stop(now+duration+.01);
+   }).catch(()=>{});
+  } catch { /* Audio support must not block navigation. */ }
+ };return {play};
 }

@@ -67,9 +67,17 @@ export default function KittScanner({ height = 8, className = "", color = { r: 2
       animRef.current = requestAnimationFrame(draw);
     };
 
-    draw();
-    return () => cancelAnimationFrame(animRef.current);
-  }, []);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const refresh = () => {
+      cancelAnimationFrame(animRef.current);
+      if (document.hidden || reduced.matches) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
+      draw();
+    };
+    refresh();
+    document.addEventListener("visibilitychange", refresh);
+    reduced.addEventListener("change", refresh);
+    return () => { cancelAnimationFrame(animRef.current); document.removeEventListener("visibilitychange", refresh); reduced.removeEventListener("change", refresh); };
+  }, [height, color.r, color.g, color.b]);
 
   return (
     <canvas
