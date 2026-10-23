@@ -1,16 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Redirection — KITT Franco-Belge</title>
 <script>
+(function () {
   var l = window.location;
-  l.replace(
-    l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-    l.pathname.split('/').slice(0, 2).join('/') +
-    '/?p=/' + l.pathname.slice(1).split('/').slice(1).join('/').replace(/&/g, '~and~') +
-    (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-    l.hash
-  );
-</script>
-</head>
-<body></body>
-</html>
+  var base = l.hostname.endsWith('github.io') && l.pathname.indexOf('/Kitt-franco-belge/') === 0 ? '/Kitt-franco-belge' : '';
+  var route = l.pathname.slice(base.length);
+  l.replace(l.origin + base + '/?p=' + encodeURIComponent(route) +
+    (l.search ? '&q=' + encodeURIComponent(l.search.slice(1)) : '') + l.hash);
+})();
+</script></head><body style="margin:0;background:#0b080e;color:#eee;font:18px system-ui;padding:40px"><p>Ouverture de l’interface KITT…</p><a style="color:#ff7777" href="/">Revenir à l’accueil</a></body></html>

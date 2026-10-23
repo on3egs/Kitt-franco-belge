@@ -24,15 +24,15 @@
   <body>
     <script>
       (function(l) {
-        if (l.search[1] === 'p') {
-          var decoded = l.search.slice(1).split('&').map(function(s) {
-            return s.replace(/~and~/g, '&');
-          }).join('?');
-          window.history.replaceState(null, null,
-            l.pathname.split('/').slice(0, -1).join('/') + '/' +
-            decoded.replace(/^p=\//, '').replace(/^q=/, '?') + l.hash
-          );
-        }
+        var params = new URLSearchParams(l.search);
+        if (!params.has('p')) return;
+        var route = params.get('p') || '/';
+        var query = params.get('q') || '';
+        var base = l.pathname.replace(/\/$/, '');
+        var target = new URL(base + route.replace(/~and~/g, '&'), l.origin);
+        if (target.origin !== l.origin) return;
+        window.history.replaceState(null, null, target.pathname +
+          (query ? '?' + query.replace(/~and~/g, '&') : '') + l.hash);
       }(window.location));
     </script>
     <div id="root"></div>

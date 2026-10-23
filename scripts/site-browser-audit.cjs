@@ -18,16 +18,16 @@ const path = require('path');
  await page.screenshot({path:path.join(output,'search-desktop.png')});await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});
  await page.getByRole('button',{name:'Couper les sons du site',exact:true}).click();
  if(await page.evaluate(()=>localStorage.getItem('kitt-sound'))!=='off')throw Error('Sound preference not persisted');
- await page.reload();await page.getByRole('button',{name:'Activer les sons du site',exact:true}).waitFor();
+ await page.reload({waitUntil:"domcontentloaded"});await page.getByRole('button',{name:'Activer les sons du site',exact:true}).waitFor();
  await page.locator('#logiciels').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(output,'software-desktop.png')});
  for(const width of [390,320,768]){
-  await page.setViewportSize({width,height:900});await page.goto(root);await page.waitForTimeout(3000);
+  await page.setViewportSize({width,height:900});await page.goto(root,{waitUntil:"domcontentloaded"});await page.waitForTimeout(3000);
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);if(overflow)throw Error('Home overflow '+width);
   await page.screenshot({path:path.join(output,'home-'+width+'.png')});
   await page.getByRole('button',{name:'Ouvrir le menu',exact:true}).click();await page.screenshot({path:path.join(output,'menu-'+width+'.png')});await page.keyboard.press('Escape');
  }
  for(const route of ['/kyronext-studio/','/sentinel/','/soutenir/','/videos','/musique','/documents','/missing-test-route']){
-  await page.setViewportSize({width:390,height:900});const response=await page.goto(root+route);await page.waitForTimeout(2200);
+  await page.setViewportSize({width:390,height:900});const response=await page.goto(root+route,{waitUntil:"domcontentloaded"});await page.waitForTimeout(2200);
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);if(overflow)throw Error('Overflow '+route);
   await page.screenshot({path:path.join(output,route.replace(/\W/g,'')+'-mobile.png')});
   console.log('ROUTE',route,response.status());
