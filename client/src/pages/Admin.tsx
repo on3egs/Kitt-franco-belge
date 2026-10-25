@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { getApiBase } from "@/lib/tunnel";
 
-const ADMIN_TOKEN = "8c03437292a68baec2fd5374c6adb4d0ddcfc2aade2407fdee2d4f024e423ef3";
-const EXPECTED_PWD = "Microsoft198@";
 
 interface VideoEntry { id: string; url: string; pseudo: string; message: string; ts: number; views?: number; }
 interface MusicEntry { id: string; url: string; titre: string; artiste: string; pseudo: string; message: string; ts: number; plays?: number; }
@@ -14,6 +12,7 @@ type Tab = "videos" | "musique" | "pdfs";
 export default function Admin() {
   const [authed, setAuthed] = useState(false);
   const [pwd, setPwd] = useState("");
+  const [apiToken, setApiToken] = useState("");
   const [pwdError, setPwdError] = useState(false);
   const [tab, setTab] = useState<Tab>("videos");
 
@@ -32,8 +31,12 @@ export default function Admin() {
 
   function login(e: React.FormEvent) {
     e.preventDefault();
-    if (pwd === EXPECTED_PWD) { setAuthed(true); setPwdError(false); }
-    else setPwdError(true);
+    const token = pwd.trim();
+    if (!token) { setPwdError(true); return; }
+    setApiToken(token);
+    setPwd("");
+    setPwdError(false);
+    setAuthed(true);
   }
 
   useEffect(() => {
@@ -43,7 +46,7 @@ export default function Admin() {
       setApiBase(base);
       if (!base) { setOffline(true); setLoading(false); return; }
 
-      const headers = { "X-Admin-Token": ADMIN_TOKEN };
+      const headers = { "X-Admin-Token": apiToken };
       try {
         const [vRes, mRes, pRes] = await Promise.all([
           fetch(`${base}/api/videos/pending`, { headers }).then(r => r.json()).catch(() => ({})),
@@ -59,7 +62,7 @@ export default function Admin() {
       } catch { setOffline(true); }
       setLoading(false);
     });
-  }, [authed]);
+  }, [authed, apiToken]);
 
   async function decide(type: "videos" | "music" | "pdfs", id: string, action: "approve" | "reject" | "delete") {
     if (!apiBase) return;
@@ -68,7 +71,7 @@ export default function Admin() {
     try {
       await fetch(`${apiBase}/api/${endpoint}/decide`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Token": ADMIN_TOKEN },
+        headers: { "Content-Type": "application/json", "X-Admin-Token": apiToken },
         body: JSON.stringify({ id, action }),
       });
       if (type === "videos") {
@@ -111,10 +114,10 @@ export default function Admin() {
           <form onSubmit={login} className="space-y-4">
             <input
               type="password" value={pwd} onChange={e => setPwd(e.target.value)}
-              placeholder="Mot de passe" autoFocus
+              placeholder="Clé d’accès administrateur" autoFocus
               style={{ width: "100%", background: "#0d0000", border: `1px solid ${pwdError ? "#ff2222" : "#660000"}`, padding: "14px 16px", color: "#ffffff", fontFamily: "Space Mono, monospace", fontSize: "0.8rem", outline: "none" }}
             />
-            {pwdError && <p style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "#ff4444" }}>[ERREUR] Mot de passe incorrect</p>}
+            {pwdError && <p style={{ fontFamily: "Space Mono, monospace", fontSize: "0.6rem", color: "#ff4444" }}>[ACCÈS REFUSÉ] Clé rejetée par le serveur</p>}
             <button type="submit" className="w-full py-4"
               style={{ background: "#ff2222", border: "none", fontFamily: "Orbitron, monospace", fontSize: "0.75rem", letterSpacing: "0.2em", color: "#ffffff", cursor: "pointer" }}>
               ▶ ACCÉDER
