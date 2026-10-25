@@ -12,6 +12,7 @@ export const SITE_LINKS = [
   { href: "/kyronext-studio/", label: "Kyronext Studio", detail: "Lecteur Hi-Fi et téléchargements · Windows" },
   { href: "/sentinel/", label: "KITT Sentinel", detail: "Supervision de vos Jetson · Windows" },
   { href: "/field-vault/", label: "KYRONEXT Field Vault", detail: "Ressources de terrain hors ligne · bêta" },
+  { href: "/guide-logiciels/", label: "Catalogue et aide", detail: "Mode d’emploi interactif et téléchargements" },
   { href: "https://kyronext.eu/dub-studio/", label: "KYRONEXT DUB Studio", detail: "Traduction vidéo et voix par interlocuteur · bêta" },
   { href: "https://kyronext.eu/video-studio/", label: "KYRONEXT Video Studio", detail: "Génération vidéo à partir de photos et de texte" },
   { href: "/karr", label: "KARR", detail: "Découvrir l’univers KARR" },
@@ -36,7 +37,7 @@ export default function SiteNavigation() {
   return <header className="site-header" ref={root}>
     <a className="site-brand" href="/" aria-label="KITT Franco-Belge — accueil"><span className="brand-led" aria-hidden="true" /><span>KITT <small>FRANCO-BELGE</small></span></a>
     <nav className="site-desktop-links" aria-label="Navigation principale">
-      <a href="#histoire">{t("nav.histoire")}</a><a href="/videos">{t("nav.videos")}</a><a href="/musique">{t("nav.musique")}</a><a href="#logiciels">Logiciels</a><a href="#contact">{t("nav.contact")}</a>
+      <a href="#histoire">{t("nav.histoire")}</a><a href="/videos">{t("nav.videos")}</a><a href="/musique">{t("nav.musique")}</a><a href="/guide-logiciels/">Catalogue</a><a href="#contact">{t("nav.contact")}</a>
     </nav>
     <div className="site-header-actions">
       <button className="site-icon-button nav-search" onClick={() => window.dispatchEvent(new Event("kitt-open-search"))} aria-label="Rechercher dans le site"><Search size={18}/></button>

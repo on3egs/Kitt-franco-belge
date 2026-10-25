@@ -1,6 +1,6 @@
 let TOKEN=document.querySelector('meta[name="field-vault-token"]')?.content||window.FIELD_VAULT_TOKEN||"";
 const PAGE_BASE=new URL("./",location.href);
-const hostedVault=/(^|\.)kyronext\.eu$/i.test(location.hostname)&&location.pathname.startsWith("/survival-vault");
+const hostedVault=(/(^|\.)kyronext\.eu$/i.test(location.hostname)&&location.pathname.startsWith("/survival-vault"))||(location.hostname==="kitt-franco-belge.be"&&location.pathname.startsWith("/field-vault"))||(location.hostname==="www.kitt-franco-belge.be"&&location.pathname.startsWith("/field-vault"));
 const API_BASE=hostedVault?"http://127.0.0.1:8765/api/":new URL("api/",PAGE_BASE).href;
 const resources=[
  {icon:"▦",size:"SELON LA LANGUE · 1 À 100+ GO",title:"Histoire & encyclopédie",text:"Wikipédia, Wiktionnaire, Wikivoyage et collections éducatives au format ZIM.",href:"https://library.kiwix.org/",link:"Parcourir le catalogue Kiwix ↗"},
