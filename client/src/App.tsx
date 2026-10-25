@@ -1,10 +1,10 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import SiteTools from "./components/SiteTools";
 import "./site-polish.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Router, Switch } from "wouter";
+import { Route, Router, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
@@ -30,9 +30,15 @@ const Admin = lazy(() => import("./pages/Admin"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const KyronexDashboard = lazy(() => import("./pages/KyronexDashboard"));
 
+function CockpitRouteSync() {
+  const [location] = useLocation();
+  useEffect(() => { window.dispatchEvent(new Event('kitt-route-change')); }, [location]);
+  return null;
+}
 function AppRouter() {
   return (
     <Router base={import.meta.env.BASE_URL}>
+      <CockpitRouteSync />
       <SiteTools />
       <Suspense fallback={<div role="status" className="route-loading">Chargement de l’interface…</div>}>
       <Switch>

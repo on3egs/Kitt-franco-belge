@@ -11,6 +11,11 @@ export default function SiteTools() {
   const trigger = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
+    const sync = () => setSound(readSound());
+    window.addEventListener('kitt-sound-change', sync);
+    return () => window.removeEventListener('kitt-sound-change', sync);
+  }, []);
+  useEffect(() => {
     const show = () => setOpen(true);
     const key = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); show(); } };
     const scroll = () => setScrolled(window.scrollY > 500);

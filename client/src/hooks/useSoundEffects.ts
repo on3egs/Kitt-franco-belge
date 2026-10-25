@@ -7,6 +7,8 @@ export function soundEnabled() { try { return localStorage.getItem("kitt-sound")
 window.addEventListener("kitt-sound-change", () => { if (!soundEnabled()) { active.forEach(o => { try { o.stop(); } catch {} }); active.clear(); } });
 export function useSoundEffects() {
  const play = (key: keyof typeof sounds) => {
+  const shared = (window as Window & { kittCockpitSound?: (kind: string) => void }).kittCockpitSound;
+  if (shared) { shared(key); return; }
   if (!soundEnabled() || document.hidden) return;
   if (key === "hover") { if (Date.now()-lastHover < 120) return; lastHover=Date.now(); }
   try {

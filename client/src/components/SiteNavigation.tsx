@@ -4,6 +4,10 @@ import LangSelector from "./LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const SITE_LINKS = [
+  { href: "/nouveautes/", label: "Le nouveau cockpit", detail: "Découvrir les outils, les animations et les réglages sonores" },
+  { href: "/netshield/", label: "Manix NetShield", detail: "Filtrage DNS, installation Windows et guide AGX" },
+  { href: "/kyronext-os/", label: "Kyronext OS", detail: "Explorer le cockpit et ses applications" },
+  { href: "/shadow-of-karr/", label: "Shadow of KARR", detail: "Retrouver le jeu Knight Rider" },
   { href: "/#histoire", label: "Le projet", detail: "L’histoire de KITT Franco-Belge" },
   { href: "/#services", label: "Technologies", detail: "IA locale, électronique et répliques" },
   { href: "/videos", label: "Vidéos", detail: "La galerie de la communauté" },

@@ -16,6 +16,7 @@ import LangSelector from "@/components/LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SiteNavigation from "@/components/SiteNavigation";
 import SoftwareSection from "@/components/SoftwareSection";
+import MissionLaunch from "@/components/MissionLaunch";
 import { soundEnabled } from "@/hooks/useSoundEffects";
 import { getApiBase } from "@/lib/tunnel";
 
@@ -201,9 +202,10 @@ function HeroSection() {
     };
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const refresh = () => { cancelAnimationFrame(bgScannerAnimRef.current); if (!document.hidden && !motion.matches) draw(); };
+    const refresh = () => { cancelAnimationFrame(bgScannerAnimRef.current); if (!document.hidden && !motion.matches && document.documentElement.dataset.kcMotion !== 'off') draw(); };
     refresh(); document.addEventListener("visibilitychange", refresh); motion.addEventListener("change", refresh);
-    return () => { cancelAnimationFrame(bgScannerAnimRef.current); document.removeEventListener("visibilitychange", refresh); motion.removeEventListener("change", refresh); };
+    window.addEventListener('kitt-motion-change', refresh);
+    return () => { cancelAnimationFrame(bgScannerAnimRef.current); document.removeEventListener("visibilitychange", refresh); motion.removeEventListener("change", refresh); window.removeEventListener('kitt-motion-change', refresh); };
   }, []);
 
   // ── Scanner KITT — superposé pixel-perfect sur le scanner de la photo ────
@@ -359,9 +361,10 @@ function HeroSection() {
     };
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const refresh = () => { cancelAnimationFrame(carScannerAnimRef.current); if (!document.hidden && !motion.matches) draw(); };
+    const refresh = () => { cancelAnimationFrame(carScannerAnimRef.current); if (!document.hidden && !motion.matches && document.documentElement.dataset.kcMotion !== 'off') draw(); };
     refresh(); document.addEventListener("visibilitychange", refresh); motion.addEventListener("change", refresh);
-    return () => { cancelAnimationFrame(carScannerAnimRef.current); window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", refresh); motion.removeEventListener("change", refresh); };
+    window.addEventListener('kitt-motion-change', refresh);
+    return () => { cancelAnimationFrame(carScannerAnimRef.current); window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", refresh); motion.removeEventListener("change", refresh); window.removeEventListener('kitt-motion-change', refresh); };
   }, []);
 
   return (
@@ -2291,6 +2294,7 @@ export default function Home() {
       <SiteNavigation />
       <main id="main-content" tabIndex={-1}>
       <HeroSection />
+      <MissionLaunch />
       <SoftwareSection />
       <VisitorCounter />
       <StorySection />
