@@ -1,4 +1,4 @@
-let TOKEN=window.FIELD_VAULT_TOKEN||"";
+let TOKEN=document.querySelector('meta[name="field-vault-token"]')?.content||window.FIELD_VAULT_TOKEN||"";
 const PAGE_BASE=new URL("./",location.href);
 const hostedVault=/(^|\.)kyronext\.eu$/i.test(location.hostname)&&location.pathname.startsWith("/survival-vault");
 const API_BASE=hostedVault?"http://127.0.0.1:8765/api/":new URL("api/",PAGE_BASE).href;
