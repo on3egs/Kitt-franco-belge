@@ -11,6 +11,7 @@ export const SITE_LINKS = [
   { href: "/documents", label: "Documents", detail: "Documentation et ressources PDF" },
   { href: "/kyronext-studio/", label: "Kyronext Studio", detail: "Lecteur Hi-Fi et téléchargements · Windows" },
   { href: "/sentinel/", label: "KITT Sentinel", detail: "Supervision de vos Jetson · Windows" },
+  { href: "/field-vault/", label: "KYRONEXT Field Vault", detail: "Ressources de terrain hors ligne · bêta" },
   { href: "https://kyronext.eu/dub-studio/", label: "KYRONEXT DUB Studio", detail: "Traduction vidéo et voix par interlocuteur · bêta" },
   { href: "https://kyronext.eu/video-studio/", label: "KYRONEXT Video Studio", detail: "Génération vidéo à partir de photos et de texte" },
   { href: "/karr", label: "KARR", detail: "Découvrir l’univers KARR" },
