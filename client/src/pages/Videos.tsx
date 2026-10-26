@@ -357,7 +357,7 @@ function StatChip({ icon, value, label }: { icon: string; value: string | number
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function Videos() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { pseudo, isLoggedIn } = useUser();
   const { trophies, totalPoints, level, incrementView } = useTrophies();
   const { folders, createFolder, deleteFolder, renameFolder, addVideoToFolder, removeVideoFromFolder, toggleFolderPublic, isVideoInFolder } = useFolders();
@@ -368,22 +368,53 @@ export default function Videos() {
   const [videos, setVideos] = useState<VideoEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
+  const [reloadGallery, setReloadGallery] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [apiBase, setApiBase] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [langFilter, setLangFilter] = useState<LangFilter>("all");
 
   useEffect(() => {
-    getApiBase().then(base => {
-      setApiBase(base);
-      if (!base) { setOffline(true); setLoading(false); return; }
-      fetch(`${base}/api/videos/approved`)
-        .then(r => r.json())
-        .then(d => { setVideos(d.approved || []); })
-        .catch(() => setOffline(true))
-        .finally(() => setLoading(false));
-    });
-  }, []);
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15000);
+    setLoading(true);
+    setOffline(false);
+
+    getApiBase()
+      .then(base => {
+        if (!base) throw new Error("gallery-api-unavailable");
+        if (cancelled) return null;
+        setApiBase(base);
+        return fetch(`${base}/api/videos/approved`, { signal: controller.signal, cache: "no-store" });
+      })
+      .then(response => {
+        if (!response) return null;
+        if (!response.ok) throw new Error(`gallery-api-${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        if (!data || cancelled) return;
+        if (!Array.isArray(data.approved)) throw new Error("gallery-response-invalid");
+        setVideos(data.approved);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setApiBase(null);
+          setOffline(true);
+        }
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [reloadGallery]);
 
   function trackView(id: string) {
     if (!apiBase) return;
@@ -393,6 +424,18 @@ export default function Videos() {
   }
 
   const label = { fontFamily: "Space Mono, monospace", fontSize: "0.5rem", letterSpacing: "0.2em" };
+  const connectionMessage: Record<typeof lang, { title: string; body: string; retry: string }> = {
+    fr: { title: "GALERIE TEMPORAIREMENT INJOIGNABLE", body: "Le serveur de la galerie ne répond pas pour le moment. Cela ne signifie pas que le site est en maintenance. Réessayez dans un instant.", retry: "RÉESSAYER" },
+    en: { title: "GALLERY TEMPORARILY UNAVAILABLE", body: "The gallery server is not responding right now. This does not mean the site is under maintenance. Please try again shortly.", retry: "TRY AGAIN" },
+    es: { title: "GALERÍA TEMPORALMENTE NO DISPONIBLE", body: "El servidor de la galería no responde ahora. Esto no significa que el sitio esté en mantenimiento. Inténtalo de nuevo pronto.", retry: "REINTENTAR" },
+    pt: { title: "GALERIA TEMPORARIAMENTE INDISPONÍVEL", body: "O servidor da galeria não está a responder. Isto não significa que o site esteja em manutenção. Tente novamente daqui a pouco.", retry: "TENTAR DE NOVO" },
+    de: { title: "GALERIE VORÜBERGEHEND NICHT ERREICHBAR", body: "Der Galerie-Server antwortet gerade nicht. Das bedeutet nicht, dass die Website gewartet wird. Bitte versuchen Sie es gleich noch einmal.", retry: "ERNEUT VERSUCHEN" },
+    nl: { title: "GALERIJ TIJDELIJK NIET BEREIKBAAR", body: "De galerijserver reageert momenteel niet. Dat betekent niet dat de website in onderhoud is. Probeer het zo opnieuw.", retry: "OPNIEUW PROBEREN" },
+    zh: { title: "图库暂时无法访问", body: "图库服务器目前没有响应。这不代表网站正在维护，请稍后重试。", retry: "重试" },
+    ja: { title: "ギャラリーに一時的に接続できません", body: "ギャラリーのサーバーが応答していません。サイトのメンテナンス中という意味ではありません。しばらくしてから再試行してください。", retry: "再試行" },
+    ko: { title: "갤러리에 일시적으로 연결할 수 없습니다", body: "갤러리 서버가 응답하지 않습니다. 사이트가 점검 중이라는 뜻은 아닙니다. 잠시 후 다시 시도해 주세요.", retry: "다시 시도" },
+  };
+  const connectionCopy = connectionMessage[lang];
 
   // ── Stats dérivées ────────────────────────────────────────────────────────
   const uniqueContributors = new Set(videos.map(v => v.pseudo.toLowerCase())).size;
@@ -615,14 +658,18 @@ export default function Videos() {
         )}
 
         {!loading && offline && (
-          <div className="p-8 text-center" style={{ background: "rgba(20,4,0,0.85)", border: "1px solid rgba(220,60,0,0.5)", boxShadow: "0 0 32px rgba(180,40,0,0.15), inset 0 0 20px rgba(80,0,0,0.25)" }}>
+          <div className="p-8 text-center" role="alert" style={{ background: "rgba(20,4,0,0.85)", border: "1px solid rgba(220,60,0,0.5)", boxShadow: "0 0 32px rgba(180,40,0,0.15), inset 0 0 20px rgba(80,0,0,0.25)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", marginBottom: "14px" }}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#ff4422", boxShadow: "0 0 10px #ff4422", animation: "kitt-blink 1.2s ease-in-out infinite" }} />
-              <div style={{ ...label, color: "#ff5533", fontSize: "0.75rem", letterSpacing: "4px" }}>SYSTEME EN MAINTENANCE</div>
+              <div style={{ ...label, color: "#ff5533", fontSize: "0.75rem", letterSpacing: "4px" }}>{connectionCopy.title}</div>
             </div>
             <div style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1rem", color: "#ddaa88", lineHeight: 2, letterSpacing: "1px" }}>
-              KYRONEX EST TEMPORAIREMENT HORS LIGNE<br />
-              <span style={{ color: "rgba(200,160,100,0.75)", fontSize: "0.9rem" }}>Retour prévu dans quelques minutes à quelques heures.<br />Rechargez la page pour vérifier l'état du système.</span>
+              <span style={{ color: "rgba(200,160,100,0.75)", fontSize: "0.9rem" }}>{connectionCopy.body}</span>
+              <div style={{ marginTop: "20px" }}>
+                <button type="button" onClick={() => setReloadGallery(value => value + 1)} style={{ ...btnStyle, borderColor: "#992222", color: "#ff6655", fontWeight: 700 }}>
+                  ↻ {connectionCopy.retry}
+                </button>
+              </div>
             </div>
           </div>
         )}

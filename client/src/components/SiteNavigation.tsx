@@ -4,6 +4,7 @@ import LangSelector from "./LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const SITE_LINKS = [
+  { href: "/outils", label: "Laboratoire d’outils", detail: "Outils locaux gratuits pour vidéo, audio, PDF et fichiers" },
   { href: "/nouveautes/", label: "Le nouveau cockpit", detail: "Découvrir les outils, les animations et les réglages sonores" },
   { href: "/netshield/", label: "Manix NetShield", detail: "Filtrage DNS, installation Windows et guide AGX" },
   { href: "/kyronext-os/", label: "Kyronext OS", detail: "Explorer le cockpit et ses applications" },
