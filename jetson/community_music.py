@@ -15,6 +15,7 @@ from aiohttp import ClientPayloadError, web
 MAX_AUDIO_BYTES = 64 * 1024 * 1024
 CHUNK_SIZE = 64 * 1024
 MAX_METADATA_BYTES = 8192
+TRANSCODE_TIMEOUT = 300
 ALLOWED_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a"}
 METADATA_FIELDS = {"titre", "artiste", "pseudo", "message", "theme", "creation_type", "rights_confirmed", "license_note", "theme_note"}
 CORS = {
@@ -213,19 +214,47 @@ def detect_audio(path: Path) -> tuple[str, str]:
     raise UploadError("Fichier audio invalide ou non reconnu : utilise un vrai MP3, WAV, OGG, FLAC ou M4A")
 
 
+async def encode_audio_for_web(source: Path, target: Path, *, timeout: float = TRANSCODE_TIMEOUT) -> None:
+    """Écrit un MP3 réseau léger dans un temporaire appartenant à cet upload."""
+    process = await asyncio.create_subprocess_exec(
+        "ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y",
+        "-threads", "2", "-i", str(source), "-map", "0:a:0", "-vn",
+        "-map_metadata", "-1", "-c:a", "libmp3lame", "-b:a", "128k",
+        "-ac", "2", "-ar", "44100", "-threads", "2", "-f", "mp3", str(target),
+        stdin=asyncio.subprocess.DEVNULL, stdout=asyncio.subprocess.DEVNULL,
+        stderr=asyncio.subprocess.DEVNULL,
+    )
+    try:
+        return_code = await asyncio.wait_for(process.wait(), timeout=timeout)
+    except BaseException:
+        if process.returncode is None:
+            try:
+                process.kill()
+            except ProcessLookupError:
+                pass
+        await process.wait()
+        raise
+    if return_code != 0:
+        raise RuntimeError("Conversion audio indisponible")
+
+
 def setup_community_music(
     app: web.Application, *, media_dir: Path, load_music: Callable,
     save_music: Callable, is_admin: Callable, notify: Callable | None = None,
     max_audio_bytes: int = MAX_AUDIO_BYTES,
+    encode_audio: Callable = encode_audio_for_web, transcode_timeout: float = TRANSCODE_TIMEOUT,
 ) -> None:
     """Branche les routes sur le stockage/modérateur existants, sans secret propre."""
     media_dir = Path(media_dir).resolve()
     media_dir.mkdir(parents=True, exist_ok=True, mode=0o750)
     mutation_lock = asyncio.Lock()
+    encode_lock = asyncio.Semaphore(1)
 
     async def upload(request: web.Request) -> web.Response:
         partial = final = None
         committed = partial_owned = final_owned = False
+        playback_partial = playback_final = None
+        playback_partial_owned = playback_final_owned = False
         try:
             if request.content_length and request.content_length > max_audio_bytes + 32768:
                 raise UploadError("Fichier trop volumineux : 64 Mio maximum", 413)
@@ -272,11 +301,39 @@ def setup_community_music(
                 raise OSError("Collision de nom de stockage")
             partial.rename(final)
             partial_owned, final_owned = False, True
+            playback = {"playback_status": "failed"}
+            try:
+                # Le délai comprend l'attente d'un encodeur libre ; un seul
+                # ffmpeg à deux threads évite de concurrencer tous les uploads.
+                async with asyncio.timeout(transcode_timeout):
+                    async with encode_lock:
+                        playback_partial = media_dir / f"{entry_id}.web.mp3.part"
+                        playback_final = media_dir / f"{entry_id}.web.mp3"
+                        if playback_final.exists():
+                            raise OSError("Copie de lecture déjà présente")
+                        with playback_partial.open("xb"):
+                            playback_partial_owned = True
+                        await encode_audio(final, playback_partial, timeout=transcode_timeout)
+                        if detect_audio(playback_partial) != (".mp3", "audio/mpeg"):
+                            raise RuntimeError("Copie de lecture invalide")
+                        if playback_final.exists():
+                            raise OSError("Copie de lecture déjà présente")
+                        playback_partial.rename(playback_final)
+                        playback_partial_owned, playback_final_owned = False, True
+                        playback = {
+                            "playback_status": "ready", "playback_filename": playback_final.name,
+                            "playback_content_type": "audio/mpeg", "playback_filesize": playback_final.stat().st_size,
+                        }
+            except Exception:
+                # L'original de l'utilisateur reste soumis à la modération ;
+                # un problème de conversion ne doit jamais le faire perdre.
+                _log.warning("Copie MP3 indisponible pour une nouvelle musique ; original conservé en attente")
             entry = {
                 **metadata, "id": entry_id, "url": f"/api/music/file/{entry_id}",
                 "ts": int(time.time()), "plays": 0, "hosted": True,
                 "filename": filename, "storage_filename": final.name,
                 "content_type": content_type, "filesize": filesize,
+                **playback,
             }
             async with mutation_lock:
                 data = load_music()
@@ -288,7 +345,7 @@ def setup_community_music(
                     await notify(f"[KITT] Nouvelle musique envoyée\nTitre : {entry['titre']}\nArtiste : {entry['artiste']}\nPar : {entry['pseudo']}")
                 except Exception:
                     _log.warning("Notification d’une soumission musicale indisponible")
-            return web.json_response({"ok": True, "id": entry_id, "status": "pending", "url": entry["url"], "hosted": True}, status=201, headers=CORS)
+            return web.json_response({"ok": True, "id": entry_id, "status": "pending", "url": entry["url"], "hosted": True, "playback_status": entry["playback_status"]}, status=201, headers=CORS)
         except UploadError as error:
             return _json_error(str(error), error.status)
         except (ValueError, AssertionError, UnicodeError, ClientPayloadError, ConnectionError):
@@ -301,6 +358,10 @@ def setup_community_music(
                 partial.unlink(missing_ok=True)
             if final is not None and final_owned and not committed:
                 final.unlink(missing_ok=True)
+            if playback_partial is not None and playback_partial_owned:
+                playback_partial.unlink(missing_ok=True)
+            if playback_final is not None and playback_final_owned and not committed:
+                playback_final.unlink(missing_ok=True)
 
     async def serve_file(request: web.Request) -> web.StreamResponse:
         entry_id = request.match_info["id"]
@@ -315,12 +376,21 @@ def setup_community_music(
             entries += data.get("pending", [])
         entry = next((item for item in entries if item.get("id") == entry_id and item.get("hosted") is True), None)
         stored = entry.get("storage_filename", "") if entry else ""
+        content_type = entry.get("content_type", "application/octet-stream") if entry else "application/octet-stream"
+        optimized = f"{entry_id}.web.mp3"
+        optimized_path = media_dir / optimized
+        if (entry and entry.get("playback_filename") == optimized
+                and optimized_path.resolve().parent == media_dir and optimized_path.is_file()):
+            return web.FileResponse(optimized_path, headers={
+                **CORS, "Content-Type": "audio/mpeg", "Cache-Control": "private, no-store",
+                "Vary": "X-Admin-Token", "Content-Disposition": f'inline; filename="{optimized}"',
+            })
         path = media_dir / stored
         if (not stored or Path(stored).name != stored or Path(stored).stem != entry_id
                 or Path(stored).suffix not in ALLOWED_EXTENSIONS or path.resolve().parent != media_dir or not path.is_file()):
             return _json_error("Fichier introuvable ou non publié", 404)
         return web.FileResponse(path, headers={
-            **CORS, "Content-Type": entry["content_type"], "Cache-Control": "private, no-store",
+            **CORS, "Content-Type": content_type, "Cache-Control": "private, no-store",
             "Vary": "X-Admin-Token", "Content-Disposition": f'inline; filename="{stored}"',
         })
 

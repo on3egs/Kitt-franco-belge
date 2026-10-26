@@ -4,7 +4,7 @@ import { getApiBase } from "@/lib/tunnel";
 
 
 interface VideoEntry { id: string; url: string; pseudo: string; message: string; ts: number; views?: number; }
-interface MusicEntry { id: string; url: string; titre: string; artiste: string; pseudo: string; message: string; ts: number; plays?: number; theme?: string; creation_type?: "original" | "ai" | "licensed"; rights_confirmed?: boolean; license_note?: string; theme_note?: string; hosted?: boolean; filename?: string; content_type?: string; filesize?: number; }
+interface MusicEntry { id: string; url: string; titre: string; artiste: string; pseudo: string; message: string; ts: number; plays?: number; theme?: string; creation_type?: "original" | "ai" | "licensed"; rights_confirmed?: boolean; license_note?: string; theme_note?: string; hosted?: boolean; filename?: string; content_type?: string; filesize?: number; playback_status?: "ready" | "failed"; }
 interface PdfEntry   { id: string; url: string; titre: string; description: string; categorie: string; pseudo: string; ts: number; views?: number; }
 
 type Tab = "videos" | "musique" | "pdfs";
@@ -62,6 +62,8 @@ function HostedMusicPreview({ entry, apiBase, apiToken }: { entry: MusicEntry; a
       <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(220,220,220,0.75)", marginBottom: "8px", overflowWrap: "anywhere" }}>
         Fichier envoyé : {entry.filename || entry.titre}{entry.filesize ? ` · ${(entry.filesize / 1048576).toFixed(1)} Mio` : ""}
       </div>
+      {entry.playback_status === "ready" && <p style={{ color: "#9ecb9b", fontSize: "0.8rem", marginBottom: "8px" }}>Copie audio préparée pour la lecture sur le site. Le fichier original est conservé.</p>}
+      {entry.playback_status === "failed" && <p role="alert" style={{ color: "#ffbd77", fontSize: "0.8rem", marginBottom: "8px" }}>Préparation audio à revoir avant publication. Le fichier original est conservé et peut être préécouté.</p>}
       {previewUrl ? (
         <audio controls preload="metadata" src={previewUrl} aria-label={`Préécoute de ${entry.titre}`} style={{ width: "100%", maxWidth: "480px" }} />
       ) : (

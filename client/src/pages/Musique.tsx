@@ -246,7 +246,7 @@ export default function Musique() {
     const hosted = direct.origin === new URL(apiBase).origin;
     const attempts = hosted
       ? [{ url: direct.href, analyse: true }, { url: direct.href, analyse: false }]
-      : [{ url: `${apiBase}/api/audio-proxy?url=${encodeURIComponent(direct.href)}`, analyse: true }, { url: direct.href, analyse: false }];
+      : [{ url: `${apiBase}/api/audio-proxy?url=${encodeURIComponent(direct.href)}&v=20261026-playback2`, analyse: true }, { url: direct.href, analyse: false }];
     let lastError: unknown;
 
     for (const attempt of attempts) {

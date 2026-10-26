@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import asyncio
 from collections import OrderedDict
+import hashlib
+from pathlib import Path
 import re
 import time
 from urllib.parse import urlsplit
@@ -20,6 +22,7 @@ _CONTENT_RANGE_RE = re.compile(r"bytes (\d+)-(\d+)/(\d+|\*)")
 _MIME_CACHE: OrderedDict[str, tuple[float, str]] = OrderedDict()
 _MIME_CACHE_SIZE = 128
 _MIME_CACHE_SECONDS = 3600
+_PLAYBACK_CACHE_DIR = Path(__file__).resolve().parent / "data" / "music_playback_cache"
 _CORS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Expose-Headers": "Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified",
@@ -125,6 +128,20 @@ async def handle_audio_proxy(request: web.Request) -> web.StreamResponse:
     requested_range = request.headers.get("Range")
     if requested_range and (len(requested_range) > 100 or not _RANGE_RE.fullmatch(requested_range)):
         return web.Response(status=416, text="Plage audio invalide.", headers=_CORS)
+
+    # Ces fichiers sont préparés à part à partir des morceaux approuvés.
+    # Aucun téléchargement ni transcodage ne se déclenche pendant la lecture.
+    cache_file = _PLAYBACK_CACHE_DIR / (hashlib.sha256(url.encode("utf-8")).hexdigest() + ".mp3")
+    try:
+        if cache_file.is_file() and cache_file.stat().st_size > 0:
+            return web.FileResponse(cache_file, headers={
+                **_CORS,
+                "Content-Type": "audio/mpeg",
+                "Cache-Control": "public, max-age=3600",
+            })
+    except OSError:
+        # Un cache absent ou inaccessible conserve le relais d'origine.
+        pass
 
     is_head = request.method == "HEAD"
     head_probe = is_head and not requested_range
