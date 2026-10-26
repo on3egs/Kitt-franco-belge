@@ -1,0 +1,35 @@
+--- a/kyronex_server.py
++++ b/kyronex_server.py
+@@ -10271,5 +10271,22 @@
+     pseudo  = (body.get("pseudo") or "Anonyme").strip()[:50]
+     message = (body.get("message") or "").strip()[:300]
++    theme = body.get("theme")
++    creation_type = body.get("creation_type")
++    rights_confirmed = body.get("rights_confirmed")
++    license_note = body.get("license_note")
++    theme_note = body.get("theme_note")
+     if not url:
+         return web.json_response({"ok": False, "error": "URL manquante"}, status=400)
++    if theme != "knight-rider":
++        return web.json_response({"ok": False, "error": "Th\u00e8me invalide"}, status=400)
++    if creation_type not in ("original", "ai", "licensed"):
++        return web.json_response({"ok": False, "error": "Type de cr\u00e9ation invalide"}, status=400)
++    if rights_confirmed is not True:
++        return web.json_response({"ok": False, "error": "Confirmation des droits requise"}, status=400)
++    if not isinstance(license_note, str) or not 8 <= len(license_note.strip()) <= 500:
++        return web.json_response({"ok": False, "error": "Pr\u00e9cise l\u2019origine ou la licence (8 \u00e0 500 caract\u00e8res)"}, status=400)
++    if not isinstance(theme_note, str) or not 8 <= len(theme_note.strip()) <= 500:
++        return web.json_response({"ok": False, "error": "Pr\u00e9cise le lien avec le th\u00e8me (8 \u00e0 500 caract\u00e8res)"}, status=400)
++    license_note = license_note.strip()
++    theme_note = theme_note.strip()
+     entry = {
+@@ -10279,4 +10296,9 @@
+         "artiste": artiste,
+         "pseudo": pseudo,
+         "message": message,
++        "theme": theme,
++        "creation_type": creation_type,
++        "rights_confirmed": rights_confirmed,
++        "license_note": license_note,
++        "theme_note": theme_note,
+         "ts": int(time.time()),

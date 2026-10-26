@@ -6433,8 +6433,25 @@ async def handle_music_submit(request):
     artiste = (body.get("artiste") or "Inconnu").strip()[:80]
     pseudo  = (body.get("pseudo") or "Anonyme").strip()[:50]
     message = (body.get("message") or "").strip()[:300]
+    theme = body.get("theme")
+    creation_type = body.get("creation_type")
+    rights_confirmed = body.get("rights_confirmed")
+    license_note = body.get("license_note")
+    theme_note = body.get("theme_note")
     if not url:
         return web.json_response({"ok": False, "error": "URL manquante"}, status=400)
+    if theme != "knight-rider":
+        return web.json_response({"ok": False, "error": "Thème invalide"}, status=400)
+    if creation_type not in ("original", "ai", "licensed"):
+        return web.json_response({"ok": False, "error": "Type de création invalide"}, status=400)
+    if rights_confirmed is not True:
+        return web.json_response({"ok": False, "error": "Confirmation des droits requise"}, status=400)
+    if not isinstance(license_note, str) or not 8 <= len(license_note.strip()) <= 500:
+        return web.json_response({"ok": False, "error": "Précise l’origine ou la licence (8 à 500 caractères)"}, status=400)
+    if not isinstance(theme_note, str) or not 8 <= len(theme_note.strip()) <= 500:
+        return web.json_response({"ok": False, "error": "Précise le lien avec le thème (8 à 500 caractères)"}, status=400)
+    license_note = license_note.strip()
+    theme_note = theme_note.strip()
     entry = {
         "id": str(_uuid_mod.uuid4()),
         "url": url,
@@ -6442,6 +6459,11 @@ async def handle_music_submit(request):
         "artiste": artiste,
         "pseudo": pseudo,
         "message": message,
+        "theme": theme,
+        "creation_type": creation_type,
+        "rights_confirmed": rights_confirmed,
+        "license_note": license_note,
+        "theme_note": theme_note,
         "ts": int(time.time()),
         "plays": 0,
     }

@@ -4,7 +4,7 @@ import { getApiBase } from "@/lib/tunnel";
 
 
 interface VideoEntry { id: string; url: string; pseudo: string; message: string; ts: number; views?: number; }
-interface MusicEntry { id: string; url: string; titre: string; artiste: string; pseudo: string; message: string; ts: number; plays?: number; }
+interface MusicEntry { id: string; url: string; titre: string; artiste: string; pseudo: string; message: string; ts: number; plays?: number; theme?: string; creation_type?: "original" | "ai" | "licensed"; rights_confirmed?: boolean; license_note?: string; theme_note?: string; }
 interface PdfEntry   { id: string; url: string; titre: string; description: string; categorie: string; pseudo: string; ts: number; views?: number; }
 
 type Tab = "videos" | "musique" | "pdfs";
@@ -245,6 +245,16 @@ export default function Admin() {
                 <a href={m.url} target="_blank" rel="noopener noreferrer"
                   style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "#ff2222", display: "block", marginBottom: "6px", wordBreak: "break-all" }}>{m.url}</a>
                 {m.message && <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.9rem", color: "rgba(192,192,192,0.65)", fontStyle: "italic", marginBottom: "8px" }}>"{m.message}"</p>}
+                {m.rights_confirmed === true && m.creation_type && m.license_note && m.theme_note ? (
+                  <div style={{ borderLeft: "2px solid rgba(0,200,80,0.55)", padding: "8px 10px", margin: "8px 0", background: "rgba(0,200,80,0.04)" }}>
+                    <div style={{ ...label, color: "rgba(0,220,100,0.75)", marginBottom: "5px" }}>DROITS DÉCLARÉS · À VÉRIFIER</div>
+                    <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(220,220,220,0.8)", marginBottom: "4px" }}>Création : {m.creation_type === "ai" ? "assistée par IA" : m.creation_type === "licensed" ? "sous licence" : "originale"} · Thème : {m.theme}</p>
+                    <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(220,220,220,0.75)", marginBottom: "4px" }}>Origine / licence : {m.license_note}</p>
+                    <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.85rem", color: "rgba(220,220,220,0.75)" }}>Lien au thème : {m.theme_note}</p>
+                  </div>
+                ) : (
+                  <div style={{ ...label, color: "#ffb347", margin: "8px 0" }}>ANCIENNE SOUMISSION · JUSTIFICATIFS ABSENTS — vérifier avant approbation</div>
+                )}
                 <div className="flex gap-3 mt-3">
                   <button onClick={() => decide("music", m.id, "approve")} disabled={deciding === m.id} style={approveBtn}>✓ APPROUVER</button>
                   <button onClick={() => decide("music", m.id, "reject")}  disabled={deciding === m.id} style={rejectBtn}>✗ REFUSER</button>
