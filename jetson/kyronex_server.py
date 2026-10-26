@@ -25,6 +25,7 @@ import uuid
 import wave
 from datetime import datetime, timezone
 from pathlib import Path
+from community_music import setup_community_music
 
 import tempfile
 import numpy as np
@@ -6388,38 +6389,12 @@ def _touch_chat_session(session_id, user, source="Kyronex"):
 # ─── AUDIO PROXY ───────────────────────────────────────────────────────────────
 
 async def handle_audio_proxy(request):
-    url = request.rel_url.query.get("url", "")
-    if not url:
-        return web.Response(status=400, text="missing url")
-    try:
-        ua = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"}
-        async with _aiohttp_mod.ClientSession(headers=ua) as s:
-            async with s.get(url, timeout=_aiohttp_mod.ClientTimeout(total=30)) as resp:
-                content_type = resp.headers.get("Content-Type", "audio/mpeg")
-                proxy_headers = {
-                    "Content-Type": content_type,
-                    "Access-Control-Allow-Origin": "*",
-                    "Cache-Control": "public, max-age=3600",
-                    "Accept-Ranges": "bytes",
-                }
-                # Propager Content-Length pour que le navigateur mobile
-                # puisse afficher la durée et permettre le seek
-                if "Content-Length" in resp.headers:
-                    proxy_headers["Content-Length"] = resp.headers["Content-Length"]
-                response = web.StreamResponse(headers=proxy_headers)
-                await response.prepare(request)
-                async for chunk in resp.content.iter_chunked(8192):
-                    await response.write(chunk)
-                await response.write_eof()
-                return response
-    except Exception as e:
-        return web.Response(status=502, text=str(e))
+    from music_audio_proxy import handle_audio_proxy as _relay_audio
+    return await _relay_audio(request)
 
 async def handle_audio_proxy_options(request):
-    return web.Response(headers={
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-    })
+    from music_audio_proxy import audio_proxy_options
+    return audio_proxy_options()
 
 # ─── MUSIC ────────────────────────────────────────────────────────────────────
 
@@ -6759,6 +6734,12 @@ def create_app() -> web.Application:
     app.router.add_route("OPTIONS", "/api/audio-proxy", handle_audio_proxy_options)
 
     # Musique
+    setup_community_music(
+        app, media_dir=Path(MUSIC_FILE).parent / "data" / "community_music",
+        load_music=_load_music, save_music=_save_music,
+        is_admin=lambda request: bool(_ADMIN_TOKEN_NEW) and secrets.compare_digest(request.headers.get("X-Admin-Token", "").encode("utf-8"), _ADMIN_TOKEN_NEW.encode("utf-8")),
+        notify=_send_telegram_new,
+    )
     app.router.add_post("/api/music-submit",         handle_music_submit)
     app.router.add_get("/api/music/approved",        handle_music_approved)
     app.router.add_get("/api/music/pending",         handle_music_pending)

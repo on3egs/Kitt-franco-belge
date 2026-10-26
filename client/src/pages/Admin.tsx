@@ -1,13 +1,78 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { getApiBase } from "@/lib/tunnel";
 
 
 interface VideoEntry { id: string; url: string; pseudo: string; message: string; ts: number; views?: number; }
-interface MusicEntry { id: string; url: string; titre: string; artiste: string; pseudo: string; message: string; ts: number; plays?: number; theme?: string; creation_type?: "original" | "ai" | "licensed"; rights_confirmed?: boolean; license_note?: string; theme_note?: string; }
+interface MusicEntry { id: string; url: string; titre: string; artiste: string; pseudo: string; message: string; ts: number; plays?: number; theme?: string; creation_type?: "original" | "ai" | "licensed"; rights_confirmed?: boolean; license_note?: string; theme_note?: string; hosted?: boolean; filename?: string; content_type?: string; filesize?: number; }
 interface PdfEntry   { id: string; url: string; titre: string; description: string; categorie: string; pseudo: string; ts: number; views?: number; }
 
 type Tab = "videos" | "musique" | "pdfs";
+
+function hostedMusicUrl(entry: MusicEntry, apiBase: string | null): string | undefined {
+  if (!apiBase) return undefined;
+  try { return new URL(`/api/music/file/${encodeURIComponent(entry.id)}`, apiBase).href; }
+  catch { return undefined; }
+}
+
+function HostedMusicPreview({ entry, apiBase, apiToken }: { entry: MusicEntry; apiBase: string | null; apiToken: string }) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const controller = useRef<AbortController | null>(null);
+  const objectUrl = useRef<string | null>(null);
+
+  useEffect(() => {
+    setPreviewUrl(null);
+    setLoading(false);
+    setError("");
+    return () => {
+      controller.current?.abort();
+      if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+      objectUrl.current = null;
+    };
+  }, [entry.id, apiBase, apiToken]);
+
+  async function loadPreview() {
+    const url = hostedMusicUrl(entry, apiBase);
+    if (!url || !apiToken) return;
+    controller.current?.abort();
+    const request = new AbortController();
+    controller.current = request;
+    setLoading(true);
+    setError("");
+    try {
+      // Le jeton reste dans l’en-tête de cette API ; jamais dans un lien audio.
+      const response = await fetch(url, { headers: { "X-Admin-Token": apiToken }, cache: "no-store", signal: request.signal });
+      if (!response.ok) throw new Error("Préécoute indisponible : vérifie la clé admin ou recharge les soumissions.");
+      const blob = await response.blob();
+      if (request.signal.aborted) return;
+      if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+      objectUrl.current = URL.createObjectURL(blob);
+      setPreviewUrl(objectUrl.current);
+    } catch (reason) {
+      if (!request.signal.aborted) setError(reason instanceof Error ? reason.message : "Préécoute indisponible.");
+    } finally {
+      if (!request.signal.aborted) setLoading(false);
+    }
+  }
+
+  return (
+    <div style={{ margin: "10px 0" }}>
+      <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "rgba(220,220,220,0.75)", marginBottom: "8px", overflowWrap: "anywhere" }}>
+        Fichier envoyé : {entry.filename || entry.titre}{entry.filesize ? ` · ${(entry.filesize / 1048576).toFixed(1)} Mio` : ""}
+      </div>
+      {previewUrl ? (
+        <audio controls preload="metadata" src={previewUrl} aria-label={`Préécoute de ${entry.titre}`} style={{ width: "100%", maxWidth: "480px" }} />
+      ) : (
+        <button type="button" onClick={loadPreview} disabled={loading || !apiBase} style={{ padding: "8px 12px", border: "1px solid rgba(255,170,70,0.5)", background: "rgba(255,170,70,0.08)", color: "#ffbd77", cursor: loading ? "wait" : "pointer", fontFamily: "Space Mono, monospace", fontSize: "0.6rem" }}>
+          {loading ? "CHARGEMENT DE LA PRÉÉCOUTE…" : "▶ PRÉÉCOUTER LE FICHIER"}
+        </button>
+      )}
+      {error && <p role="alert" style={{ color: "#ff7777", fontSize: "0.8rem", marginTop: "8px" }}>{error}</p>}
+    </div>
+  );
+}
 
 export default function Admin() {
   const [authed, setAuthed] = useState(false);
@@ -242,8 +307,10 @@ export default function Admin() {
                 <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.65rem", color: "#fff", marginBottom: "2px" }}>{m.titre}</div>
                 <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.5rem", color: "rgba(255,100,0,0.8)", marginBottom: "6px" }}>{m.artiste}</div>
                 <div style={{ ...label, color: "rgba(192,192,192,0.5)", marginBottom: "4px" }}>{formatDate(m.ts)} — {m.pseudo}</div>
-                <a href={m.url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "#ff2222", display: "block", marginBottom: "6px", wordBreak: "break-all" }}>{m.url}</a>
+                {m.hosted ? <HostedMusicPreview entry={m} apiBase={apiBase} apiToken={apiToken} /> : (
+                  <a href={m.url} target="_blank" rel="noopener noreferrer"
+                    style={{ fontFamily: "Space Mono, monospace", fontSize: "0.55rem", color: "#ff2222", display: "block", marginBottom: "6px", wordBreak: "break-all" }}>{m.url}</a>
+                )}
                 {m.message && <p style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "0.9rem", color: "rgba(192,192,192,0.65)", fontStyle: "italic", marginBottom: "8px" }}>"{m.message}"</p>}
                 {m.rights_confirmed === true && m.creation_type && m.license_note && m.theme_note ? (
                   <div style={{ borderLeft: "2px solid rgba(0,200,80,0.55)", padding: "8px 10px", margin: "8px 0", background: "rgba(0,200,80,0.04)" }}>
@@ -268,6 +335,7 @@ export default function Admin() {
               <div key={m.id} style={{ ...card, borderColor: "rgba(0,200,80,0.15)" }}>
                 <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.55rem", color: "#fff" }}>{m.titre}</div>
                 <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.48rem", color: "rgba(255,100,0,0.7)" }}>{m.artiste} — {m.pseudo} — {formatDate(m.ts)} {m.plays ? `— ♪ ${m.plays}` : ""}</div>
+                {m.hosted && <a href={hostedMusicUrl(m, apiBase)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", marginTop: "8px", color: "#00cc55", fontSize: "0.75rem" }}>▶ Écouter le fichier approuvé</a>}
               </div>
             ))}
           </>

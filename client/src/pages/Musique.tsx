@@ -60,6 +60,10 @@ export default function Musique() {
   const filteredRef = useRef<MusicEntry[]>([]);
   const shuffleRef = useRef(false);
   const repeatRef = useRef(false);
+  const wantedRef = useRef(false);
+  const volumeRef = useRef(volume);
+  const mutedRef = useRef(isMuted);
+  const stallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentTrack = tracks.find(track => track.id === currentId) ?? null;
   const visibleTracks = useMemo(() => {
@@ -70,6 +74,8 @@ export default function Musique() {
   currentIdRef.current = currentId;
   shuffleRef.current = shuffle;
   repeatRef.current = repeatOne;
+  volumeRef.current = volume;
+  mutedRef.current = isMuted;
 
   const drawVisualizer = useCallback(() => {
     cancelAnimationFrame(animationRef.current);
@@ -89,11 +95,12 @@ export default function Musique() {
     let frames = 0;
     let nonzero = false;
     let announced = false;
+    let noDataAnnounced = false;
     const draw = () => {
       animationRef.current = requestAnimationFrame(draw);
       analyser.getByteFrequencyData(samples);
       if (samples.some(value => value > 0)) nonzero = true;
-      if (++frames > 240 && !nonzero) { cancelAnimationFrame(animationRef.current); setVisualizer("unavailable"); return; }
+      if (++frames > 240 && !nonzero && !noDataAnnounced) { noDataAnnounced = true; setVisualizer("unavailable"); }
       context.clearRect(0, 0, width, height);
       const count = Math.min(samples.length, Math.floor(width / 5));
       const step = Math.max(1, Math.floor(samples.length / count));
@@ -166,54 +173,24 @@ export default function Musique() {
     if (audio) audio.volume = isMuted ? 0 : volume;
   }, [volume, isMuted]);
 
+  // Le spectre ne décide jamais d'interrompre ou de remplacer la musique.
   useEffect(() => {
-    if (visualizer !== "unavailable" || !isPlaying || reducedMotion || !sourceRef.current || !currentTrack) return;
-    const oldAudio = audioRef.current;
-    if (!oldAudio) return;
-    const fallbackGeneration = generationRef.current;
-    const resumeAt = oldAudio.currentTime;
-    const fallback = new Audio(currentTrack.url);
-    fallback.preload = "metadata";
-    fallback.volume = isMuted ? 0 : volume;
-    fallback.onloadedmetadata = () => {
-      if (resumeAt > 0 && Number.isFinite(fallback.duration)) fallback.currentTime = Math.min(resumeAt, Math.max(0, fallback.duration - 0.2));
-      setDuration(Number.isFinite(fallback.duration) ? fallback.duration : 0);
-    };
-    fallback.ontimeupdate = () => setCurrentTime(fallback.currentTime || 0);
-    fallback.onended = () => {
-      const list = filteredRef.current;
-      if (repeatRef.current && currentIdRef.current) { void playById(currentIdRef.current); return; }
-      const index = list.findIndex(track => track.id === currentIdRef.current);
-      const nextIndex = shuffleRef.current && list.length > 1
-        ? (() => { const candidates = list.map((_, i) => i).filter(i => i !== index); return candidates[Math.floor(Math.random() * candidates.length)]; })()
-        : (index + 1) % list.length;
-      if (list[nextIndex]) void playById(list[nextIndex].id); else setIsPlaying(false);
-    };
-    fallback.onerror = () => { if (audioRef.current === fallback) { setIsPlaying(false); setPlayError("Cette source empêche l’analyse audio et la lecture native a échoué."); } };
-    try { sourceRef.current.disconnect(); } catch { /* déjà déconnecté */ }
-    try { analyserRef.current?.disconnect(); } catch { /* déjà déconnecté */ }
-    sourceRef.current = null; analyserRef.current = null;
-    oldAudio.pause(); audioRef.current = fallback;
-    void fallback.play().then(() => {
-      if (fallbackGeneration !== generationRef.current || audioRef.current !== fallback) { fallback.pause(); return; }
-      setVisualizer("unavailable");
-    }).catch(() => {
-      if (fallbackGeneration === generationRef.current && audioRef.current === fallback) { setIsPlaying(false); setPlayError("La lecture de cette piste a échoué. Vérifiez que le lien audio est public."); }
-    });
-  }, [visualizer, isPlaying, reducedMotion, currentTrack, isMuted, volume]);
+    if (reducedMotion) stopVisualizer();
+    else if (isPlaying && sourceRef.current) drawVisualizer();
+  }, [reducedMotion, isPlaying, drawVisualizer, stopVisualizer]);
 
   useEffect(() => () => {
     generationRef.current++;
+    wantedRef.current = false;
+    if (stallTimerRef.current) clearTimeout(stallTimerRef.current);
     cancelAnimationFrame(animationRef.current);
-    audioRef.current?.pause();
-    try { sourceRef.current?.disconnect(); } catch { /* déjà déconnecté */ }
-    try { analyserRef.current?.disconnect(); } catch { /* déjà déconnecté */ }
+    const audio = audioRef.current; audioRef.current = null; releaseAudio(audio); disconnectGraph();
     void audioCtxRef.current?.close().catch(() => undefined);
   }, []);
 
   const advanceTrack = (automatic: boolean) => {
     const list = filteredRef.current;
-    if (!list.length) { setIsPlaying(false); return; }
+    if (!list.length) { wantedRef.current = false; setIsPlaying(false); setTrackLoading(false); stopVisualizer(); return; }
     if (automatic && repeatRef.current && currentIdRef.current) { void playById(currentIdRef.current); return; }
     const currentIndex = list.findIndex(track => track.id === currentIdRef.current);
     const nextIndex = shuffleRef.current && list.length > 1
@@ -222,90 +199,170 @@ export default function Musique() {
     void playById(list[nextIndex].id);
   };
 
+  function clearStallTimer() {
+    if (stallTimerRef.current) clearTimeout(stallTimerRef.current);
+    stallTimerRef.current = null;
+  }
+
+  function disconnectGraph() {
+    try { sourceRef.current?.disconnect(); analyserRef.current?.disconnect(); } catch { /* déjà déconnectés */ }
+    sourceRef.current = null; analyserRef.current = null;
+  }
+
+  function releaseAudio(audio: HTMLAudioElement | null) {
+    if (!audio) return;
+    audio.onplaying = audio.onpause = audio.onwaiting = audio.onstalled = audio.onerror = audio.onended = null;
+    audio.onloadedmetadata = audio.ontimeupdate = null;
+    audio.pause(); audio.removeAttribute("src"); audio.load();
+  }
+
+  async function boundedStart(promise: Promise<unknown>, milliseconds = 15000) {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([promise, new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(new Error("Le fichier audio ne répond pas.")), milliseconds);
+      })]);
+    } finally { if (timeout) clearTimeout(timeout); }
+  }
+
   async function playById(id: string) {
     const track = tracks.find(item => item.id === id);
     if (!track || !apiBase) return;
     const generation = ++generationRef.current;
+    wantedRef.current = true;
+    clearStallTimer();
     setCurrentId(id); currentIdRef.current = id;
-    setCurrentTime(0); setDuration(0); setTrackLoading(true); setPlayError(""); setVisualizer("idle");
-    audioRef.current?.pause();
-    try { sourceRef.current?.disconnect(); } catch { /* déjà déconnecté */ }
-    try { analyserRef.current?.disconnect(); } catch { /* déjà déconnecté */ }
-    sourceRef.current = null;
-    cancelAnimationFrame(animationRef.current);
-
-    const createAudio = (src: string, cors = true) => {
-      const audio = new Audio();
-      if (cors) audio.crossOrigin = "anonymous";
-      audio.preload = "metadata";
-      audio.volume = isMuted ? 0 : volume;
-      audio.ontimeupdate = () => setCurrentTime(audio.currentTime || 0);
-      audio.onloadedmetadata = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
-      audio.onended = () => advanceTrack(true);
-      audio.onerror = () => { if (audioRef.current === audio) { setTrackLoading(false); setIsPlaying(false); setPlayError("Cette piste ne peut pas être lue. Vérifiez le lien ou choisissez une autre création."); } };
-      audio.src = src;
-      return audio;
-    };
-
-    let audio = createAudio(`${apiBase}/api/audio-proxy?url=${encodeURIComponent(track.url)}`);
-    audioRef.current = audio;
+    setCurrentTime(0); setDuration(0); setIsPlaying(false); setTrackLoading(true); setPlayError(""); stopVisualizer();
+    const previous = audioRef.current; audioRef.current = null;
+    releaseAudio(previous);
+    disconnectGraph();
+    let direct: URL;
     try {
-      const Ctx = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (Ctx) {
-        audioCtxRef.current ??= new Ctx();
-        const analyser = audioCtxRef.current.createAnalyser();
-        analyser.fftSize = 128; analyser.smoothingTimeConstant = 0.78;
-        const source = audioCtxRef.current.createMediaElementSource(audio);
-        source.connect(analyser); analyser.connect(audioCtxRef.current.destination);
-        sourceRef.current = source; analyserRef.current = analyser;
-        if (audioCtxRef.current.state === "suspended") await audioCtxRef.current.resume();
-      }
-      if (generation !== generationRef.current) { audio.pause(); return; }
-      await audio.play();
-      if (generation !== generationRef.current) { audio.pause(); return; }
-      setIsPlaying(true); setTrackLoading(false);
-      if (sourceRef.current) drawVisualizer(); else setVisualizer("unavailable");
+      direct = new URL(track.url, apiBase);
+      if (!["https:", "http:"].includes(direct.protocol)) throw new Error("Adresse audio invalide.");
     } catch {
-      if (generation !== generationRef.current) { audio.pause(); return; }
-      // Une source externe peut refuser CORS. On retente en lecture native, sans annoncer un spectre indisponible comme réel.
-      try { sourceRef.current?.disconnect(); } catch { /* déjà déconnecté */ }
-      try { analyserRef.current?.disconnect(); } catch { /* déjà déconnecté */ }
-      sourceRef.current = null; analyserRef.current = null;
-      audio.pause();
-      audio = createAudio(track.url, false); audioRef.current = audio;
+      wantedRef.current = false; setTrackLoading(false); setPlayError("L’adresse de cette piste est invalide."); return;
+    }
+    const hosted = direct.origin === new URL(apiBase).origin;
+    const attempts = hosted
+      ? [{ url: direct.href, analyse: true }, { url: direct.href, analyse: false }]
+      : [{ url: `${apiBase}/api/audio-proxy?url=${encodeURIComponent(direct.href)}`, analyse: true }, { url: direct.href, analyse: false }];
+    let lastError: unknown;
+
+    for (const attempt of attempts) {
+      if (generation !== generationRef.current || !wantedRef.current) return;
+      const audio = new Audio();
+      let started = false;
+      if (attempt.analyse) audio.crossOrigin = "anonymous";
+      audio.preload = "auto"; audio.volume = mutedRef.current ? 0 : volumeRef.current;
+      const current = () => audioRef.current === audio;
+      const interrupted = (message: string) => {
+        if (!current()) return;
+        wantedRef.current = false; clearStallTimer(); audio.pause(); stopVisualizer();
+        setTrackLoading(false); setIsPlaying(false); setPlayError(message);
+      };
+      audio.onloadedmetadata = () => { if (current()) setDuration(Number.isFinite(audio.duration) ? audio.duration : 0); };
+      audio.ontimeupdate = () => { if (current()) setCurrentTime(audio.currentTime || 0); };
+      audio.onplaying = () => {
+        if (!current()) { audio.pause(); return; }
+        if (!wantedRef.current) { audio.pause(); return; }
+        started = true; clearStallTimer(); setTrackLoading(false); setIsPlaying(true); setPlayError("");
+        if (!sourceRef.current) setVisualizer("unavailable");
+      };
+      audio.onpause = () => {
+        if (!current() || !audio.paused) return;
+        clearStallTimer(); setIsPlaying(false); stopVisualizer();
+        if (started) { wantedRef.current = false; setTrackLoading(false); }
+      };
+      const stalled = () => {
+        if (!current() || !wantedRef.current || audio.paused || !started) return;
+        setTrackLoading(true); setIsPlaying(false); stopVisualizer(); clearStallTimer();
+        stallTimerRef.current = setTimeout(() => interrupted("La connexion audio est interrompue. Réessayez cette piste."), 15000);
+      };
+      audio.onwaiting = stalled; audio.onstalled = stalled;
+      audio.onerror = () => { if (started) interrupted("La lecture de cette piste a été interrompue. Réessayez ou choisissez un autre morceau."); };
+      audio.onended = () => {
+        if (!current()) return;
+        wantedRef.current = false; clearStallTimer(); setIsPlaying(false); stopVisualizer(); advanceTrack(true);
+      };
+      audioRef.current = audio; audio.src = attempt.url;
       try {
-        await audio.play();
-        if (generation !== generationRef.current) { audio.pause(); return; }
-        setIsPlaying(true); setTrackLoading(false); setVisualizer("unavailable");
-      } catch {
-        if (generation === generationRef.current) {
-          setTrackLoading(false); setIsPlaying(false);
-          setPlayError("Lecture impossible. Le lien doit pointer vers un fichier audio accessible sans connexion.");
+        let resume: Promise<void> = Promise.resolve();
+        const Ctx = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (attempt.analyse && Ctx && !reducedMotion) {
+          // Un éventuel défaut du visualiseur ne doit pas imposer Web Audio à la lecture.
+          try {
+            audioCtxRef.current ??= new Ctx();
+            const analyser = audioCtxRef.current.createAnalyser();
+            analyser.fftSize = 128; analyser.smoothingTimeConstant = 0.78;
+            const graphSource = audioCtxRef.current.createMediaElementSource(audio);
+            sourceRef.current = graphSource; analyserRef.current = analyser;
+            graphSource.connect(analyser); analyser.connect(audioCtxRef.current.destination);
+            if (audioCtxRef.current.state === "suspended") resume = audioCtxRef.current.resume();
+          } catch (error) {
+            if (sourceRef.current) throw error;
+            setVisualizer("unavailable");
+          }
         }
+        // play() et resume() sont appelés pendant le même geste utilisateur.
+        await boundedStart(Promise.all([audio.play(), resume]));
+        if (generation !== generationRef.current || !current() || !wantedRef.current) {
+          if (!current() || !wantedRef.current) audio.pause();
+          return;
+        }
+        setTrackLoading(false);
+        if (sourceRef.current) drawVisualizer(); else setVisualizer("unavailable");
+        void fetch(`${apiBase}/api/music/play/${encodeURIComponent(track.id)}`, { method: "POST" }).catch(() => undefined);
+        setTracks(items => items.map(item => item.id === track.id ? { ...item, plays: (item.plays || 0) + 1 } : item));
         return;
+      } catch (error) {
+        lastError = error;
+        if (generation !== generationRef.current || !current() || !wantedRef.current) {
+          if (!current() || !wantedRef.current) audio.pause(); return;
+        }
+        audioRef.current = null; releaseAudio(audio);
+        disconnectGraph(); stopVisualizer();
+        if (error instanceof DOMException && error.name === "NotAllowedError") break;
       }
     }
-    void fetch(`${apiBase}/api/music/play/${encodeURIComponent(track.id)}`, { method: "POST" }).catch(() => undefined);
-    setTracks(items => items.map(item => item.id === track.id ? { ...item, plays: (item.plays || 0) + 1 } : item));
+    if (generation === generationRef.current) {
+      wantedRef.current = false; setTrackLoading(false); setIsPlaying(false);
+      setPlayError(lastError instanceof DOMException && lastError.name === "NotAllowedError"
+        ? "Le navigateur demande votre autorisation de lecture. Appuyez sur Réessayer."
+        : "La piste est indisponible ou sa connexion a expiré. Réessayez ou choisissez un autre morceau.");
+    }
   }
 
   function togglePlay() {
     const audio = audioRef.current;
-    if (!audio) { if (visibleTracks[0]) void playById(visibleTracks[0].id); return; }
-    if (isPlaying) { generationRef.current++; audio.pause(); setIsPlaying(false); stopVisualizer(); }
-    else {
-      generationRef.current++;
-      const playGeneration = generationRef.current;
-      void audio.play().then(() => {
-        if (playGeneration !== generationRef.current || audioRef.current !== audio) { audio.pause(); return; }
-        setIsPlaying(true); if (sourceRef.current) drawVisualizer();
-      }).catch(() => { if (playGeneration === generationRef.current && audioRef.current === audio) setPlayError("La lecture a été bloquée. Appuyez de nouveau sur Lecture."); });
+    if (wantedRef.current && (trackLoading || isPlaying || (audio && !audio.paused))) {
+      generationRef.current++; wantedRef.current = false; clearStallTimer(); audio?.pause();
+      setTrackLoading(false); setIsPlaying(false); stopVisualizer(); return;
     }
+    if (!audio || audio.error || playError) {
+      const id = currentIdRef.current || visibleTracks[0]?.id;
+      if (id) void playById(id); return;
+    }
+    const generation = ++generationRef.current;
+    wantedRef.current = true; setPlayError(""); setTrackLoading(true);
+    const resume = audioCtxRef.current?.state === "suspended" ? audioCtxRef.current.resume() : Promise.resolve();
+    void boundedStart(Promise.all([audio.play(), resume])).then(() => {
+      if (generation !== generationRef.current || audioRef.current !== audio || !wantedRef.current) {
+        if (audioRef.current !== audio || !wantedRef.current) audio.pause(); return;
+      }
+      setTrackLoading(false); if (sourceRef.current) drawVisualizer();
+    }).catch(() => {
+      if (generation !== generationRef.current || audioRef.current !== audio) return;
+      wantedRef.current = false; audio.pause(); setTrackLoading(false); setIsPlaying(false);
+      setPlayError("La reprise n’a pas abouti. Appuyez sur Réessayer.");
+    });
   }
 
   function seek(value: number) {
-    if (!audioRef.current || !duration) return;
-    audioRef.current.currentTime = value; setCurrentTime(value);
+    const audio = audioRef.current;
+    if (!audio || !duration || !Number.isFinite(value)) return;
+    try { audio.currentTime = Math.max(0, Math.min(value, duration)); setCurrentTime(audio.currentTime); }
+    catch { setPlayError("Cette source ne permet pas de se déplacer dans le morceau."); }
   }
 
   function toggleFavorite(id: string) {
@@ -335,18 +392,18 @@ export default function Musique() {
             <canvas ref={canvasRef} className="music-spectrum" aria-hidden="true" />
             <div className="music-spectrum-caption">{visualizer === "live" ? "SPECTRE AUDIO EN DIRECT" : visualizer === "unavailable" ? "SPECTRE INDISPONIBLE POUR CETTE SOURCE" : "SPECTRE EN ATTENTE"}</div>
           </div>
-          {playError && <p className="music-inline-error" role="alert"><AlertCircle size={16} />{playError}</p>}
+          {playError && <div className="music-inline-error" role="alert"><AlertCircle size={16} /><span>{playError}</span><button className="music-text-link" type="button" onClick={() => { if (currentId) void playById(currentId); }}>Réessayer</button></div>}
           <label className="music-seek-label" htmlFor="music-seek"><span>Position</span><span>{formatTime(currentTime)} / {formatTime(duration)}</span></label>
           <input id="music-seek" className="music-range" type="range" min="0" max={duration || 0} step="0.1" value={Math.min(currentTime, duration || 0)} onChange={event => seek(Number(event.target.value))} disabled={!duration} aria-label="Position dans la piste" />
           <div className="music-transport">
             <button className={`music-icon-button ${shuffle ? "selected" : ""}`} type="button" onClick={() => setShuffle(value => !value)} aria-pressed={shuffle} aria-label={shuffle ? "Désactiver la lecture aléatoire" : "Activer la lecture aléatoire"} title="Lecture aléatoire"><Shuffle size={18} /></button>
             <button className="music-icon-button" type="button" onClick={() => { const list = filteredRef.current; const index = list.findIndex(track => track.id === currentIdRef.current); if (list.length) void playById(list[(index - 1 + list.length) % list.length].id); }} aria-label="Piste précédente"><SkipBack size={20} /></button>
-            <button className="music-play-button" type="button" onClick={togglePlay} disabled={trackLoading || (!currentTrack && !visibleTracks.length)} aria-label={isPlaying ? "Mettre en pause" : "Lancer la lecture"}>{trackLoading ? <LoaderCircle className="music-spin" size={22} /> : isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}</button>
+            <button className="music-play-button" type="button" onClick={togglePlay} disabled={!currentTrack && !visibleTracks.length} aria-label={trackLoading ? "Annuler le chargement" : isPlaying ? "Mettre en pause" : "Lancer la lecture"}>{trackLoading ? <LoaderCircle className="music-spin" size={22} /> : isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}</button>
             <button className="music-icon-button" type="button" onClick={() => advanceTrack(false)} aria-label="Piste suivante"><SkipForward size={20} /></button>
             <button className={`music-icon-button ${repeatOne ? "selected" : ""}`} type="button" onClick={() => setRepeatOne(value => !value)} aria-pressed={repeatOne} aria-label={repeatOne ? "Désactiver la répétition" : "Répéter cette piste"} title="Répéter la piste"><Repeat1 size={18} /></button>
           </div>
           <div className="music-volume"><button className="music-icon-button compact" type="button" onClick={() => setIsMuted(value => !value)} aria-label={isMuted ? "Activer le son" : "Couper le son"}>{isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}</button><input className="music-range" type="range" min="0" max="1" step="0.01" value={volume} onChange={event => setVolume(Number(event.target.value))} aria-label="Volume"/><span>{Math.round((isMuted ? 0 : volume) * 100)}%</span></div>
-          <p className="music-player-note">Lecture sur demande · le spectre s’anime uniquement lorsque le navigateur reçoit les fréquences du morceau.</p>
+          <p className="music-player-note">Lecture sur demande · les animations suivent le son sans interrompre la musique.</p>
         </section>
 
         <section className="music-library-card" aria-label="Bibliothèque musicale">
@@ -365,7 +422,7 @@ export default function Musique() {
         </section>
       </div>}
 
-      <section className="music-howto"><div className="music-howto-heading"><span className="music-kicker">TRANSMISSION KITT</span><h2>Une piste à partager ?</h2><p>Créations faites maison bienvenues — musique inspirée de Knight Rider, dans le respect des droits de chacun.</p></div><div className="music-steps"><article><span>01</span><strong>Préparez un lien direct</strong><p>Hébergez votre fichier MP3 sur un service qui fournit un lien de lecture direct et public, sans connexion ni page de téléchargement.</p></article><article><span>02</span><strong>Décrivez la création</strong><p>Indiquez le titre, l’artiste, l’origine (originale, IA ou sous licence) et les informations de licence ou de génération nécessaires.</p></article><article><span>03</span><strong>Manix vérifie</strong><p>Votre proposition reste privée et en attente jusqu’à sa vérification et son approbation. L’envoi ne garantit pas la publication.</p></article></div><div className="music-howto-footer"><span>Le thème KITT / Knight Rider doit être expliqué. <a className="music-rights-link" href="https://economie.fgov.be/fr/themes/propriete-intellectuelle/droits-de-propriete/droits-dauteur-et-droits/droits-dauteur/le-droit-dauteur-sur-internet" target="_blank" rel="noreferrer">Guide officiel belge sur le droit d’auteur ↗</a></span><Link className="music-button primary" href="/soumettre-musique">Lire le guide et proposer <SkipForward size={16} /></Link></div></section>
+      <section className="music-howto"><div className="music-howto-heading"><span className="music-kicker">TRANSMISSION KITT</span><h2>Une piste à partager ?</h2><p>Créations faites maison bienvenues — musique inspirée de Knight Rider, dans le respect des droits de chacun.</p></div><div className="music-steps"><article><span>01</span><strong>Choisissez un fichier sur votre PC</strong><p>Envoyez votre fichier MP3, WAV, OGG, FLAC ou M4A directement depuis votre appareil, jusqu’à 64 Mio. Aucun hébergeur externe n’est nécessaire.</p></article><article><span>02</span><strong>Décrivez la création</strong><p>Indiquez le titre, l’artiste, l’origine (originale, IA ou sous licence) et les informations de licence ou de génération nécessaires.</p></article><article><span>03</span><strong>Manix vérifie</strong><p>Votre fichier est conservé sur le serveur KITT. La proposition reste privée jusqu’à son approbation par Manix, puis rejoint la playlist. Le serveur doit être en ligne pour la lecture.</p></article></div><div className="music-howto-footer"><span>Le thème KITT / Knight Rider doit être expliqué. <a className="music-rights-link" href="https://economie.fgov.be/fr/themes/propriete-intellectuelle/droits-de-propriete/droits-dauteur-et-droits/droits-dauteur/le-droit-dauteur-sur-internet" target="_blank" rel="noreferrer">Guide officiel belge sur le droit d’auteur ↗</a></span><Link className="music-button primary" href="/soumettre-musique">Lire le guide et proposer <SkipForward size={16} /></Link></div></section>
       <footer className="music-footer"><Link href="/">← Retour au système KITT</Link><span>BY MANIX · KITT FRANCO-BELGE</span></footer>
     </div>
   </main>;

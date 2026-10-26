@@ -1,0 +1,42 @@
+--- a/kyronex_server.py
++++ b/kyronex_server.py
+@@ -10227,28 +10227,4 @@
+ async def handle_audio_proxy(request):
+-    url = request.rel_url.query.get("url", "")
+-    if not url:
+-        return web.Response(status=400, text="missing url")
+-    try:
+-        ua = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"}
+-        async with _aiohttp_mod.ClientSession(headers=ua) as s:
+-            async with s.get(url, timeout=_aiohttp_mod.ClientTimeout(total=30)) as resp:
+-                content_type = resp.headers.get("Content-Type", "audio/mpeg")
+-                proxy_headers = {
+-                    "Content-Type": content_type,
+-                    "Access-Control-Allow-Origin": "*",
+-                    "Cache-Control": "public, max-age=3600",
+-                    "Accept-Ranges": "bytes",
+-                }
+-                # Propager Content-Length pour que le navigateur mobile
+-                # puisse afficher la durée et permettre le seek
+-                if "Content-Length" in resp.headers:
+-                    proxy_headers["Content-Length"] = resp.headers["Content-Length"]
+-                response = web.StreamResponse(headers=proxy_headers)
+-                await response.prepare(request)
+-                async for chunk in resp.content.iter_chunked(8192):
+-                    await response.write(chunk)
+-                await response.write_eof()
+-                return response
+-    except Exception as e:
+-        return web.Response(status=502, text=str(e))
++    from music_audio_proxy import handle_audio_proxy as _relay_audio
++    return await _relay_audio(request)
+ 
+@@ -10255,6 +10231,4 @@
+ async def handle_audio_proxy_options(request):
+-    return web.Response(headers={
+-        "Access-Control-Allow-Origin": "*",
+-        "Access-Control-Allow-Methods": "GET,OPTIONS",
+-    })
++    from music_audio_proxy import audio_proxy_options
++    return audio_proxy_options()
+ 
