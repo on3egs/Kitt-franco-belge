@@ -14,6 +14,9 @@
 .movement-tip{margin-top:8px;color:#63e9ff}
 .touch-tip{margin:12px 0 0;color:#9dbed2;font-size:13px;line-height:1.5}
 .touch-tip strong{color:#ffd15a}
+.menu-score-link{display:inline-flex;align-items:center;justify-content:center;margin:-24px auto 24px;padding:8px 12px;border:1px solid #48b9e155;border-radius:999px;color:#9feaff;font-size:12px;text-decoration:none;transition:background .18s,border-color .18s,transform .18s}
+.menu-score-link:hover{background:#102b3d;border-color:#63e9ff;transform:translateY(-1px)}
+:where(.menu-score-link):focus-visible{outline:2px solid #ffd15a;outline-offset:3px}
 #main-menu{overflow-y:auto;overscroll-behavior:contain;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))}
 .menu-container{width:min(94vw,560px);margin:auto}
 #touch-joystick,#joystick-base,#touch-up,#touch-down,#touch-left,#touch-right,#touch-fire{touch-action:none;user-select:none;-webkit-user-select:none}

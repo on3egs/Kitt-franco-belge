@@ -125,7 +125,7 @@ let paused = false;
 let gameOver = false;
 let scoreSubmitted = false;
 let nextLifeScore=10000,totalGhostsEaten=0,ghostAccumulator=0,fruitStage=0;
-let readyUntil=0,deathFreezeUntil=0,runGeneration=0;
+let readyUntil=0,deathFreezeUntil=0,runGeneration=0,runStartedAt=0;
 
 // Combo de pastilles (fenêtre de 1,4 s entre chaque pastille)
 let comboCount=0,comboUntil=0,comboMult=1;
@@ -814,7 +814,7 @@ function playUIClick(){window.PacmanSfx?.unlock();if(soundEnabled)window.PacmanS
 // ============================================
 
 function resetGame() {
-    runGeneration++;ghostAccumulator=0;readyUntil=Date.now()+950;deathFreezeUntil=0;
+    runGeneration++;runStartedAt=Date.now();ghostAccumulator=0;readyUntil=Date.now()+950;deathFreezeUntil=0;
     for(const object of [...scene.children]){
         if(object.isLight||object.isCamera)continue;
         object.traverse(child=>{child.geometry?.dispose();const materials=Array.isArray(child.material)?child.material:[child.material];materials.forEach(material=>{material?.map?.dispose();material?.dispose()})});
@@ -1158,6 +1158,12 @@ function endGame() {
         highScore = score;
         try { localStorage.setItem('pacman3dHighScore', String(highScore)); } catch (e) { /* noop */ }
     }
+    if (!scoreSubmitted && window.ManixScores?.save) {
+        scoreSubmitted = true;
+        let pilot = 'PILOTE';
+        try { pilot = localStorage.getItem('manixArcadePlayerName')?.trim().slice(0, 20) || pilot; } catch (e) { /* Le classement local reste facultatif. */ }
+        window.ManixScores.save('Pac-Man 3D', pilot, score, level, Math.round((Date.now() - runStartedAt) / 1000));
+    }
     
     document.getElementById('gameover-score').textContent = score;
     document.getElementById('gameover-level').textContent = level;
@@ -1399,13 +1405,16 @@ function ghostTarget(ghost, ghostIndex) {
             };
         
         }
-        case 'patrol':
-            // Patrol around the maze
-            if (Math.random() < 0.5) {
-                return { x: player.x, y: player.y };
-            } else {
-                return { x: Math.random() * MAZE_WIDTH, y: Math.random() * MAZE_HEIGHT };
-            }
+        case 'patrol': {
+            // Cible de ronde stable : une cible aléatoire à chaque pas faisait
+            // zigzaguer KARR-4 et donnait l’impression d’une IA cassée.
+            const patrolPoints = [
+                { x: 1, y: 1 }, { x: MAZE_WIDTH - 2, y: 1 },
+                { x: 1, y: MAZE_HEIGHT - 2 }, { x: MAZE_WIDTH - 2, y: MAZE_HEIGHT - 2 }
+            ];
+            const patrolIndex = (ghostIndex + Math.floor(Date.now() / 9000)) % patrolPoints.length;
+            return patrolPoints[patrolIndex];
+        }
         
         default:
             return { x: player.x, y: player.y };

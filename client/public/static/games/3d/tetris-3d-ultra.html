@@ -189,6 +189,17 @@
             color: #8338ec;
             margin-bottom: 30px;
         }
+
+        .tetris-hall-link {
+            display: inline-block;
+            margin: -14px 0 20px;
+            color: #b8eaff;
+            font-size: .8rem;
+            letter-spacing: .12em;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+        .tetris-hall-link:focus-visible { outline: 2px solid #ff6b9d; outline-offset: 4px; }
         
         #restart-button {
             background: linear-gradient(45deg, #ff6b9d, #c44569, #ff006e);
@@ -344,6 +355,7 @@
         <h1 id="game-over-title">PARTIE TERMINÉE</h1>
         <div id="final-score">SCORE: 0</div>
         <div id="high-score">RECORD : 0</div>
+        <a class="tetris-hall-link" href="/static/games/high-scores.html">VOIR LE HALL OF FAME</a>
         <button id="restart-button">RECOMMENCER</button>
     </div>
     
@@ -364,6 +376,7 @@
         </div>
     </div>
     
-    <script src="tetris-3d-ultra.js?v=20261005-resume"></script>
+    <script src="/static/games/highscores.js?v=20261027-arcade-sync1"></script>
+    <script src="tetris-3d-ultra.js?v=20261027-arcade-sync1"></script>
 </body>
 </html>

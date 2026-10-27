@@ -46,6 +46,7 @@ let state = 'loading';
 let score = 0, level = 1, lines = 0, combo = 0;
 let highScore = 0;
 let gameOver = false, paused = false, won = false;
+let runStartedAt = 0, scoreSubmitted = false;
 
 // Controls améliorés
 const keys = {};
@@ -979,6 +980,8 @@ function startGame() {
     gameOver = false;
     paused = false;
     won = false;
+    runStartedAt = Date.now();
+    scoreSubmitted = false;
     
     // Reset score
     score = 0;
@@ -1341,6 +1344,12 @@ function showGameOverScreen() {
         gameOverScreen.style.display = 'flex';
         document.getElementById('final-score').textContent = `SCORE: ${score.toLocaleString()}`;
         document.getElementById('high-score').textContent = `RECORD : ${highScore.toLocaleString()}`;
+    }
+    if (!scoreSubmitted && window.ManixScores?.save) {
+        scoreSubmitted = true;
+        let pilot = 'PILOTE';
+        try { pilot = localStorage.getItem('manixArcadePlayerName')?.trim().slice(0, 20) || pilot; } catch (e) { /* Classement facultatif. */ }
+        window.ManixScores.save('Tetris 3D Ultra', pilot, score, level, runStartedAt ? Math.round((Date.now() - runStartedAt) / 1000) : 0);
     }
 }
 
