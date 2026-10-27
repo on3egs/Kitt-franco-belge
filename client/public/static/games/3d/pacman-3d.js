@@ -225,6 +225,8 @@ function initScene() {
     renderer.toneMappingExposure = 1.3;
     
     document.getElementById('game-container').appendChild(renderer.domElement);
+    renderer.domElement.tabIndex = 0;
+    renderer.domElement.setAttribute('aria-label', 'Labyrinthe Pac-Man 3D. Utilise les flèches ou ZQSD pour te déplacer.');
 
     // Lights
     const ambientLight = new THREE.AmbientLight(0x7ea7cf, 0.65);
@@ -878,6 +880,7 @@ function startGame() {
     resetGame();
     showScreen('game');
     state = 'playing';
+    renderer.domElement.focus({preventScroll:true});
     playReady();
 }
 
@@ -1517,12 +1520,10 @@ function render() {
     const delta = Math.min(clock.getDelta(),.05);
     if(document.hidden)return;
     const elapsed = clock.getElapsedTime();
-    window.PacmanSfx?.update(state==='playing'&&!paused&&!gameOver&&!won,powerUntil>Date.now(),level,turboMode);
-    
-    if (state === 'playing' && !paused) {
-        update(delta, elapsed);
-    }
-    
+    const active = state === 'playing' && !paused && !gameOver && !won;
+    window.PacmanSfx?.update(active,powerUntil>Date.now(),level,turboMode);
+    if (!active) return;
+    update(delta, elapsed);
     renderer.render(scene, camera);
 }
 
@@ -1534,6 +1535,8 @@ let moveDirs = {ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},ArrowUp:{x:0,y:-1},Arr
 
 function handleKeyDown(e) {
     if(e.repeat&&['Escape','KeyP','KeyG','KeyV','KeyC'].includes(e.code))return;
+    const focusedControl=e.target?.closest?.('button,input,select,textarea,a,[contenteditable="true"]');
+    if(focusedControl&&['Enter','Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyA','KeyQ','KeyD','KeyW','KeyZ','KeyS','KeyR','KeyM','KeyG','KeyV','KeyC'].includes(e.code))return;
     const direction=moveDirs[e.code];if(direction)player.want={...direction};
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
     keys[e.code] = true;

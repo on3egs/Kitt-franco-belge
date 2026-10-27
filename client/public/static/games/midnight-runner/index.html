@@ -11,15 +11,17 @@
 <body>
   <main class="game-shell" id="game-shell">
     <div class="game-stage" id="game-stage">
-      <canvas id="game" width="960" height="540" aria-label="Course d'arcade Midnight Runner" role="img"></canvas>
+      <canvas id="game" width="960" height="540" aria-label="Course Midnight Runner. Utilise les flèches ou A/D pour changer de voie et Espace pour le turbo." role="img" tabindex="0"></canvas>
 
-      <header class="hud" id="hud" aria-live="polite" hidden>
+      <header class="hud" id="hud" aria-live="off" hidden>
         <div class="hud-brand"><span class="signal"></span><span>MIDNIGHT RUNNER</span><small>MANIX ARCADE</small></div>
         <div class="hud-stat"><small>SCORE</small><strong id="score">000000</strong></div>
-        <div class="hud-stat"><small>SECTEUR</small><strong id="sector">01</strong></div>
+        <div class="hud-stat sector-stat"><small>SECTEUR</small><strong id="sector">01</strong><em id="sector-name">RING ROAD</em></div>
         <div class="hud-stat"><small>CHRONO</small><strong id="timer">01:00</strong></div>
         <div class="hud-stat energy-stat"><small>TURBO</small><span class="meter"><i id="energy-meter"></i></span></div>
+        <div class="hud-stat combo-stat" id="combo-stat" hidden><small>COMBO</small><strong id="combo-value">×1</strong><span class="combo-meter"><i id="combo-meter"></i></span></div>
         <div class="hud-stat health-stat"><small>BLINDAGE</small><strong id="health">◆ ◆ ◆</strong></div>
+        <div class="route-track" aria-hidden="true"><i id="route-meter"></i></div>
       </header>
 
       <div class="toast" id="toast" aria-live="polite"></div>
@@ -44,7 +46,7 @@
         <div class="screen-card help-card">
           <div class="eyebrow">GUIDE DE PILOTAGE</div>
           <h2 id="help-title">Garde la route.</h2>
-          <p>Change de voie pour éviter le trafic. Passe près des voitures sans les toucher pour marquer des points; ramasse les cellules cyan pour recharger ton turbo.</p>
+          <p>Change de voie pour éviter le trafic. Les dépassements propres enchaînés font grimper le combo; une collision le remet à zéro. Ramasse les cellules cyan pour recharger le turbo et, si ton blindage a été touché, récupérer un point.</p>
           <div class="help-grid">
             <div><kbd>← →</kbd><kbd>A / D</kbd><kbd>Q / D</kbd><span>Changer de voie<br>(flèches, QWERTY ou AZERTY)</span></div>
             <div><kbd>ESPACE</kbd><span>Turbo : consomme l’énergie et protège d’un impact pendant l’accélération.</span></div>
@@ -73,7 +75,7 @@
           <h2 id="finish-title">Arrivée !</h2>
           <p id="finish-message">Tu as traversé la nuit.</p>
           <div class="finish-score"><small>SCORE DE LA COURSE</small><strong id="final-score">000000</strong><span id="record-badge" hidden>NOUVEAU RECORD</span></div>
-          <div class="finish-stats"><span>ÉNERGIE <strong id="cores-collected">0 cellules</strong></span><span>SECTEUR <strong id="final-sector">01</strong></span></div>
+          <div class="finish-stats"><span>CELLULES <strong id="cores-collected">0</strong></span><span>SECTEUR <strong id="final-sector">01</strong></span><span>MEILLEUR COMBO <strong id="final-combo">×0</strong></span></div>
           <button class="button button-primary" id="replay-button">REJOUER <span>↻</span></button>
           <button class="button button-quiet" id="title-button">ÉCRAN TITRE</button>
         </div>

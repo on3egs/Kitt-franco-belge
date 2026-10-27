@@ -9,7 +9,7 @@ Jeu d'arcade original, autonome et sans bibliothèque tierce. Les effets graphiq
 - P ou Échap : pause/reprise. M : activer/couper les effets sonores.
 - Sur écran tactile : glisser latéralement ou utiliser les flèches; maintenir TURBO pour l'activer.
 
-Évite les voitures, collecte les cellules cyan pour recharger le turbo et tiens 60 secondes. Le blindage dispose de trois points; chaque impact en retire un. Le meilleur score est conservé dans le stockage local du navigateur.
+Évite les voitures, collecte les cellules cyan pour recharger le turbo et tiens 60 secondes réparties en cinq secteurs. Les dépassements sans collision construisent un combo jusqu'à ×5; un choc le réinitialise. Une cellule recharge le turbo et répare un point de blindage si tu as déjà encaissé un impact. Le blindage commence à trois points. Le meilleur score est conservé dans le stockage local du navigateur.
 
 ## Intégration
 
