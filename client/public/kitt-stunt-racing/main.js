@@ -62,8 +62,12 @@ let world, carBody, carMesh, vehicle;
 let scannerMesh, scannerLight, tailLeftMat, tailRightMat, turboFlame;
 let turboFlames = [];
 let wheelMeshes = [];
-const wheelBaseQuat = window.THREE?.Quaternion
-    ? new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2)
+// Use the window export directly here. If a browser blocks or delays a script,
+// referencing the bare THREE global during top-level evaluation can throw before
+// the compatibility mode has a chance to start.
+const THREE_LIB = window.THREE || null;
+const wheelBaseQuat = THREE_LIB && THREE_LIB.Quaternion && THREE_LIB.Vector3
+    ? new THREE_LIB.Quaternion().setFromAxisAngle(new THREE_LIB.Vector3(0, 0, 1), Math.PI / 2)
     : null;
 
 let keys = {};

@@ -18,8 +18,8 @@ const MAZE_WIDTH = 28;
 const MAZE_HEIGHT = 32;
 const PACMAN_SPEED = 15;
 const GHOST_SPEED = 8;
-const POWER_DURATION = 30;
 const FRIGHTENED_DURATION = 6;
+const POWER_DURATION = FRIGHTENED_DURATION;
 const INVINCIBLE_DURATION = 3;
 
 // Qualité graphique (0 = bas, 1 = moyen, 2 = élevé). On réutilise le choix
@@ -815,6 +815,7 @@ function playUIClick(){window.PacmanSfx?.unlock();if(soundEnabled)window.PacmanS
 
 function resetGame() {
     runGeneration++;runStartedAt=Date.now();ghostAccumulator=0;readyUntil=Date.now()+950;deathFreezeUntil=0;
+    hudStamp='';
     for(const object of [...scene.children]){
         if(object.isLight||object.isCamera)continue;
         object.traverse(child=>{child.geometry?.dispose();const materials=Array.isArray(child.material)?child.material:[child.material];materials.forEach(material=>{material?.map?.dispose();material?.dispose()})});
@@ -873,6 +874,7 @@ function resetGame() {
     // Reset state
     score = 0;
     nextLifeScore=10000;totalGhostsEaten=0;fruitStage=0;
+    comboCount=0;comboUntil=0;comboMult=1;
     lives = 3;
     level = 1;
     pelletsEaten = 0;
@@ -983,7 +985,7 @@ function checkPellet() {
             hidePelletInstance(p);
             pelletMeshes.splice(i, 1);
             
-            score += 10;
+            registerPelletCombo(10);
             pelletsEaten++;
             
             // Check if this was the last pellet for level up
@@ -995,6 +997,7 @@ function checkPellet() {
             pelletSoundTone = !pelletSoundTone;
             playChomp();
             
+            updateHud();
             break;
         }
     }
@@ -1007,12 +1010,12 @@ function checkPellet() {
             hidePelletInstance(p);
             powerPelletMeshes.splice(i, 1);
             
-            score += 50;
+            registerPelletCombo(50);
             pelletsEaten++;
             
             // Power up!
             powerUntil = Date.now() + POWER_DURATION * 1000;
-            frightenedUntil = Date.now() + FRIGHTENED_DURATION * 1000;
+            frightenedUntil = powerUntil;
             ghostsEatenWithPower = 0;
             
             playPower();
@@ -1027,9 +1030,20 @@ function checkPellet() {
             // Spawn fruit if enough pellets eaten
             spawnFruit();
             
+            updateHud();
             break;
         }
     }
+}
+
+function registerPelletCombo(basePoints) {
+    const now = Date.now();
+    comboCount = now <= comboUntil ? comboCount + 1 : 1;
+    comboUntil = now + COMBO_WINDOW;
+    const nextMultiplier = Math.min(COMBO_MAX, 1 + Math.floor((comboCount - 1) / COMBO_STEP));
+    if (nextMultiplier > comboMult && nextMultiplier > 1) window.PacmanSfx?.combo(nextMultiplier);
+    comboMult = nextMultiplier;
+    score += basePoints * comboMult;
 }
 
 function checkFruit() {
@@ -1040,6 +1054,7 @@ function checkFruit() {
     
     if (x === fruit.x && y === fruit.y) {
         score += fruit.points;
+        updateHud();
         playFruit();
         
         // Show fruit eaten effect
@@ -1058,7 +1073,7 @@ function checkFruit() {
 
 function checkGhostCollision() {
     if(invincibleUntil>Date.now()||deathFreezeUntil>Date.now())return;
-    if (powerUntil > Date.now()) return; // Pac-Man is powered up
+    if (frightenedUntil > Date.now()) return; // Les fantômes sont encore vulnérables.
     
     for (let i = 0; i < ghostStates.length; i++) {
         const ghost = ghostStates[i];
@@ -1067,6 +1082,7 @@ function checkGhostCollision() {
         if (Math.floor(ghost.x) === Math.floor(player.x) && Math.floor(ghost.y) === Math.floor(player.y)) {
             // Ghost collision
             lives--;deathFreezeUntil=Date.now()+800;
+            comboCount=0;comboUntil=0;comboMult=1;
             gridAccumulator=0;ghostAccumulator=0;
             Object.keys(keys).forEach(key=>delete keys[key]);
             invincibleUntil = Date.now() + INVINCIBLE_DURATION * 1000;
@@ -1101,7 +1117,7 @@ function checkGhostCollision() {
 }
 
 function checkGhostEat() {
-    if (powerUntil <= Date.now()) return;
+    if (frightenedUntil <= Date.now()) return;
     
     for (let i = 0; i < ghostStates.length; i++) {
         const ghost = ghostStates[i];
@@ -1311,7 +1327,8 @@ function updateGhosts() {
         // Choose direction based on AI
         let target;
         
-        if (powerUntil > now) {
+        const frightened = frightenedUntil > now;
+        if (frightened) {
             // Flee from Pac-Man
             target = {
                 x: player.x - (player.dir.x * 4 + (player.dir.x === 0 ? player.want.x * 4 : 0)),
@@ -1324,7 +1341,7 @@ function updateGhosts() {
         
         // Find best direction
         let bestDir = directions[0];
-        let bestDist = powerUntil>now?-Infinity:Infinity;
+        let bestDist = frightened?-Infinity:Infinity;
         
         for (const dir of directions) {
             const newX = Math.floor(ghost.x + dir.x);
@@ -1332,14 +1349,14 @@ function updateGhosts() {
             const dist = mazeDistance(newX, newY, Math.floor(target.x), Math.floor(target.y));
             
             const metric=dist===999?Math.abs(newX-target.x)+Math.abs(newY-target.y):dist;
-            if (powerUntil>now?metric>bestDist:metric<bestDist) {
+            if (frightened?metric>bestDist:metric<bestDist) {
                 bestDist = metric;
                 bestDir = dir;
             }
         }
         
         // Sometimes make random decision
-        if (Math.random() < 0.2) {
+        if (Math.random() < (frightened ? 0.08 : Math.min(0.12, 0.04 + level * 0.006))) {
             bestDir = directions[Math.floor(Math.random() * directions.length)];
         }
         
@@ -1366,13 +1383,10 @@ function updateGhosts() {
             ghostMesh.position.y = 1.2 + wobble;
             
             // Update color based on state
-            if (powerUntil > now) {
-                const remaining = (powerUntil - now) / 1000;
-                if (remaining < 5 && Math.floor(Date.now() / 100) % 2 === 0) {
-                    ghostMesh.children[0].material.color.setHex(COLORS.cyano);
-                } else {
-                    ghostMesh.children[0].material.color.setHex(COLORS.cyano);
-                }
+            if (frightened) {
+                const remaining = (frightenedUntil - now) / 1000;
+                const flashing = remaining < 2 && Math.floor(now / 180) % 2 === 0;
+                ghostMesh.children[0].material.color.setHex(flashing ? 0xffffff : COLORS.cyano);
             } else {
                 ghostMesh.children[0].material.color.setHex(GHOST_INFO[i].color);
             }
@@ -1464,7 +1478,7 @@ function update(dt, t) {
         checkGhostEat();
     }
     ghostAccumulator+=Math.min(dt,.05);
-    const ghostTick=(powerUntil>Date.now()?.28:.205)/Math.min(1.4,1+(level-1)*.045);
+    const ghostTick=(frightenedUntil>Date.now()?.28:.205)/Math.min(1.4,1+(level-1)*.045);
     if(Date.now()>=readyUntil&&Date.now()>=deathFreezeUntil&&ghostAccumulator>=ghostTick){ghostAccumulator%=ghostTick;updateGhosts();checkGhostEat();checkGhostCollision();}
     
     // Les décisions de grille ont une cadence indépendante du rendu.
@@ -1509,6 +1523,8 @@ function update(dt, t) {
         effect.rotation.z = t * 2;
         effect.material.opacity = 0.2 + Math.sin(t * 3) * 0.1;
     }
+
+    updateStatusHud(Date.now());
     
     // Update particles
     updateParticles(dt);
@@ -1551,7 +1567,7 @@ function render() {
     if(document.hidden)return;
     const elapsed = clock.getElapsedTime();
     const active = state === 'playing' && !paused && !gameOver && !won;
-    window.PacmanSfx?.update(active,powerUntil>Date.now(),level,turboMode);
+    window.PacmanSfx?.update(active,frightenedUntil>Date.now(),level,turboMode);
     if (!active) return;
     update(delta, elapsed);
     renderer.render(scene, camera);
@@ -1714,6 +1730,20 @@ function updateHud() {
     el('pellets-value').textContent = totalPellets - pelletsEaten;
 }
 
+function updateStatusHud(now) {
+    const powerPanel=el('power-panel'),powerBar=el('power-bar');
+    const powerRemaining=Math.max(0,powerUntil-now);
+    if(powerPanel)powerPanel.classList.toggle('visible',powerRemaining>0);
+    if(powerBar)powerBar.style.width=`${Math.min(100,powerRemaining/(POWER_DURATION*10))}%`;
+
+    const comboPanel=el('combo-panel'),comboBar=el('combo-bar'),comboValue=el('combo-value');
+    const comboRemaining=Math.max(0,comboUntil-now);
+    const comboActive=comboRemaining>0&&comboMult>1;
+    if(comboPanel)comboPanel.classList.toggle('visible',comboActive);
+    if(comboBar)comboBar.style.width=`${Math.min(100,comboRemaining/COMBO_WINDOW*100)}%`;
+    if(comboValue)comboValue.textContent=String(comboMult);
+}
+
 let pauseStarted=0;
 function togglePause(force) {
     if (state !== 'playing' && state !== 'paused') return;
@@ -1724,7 +1754,7 @@ function togglePause(force) {
         state = 'paused';window.PacmanSfx?.stop();
         el('pause-screen').classList.add('visible');
     } else {
-        const gap=Date.now()-pauseStarted;if(powerUntil)powerUntil+=gap;if(frightenedUntil)frightenedUntil+=gap;if(invincibleUntil)invincibleUntil+=gap;readyUntil+=gap;deathFreezeUntil+=gap;
+        const gap=Date.now()-pauseStarted;if(powerUntil)powerUntil+=gap;if(frightenedUntil)frightenedUntil+=gap;if(comboUntil)comboUntil+=gap;if(invincibleUntil)invincibleUntil+=gap;readyUntil+=gap;deathFreezeUntil+=gap;
         ghostStates.forEach(g=>{if(g.releaseAt)g.releaseAt+=gap});
         state = 'playing';
         el('pause-screen').classList.remove('visible');
@@ -2016,5 +2046,5 @@ if (document.readyState === 'loading') {
     boot();
 }
 
-window.PACMAN_3D={startGame,togglePause,toggleViewZoom,toggleCamera,state:()=>({state,score,lives,level,pelletsEaten,player:{x:player.x,y:player.y,direction:{...player.dir},buffered:{...player.want}},ghosts:ghostStates.map(g=>({x:g.x,y:g.y,returning:g.returning})),powered:powerUntil>Date.now(),camera:cameraMode,zoom:viewZoom,drawCalls:renderer?.info.render.calls})};
+window.PACMAN_3D={startGame,togglePause,toggleViewZoom,toggleCamera,state:()=>({state,score,lives,level,pelletsEaten,player:{x:player.x,y:player.y,direction:{...player.dir},buffered:{...player.want}},ghosts:ghostStates.map(g=>({x:g.x,y:g.y,returning:g.returning})),powered:frightenedUntil>Date.now(),camera:cameraMode,zoom:viewZoom,drawCalls:renderer?.info.render.calls})};
 })();

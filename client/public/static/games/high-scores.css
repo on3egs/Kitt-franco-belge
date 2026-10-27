@@ -1,0 +1,42 @@
+.scoreboard{max-width:1280px}
+.score-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:54px 0 26px;border-bottom:1px solid #ffffff17}
+.score-hero h1{margin:14px 0 10px;text-shadow:0 0 34px #ff465733}
+.score-hero .intro{margin:0;max-width:680px}
+.score-hero-mark{position:relative;display:grid;place-items:center;flex:none;width:190px;height:150px;overflow:hidden;border:1px solid #38404c;background:radial-gradient(ellipse at center,#45331555,transparent 66%),linear-gradient(145deg,#17202a,#090d13);clip-path:polygon(12% 0,100% 0,100% 76%,82% 100%,0 100%,0 16%)}
+.score-hero-mark span{font-size:74px;filter:drop-shadow(0 0 18px #ffc96975);animation:score-trophy-float 3.4s ease-in-out infinite}
+.score-hero-mark i{position:absolute;left:0;right:0;height:2px;top:24%;background:linear-gradient(90deg,transparent,#ff4657,transparent);box-shadow:0 0 16px #ff4657;animation:score-scan 4.4s ease-in-out infinite}
+.score-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.score-summary article{min-height:78px;padding:15px 18px;border:1px solid #263949;background:linear-gradient(145deg,#131d28,#0b1117)}
+.score-summary small{display:block;color:#91a5b1;font:9px 'IBM Plex Mono',monospace;letter-spacing:.12em}
+.score-summary strong{display:block;overflow:hidden;margin-top:8px;color:#eaf4f7;font:700 22px 'Barlow Condensed',Impact,sans-serif;text-overflow:ellipsis;white-space:nowrap}
+.score-tools{display:grid;grid-template-columns:minmax(190px,1fr) minmax(150px,.6fr) minmax(150px,.6fr) auto auto;align-items:end;gap:9px;padding:15px;border:1px solid #263949;background:#0d141c}
+.score-tools label{display:grid;gap:6px;color:#92a5b0;font:9px 'IBM Plex Mono',monospace;letter-spacing:.08em}
+.score-tools input,.score-tools select,.score-tools button{height:40px;min-width:0;padding:0 11px;border:1px solid #344759;background:#101923;color:#eaf4f7;font:10px 'IBM Plex Mono',monospace}
+.score-tools input::placeholder{color:#728491}
+.score-tools input:focus,.score-tools select:focus,.score-tools button:focus-visible{border-color:#54e5ee;outline:2px solid #54e5ee44;outline-offset:1px}
+.score-tools button{cursor:pointer;color:#54e5ee;transition:.2s}
+.score-tools button:hover{border-color:#54e5ee;box-shadow:0 0 16px #54e5ee20}
+.score-tools #score-reset{color:#b1c0c8}
+.score-note,.score-privacy{color:#82949e;font-size:10px;line-height:1.7}
+.score-note{min-height:17px;margin:12px 2px 0}
+.score-table-wrap{overflow:auto;border:1px solid #263949;background:#0b1016}
+.score-table{margin:0;min-width:760px}
+.score-table th{position:sticky;top:0;background:#111a23}
+.score-table tbody tr{transition:background .15s}
+.score-table tbody tr:hover{background:#14202a}
+.score-table tbody tr:nth-child(1) td:first-child{color:#ffd36e}
+.score-table tbody tr:nth-child(2) td:first-child{color:#c4d3dd}
+.score-table tbody tr:nth-child(3) td:first-child{color:#e49b71}
+.score-duration{color:#92a5b0;white-space:nowrap}
+.score-pagination{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+.score-pagination button{min-width:38px;height:36px;border:1px solid #344759;background:#101923;color:#dce8ee;cursor:pointer}
+.score-pagination button[aria-current=page]{border-color:#54e5ee;color:#54e5ee;box-shadow:0 0 14px #54e5ee24}
+.score-pagination button:disabled{opacity:.4;cursor:not-allowed}
+.score-page-label{color:#92a5b0;font:10px 'IBM Plex Mono',monospace}
+.score-privacy{margin-top:20px;padding:12px 14px;border-left:2px solid #54e5ee;background:#54e5ee09}
+.empty-scores{margin-top:14px}
+@keyframes score-scan{0%,100%{top:18%;opacity:.18}50%{top:82%;opacity:.9}}
+@keyframes score-trophy-float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+@media(max-width:850px){.score-tools{grid-template-columns:repeat(3,minmax(0,1fr))}.score-tools button{width:100%}.score-tools .score-search{grid-column:span 2}}
+@media(max-width:600px){.score-hero{padding-top:36px}.score-hero-mark{width:100px;height:94px}.score-hero-mark span{font-size:48px}.score-summary{grid-template-columns:1fr 1fr}.score-summary article:last-child{grid-column:span 2}.score-tools{grid-template-columns:1fr 1fr}.score-tools .score-search{grid-column:span 2}.score-tools input,.score-tools select,.score-tools button{font-size:9px;padding:0 8px}}
+@media(prefers-reduced-motion:reduce){.score-hero-mark span,.score-hero-mark i{animation:none}}
