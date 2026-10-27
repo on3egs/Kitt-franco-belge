@@ -17,6 +17,7 @@ export const SITE_LINKS = [
   { href: "/#services", label: "Technologies", detail: "IA locale, électronique et répliques" },
   { href: "/videos", label: "Vidéos", detail: "La galerie de la communauté" },
   { href: "/communaute-pontiac", label: "Pontiac Owners World", detail: "Carte mondiale et galerie des Pontiac Knight Rider" },
+  { href: "/salon-kitt", label: "MSN Chat KITT", detail: "Le salon communautaire Knight Rider" },
   { href: "/jeux/", label: "Arcade KITT", detail: "Jouer aux créations Knight Rider du projet" },
   { href: "/musique", label: "Musique", detail: "Écouter les créations partagées" },
   { href: "/documents", label: "Documents", detail: "Documentation et ressources PDF" },
@@ -48,7 +49,7 @@ export default function SiteNavigation() {
   return <header className="site-header" ref={root}>
     <a className="site-brand" href="/" aria-label="KITT Franco-Belge — accueil"><span className="brand-led" aria-hidden="true" /><span>KITT <small>FRANCO-BELGE</small></span></a>
     <nav className="site-desktop-links" aria-label="Navigation principale">
-      <a href="#histoire">{t("nav.histoire")}</a><a href="/videos">{t("nav.videos")}</a><a href="/communaute-pontiac">Pontiac Owners</a><a href="/jeux/">Jeux</a><a href="/musique">{t("nav.musique")}</a><a href="/guide-logiciels/">Catalogue</a><a href="#contact">{t("nav.contact")}</a>
+      <a href="#histoire">{t("nav.histoire")}</a><a href="/videos">{t("nav.videos")}</a><a href="/communaute-pontiac">Pontiac Owners</a><a href="/salon-kitt">MSN Chat</a><a href="/jeux/">Jeux</a><a href="/musique">{t("nav.musique")}</a><a href="/guide-logiciels/">Catalogue</a><a href="#contact">{t("nav.contact")}</a>
     </nav>
     <div className="site-header-actions">
       <button className="site-icon-button nav-search" onClick={() => window.dispatchEvent(new Event("kitt-open-search"))} aria-label="Rechercher dans le site"><Search size={18}/></button>

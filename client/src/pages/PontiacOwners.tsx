@@ -29,6 +29,7 @@ function WorldGlobe({ owners, selectedId, onSelect }: { owners: Owner[]; selecte
   const markersRef = useRef<Marker[]>([]);
   const frameRef = useRef(0);
   const rotationRef = useRef(-0.9);
+  const landMaskRef = useRef<Uint8ClampedArray | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -36,28 +37,32 @@ function WorldGlobe({ owners, selectedId, onSelect }: { owners: Owner[]; selecte
     if (!canvas || !context) return;
     const ctx = context;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let width = 0, height = 0, dpr = 1, last = 0;
+    const maskCanvas = document.createElement("canvas");
+    const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
+    const surfaceCanvas = document.createElement("canvas");
+    const surfaceContext = surfaceCanvas.getContext("2d");
+    const landImage = new Image();
+    landImage.onload = () => {
+      if (!maskContext) return;
+      maskCanvas.width = landImage.naturalWidth;
+      maskCanvas.height = landImage.naturalHeight;
+      maskContext.drawImage(landImage, 0, 0);
+      landMaskRef.current = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
+    };
+    landImage.src = "/static/pontiac-world/land-mask.png";
+    let width = 0, height = 0, dpr = 1, last = 0, lastTextureFrame = 0, surfaceImage: ImageData | null = null;
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       width = rect.width; height = rect.height; dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      surfaceCanvas.width = canvas.width; surfaceCanvas.height = canvas.height;
+      surfaceImage = surfaceContext?.createImageData(surfaceCanvas.width, surfaceCanvas.height) || null;
     };
     const onResize = new ResizeObserver(resize);
     onResize.observe(canvas);
     resize();
 
-    // Croquis original en points, utilisé comme texture de globe sans service cartographique tiers.
-    const land: number[][][] = [
-      [[-168,68],[-150,72],[-132,58],[-124,48],[-117,32],[-105,24],[-97,18],[-84,10],[-78,8],[-81,24],[-96,28],[-105,44],[-123,50],[-132,61]],
-      [[-81,12],[-70,9],[-61,-4],[-54,-12],[-52,-24],[-58,-35],[-66,-55],[-73,-47],[-77,-27],[-80,-5]],
-      [[-10,71],[8,72],[27,61],[44,57],[52,47],[38,41],[30,36],[24,33],[12,37],[2,44],[-7,51],[-10,61]],
-      [[-18,35],[-5,37],[11,34],[24,30],[33,15],[42,8],[49,-12],[37,-34],[26,-35],[16,-28],[8,-17],[1,-1],[-7,9],[-16,17]],
-      [[33,71],[62,72],[95,60],[127,54],[147,48],[159,61],[177,55],[166,41],[143,35],[130,28],[121,17],[110,8],[100,4],[91,8],[79,7],[71,20],[59,24],[48,31],[40,42],[31,55]],
-      [[112,-11],[131,-12],[153,-22],[150,-38],[134,-43],[116,-34]],
-      [[-24,65],[-13,64],[-17,58],[-25,59]],
-      [[46,-13],[51,-16],[50,-25],[46,-24]],
-    ];
     const project = (lon: number, lat: number, cx: number, cy: number, radius: number, spin: number) => {
       const phi = lat * Math.PI / 180, lambda = (lon + spin * 180 / Math.PI) * Math.PI / 180;
       const depth = Math.cos(phi) * Math.cos(lambda);
@@ -77,6 +82,46 @@ function WorldGlobe({ owners, selectedId, onSelect }: { owners: Owner[]; selecte
       sphere.addColorStop(0, "#39212a"); sphere.addColorStop(.56, "#131923"); sphere.addColorStop(1, "#06080e");
       ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.fillStyle = sphere; ctx.fill();
       ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, radius - 1, 0, Math.PI * 2); ctx.clip();
+      const mask = landMaskRef.current;
+      if (mask && surfaceContext && surfaceImage && time - lastTextureFrame > 50) {
+        lastTextureFrame = time;
+        const pixels = surfaceImage.data;
+        pixels.fill(0);
+        const pixelWidth = surfaceCanvas.width, pixelHeight = surfaceCanvas.height;
+        const px = cx * dpr, py = cy * dpr, pr = radius * dpr;
+        const minX = Math.max(0, Math.floor(px - pr)), maxX = Math.min(pixelWidth - 1, Math.ceil(px + pr));
+        const minY = Math.max(0, Math.floor(py - pr)), maxY = Math.min(pixelHeight - 1, Math.ceil(py + pr));
+        const maskWidth = maskCanvas.width, maskHeight = maskCanvas.height, spin = rotationRef.current;
+        const tau = Math.PI * 2, lightX = -.42, lightY = -.48, lightZ = .77;
+        for (let y = minY; y <= maxY; y++) {
+          const ny = (y - py) / pr;
+          for (let x = minX; x <= maxX; x++) {
+            const nx = (x - px) / pr, depthSquared = 1 - nx * nx - ny * ny;
+            if (depthSquared <= 0) continue;
+            const nz = Math.sqrt(depthSquared);
+            const longitude = Math.atan2(nx, nz) - spin;
+            const latitude = Math.asin(-ny);
+            const mapX = Math.min(maskWidth - 1, Math.max(0, Math.floor((longitude / tau + .5) * maskWidth)));
+            const mapY = Math.min(maskHeight - 1, Math.max(0, Math.floor((.5 - latitude / Math.PI) * maskHeight)));
+            const source = (mapY * maskWidth + mapX) * 4;
+            const coverage = mask[source + 3];
+            if (coverage < 48) continue;
+            const edge = coverage < 245
+              || (mapX + 1 < maskWidth && mask[source + 4] < 32)
+              || (mapX > 0 && mask[source - 4] < 32)
+              || (mapY + 1 < maskHeight && mask[source + maskWidth * 4] < 32)
+              || (mapY > 0 && mask[source - maskWidth * 4] < 32);
+            const illumination = Math.max(.28, .48 + .58 * (nx * lightX + ny * lightY + nz * lightZ));
+            const target = (y * pixelWidth + x) * 4;
+            pixels[target] = Math.round((edge ? 132 : 82) * illumination);
+            pixels[target + 1] = Math.round((edge ? 225 : 164) * illumination);
+            pixels[target + 2] = Math.round((edge ? 199 : 136) * illumination);
+            pixels[target + 3] = coverage;
+          }
+        }
+        surfaceContext.putImageData(surfaceImage, 0, 0);
+      }
+      ctx.drawImage(surfaceCanvas, 0, 0, width, height);
       ctx.strokeStyle = "#c9e8ff30"; ctx.lineWidth = 1;
       for (let lat = -60; lat <= 60; lat += 30) {
         ctx.beginPath(); let active = false;
@@ -87,12 +132,6 @@ function WorldGlobe({ owners, selectedId, onSelect }: { owners: Owner[]; selecte
         ctx.beginPath(); let active = false;
         for (let lat = -88; lat <= 88; lat += 3) { const p = project(lon, lat, cx, cy, radius, rotationRef.current); if (p.depth > 0) { active ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y); active = true; } else active = false; }
         ctx.stroke();
-      }
-      ctx.fillStyle = "#71977b55"; ctx.strokeStyle = "#a4ddb287"; ctx.lineWidth = 1.2;
-      for (const polygon of land) {
-        const points = polygon.map(([lon,lat])=>project(lon,lat,cx,cy,radius,rotationRef.current));
-        if (points.every(point=>point.depth>0)) { ctx.beginPath(); points.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y)); ctx.closePath(); ctx.fill(); ctx.stroke(); }
-        else { ctx.beginPath(); let active=false; for(const point of points){if(point.depth>0){active?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y);active=true}else active=false;} ctx.stroke(); }
       }
       ctx.strokeStyle = "#ff667781"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, radius, -Math.PI * .5, Math.PI * .5); ctx.stroke();
       ctx.restore();
@@ -208,7 +247,7 @@ export default function PontiacOwners() {
       });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error || "Transmission impossible.");
-      setNotice("Dossier reçu. Manix le vérifiera avant toute apparition sur le globe ou dans la galerie.");
+      setNotice("Photo re\u00e7ue en priv\u00e9. Manix doit valider le dossier avant que ton profil et tes photos deviennent visibles publiquement.");
       setForm({ name: "", car: "", year: "", location: "", latitude: "", longitude: "", story: "", consent: false, showLocation: false });
       setPhotos([]);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Transmission impossible."); }
@@ -278,10 +317,10 @@ export default function PontiacOwners() {
         {error && (apiReady || notice || photos.length > 0) && <div className="po-error" role="alert">{error}</div>}
         {!apiReady && !loading && <div className="po-api-note"><ShieldCheck size={18}/><span>Le service sécurisé de réception n’est pas joignable pour le moment. Le formulaire ne transmettra pas tes données hors ligne.</span></div>}
         <button className="po-submit-button" disabled={submitting || loading || !apiReady}><span>{submitting?"ENVOI EN COURS…":"ENVOYER POUR VALIDATION"}</span><ArrowDown size={16}/></button>
-        <small className="po-submit-legal">Les profils et photos restent privés jusqu’à validation. Tu peux demander leur retrait à tout moment.</small>
+        <small className="po-submit-legal">Apr&egrave;s l&#39;envoi, seuls Manix et les administrateurs peuvent voir le dossier. Apr&egrave;s validation, le profil et les photos deviennent visibles &agrave; tous les visiteurs. L&#39;envoi ne publie rien automatiquement.</small>
       </form>
     </section>
 
-    <footer className="po-footer"><span>KITT FRANCO-BELGE · BY MANIX</span><span>KNIGHT RIDER FRANCE · PONTIAC OWNERS NETWORK</span><a href="/">RETOUR À L’ACCUEIL ↗</a></footer>
+    <footer className="po-footer"><span>KITT FRANCO-BELGE · BY MANIX</span><span>KNIGHT RIDER FRANCE · PONTIAC OWNERS NETWORK</span><a href="/">RETOUR À L’ACCUEIL ↗</a><a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noreferrer">MAP DATA ? MADE WITH NATURAL EARTH</a></footer>
   </main>;
 }

@@ -1,0 +1,5 @@
+World land silhouettes for the KITT Pontiac owners globe.
+Source: Natural Earth, 1:110m physical land polygons (public domain).
+https://www.naturalearthdata.com/downloads/110m-physical-vectors/
+Terms: https://www.naturalearthdata.com/about/terms-of-use/
+Made with Natural Earth.
