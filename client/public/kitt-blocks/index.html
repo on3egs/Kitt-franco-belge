@@ -2,19 +2,30 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="theme-color" content="#08090d"><title>KITT Block Drop — Arcade KITT</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#08090d"><meta name="description" content="KITT Block Drop, un jeu de puzzle arcade original par Manix.">
+  <title>KITT Block Drop — By Manix</title><link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="cabinet">
-    <header><a href="/jeux/">← Arcade KITT</a><span class="brand"><i></i> KITT // BLOCK DROP</span><button id="sound" aria-label="Activer ou désactiver les effets sonores">SON : OFF</button></header>
-    <section class="intro"><span>PUZZLE DE RÉFLEXES · CRÉATION ORIGINALE</span><h1>BLOCK <b>DROP</b></h1><p>Empile les pièces, complète des lignes et garde le contrôle.</p></section>
-    <section class="game-layout" aria-label="Jeu de blocs">
-      <aside class="side"><div class="panel"><small>SCORE</small><strong id="score">0</strong></div><div class="panel"><small>RECORD LOCAL</small><strong id="best">0</strong></div><div class="panel"><small>LIGNES</small><strong id="lines">0</strong></div><div class="panel"><small>NIVEAU</small><strong id="level">1</strong></div><div class="panel next-panel"><small>PROCHAINE PIÈCE</small><canvas id="next" width="120" height="100"></canvas></div><p class="key-help">← → déplacer<br>↑ tourner · ↓ accélérer<br>Espace chute directe<br>P pause · R recommencer</p></aside>
-      <div class="board-wrap"><canvas id="board" width="300" height="600" aria-label="Plateau de jeu"></canvas><div id="overlay" class="overlay"><div><b>KITT BLOCK DROP</b><p>Prêt à empiler les pièces ?</p><button id="start">DÉMARRER</button></div></div></div>
-      <aside class="side right-side"><div class="panel"><small>OBJECTIF</small><p>Complète des lignes entières pour marquer des points et accélérer la partie.</p></div><div class="panel"><small>COMMANDES</small><p>Clavier ou boutons tactiles ci-dessous.</p></div><button id="pause" class="wide">Ⅱ PAUSE</button><button id="restart" class="wide">↻ RECOMMENCER</button></aside>
+    <header class="topbar"><a href="/jeux/">← SALLE D’ARCADE</a><div class="wordmark"><i></i>KITT <b>BLOCK DROP</b><small>BY MANIX · 01 PLAYER</small></div><button id="sound" class="sound-toggle" type="button" aria-pressed="false">♫ <span>SON OFF</span></button></header>
+    <section class="game-heading"><div><span class="eyebrow">PUZZLE D’ARCADE · ÉDITION 16-BIT</span><h1>BLOCK <em>DROP</em></h1><p>Range les pièces, enchaîne les combos, bats le record.</p></div><div class="heading-stamp"><b>MNX</b><small>ARCADE<br>DIVISION</small></div></section>
+    <section class="game-layout" aria-label="KITT Block Drop">
+      <aside class="side side-left">
+        <div class="panel score-panel"><small>SCORE</small><strong id="score">000000</strong><div class="panel-glint"></div></div>
+        <div class="panel"><small>RECORD LOCAL</small><strong id="best">000000</strong></div>
+        <div class="panel stat-pair"><div><small>LIGNES</small><b id="lines">0</b></div><div><small>NIVEAU</small><b id="level">1</b></div></div>
+        <div class="panel piece-panel"><small>PIÈCE SUIVANTE</small><canvas id="next" width="120" height="96"></canvas></div>
+        <div class="panel piece-panel hold-panel"><small>RÉSERVE <kbd>C</kbd></small><canvas id="hold" width="120" height="82"></canvas></div>
+      </aside>
+      <div class="board-shell"><div class="board-frame"><canvas id="board" width="300" height="600" aria-label="Plateau de jeu, 10 colonnes et 20 lignes"></canvas><div id="overlay" class="overlay"><div class="start-card"><span class="eyebrow">K.I.T.T. ARCADE SYSTEM</span><h2>KITT<br><em>BLOCK DROP</em></h2><p>Une nouvelle mission de puzzle.<br>Le meilleur score reste sur ce PC.</p><button id="start" type="button">▶ DÉMARRER</button><small>FLÈCHES · ESPACE · C · P</small></div></div></div><div class="board-caption"><span><i></i> SYSTEM READY</span><span>60 FPS · 10 × 20</span></div></div>
+      <aside class="side side-right">
+        <div class="panel mission-panel"><small>MISSION</small><b id="mission">ÉLIMINE 10 LIGNES</b><div class="mission-track"><i id="mission-progress"></i></div><span id="mission-count">0 / 10</span></div>
+        <div class="panel"><small>COMBO</small><strong id="combo">—</strong></div>
+        <div class="panel controls-panel"><small>COMMANDES PC</small><p><kbd>←</kbd><kbd>→</kbd> déplacer</p><p><kbd>↑</kbd> tourner</p><p><kbd>↓</kbd> accélérer</p><p><kbd>ESPACE</kbd> chute rapide</p><p><kbd>C</kbd> réserve · <kbd>P</kbd> pause</p></div>
+        <button id="pause" class="wide-button" type="button">Ⅱ PAUSE</button><button id="restart" class="wide-button secondary" type="button">↻ NOUVELLE PARTIE</button>
+      </aside>
     </section>
-    <nav class="touch" aria-label="Commandes tactiles"><button data-key="left">◀</button><button data-key="rotate">↻</button><button data-key="down">▼</button><button data-key="right">▶</button><button data-key="drop">CHUTE</button></nav>
-    <footer>BY MANIX · KITT FRANCO-BELGE · LE RECORD RESTE SUR CET APPAREIL</footer>
+    <nav class="touch-controls" aria-label="Commandes tactiles"><button data-key="left" aria-label="Déplacer à gauche">◀</button><button data-key="rotate" aria-label="Tourner">↻</button><button data-key="down" aria-label="Accélérer la chute">▼</button><button data-key="right" aria-label="Déplacer à droite">▶</button><button data-key="drop">CHUTE<br>RAPIDE</button><button data-key="hold">RÉSERVE</button></nav>
+    <footer><span>ORIGINAL GAME · BY MANIX</span><span>CLAVIER WINDOWS + COMMANDES TACTILES · RECORD SAUVEGARDÉ LOCALEMENT</span></footer>
   </main><script src="game.js"></script>
 </body></html>

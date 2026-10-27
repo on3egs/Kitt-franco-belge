@@ -10,6 +10,23 @@ const GAMES = [
   { id: "shadow", name: "Shadow of KARR", mode: "Action · aventure", description: "Une aventure Knight Rider déjà proposée sur le site. Ouvre-la en plein écran pour profiter du jeu.", src: "/shadow-of-karr/", controls: "Les commandes sont indiquées dans le jeu.", badge: "JEU DU SITE" },
 ];
 
+function ArcadeArtwork({ id }: { id: string }) {
+  if (id === "maze") return <div className="arcade-maze-art" aria-hidden="true">
+    {Array.from({ length: 45 }, (_, i) => <i key={i} className={[1, 2, 4, 7, 8, 10, 12, 15, 17, 18, 20, 22, 24, 25, 28, 30, 32, 34, 36, 37, 40, 42, 43].includes(i) ? "wall" : ""} />)}
+    <b className="maze-art-dot" /><span className="maze-art-kitt"><i /></span>
+  </div>;
+  if (id === "blocks") return <div className="arcade-block-art" aria-hidden="true">
+    <div className="block-stack"><i /><i /><i /><i /><i /><i /><i /><i /></div>
+    <div className="block-drop"><i /><i /><i /><i /></div>
+    <div className="block-spark" />
+  </div>;
+  return <div className={`arcade-car-art car-${id}`} aria-hidden="true">
+    <div className="road-lanes"><i /><i /><i /></div>
+    <div className="arcade-car"><i /><b /></div>
+    <div className="arcade-car-glow" />
+  </div>;
+}
+
 export default function Arcade() {
   const [selected, setSelected] = useState(GAMES[0]);
   const [sound, setSound] = useState(false);
@@ -42,7 +59,7 @@ export default function Arcade() {
       <div className="arcade-controls"><Gamepad2 size={17}/><span>{selected.controls}</span><button type="button" onClick={()=>setSound(!sound)} title={sound ? "Désactiver la voix" : "Activer l’annonce vocale"}>{sound?<Volume2 size={16}/>:<VolumeX size={16}/>}<span>Voix {sound?"active":"désactivée"}</span></button></div>
     </section>
     <section className="arcade-library"><div className="arcade-library-title"><div><span className="arcade-kicker">CHOISIS TON VÉHICULE</span><h2>La collection</h2></div><span className="arcade-plays">{Object.values(plays).reduce((a,b)=>a+b,0)} sélection{Object.values(plays).reduce((a,b)=>a+b,0)>1?"s":""} sur cet appareil</span></div>
-      <div className="arcade-cards">{GAMES.map((game,index)=><article className={`arcade-card ${selected.id===game.id?"selected":""}`} key={game.id}><div className={`arcade-card-art art-${game.id}`} aria-hidden="true"><span className="arcade-card-number">0{index+1}</span><div className="arcade-mini-scanner"/><Gamepad2 size={34}/></div><div className="arcade-card-body"><span className="arcade-card-badge">{game.badge}</span><h3>{game.name}</h3><p>{game.description}</p><div className="arcade-card-footer"><span>{game.mode} · {plays[game.id]||0} sélection{(plays[game.id]||0)>1?"s":""}</span><button type="button" onClick={()=>choose(game)}><Play size={15} fill="currentColor"/>{selected.id===game.id?"Sélectionné":"Jouer"}</button></div></div></article>)}</div>
+      <div className="arcade-cards">{GAMES.map((game,index)=><article className={`arcade-card ${selected.id===game.id?"selected":""}`} key={game.id}><div className={`arcade-card-art art-${game.id}`}><span className="arcade-card-number">0{index+1}</span><ArcadeArtwork id={game.id}/><span className="arcade-art-label">{game.mode.toUpperCase()}</span></div><div className="arcade-card-body"><span className="arcade-card-badge">{game.badge}</span><h3>{game.name}</h3><p>{game.description}</p><div className="arcade-card-footer"><span>{game.mode} · {plays[game.id]||0} sélection{(plays[game.id]||0)>1?"s":""}</span><button type="button" onClick={()=>choose(game)}><Play size={15} fill="currentColor"/>{selected.id===game.id?"Sélectionné":"Jouer"}</button></div></div></article>)}</div>
     </section>
     <aside className="arcade-credits"><ShieldCheck size={18}/><p><strong>À propos des droits et des crédits</strong><br/>Ces jeux sont des créations de fans associées au projet KITT Franco-Belge. Knight Rider, KITT et KARR restent des marques et personnages appartenant à leurs ayants droit. Les jeux ne sont ni officiels ni affiliés aux détenteurs de ces droits. Les éléments tiers éventuellement chargés par un jeu restent soumis à leurs propres licences et crédits.</p><a href="/mentions-legales">Mentions légales <ExternalLink size={13}/></a></aside>
     <footer className="arcade-footer"><a href="/">← KITT Franco-Belge</a><span>BY MANIX · POUR LES FANS, PAR DES FANS</span></footer>
