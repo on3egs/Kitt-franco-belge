@@ -602,6 +602,7 @@ function initFallback2D() {
     function pauseRace() {
         if (!fallback.active) return;
         paused = !paused;
+        fallback.keys.clear();
         state = paused ? 'paused' : 'racing';
         setScreen(paused ? 'pause' : 'race');
     }
@@ -710,7 +711,7 @@ function initFallback2D() {
             fallback.distance += (18 + fallback.speed) * dt;
             const accel = fallback.keys.has('ArrowUp') || fallback.keys.has('KeyW');
             const brake = fallback.keys.has('ArrowDown') || fallback.keys.has('KeyS');
-            const turbo = (fallback.keys.has('Space') || fallback.keys.has('ShiftLeft')) && fallback.turbo > 0;
+            const turbo = (fallback.keys.has('Space') || fallback.keys.has('ShiftLeft') || fallback.keys.has('ShiftRight')) && fallback.turbo > 0;
             fallback.speed += (accel ? 15 : -8) * dt;
             if (brake) fallback.speed -= 28 * dt;
             if (turbo) { fallback.speed += 24 * dt; fallback.turbo = Math.max(0, fallback.turbo - 25 * dt); }
@@ -750,15 +751,20 @@ function initFallback2D() {
     }
 
     window.addEventListener('resize', resize);
+    const isGameInput = e => !!e.target?.matches?.('input, textarea, select, [contenteditable="true"]');
     window.addEventListener('keydown', e => {
+        if (isGameInput(e)) return;
         const controlled = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code);
-        if (controlled) e.preventDefault();
+        if (controlled && fallback.active) e.preventDefault();
         fallback.keys.add(e.code);
-        if (e.code === 'Escape' || e.code === 'KeyP') pauseRace();
+        if (e.code === 'Escape') pauseRace();
+        if (e.code === 'KeyP' && !e.repeat) document.getElementById('btn-music')?.click();
         if (e.code === 'KeyR' && state === 'finished') startRace(fallback.level);
         if ((e.code === 'KeyX' || e.code === 'KeyF') && fallback.active) beep(1040,.12,'sawtooth');
     });
     window.addEventListener('keyup', e => fallback.keys.delete(e.code));
+    window.addEventListener('blur', () => fallback.keys.clear());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) fallback.keys.clear(); });
     document.getElementById('btn-level1').addEventListener('click', () => startRace(1));
     document.getElementById('btn-level2').addEventListener('click', () => startRace(2));
     document.getElementById('btn-level3').addEventListener('click', () => startRace(3));
@@ -775,9 +781,21 @@ function initFallback2D() {
     });
     document.getElementById('btn-music')?.addEventListener('click', e => {
         fallback.muted = !fallback.muted;
-        e.currentTarget.textContent = fallback.muted ? '♪ MUSIQUE : OFF' : '♪ MUSIQUE : ON';
+        const label = fallback.muted ? '♪ SONS : OFF' : '♪ SONS : ON';
+        e.currentTarget.textContent = label;
+        e.currentTarget.title = 'Sons arcade (P)';
+        const pauseSoundButton = document.getElementById('btn-music-pause');
+        if (pauseSoundButton) { pauseSoundButton.textContent = label; pauseSoundButton.title = 'Sons arcade (P)'; }
         beep(660,.1);
     });
+    const soundButton = document.getElementById('btn-music');
+    if (soundButton) {
+        const label = fallback.muted ? '♪ SONS : OFF' : '♪ SONS : ON';
+        soundButton.textContent = label;
+        soundButton.title = 'Sons arcade (P)';
+        const pauseSoundButton = document.getElementById('btn-music-pause');
+        if (pauseSoundButton) { pauseSoundButton.textContent = label; pauseSoundButton.title = 'Sons arcade (P)'; }
+    }
     document.getElementById('btn-music-pause')?.addEventListener('click', () => document.getElementById('btn-music')?.click());
     document.getElementById('btn-resume')?.addEventListener('click', pauseRace);
     document.getElementById('btn-quit')?.addEventListener('click', () => { paused=false; fallback.active=false; state='menu'; setScreen('menu'); });
@@ -791,10 +809,12 @@ function initFallback2D() {
     });
     const subtitle = menu.querySelector('.subtitle');
     if (subtitle) subtitle.textContent = 'Course arcade en mode 2D compatible — WebGL désactivé sur cet appareil.';
+    const controlsHelp = menu.querySelector('.controls-help');
+    if (controlsHelp) controlsHelp.innerHTML = '<p><strong>Départ</strong> : choisis un niveau · <strong>Flèches / WASD</strong> : conduire · <strong>↑ / W</strong> : accélérer · <strong>↓ / S</strong> : freiner</p><p><strong>Espace / Maj</strong> : turbo · <strong>P</strong> : sons activés/coupés · <strong>Échap</strong> : pause</p><p><strong>R</strong> : rejouer après la course · Le bouton <strong>SONS</strong> règle les effets audio.</p>';
     const hint = document.createElement('p');
     hint.className = 'compatibility-note';
     hint.setAttribute('role','status');
-    hint.textContent = 'MODE WINDOWS COMPATIBLE ACTIF · Flèches / WASD · Espace turbo · P pause';
+    hint.textContent = 'MODE PC COMPATIBLE · Flèches / WASD conduite · ↑ / W accélérer · ↓ / S freiner · Espace / Maj turbo · P sons · Échap pause · R rejouer';
     subtitle?.insertAdjacentElement('afterend', hint);
     if (editorButton) { editorButton.disabled = true; editorButton.title = 'L’éditeur 3D nécessite WebGL'; }
     state = 'menu';

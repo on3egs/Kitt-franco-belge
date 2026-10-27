@@ -218,7 +218,7 @@ function initScene() {
         powerPreference: "high-performance"
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(getRenderPixelRatio());
     renderer.shadowMap.enabled = GRAPHICS_QUALITY >= 2;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -379,6 +379,7 @@ function createPellet(x, y, isPower) {
 }
 
 function createPowerEffects() {
+    powerEffects = [];
     for (const pellet of powerPelletMeshes) {
         const data = pellet.userData;
         
@@ -396,6 +397,7 @@ function createPowerEffects() {
         ring.rotation.x = Math.PI / 2;
         ring.userData = { type: 'powerEffect', pelletX: data.x, pelletY: data.y };
         scene.add(ring);
+        powerEffects.push(ring);
     }
 }
 
@@ -1470,7 +1472,7 @@ function update(dt, t) {
     }
     
     // Update power pellet effects
-    for (const effect of scene.children.filter(obj => obj.userData && obj.userData.type === 'powerEffect')) {
+    for (const effect of powerEffects) {
         effect.rotation.z = t * 2;
         effect.material.opacity = 0.2 + Math.sin(t * 3) * 0.1;
     }
@@ -1528,7 +1530,6 @@ function render() {
 // INPUT HANDLING
 // ============================================
 
-let moveKeys = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -1, ArrowDown: 1 };
 let moveDirs = {ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},KeyA:{x:-1,y:0},KeyQ:{x:-1,y:0},KeyD:{x:1,y:0},KeyW:{x:0,y:-1},KeyZ:{x:0,y:-1},KeyS:{x:0,y:1}};
 
 function handleKeyDown(e) {
@@ -1586,7 +1587,7 @@ function handleKeyUp(e) {
 }
 
 function setupTouch() {
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
     
     if (!isTouchDevice) return;
     
@@ -1596,12 +1597,10 @@ function setupTouch() {
     document.getElementById('touch-right').classList.add('visible');
     const downButton=document.getElementById('touch-down');
     downButton?.classList.add('visible');
-    downButton?.addEventListener('pointerdown',e=>{e.preventDefault();downButton.setPointerCapture(e.pointerId);keys.ArrowDown=true;player.want={x:0,y:1}});
-    ['pointerup','pointercancel','lostpointercapture'].forEach(type=>downButton?.addEventListener(type,()=>keys.ArrowDown=false));
     document.getElementById('touch-fire').classList.add('visible');
     document.getElementById('touch-ui').classList.add('visible');
     
-    // Joystick for movement
+    // Pointer Events cover touch, pen and touchscreen laptops without leaving stuck keys.
     const base = document.getElementById('joystick-base');
     const knob = document.getElementById('joystick-knob');
     const R = 50;
@@ -1610,89 +1609,59 @@ function setupTouch() {
         knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
     }
     
-    base.addEventListener('touchstart', e => {
+    const updateJoystick = (clientX, clientY) => {
+        const r = base.getBoundingClientRect();
+        let dx = clientX - (r.left + r.width / 2);
+        let dy = clientY - (r.top + r.height / 2);
+        const d = Math.hypot(dx, dy) || 1;
+        const cl = Math.min(d, R);
+        dx = dx / d * cl;
+        dy = dy / d * cl;
+        joy.x = dx / R;
+        joy.y = dy / R;
+        setKnob(dx, dy);
+    };
+    const endJoystick = e => {
+        if (e.pointerId !== joy.id) return;
+        joy.active = false; joy.id = null; joy.x = 0; joy.y = 0;
+        setKnob(0, 0);
+    };
+    base.addEventListener('pointerdown', e => {
         e.preventDefault();
-        joy.active = true; joy.id = e.changedTouches[0].identifier;
-        
-        if (audioContext && audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-    }, { passive: false });
-    
-    base.addEventListener('touchmove', e => {
-        e.preventDefault();
-        for (const t of e.changedTouches) {
-            if (t.identifier !== joy.id) continue;
-            const r = base.getBoundingClientRect();
-            let dx = t.clientX - (r.left + r.width / 2);
-            let dy = t.clientY - (r.top + r.height / 2);
-            const d = Math.hypot(dx, dy) || 1;
-            const cl = Math.min(d, R);
-            dx = dx / d * cl;
-            dy = dy / d * cl;
-            joy.x = dx / R;
-            joy.y = dy / R;
-            setKnob(dx, dy);
-        }
-    }, { passive: false });
-    
-    function joyEnd(e) {
-        for (const t of e.changedTouches) {
-            if (t.identifier !== joy.id) continue;
-            joy.active = false; joy.id = null; joy.x = 0; joy.y = 0;
-            setKnob(0, 0);
-        }
-    }
-    
-    base.addEventListener('touchend', joyEnd);
-    base.addEventListener('touchcancel', joyEnd);
-    
-    // Direction buttons
-    document.getElementById('touch-up').addEventListener('touchstart', e => {
-        e.preventDefault();
-        keys['ArrowUp'] = true;
-        player.want = {x:0,y:-1};
-    }, { passive: false });
-    document.getElementById('touch-up').addEventListener('touchend', e => {
-        e.preventDefault();
-        keys['ArrowUp'] = false;
-    }, { passive: false });
-    
-    document.getElementById('touch-left').addEventListener('touchstart', e => {
-        e.preventDefault();
-        keys['ArrowLeft'] = true;
-        player.want = {x:-1,y:0};
-    }, { passive: false });
-    document.getElementById('touch-left').addEventListener('touchend', e => {
-        e.preventDefault();
-        keys['ArrowLeft'] = false;
-    }, { passive: false });
-    
-    document.getElementById('touch-right').addEventListener('touchstart', e => {
-        e.preventDefault();
-        keys['ArrowRight'] = true;
-        player.want = {x:1,y:0};
-    }, { passive: false });
-    document.getElementById('touch-right').addEventListener('touchend', e => {
-        e.preventDefault();
-        keys['ArrowRight'] = false;
-    }, { passive: false });
-    
-    // Interrupted touch gestures must release their held controls.
-    [['touch-up','ArrowUp'],['touch-left','ArrowLeft'],['touch-right','ArrowRight']].forEach(([id,key])=>{
-        document.getElementById(id).addEventListener('touchcancel',()=>{keys[key]=false},{passive:true});
+        joy.active = true; joy.id = e.pointerId;
+        base.setPointerCapture(e.pointerId);
+        updateJoystick(e.clientX, e.clientY);
+        if (audioContext?.state === 'suspended') audioContext.resume();
     });
-    document.getElementById('touch-fire').addEventListener('touchcancel',()=>{turboMode=false;keys.Space=false},{passive:true});
+    base.addEventListener('pointermove', e => {
+        if (joy.active && e.pointerId === joy.id) {
+            e.preventDefault();
+            updateJoystick(e.clientX, e.clientY);
+        }
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => base.addEventListener(type, endJoystick));
 
-    // Turbo button
-    document.getElementById('touch-fire').addEventListener('touchstart', e => {
-        e.preventDefault();
-        turboMode = true;keys.Space=true;
-    }, { passive: false });
-    document.getElementById('touch-fire').addEventListener('touchend', e => {
-        e.preventDefault();
-        turboMode = false;keys.Space=false;
-    }, { passive: false });
+    const bindHeldButton = (id, code, direction) => {
+        const button = document.getElementById(id);
+        button.addEventListener('pointerdown', e => {
+            e.preventDefault();
+            button.setPointerCapture(e.pointerId);
+            keys[code] = true;
+            if (direction) player.want = direction;
+            else turboMode = true;
+            if (audioContext?.state === 'suspended') audioContext.resume();
+        });
+        const release = () => {
+            keys[code] = false;
+            if (!direction) turboMode = false;
+        };
+        ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, release));
+    };
+    bindHeldButton('touch-up', 'ArrowUp', {x:0,y:-1});
+    bindHeldButton('touch-down', 'ArrowDown', {x:0,y:1});
+    bindHeldButton('touch-left', 'ArrowLeft', {x:-1,y:0});
+    bindHeldButton('touch-right', 'ArrowRight', {x:1,y:0});
+    bindHeldButton('touch-fire', 'Space', null);
 }
 
 // ============================================
@@ -1740,15 +1709,9 @@ function toggleMute() {
 
 function toggleGraphics() {
     GRAPHICS_QUALITY = (GRAPHICS_QUALITY + 1) % 3;
-    const value = ['BASSE', 'MOYENNE', 'ÉLEVÉE'][GRAPHICS_QUALITY];
-    el('graphics-value').textContent = value;
-    
-    // Reinitialize scene with new quality
-    cleanupScene();
-    initScene();
-    if (state === 'playing') {
-        resetGame();
-    }
+    applyGraphicsQuality();
+    el('graphics-slider').value = GRAPHICS_QUALITY;
+    el('graphics-value').textContent = ['BASSE', 'MOYENNE', 'ÉLEVÉE'][GRAPHICS_QUALITY];
 }
 
 function toggleCamera() {
@@ -1764,12 +1727,8 @@ function toggleFollowCam() {
 
 function toggleSpeed() {
     GAME_SPEED = (GAME_SPEED + 1) % 3;
-    const value = ['LENTE', 'NORMALE', 'RAPIDE'][GAME_SPEED];
-    el('speed-value').textContent = value;
-    
-    if (player) {
-        player.speed = PACMAN_SPEED * (GAME_SPEED === 0 ? 0.8 : GAME_SPEED === 1 ? 1.0 : 1.2);
-    }
+    applyGameSpeed();
+    el('speed-slider').value = GAME_SPEED;
 }
 
 function initSettings() {
@@ -1794,6 +1753,11 @@ function initSettings() {
     if (graphicsSlider) {
         graphicsSlider.value = GRAPHICS_QUALITY;
         graphicsValue.textContent = ['BASSE', 'MOYENNE', 'ÉLEVÉE'][GRAPHICS_QUALITY];
+        graphicsSlider.addEventListener('input', () => {
+            GRAPHICS_QUALITY = Number(graphicsSlider.value);
+            graphicsValue.textContent = ['BASSE', 'MOYENNE', 'ÉLEVÉE'][GRAPHICS_QUALITY];
+            applyGraphicsQuality();
+        });
     }
     
     if (cameraSlider) {
@@ -1809,8 +1773,7 @@ function initSettings() {
         speedValue.textContent = ['LENTE', 'NORMALE', 'RAPIDE'][GAME_SPEED];
         speedSlider.addEventListener('input', () => {
             GAME_SPEED = Number(speedSlider.value);
-            speedValue.textContent = ['LENTE', 'NORMALE', 'RAPIDE'][GAME_SPEED];
-            toggleSpeed();
+            applyGameSpeed();
         });
     }
     
@@ -1886,11 +1849,37 @@ function cleanupScene() {
     pelletMeshes = [];
     powerPelletMeshes = [];
     particles = [];
+    powerEffects = [];
+}
+
+function isCoarsePointer() {
+    return window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+}
+
+function getRenderPixelRatio() {
+    const cap = GRAPHICS_QUALITY === 0 ? 1 : GRAPHICS_QUALITY === 1 ? 1.35 : (isCoarsePointer() ? 1.35 : 1.75);
+    return Math.min(window.devicePixelRatio || 1, cap);
+}
+
+function applyGraphicsQuality() {
+    if (!renderer) return;
+    renderer.shadowMap.enabled = GRAPHICS_QUALITY >= 2;
+    renderer.setPixelRatio(getRenderPixelRatio());
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function applyGameSpeed() {
+    const value = ['LENTE', 'NORMALE', 'RAPIDE'][GAME_SPEED];
+    const speedValue = el('speed-value');
+    if (speedValue) speedValue.textContent = value;
+    if (player) player.speed = PACMAN_SPEED * (GAME_SPEED === 0 ? 0.8 : GAME_SPEED === 1 ? 1.0 : 1.2);
 }
 
 function onWindowResize() {
+    if (!camera || !renderer) return;
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    renderer.setPixelRatio(getRenderPixelRatio());
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
@@ -1959,7 +1948,12 @@ function boot() {
         }
     });
     
-    window.addEventListener('blur',()=>{Object.keys(keys).forEach(key=>delete keys[key]);turboMode=false;if(state==='playing')togglePause(true)});
+    window.addEventListener('blur',()=>{
+        Object.keys(keys).forEach(key=>delete keys[key]);
+        turboMode=false;joy.active=false;joy.id=null;joy.x=0;joy.y=0;
+        const knob=el('joystick-knob');if(knob)knob.style.transform='translate(-50%, -50%)';
+        if(state==='playing')togglePause(true);
+    });
     // Bind keys
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);

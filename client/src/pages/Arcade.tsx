@@ -35,6 +35,7 @@ const SITE_GAMES: Game[] = [
   { id: "adventure", name: "KITT Adventure", mode: "Course · arcade", description: "Évite le trafic, ramasse les bonus et fais grimper ton score dans cette aventure rétro.", src: "/kitt-adventure/", controls: "Flèches ou WASD · Espace : turbo · T : bouclier", badge: "CRÉATION DU SITE", icon: "🚘", group: "site" },
   { id: "maze", name: "KITT Maze Run", mode: "Labyrinthe · arcade", description: "Récupère les cellules d’énergie et échappe aux drones dans un labyrinthe original.", src: "/kitt-maze/", controls: "Flèches · WASD · ZQSD · commandes à l’écran", badge: "CRÉATION ORIGINALE", icon: "⌘", group: "site" },
   { id: "blocks", name: "KITT Block Drop", mode: "Puzzle · arcade", description: "Empile les blocs, complète des lignes et améliore ton meilleur score.", src: "/kitt-blocks/", controls: "← → déplacer · ↑ tourner · ↓ accélérer · Espace : chute", badge: "CRÉATION ORIGINALE", icon: "▥", group: "site" },
+  { id: "midnight-runner", name: "Midnight Runner", mode: "Course · arcade 16-bit", description: "Faufile-toi dans la ville de nuit, évite le trafic, récupère l’énergie et tiens jusqu’à l’arrivée.", src: "/static/games/midnight-runner/", controls: "← → ou A/D · Espace : turbo · P/Échap : pause · M : sons · tactile", badge: "NOUVEAU · BY MANIX", icon: "🏎️", group: "site" },
 ];
 
 const GAMES = [...AGX_GAMES, ...SITE_GAMES];
@@ -85,7 +86,7 @@ export default function Arcade() {
       <div className="arcade-hero-copy">
         <span className="arcade-kicker"><span className="arcade-live" /> KITT FRANCO-BELGE · SALLE D’ARCADE</span>
         <h1>À toi de <em>jouer.</em></h1>
-        <p>Les douze jeux de l’AGX et les créations du site sont réunis ici. Choisis une mission pour la lancer.</p>
+        <p>Les douze jeux de l’AGX et quatre créations originales sont réunis ici. Choisis une mission pour la lancer.</p>
         <div className="arcade-pills">
           <span><Gamepad2 size={15} />{GAMES.length} jeux accessibles</span>
           <span><ShieldCheck size={15} />Gratuit · sans compte</span>
@@ -97,7 +98,7 @@ export default function Arcade() {
 
     <section id="collection" className="arcade-library" aria-label="Collection de jeux">
       <div className="arcade-library-title">
-        <div><span className="arcade-kicker">12 JEUX AGX · 3 CRÉATIONS DU SITE</span><h2>La collection KITT</h2></div>
+        <div><span className="arcade-kicker">12 JEUX AGX · 4 CRÉATIONS DU SITE</span><h2>La collection KITT</h2></div>
         <span className="arcade-plays">{Object.values(plays).reduce((a, b) => a + b, 0)} lancements sur cet appareil</span>
       </div>
       <div className="arcade-filters" role="group" aria-label="Filtrer les jeux">

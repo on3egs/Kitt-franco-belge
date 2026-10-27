@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>PAC-MAN 3D — KYRONEXT ARCADE</title>
@@ -554,7 +554,7 @@
             #fruit-display { bottom: 60px; padding: 8px 15px; }
         }
     </style>
-    <link rel="stylesheet" href="pacman-enhanced.css?v=20261005-viewfix1">
+    <link rel="stylesheet" href="pacman-enhanced.css?v=20261027-playability2">
 </head>
 <body>
     <!-- Loading Screen -->
@@ -588,14 +588,25 @@
                 <button id="btn-start" class="menu-btn primary">▶ JOUER</button>
                 <button id="btn-settings" class="menu-btn secondary">⚙ PARAMÈTRES</button>
             </div>
+            <section class="menu-objective" aria-labelledby="objective-title">
+                <h2 id="objective-title">MISSION</h2>
+                <p>Parcours le labyrinthe et ramasse <strong>toutes les pastilles</strong>. Les pastilles bleues te rendent assez puissant pour manger les fantômes pendant un court instant. Attrape aussi le fruit bonus et évite les fantômes lorsqu’ils ne sont pas bleus.</p>
+                <p class="movement-tip">Les virages sont mémorisés : indique ta prochaine direction un peu avant le carrefour.</p>
+            </section>
             <div class="menu-controls">
-                <h2>✦ CONTRÔLES ✦</h2>
+                <h2>COMMANDES — CLAVIER</h2>
                 <div class="controls-grid">
-                    <div class="control-item"><kbd>← → ↑ ↓</kbd><span>Déplacer</span></div>
-                    <div class="control-item"><kbd>ESPACE</kbd><span>Mode Turbo</span></div>
-                    <div class="control-item"><kbd>P / ÉCHAP</kbd><span>Pause</span></div>
-                    <div class="control-item"><kbd>📱</kbd><span>Tactile: virtual D-Pad</span></div>
+                    <div class="control-item"><kbd>← ↑ → ↓</kbd><span>Déplacer Pac-Man</span></div>
+                    <div class="control-item"><kbd>W A S D</kbd><span>Déplacement (clavier QWERTY)</span></div>
+                    <div class="control-item"><kbd>Z Q S D</kbd><span>Déplacement (clavier AZERTY)</span></div>
+                    <div class="control-item"><kbd>ESPACE</kbd><span>Turbo — maintenir pour accélérer</span></div>
+                    <div class="control-item"><kbd>P / ÉCHAP</kbd><span>Mettre en pause / reprendre</span></div>
+                    <div class="control-item"><kbd>V</kbd><span>Changer la caméra pendant la partie</span></div>
+                    <div class="control-item"><kbd>C</kbd><span>Basculer le suivi de Pac-Man / vue globale</span></div>
+                    <div class="control-item"><kbd>G</kbd><span>Changer la qualité graphique</span></div>
+                    <div class="control-item"><kbd>M</kbd><span>Activer ou couper le son</span></div>
                 </div>
+                <p class="touch-tip"><strong>Écran tactile :</strong> utilise le joystick ou les flèches à l’écran. Maintiens TURBO pour accélérer. La barre en bas donne accès à pause, son et recommencer.</p>
             </div>
             <div class="credits">By Manix for KITT FRANCO BELGE — KYRONEXT ARCADE SYSTEM</div>
         </div>
@@ -751,7 +762,7 @@
     <!-- Three.js Script -->
     <script src="/static/games/3d/lib/three.min.js"></script>
     <script src="pacman-sfx.js?v=20261005-max1"></script>
-    <script src="pacman-3d.js?v=20261005-resume"></script>
+    <script src="pacman-3d.js?v=20261027-playability2"></script>
     <script src="controls-solo.js?v=20261005-viewfix1"></script>
     <script src="/static/games/solo-runtime.js?v=20261005-resume1"></script>
     

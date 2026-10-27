@@ -136,6 +136,19 @@
 .game-art-adventure { color: #7fb7ff; }
 .game-art-maze { color: #7ff2b2; }
 .game-art-blocks { color: #c9a3ff; }
+.game-art-midnight-runner {
+  color: #80f1ff;
+  text-shadow: 0 0 25px #25baffb5, 0 4px 18px #000b;
+}
+.game-art-midnight-runner .arcade-game-art-grid {
+  opacity: .46;
+  background: linear-gradient(transparent 95%, #40e8ff30 96%), linear-gradient(90deg, transparent 95%, #ffb84a26 96%);
+  background-size: 22px 22px;
+}
+.game-art-midnight-runner > i {
+  background: linear-gradient(90deg, transparent, #58efffc9, #ffbd5a99, transparent);
+  box-shadow: 0 0 18px #58efff;
+}
 
 .arcade-play-section {
   scroll-margin-top: 20px;

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050914">
+  <meta name="description" content="Midnight Runner, un jeu d'arcade original de Manix : évite le trafic et rallie la ligne d'arrivée.">
+  <title>Midnight Runner — By Manix</title>
+  <link rel="stylesheet" href="game.css?v=1">
+</head>
+<body>
+  <main class="game-shell" id="game-shell">
+    <div class="game-stage" id="game-stage">
+      <canvas id="game" width="960" height="540" aria-label="Course d'arcade Midnight Runner" role="img"></canvas>
+
+      <header class="hud" id="hud" aria-live="polite" hidden>
+        <div class="hud-brand"><span class="signal"></span><span>MIDNIGHT RUNNER</span><small>MANIX ARCADE</small></div>
+        <div class="hud-stat"><small>SCORE</small><strong id="score">000000</strong></div>
+        <div class="hud-stat"><small>SECTEUR</small><strong id="sector">01</strong></div>
+        <div class="hud-stat"><small>CHRONO</small><strong id="timer">01:00</strong></div>
+        <div class="hud-stat energy-stat"><small>TURBO</small><span class="meter"><i id="energy-meter"></i></span></div>
+        <div class="hud-stat health-stat"><small>BLINDAGE</small><strong id="health">◆ ◆ ◆</strong></div>
+      </header>
+
+      <div class="toast" id="toast" aria-live="polite"></div>
+
+      <section class="screen screen-title is-visible" id="title-screen" aria-labelledby="game-title">
+        <div class="screen-card title-card">
+          <div class="eyebrow"><span class="signal"></span> ARCADE ORIGINAL · 16-BIT NIGHT DRIVE</div>
+          <h1 id="game-title">MIDNIGHT<br><em>RUNNER</em></h1>
+          <p class="tagline">Une dernière course. La ville ne dort jamais.</p>
+          <div class="title-route"><span>SECTEUR 01</span><span class="route-line"></span><span>ARRIVÉE</span></div>
+          <p class="story">Faufile-toi dans le trafic nocturne, récupère les cellules d’énergie et tiens jusqu’au lever du jour. Tu disposes de trois points de blindage; chaque impact en retire un.</p>
+          <div class="title-actions">
+            <button class="button button-primary" id="start-button">DÉMARRER <span>▶</span></button>
+            <button class="button button-quiet" id="help-button">COMMANDES</button>
+          </div>
+          <div class="record-line">RECORD LOCAL <strong id="best-score">000000</strong></div>
+          <div class="signature">CRÉÉ PAR <strong>MANIX</strong> <span>·</span> KITT FRANCO BELGE</div>
+        </div>
+      </section>
+
+      <section class="screen" id="help-screen" aria-labelledby="help-title" hidden>
+        <div class="screen-card help-card">
+          <div class="eyebrow">GUIDE DE PILOTAGE</div>
+          <h2 id="help-title">Garde la route.</h2>
+          <p>Change de voie pour éviter le trafic. Passe près des voitures sans les toucher pour marquer des points; ramasse les cellules cyan pour recharger ton turbo.</p>
+          <div class="help-grid">
+            <div><kbd>← →</kbd><kbd>A / D</kbd><kbd>Q / D</kbd><span>Changer de voie<br>(flèches, QWERTY ou AZERTY)</span></div>
+            <div><kbd>ESPACE</kbd><span>Turbo : consomme l’énergie et protège d’un impact pendant l’accélération.</span></div>
+            <div><kbd>P</kbd><kbd>ÉCHAP</kbd><span>Pause et reprise. La course se met aussi en pause quand tu changes d’onglet.</span></div>
+            <div><kbd>M</kbd><span>Activer ou couper les effets sonores.</span></div>
+            <div class="touch-help"><b>TACTILE</b><span>Glisse à gauche ou à droite, ou utilise les boutons ◀ ▶. Maintiens TURBO pour l’activer.</span></div>
+          </div>
+          <div class="goal-note"><strong>OBJECTIF</strong><span>Survis aux 60 secondes de course. Chaque impact retire un point de blindage; à zéro, la course s’arrête. Termine la route pour inscrire ton score.</span></div>
+          <button class="button button-primary" id="help-back">COMPRIS</button>
+        </div>
+      </section>
+
+      <section class="screen" id="pause-screen" aria-labelledby="pause-title" hidden>
+        <div class="screen-card compact-card">
+          <div class="eyebrow">COURSE SUSPENDUE</div>
+          <h2 id="pause-title">Pause.</h2>
+          <p>Le trafic attend. Reprends quand tu es prêt.</p>
+          <button class="button button-primary" id="resume-button">REPRENDRE <span>▶</span></button>
+          <button class="button button-quiet" id="pause-restart-button">RECOMMENCER</button>
+        </div>
+      </section>
+
+      <section class="screen" id="finish-screen" aria-labelledby="finish-title" hidden>
+        <div class="screen-card compact-card finish-card">
+          <div class="eyebrow" id="finish-eyebrow">TRANSMISSION TERMINÉE</div>
+          <h2 id="finish-title">Arrivée !</h2>
+          <p id="finish-message">Tu as traversé la nuit.</p>
+          <div class="finish-score"><small>SCORE DE LA COURSE</small><strong id="final-score">000000</strong><span id="record-badge" hidden>NOUVEAU RECORD</span></div>
+          <div class="finish-stats"><span>ÉNERGIE <strong id="cores-collected">0 cellules</strong></span><span>SECTEUR <strong id="final-sector">01</strong></span></div>
+          <button class="button button-primary" id="replay-button">REJOUER <span>↻</span></button>
+          <button class="button button-quiet" id="title-button">ÉCRAN TITRE</button>
+        </div>
+      </section>
+
+      <div class="touch-controls" id="touch-controls" aria-label="Commandes tactiles">
+        <button type="button" id="left-button" aria-label="Aller à gauche">◀</button>
+        <button type="button" id="right-button" aria-label="Aller à droite">▶</button>
+        <button type="button" id="turbo-button" aria-label="Maintenir pour le turbo">TURBO</button>
+      </div>
+      <button class="pause-chip" id="pause-chip" type="button" aria-label="Mettre en pause" hidden>Ⅱ</button>
+      <div class="footer-mark">BY MANIX <span>·</span> NIGHT SHIFT DIVISION</div>
+    </div>
+  </main>
+  <script src="game.js?v=1"></script>
+</body>
+</html>
