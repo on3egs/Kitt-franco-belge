@@ -535,7 +535,12 @@
 
   // Ajouter les écouteurs aux boutons
   document.querySelectorAll('[data-game]').forEach(b => {
-    b.onclick = () => open(b.dataset.game);
+    // games-advanced.js owns these launches. Keeping the fallback is useful
+    // if that file cannot load, but running both engines at once starts two
+    // animation loops on the same canvas and makes Pac-Man stutter.
+    b.onclick = () => {
+      if (!window.KyronextArcade) open(b.dataset.game);
+    };
   });
 
   // Ajouter les écouteurs pour les boutons de l'interface

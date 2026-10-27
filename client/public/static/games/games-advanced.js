@@ -868,7 +868,12 @@
         ArrowRight: { x: 1, y: 0 },
         ArrowUp: { x: 0, y: -1 },
         ArrowDown: { x: 0, y: 1 },
-      }[event.key];
+      }[event.key] || ({
+        // Les deux dispositions PC courantes : WASD (QWERTY) et ZQSD (AZERTY).
+        w: { x: 0, y: -1 }, z: { x: 0, y: -1 },
+        a: { x: -1, y: 0 }, q: { x: -1, y: 0 },
+        s: { x: 0, y: 1 }, d: { x: 1, y: 0 },
+      }[event.key.toLowerCase()]);
       if (direction) {
         player.want = direction;
         event.preventDefault();
@@ -1319,7 +1324,7 @@
     };
 
     reset();
-    startGame("pac-man", "Flèches : déplacer • P : pause • R : recommencer • Échap : sortir", onKey, draw, reset);
+    startGame("pac-man", "Flèches ou ZQSD/WASD : bouger • P : pause • R : recommencer • glisser sur l’écran • Échap : sortir", onKey, draw, reset);
     activeGame.followZoom = followZoom;
     activeGame.setFollowZoom = enabled => {
       followZoom = !!enabled;

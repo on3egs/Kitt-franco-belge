@@ -22,8 +22,29 @@ const POWER_DURATION = 30;
 const FRIGHTENED_DURATION = 6;
 const INVINCIBLE_DURATION = 3;
 
-// Qualité graphique (0 = bas, 1 = moyen, 2 = élevé)
-let GRAPHICS_QUALITY = 2;
+// Qualité graphique (0 = bas, 1 = moyen, 2 = élevé). On réutilise le choix
+// du joueur; au premier lancement, la machine suggère un réglage raisonnable.
+const GRAPHICS_QUALITY_KEY = 'kyronext.pacman3d.graphicsQuality';
+function suggestedGraphicsQuality() {
+    const cores = Number(navigator.hardwareConcurrency) || 0;
+    const memory = Number(navigator.deviceMemory) || 0;
+    const coarse = window.matchMedia?.('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+    if ((cores > 0 && cores <= 2 && (!memory || memory <= 4)) || (coarse && memory > 0 && memory <= 2)) return 0;
+    if (!coarse && cores >= 12 && memory >= 16) return 2;
+    return 1;
+}
+function readGraphicsQuality() {
+    try {
+        const saved = localStorage.getItem(GRAPHICS_QUALITY_KEY);
+        if (saved === '0' || saved === '1' || saved === '2') return Number(saved);
+    } catch (e) { /* Le réglage automatique reste disponible sans stockage. */ }
+    return suggestedGraphicsQuality();
+}
+function saveGraphicsQuality() {
+    try { localStorage.setItem(GRAPHICS_QUALITY_KEY, String(GRAPHICS_QUALITY)); }
+    catch (e) { /* Le réglage actif fonctionne même si le stockage est bloqué. */ }
+}
+let GRAPHICS_QUALITY = readGraphicsQuality();
 
 // Vitesse du jeu (0 = lent, 1 = normal, 2 = rapide)
 let GAME_SPEED = 1;
@@ -1712,6 +1733,7 @@ function toggleMute() {
 
 function toggleGraphics() {
     GRAPHICS_QUALITY = (GRAPHICS_QUALITY + 1) % 3;
+    saveGraphicsQuality();
     applyGraphicsQuality();
     el('graphics-slider').value = GRAPHICS_QUALITY;
     el('graphics-value').textContent = ['BASSE', 'MOYENNE', 'ÉLEVÉE'][GRAPHICS_QUALITY];
@@ -1758,6 +1780,7 @@ function initSettings() {
         graphicsValue.textContent = ['BASSE', 'MOYENNE', 'ÉLEVÉE'][GRAPHICS_QUALITY];
         graphicsSlider.addEventListener('input', () => {
             GRAPHICS_QUALITY = Number(graphicsSlider.value);
+            saveGraphicsQuality();
             graphicsValue.textContent = ['BASSE', 'MOYENNE', 'ÉLEVÉE'][GRAPHICS_QUALITY];
             applyGraphicsQuality();
         });
