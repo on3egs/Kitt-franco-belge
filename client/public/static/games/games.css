@@ -100,8 +100,10 @@ h1 {
 /* Navigation barre améliorée */
 .arcade-menu-bar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: 10px 18px;
   padding: 12px 0;
   border-bottom: 1px solid rgba(99, 233, 255, 0.2);
 }
@@ -121,8 +123,24 @@ h1 {
   transform: translateY(-2px);
 }
 
+.arcade-menu-bar .full-library-link {
+  padding: 8px 13px;
+  border: 1px solid rgba(99, 233, 255, .42);
+  border-radius: 999px;
+  background: rgba(0, 105, 130, .16);
+  color: #b8f5ff;
+  letter-spacing: .06em;
+}
+
+.arcade-menu-bar .full-library-link:hover,
+.arcade-menu-bar .full-library-link:focus-visible {
+  border-color: var(--gold);
+  background: rgba(184, 134, 39, .18);
+  color: var(--gold);
+}
+
 .arcade-menu-bar span {
-  color: #666;
+  color: #a2a2a8;
   font-size: clamp(.7rem, 1.1vw, .85rem);
   letter-spacing: .1em;
 }
