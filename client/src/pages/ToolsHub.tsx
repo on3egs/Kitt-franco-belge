@@ -24,6 +24,8 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Star,
+  History,
   Subtitles,
   Wrench,
   X,
@@ -31,6 +33,7 @@ import {
 import "./ToolsHub.css";
 import "./StudioPromo.css";
 import "./ToolsProducts.css";
+import { speakSiteAnnouncement } from "../utils/siteSpeech";
 
 type Group =
   | "Vidéo"
@@ -987,6 +990,13 @@ function convertSubtitle(source: string, direction: string) {
 export default function ToolsHub() {
   const [category, setCategory] = useState<Group | "Tout">("Tout"),
     [search, setSearch] = useState(""),
+    [toolView, setToolView] = useState<"all" | "favorites" | "recent">("all"),
+    [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
+      try { const saved = JSON.parse(localStorage.getItem("kitt-tool-favorites-v1") || "[]"); return Array.isArray(saved) ? saved : []; } catch { return []; }
+    }),
+    [recentIds, setRecentIds] = useState<string[]>(() => {
+      try { const saved = JSON.parse(localStorage.getItem("kitt-tool-recent-v1") || "[]"); return Array.isArray(saved) ? saved : []; } catch { return []; }
+    }),
     [selected, setSelected] = useState<FileTool | null>(null),
     [files, setFiles] = useState<File[]>([]),
     [text, setText] = useState(""),
@@ -995,6 +1005,10 @@ export default function ToolsHub() {
       "filename" | "number" | "hidden"
     >("filename"),
     [quality, setQuality] = useState(88),
+    [normalizeTarget, setNormalizeTarget] = useState(95),
+    [filenameTemplate, setFilenameTemplate] = useState(() => {
+      try { return localStorage.getItem("kitt-tool-filename-template-v1") || "{nom}-{outil}"; } catch { return "{nom}-{outil}"; }
+    }),
     [outputs, setOutputs] = useState<Output[]>([]),
     [busy, setBusy] = useState(false),
     [status, setStatus] = useState(""),
@@ -1011,13 +1025,14 @@ export default function ToolsHub() {
     () =>
       TOOLS.filter(
         t =>
+          (toolView === "all" || (toolView === "favorites" ? favoriteIds.includes(t.id) : recentIds.includes(t.id))) &&
           (category === "Tout" || t.group === category) &&
           (!search ||
             normalizeSearch(
               `${t.title} ${t.description} ${t.group} ${t.id}`
             ).includes(normalizeSearch(search.trim())))
       ),
-    [category, search]
+    [category, search, toolView, favoriteIds, recentIds]
   );
   const preview = useMemo(
     () =>
@@ -1062,6 +1077,7 @@ export default function ToolsHub() {
       )[tool.id] || ""
     );
     setQuality(88);
+    setNormalizeTarget(95);
     setOutputs([]);
     setStatus("");
     setDragging(false);
@@ -1100,6 +1116,20 @@ export default function ToolsHub() {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+  async function downloadOutputBundle() {
+    if (outputs.length < 2) return;
+    try {
+      const { zipSync } = await import("fflate");
+      const entries = Object.fromEntries(await Promise.all(outputs.map(async (output, index) => [
+        `${String(index + 1).padStart(2, "0")}-${safeName(output.name)}`,
+        new Uint8Array(await output.blob.arrayBuffer()),
+      ]))) as Record<string, Uint8Array>;
+      download(new Blob([zipSync(entries, { level: 5 }) as Uint8Array], { type: "application/zip" }), "atelier-kitt-resultats.zip");
+      setStatus("Archive ZIP prête au téléchargement.");
+    } catch {
+      setStatus("Impossible de créer l’archive ZIP dans ce navigateur.");
+    }
   }
   const downloads = useMemo(
     () =>
@@ -1794,7 +1824,8 @@ export default function ToolsHub() {
               for (let sample = 0; sample < channel.length; sample++)
                 peak = Math.max(peak, Math.abs(channel[sample]));
             }
-            const scale = peak ? 0.95 / peak : 1;
+            const targetAmplitude = normalizeTarget / 100;
+            const scale = peak ? targetAmplitude / peak : 1;
             const Ctx =
                 window.AudioContext ||
                 ((window as any).webkitAudioContext as typeof AudioContext),
@@ -2014,7 +2045,18 @@ export default function ToolsHub() {
         default:
           throw new Error("Cet outil sera bientôt disponible.");
       }
-      setOutputs(created);
+      const outputDate = new Date().toISOString().slice(0, 10);
+      const outputBase = file ? stem(file.name) : "";
+      const formatted = created.map(result => {
+        const extension = result.name.match(/\.[^.]+$/)?.[0] || "";
+        const fallback = stem(result.name);
+        const base = (filenameTemplate || "{nom}-{outil}")
+          .replaceAll("{nom}", outputBase || fallback)
+          .replaceAll("{outil}", selected.id)
+          .replaceAll("{date}", outputDate);
+        return { ...result, name: `${safeName(base)}${extension}` };
+      });
+      setOutputs(formatted);
       setStatus(
         created.length
           ? `${created.length} fichier(s) prêt(s). Les originaux restent inchangés.`
@@ -2060,9 +2102,14 @@ export default function ToolsHub() {
         type: selectedType.split(";")[0],
       });
       const ext = selectedType.includes("mp4") ? "m4a" : "webm";
+      const recordDate = new Date().toISOString().slice(0, 10);
+      const recordName = (filenameTemplate || "{nom}-{outil}")
+        .replaceAll("{nom}", "enregistrement")
+        .replaceAll("{outil}", "micro")
+        .replaceAll("{date}", recordDate);
       setOutputs([
         {
-          name: `enregistrement-${new Date().toISOString().replace(/[:.]/g, "-")}.${ext}`,
+          name: `${safeName(recordName)}.${ext}`,
           blob,
         },
       ]);
@@ -2167,8 +2214,17 @@ export default function ToolsHub() {
     });
   }
   function choose(tool: FileTool) {
+    const nextRecent = [tool.id, ...recentIds.filter(id => id !== tool.id)].slice(0, 8);
+    setRecentIds(nextRecent);
+    try { localStorage.setItem("kitt-tool-recent-v1", JSON.stringify(nextRecent)); } catch { /* historique facultatif */ }
+    speakSiteAnnouncement(`${tool.title}. Outil sélectionné. ${tool.description}`, { replacePending: true, rate: 0.86, pitch: 0.84 });
     openTool(tool);
     setTimeout(() => input.current?.focus(), 0);
+  }
+  function toggleFavorite(tool: FileTool) {
+    const next = favoriteIds.includes(tool.id) ? favoriteIds.filter(id => id !== tool.id) : [tool.id, ...favoriteIds];
+    setFavoriteIds(next);
+    try { localStorage.setItem("kitt-tool-favorites-v1", JSON.stringify(next)); } catch { /* favoris facultatifs */ }
   }
 
   return (
@@ -2338,6 +2394,11 @@ export default function ToolsHub() {
                 aria-label="Chercher un outil"
               />
             </label>
+            <div className="tools-view-tabs" role="group" aria-label="Vue du catalogue">
+              <button type="button" className={toolView === "all" ? "active" : ""} aria-pressed={toolView === "all"} onClick={() => setToolView("all")}><Wrench size={14}/> Tous <span>{TOOLS.length}</span></button>
+              <button type="button" className={toolView === "favorites" ? "active" : ""} aria-pressed={toolView === "favorites"} onClick={() => setToolView("favorites")}><Star size={14}/> Favoris <span>{favoriteIds.length}</span></button>
+              <button type="button" className={toolView === "recent" ? "active" : ""} aria-pressed={toolView === "recent"} onClick={() => setToolView("recent")}><History size={14}/> Récents <span>{recentIds.length}</span></button>
+            </div>
             <div className="tools-categories">
               {GROUPS.map(group => (
                 <button
@@ -2377,6 +2438,7 @@ export default function ToolsHub() {
                   <span className="tool-card-icon">
                     <Icon size={21} />
                   </span>
+                  {favoriteIds.includes(tool.id) && <span className="tool-card-favorite" aria-label="Outil favori"><Star size={14} fill="currentColor"/></span>}
                   <span className="tool-card-group">{tool.group}</span>
                   <strong>{tool.title}</strong>
                   <span className="tool-card-description">
@@ -2414,6 +2476,16 @@ export default function ToolsHub() {
             </div>
             <button
               type="button"
+              className={`workbench-favorite ${favoriteIds.includes(selected.id) ? "is-favorite" : ""}`}
+              onClick={() => toggleFavorite(selected)}
+              aria-pressed={favoriteIds.includes(selected.id)}
+              aria-label={favoriteIds.includes(selected.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+              title={favoriteIds.includes(selected.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+            >
+              <Star fill={favoriteIds.includes(selected.id) ? "currentColor" : "none"} />
+            </button>
+            <button
+              type="button"
               className="workbench-close"
               onClick={() => {
                 setSelected(null);
@@ -2428,6 +2500,22 @@ export default function ToolsHub() {
           </div>
           <div className="workbench-body">
             <div className="workbench-inputs">
+              <label className="tool-option tool-name-mask">
+                Masque du nom de sortie
+                <input
+                  value={filenameTemplate}
+                  maxLength={72}
+                  onChange={e => {
+                    setFilenameTemplate(e.target.value);
+                    try { localStorage.setItem("kitt-tool-filename-template-v1", e.target.value); } catch { /* préférence facultative */ }
+                  }}
+                  placeholder="{nom}-{outil}-{date}"
+                  aria-label="Masque du nom de fichier exporté"
+                />
+                <small>
+                  Variables : <code>{"{nom}"}</code> nom d’origine, <code>{"{outil}"}</code> outil utilisé, <code>{"{date}"}</code> date du jour. L’extension du fichier reste adaptée.
+                </small>
+              </label>
               {selected.id !== "audio-record" && (
                 <>
                   <label
@@ -2642,6 +2730,13 @@ export default function ToolsHub() {
                   )}
                 </label>
               )}
+              {selected.id === "audio-normalize" && (
+                <label className="tool-option tool-quality">
+                  Niveau de crête cible <strong>{normalizeTarget}%</strong>
+                  <input type="range" min="70" max="99" step="1" value={normalizeTarget} onChange={e => setNormalizeTarget(Number(e.target.value))} aria-label="Niveau de crête audio cible" />
+                  <small>Réglez la marge avant écrêtage : plus le pourcentage est bas, plus la sortie reste douce.</small>
+                </label>
+              )}
               {selected.id === "image-contact-sheet" && (
                 <label className="tool-option">
                   Légendes sous les miniatures
@@ -2731,6 +2826,11 @@ export default function ToolsHub() {
                   <h3>
                     <BadgeCheck size={18} /> Résultats prêts
                   </h3>
+                  {outputs.length > 1 && (
+                    <button type="button" className="download-all" onClick={() => void downloadOutputBundle()}>
+                      <FileArchive size={15} /> Tout télécharger (.zip)
+                    </button>
+                  )}
                   {outputs.map((result, i) => {
                     const url = downloads[i]?.url;
                     return (
@@ -2825,6 +2925,7 @@ export default function ToolsHub() {
       <footer className="tools-footer">
         <a href="/">← Retour à KITT Franco-Belge</a>
         <span>BY MANIX · EN COLLABORATION AVEC KNIGHT RIDER FRANCE</span>
+        <a href="https://www.facebook.com/groups/757797724622219/" target="_blank" rel="noreferrer">GROUPE FACEBOOK KITT-FRANCO-BELGE ↗</a>
       </footer>
     </main>
   );
