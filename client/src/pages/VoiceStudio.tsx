@@ -31,6 +31,7 @@ const JOB_STORAGE_KEY = "manix.voice-studio.job.v1";
 const INPUT_AUDIO_TYPES = "audio/*,.wav,.mp3,.m4a,.ogg,.webm,.mp4,.flac";
 type Mode = "audio" | "text";
 type InputAudio = { file: File; duration: number };
+type MicrophoneOption = { deviceId: string; label: string };
 type Health = {
   ok: boolean;
   ready: boolean;
@@ -150,6 +151,10 @@ export default function VoiceStudio() {
   const [recording, setRecording] = useState(false);
   const [microphoneBusy, setMicrophoneBusy] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [microphones, setMicrophones] = useState<MicrophoneOption[]>([]);
+  const [selectedMicrophone, setSelectedMicrophone] = useState("");
+  const [microphoneDetecting, setMicrophoneDetecting] = useState(false);
+  const [signalLevel, setSignalLevel] = useState(0);
   const [bars, setBars] = useState(IDLE_BARS);
   const [submitting, setSubmitting] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
@@ -165,6 +170,7 @@ export default function VoiceStudio() {
   const animationRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const captureStartRef = useRef(0);
+  const signalPeakRef = useRef(0);
   const validationVersion = useRef({ reference: 0, source: 0 });
   const submitController = useRef<AbortController | null>(null);
   const healthController = useRef<AbortController | null>(null);
@@ -184,6 +190,40 @@ export default function VoiceStudio() {
     job?.status === "completed" && jobId
       ? `${API}/jobs/${encodeURIComponent(jobId)}/audio?format=mp3`
       : "";
+
+  async function refreshMicrophoneList() {
+    if (!navigator.mediaDevices?.enumerateDevices) return;
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const inputs = devices
+      .filter(device => device.kind === "audioinput" && device.deviceId !== "default")
+      .map((device, index) => ({
+        deviceId: device.deviceId,
+        label: device.label || `Microphone ${index + 1}`,
+      }));
+    setMicrophones(inputs);
+    if (selectedMicrophone && !inputs.some(item => item.deviceId === selectedMicrophone))
+      setSelectedMicrophone("");
+  }
+
+  async function detectMicrophones() {
+    if (!navigator.mediaDevices?.getUserMedia || microphoneDetecting) return;
+    setMicrophoneDetecting(true);
+    setInputError("");
+    try {
+      const temporaryStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      temporaryStream.getTracks().forEach(track => track.stop());
+      await refreshMicrophoneList();
+      setMessage("Micros détectés. Choisis celui qui capte ta voix, puis vérifie le niveau pendant l’enregistrement.");
+    } catch (cause) {
+      setInputError(
+        cause instanceof DOMException && cause.name === "NotAllowedError"
+          ? "Accès au micro refusé. Autorise-le dans Edge/Chrome, puis appuie de nouveau sur « Détecter les micros »."
+          : "Aucun micro disponible. Vérifie les paramètres Son de Windows ou importe un fichier audio."
+      );
+    } finally {
+      setMicrophoneDetecting(false);
+    }
+  }
 
   const stopCaptureResources = useCallback(() => {
     if (timerRef.current) {
@@ -397,6 +437,7 @@ export default function VoiceStudio() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
+          ...(selectedMicrophone ? { deviceId: { exact: selectedMicrophone } } : {}),
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: false,
@@ -407,6 +448,9 @@ export default function VoiceStudio() {
         return;
       }
       streamRef.current = stream;
+      void refreshMicrophoneList();
+      signalPeakRef.current = 0;
+      setSignalLevel(0);
       const mimeType = [
         "audio/webm;codecs=opus",
         "audio/webm",
@@ -429,6 +473,13 @@ export default function VoiceStudio() {
         setRecording(false);
         setBars(IDLE_BARS);
         setRecordingSeconds(Math.min(30, duration));
+        if (signalPeakRef.current < 0.003) {
+          setSignalLevel(0);
+          setInputError(
+            "Le micro n’a capté presque aucun son. Choisis un autre périphérique, vérifie Paramètres Windows > Système > Son > Entrée, puis réessaie."
+          );
+          return;
+        }
         if (duration < 5) {
           setInputError(
             "Enregistrement trop court. Parle pendant au moins 5 secondes puis arrête le micro."
@@ -465,20 +516,28 @@ export default function VoiceStudio() {
         analyser.fftSize = 256;
         analyser.smoothingTimeConstant = 0.65;
         context.createMediaStreamSource(stream).connect(analyser);
-        const data = new Uint8Array(analyser.frequencyBinCount);
+        const data = new Float32Array(analyser.fftSize);
         let previousFrame = 0;
         const update = (timestamp: number) => {
           if (!mounted.current) return;
           if (timestamp - previousFrame >= 70) {
-            analyser.getByteFrequencyData(data);
-            setBars(
-              Array.from({ length: 24 }, (_, index) =>
-                Math.max(
-                  7,
-                  Math.min(100, ((data[index * 3 + 2] ?? 0) / 255) * 100)
-                )
-              )
-            );
+            analyser.getFloatTimeDomainData(data);
+            let squareTotal = 0;
+            let peak = 0;
+            for (let sampleIndex = 0; sampleIndex < data.length; sampleIndex++) {
+              const sample = data[sampleIndex];
+              const magnitude = Math.abs(sample);
+              squareTotal += sample * sample;
+              if (magnitude > peak) peak = magnitude;
+            }
+            const rms = Math.sqrt(squareTotal / data.length);
+            signalPeakRef.current = Math.max(signalPeakRef.current, peak, rms);
+            const level = Math.min(100, Math.round(rms * 1800));
+            setSignalLevel(level);
+            setBars(Array.from({ length: 24 }, (_, index) => {
+              const shape = 0.45 + 0.55 * Math.abs(Math.sin(index * 0.48 + timestamp / 110));
+              return Math.max(7, Math.min(100, level * shape));
+            }));
             previousFrame = timestamp;
           }
           animationRef.current = requestAnimationFrame(update);
@@ -832,6 +891,33 @@ export default function VoiceStudio() {
                   <small>/ 30 s</small>
                 </strong>
               </div>
+              <div className="vs-microphone-picker">
+                <label htmlFor="vs-microphone">Microphone d’entrée</label>
+                <select
+                  id="vs-microphone"
+                  value={selectedMicrophone}
+                  disabled={recording || microphoneBusy || microphoneDetecting}
+                  onChange={event => setSelectedMicrophone(event.currentTarget.value)}
+                >
+                  <option value="">Micro par défaut de Windows</option>
+                  {microphones.map((device, index) => (
+                    <option key={device.deviceId || index} value={device.deviceId}>
+                      {device.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="vs-microphone-detect"
+                  disabled={recording || microphoneBusy || microphoneDetecting}
+                  onClick={() => void detectMicrophones()}
+                >
+                  {microphoneDetecting ? "Détection…" : "Détecter les micros"}
+                </button>
+              </div>
+              <div className="vs-input-level" role="meter" aria-label="Niveau sonore du microphone" aria-valuemin={0} aria-valuemax={100} aria-valuenow={signalLevel}>
+                <span>Niveau sonore réel</span><strong>{signalLevel}%</strong>
+              </div>
               <div className="vs-live-wave" aria-hidden="true">
                 {bars.map((height, index) => (
                   <i key={index} style={{ height: `${height}%` }} />
@@ -846,7 +932,7 @@ export default function VoiceStudio() {
                 ) : (
                   <button
                     className="vs-record-start"
-                    disabled={active || microphoneBusy || referenceBusy}
+                    disabled={active || microphoneBusy || microphoneDetecting || referenceBusy}
                     onClick={() => void startRecording()}
                   >
                     {microphoneBusy ? (
@@ -861,10 +947,14 @@ export default function VoiceStudio() {
                 )}
                 <small>
                   {recording
-                    ? recordingSeconds < 5
+                    ? signalLevel < 2
+                      ? "Niveau quasi nul : vérifie l’entrée ou choisis un autre micro."
+                      : recordingSeconds < 5
                       ? "Continue encore un peu : 5 secondes minimum."
                       : "Tu peux arrêter. Arrêt automatique à 30 secondes."
-                    : "Le micro reste éteint tant que tu ne l’actives pas."}
+                    : microphones.length
+                      ? "Choisis une entrée puis parle normalement; les barres suivent le vrai niveau du signal."
+                      : "Détecte tes micros pour afficher leurs noms, puis choisis l’entrée qui capte ta voix."}
                 </small>
               </div>
             </div>
@@ -888,7 +978,7 @@ export default function VoiceStudio() {
                 type="file"
                 accept={INPUT_AUDIO_TYPES}
                 disabled={
-                  recording || active || microphoneBusy || referenceBusy
+                  recording || active || microphoneBusy || microphoneDetecting || referenceBusy
                 }
                 onChange={event => {
                   void chooseAudio(event.currentTarget.files?.[0], "reference");
