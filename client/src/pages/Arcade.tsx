@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ExternalLink, Gamepad2, Maximize2, Play, ShieldCheck, Volume2, VolumeX } from "lucide-react";
+import { speakSiteAnnouncement, stopSiteSpeech } from "../utils/siteSpeech";
 import "./arcade.css";
 import "./arcade-enhancements.css";
 
@@ -32,6 +33,8 @@ const AGX_GAMES: Game[] = [
 ];
 
 const SITE_GAMES: Game[] = [
+  { id: "manix-classics", name: "Manix Arcade Classics", mode: "10 jeux · 100 niveaux", description: "Dix classiques d’arcade recodés à notre manière : Snake, casse-briques, Pong, démineur, Asteroids et plus. Records réunis dans le Hall of Fame.", src: "/static/games/manix-classics/", controls: "Clavier · souris · tactile · commandes à l’écran", badge: "NOUVEAU · BY MANIX", icon: "🏆", group: "site" },
+  { id: "arcade-hall-of-fame", name: "Hall of Fame universel", mode: "Classement · tous les jeux", description: "Retrouve les records locaux des jeux KYRONEXT et des dix nouveaux classiques dans un seul tableau filtrable.", src: "/static/games/high-scores.html", controls: "Filtres par jeu · records de ce navigateur", badge: "CLASSEMENT", icon: "★", group: "site" },
   { id: "adventure", name: "KITT Adventure", mode: "Course · arcade", description: "Évite le trafic, ramasse les bonus et fais grimper ton score dans cette aventure rétro.", src: "/kitt-adventure/", controls: "Flèches ou WASD · Espace : turbo · T : bouclier", badge: "CRÉATION DU SITE", icon: "🚘", group: "site" },
   { id: "maze", name: "KITT Maze Run", mode: "Labyrinthe · arcade", description: "Récupère les cellules d’énergie et échappe aux drones dans un labyrinthe original.", src: "/kitt-maze/", controls: "Flèches · WASD · ZQSD · commandes à l’écran", badge: "CRÉATION ORIGINALE", icon: "⌘", group: "site" },
   { id: "blocks", name: "KITT Block Drop", mode: "Puzzle · arcade", description: "Empile les blocs, complète des lignes et améliore ton meilleur score.", src: "/kitt-blocks/", controls: "← → déplacer · ↑ tourner · ↓ accélérer · Espace : chute", badge: "CRÉATION ORIGINALE", icon: "▥", group: "site" },
@@ -69,12 +72,7 @@ export default function Arcade() {
     const next = { ...plays, [game.id]: (plays[game.id] || 0) + 1 };
     setPlays(next);
     try { localStorage.setItem("kitt-arcade-plays", JSON.stringify(next)); } catch { /* stockage facultatif */ }
-    if (sound && "speechSynthesis" in window) {
-      speechSynthesis.cancel();
-      const announcement = new SpeechSynthesisUtterance(`${game.name}. Chargement du jeu.`);
-      announcement.lang = "fr-FR";
-      speechSynthesis.speak(announcement);
-    }
+    if (sound) speakSiteAnnouncement(`${game.name}. Jeu sélectionné. Chargement du jeu.`, { replacePending: true, rate: 0.82, pitch: 0.78 });
     window.setTimeout(() => playSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
 
@@ -139,7 +137,7 @@ export default function Arcade() {
         <iframe key={selected.id} className="arcade-frame" src={selected.src} title={selected.name} allow="fullscreen; gamepad" allowFullScreen loading="lazy" onLoad={() => setFrameLoaded(true)} />
         <div className="arcade-stage-bottom"><span><i className={frameLoaded ? "is-ready" : ""} />{frameLoaded ? "INTERFACE CHARGÉE" : "CHARGEMENT DU JEU"}</span><span>{selected.mode.toUpperCase()}</span></div>
       </div>
-      <div className="arcade-controls"><Gamepad2 size={17} /><span>{selected.controls}</span><button type="button" onClick={() => setSound(!sound)} title={sound ? "Désactiver l’annonce vocale" : "Activer l’annonce vocale"}>{sound ? <Volume2 size={16} /> : <VolumeX size={16} />}<span>Voix {sound ? "active" : "désactivée"}</span></button></div>
+      <div className="arcade-controls"><Gamepad2 size={17} /><span>{selected.controls}</span><button type="button" onClick={() => { if (sound) { stopSiteSpeech(); setSound(false); } else setSound(true); }} title={sound ? "Désactiver l’annonce vocale" : "Activer l’annonce vocale"}>{sound ? <Volume2 size={16} /> : <VolumeX size={16} />}<span>Voix {sound ? "active" : "désactivée"}</span></button></div>
     </section>
 
     <aside className="arcade-credits"><ShieldCheck size={18} /><p><strong>À propos des droits et des crédits</strong><br />Ces jeux sont des créations de fans associées au projet KITT Franco-Belge. Knight Rider, KITT et KARR restent des marques et personnages appartenant à leurs ayants droit. Les jeux ne sont ni officiels ni affiliés aux détenteurs de ces droits. Les éléments tiers éventuels et leurs licences sont précisés dans les crédits du jeu concerné.</p><a href="/static/games/THIRD-PARTY-LICENSES.md">Crédits des moteurs <ExternalLink size={13} /></a><a href="/mentions-legales">Mentions légales <ExternalLink size={13} /></a></aside>

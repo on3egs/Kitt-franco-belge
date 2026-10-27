@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080b12">
+  <title>Manix Arcade Classics — KYRONEXT</title>
+  <link rel="stylesheet" href="classics.css?v=20261027-1">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <a class="brand" href="/jeux/" aria-label="Retour à la salle d'arcade"><span class="brand-mark">K</span><span><b>MANIX ARCADE</b><small>CLASSICS // RECODE ORIGINAL</small></span></a>
+      <a class="score-link" href="/static/games/high-scores.html">🏆 <span>HALL OF FAME UNIVERSEL</span></a>
+    </header>
+    <section class="hero">
+      <div class="hero-copy"><p class="eyebrow">KYRONEXT · KITT FRANCO-BELGE · BY MANIX</p><h1>LES CLASSIQUES<br><em>REPROGRAMMÉS.</em></h1><p>Dix jeux originaux, dix campagnes de dix niveaux. Une seule salle, un seul tableau des records.</p><div class="hero-stats"><span><b>10</b> JEUX</span><span><b>100</b> NIVEAUX</span><span><b>0</b> COMPTE REQUIS</span></div></div>
+      <div class="hero-art" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="scanner"></div><div class="hero-car">K</div><span class="hero-coordinate">KNIGHT INDUSTRIES<br>ARCADE DIVISION</span></div>
+    </section>
+    <section class="catalogue" id="catalogue" aria-labelledby="catalogue-title">
+      <div class="section-heading"><div><p class="eyebrow">CHOISIS TON DÉFI</p><h2 id="catalogue-title">Salle de jeux</h2></div><div class="catalogue-note">Clavier · souris · écran tactile</div></div>
+      <div class="game-grid" id="game-grid"></div>
+    </section>
+    <section class="arena" id="arena" hidden aria-label="Zone de jeu">
+      <div class="arena-top"><button class="back-button" id="back-button">← SALLE</button><div class="arena-title"><span class="eyebrow" id="game-kicker"></span><h2 id="game-title"></h2></div><button class="score-link compact" onclick="location.href='/static/games/high-scores.html'">🏆 RECORDS</button></div>
+      <div class="game-layout">
+        <div class="screen-column">
+          <div class="hud"><div><small>NIVEAU</small><b id="hud-level">1 / 10</b></div><div><small>SCORE</small><b id="hud-score">0</b></div><div><small>RECORD</small><b id="hud-best">0</b></div><div class="progress-wrap"><small>CAMPAGNE</small><div class="progress"><i id="hud-progress"></i></div></div></div>
+          <div class="canvas-frame"><canvas id="game-canvas" width="960" height="600" tabindex="0" aria-label="Jeu vidéo"></canvas><div class="screen-overlay" id="screen-overlay"><div class="overlay-card"><span class="overlay-sigil">K</span><p class="eyebrow" id="overlay-kicker">ARCADE SYSTEM READY</p><h3 id="overlay-title">PRÊT POUR LA MISSION ?</h3><p id="overlay-description">Choisis un défi et lance ta partie.</p><label class="player-name-wrap" id="player-name-wrap" hidden>PSEUDO POUR LE CLASSEMENT<input id="player-name" maxlength="20" autocomplete="nickname" value="PILOTE"></label><button id="overlay-action">LANCER LA PARTIE</button></div></div></div>
+          <div class="controls-row"><button id="pause-button">Ⅱ PAUSE</button><button id="restart-button">↻ RECOMMENCER</button><button id="sound-button" aria-pressed="true">♫ SON : ON</button><span id="control-hint">Flèches · espace · WASD</span></div>
+          <div class="touch-controls" id="touch-controls" aria-label="Commandes tactiles"><button data-key="ArrowUp">▲</button><div><button data-key="ArrowLeft">◀</button><button data-key="Space">●</button><button data-key="ArrowRight">▶</button></div><button data-key="ArrowDown">▼</button></div>
+        </div>
+        <aside class="mission-panel"><p class="eyebrow">BRIEFING KITT</p><h3 id="mission-name">MISSION EN ATTENTE</h3><p id="mission-description">Choisis un jeu pour afficher les commandes.</p><div class="mission-target"><small>OBJECTIF DU NIVEAU</small><b id="mission-goal">—</b></div><div class="mission-best"><span>TON RECORD</span><strong id="mission-best">—</strong></div><div class="local-note">Les records sont enregistrés dans ce navigateur et regroupés dans le Hall of Fame.</div><a href="/static/games/high-scores.html" class="all-scores-link">VOIR TOUS LES RECORDS <span>↗</span></a></aside>
+      </div>
+    </section>
+    <footer><span>JEUX ORIGINAUX · BY MANIX</span><span>FANS MADE · NON AFFILIÉ AUX AYANTS DROIT DES FRANCHISES D’ORIGINE</span></footer>
+  </main>
+  <script src="../highscores.js?v=20261027-1"></script>
+  <script src="classics.js?v=20261027-1"></script>
+</body>
+</html>
