@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img">
+  <defs><linearGradient id="jacket" x2="0" y2="1"><stop stop-color="#59606b"/><stop offset="1" stop-color="#171c25"/></linearGradient></defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#111521" stroke="#60738e" stroke-width="2"/><path d="M15 56c1-12 7-19 17-19s16 7 17 19" fill="url(#jacket)" stroke="#aeb9c7" stroke-width="1.5"/><path d="M24 27c0-10 4-16 11-16 8 0 12 7 11 17l-5 10H28z" fill="#c78d68"/><path d="M22 27c-1-12 5-19 14-19 8 0 14 6 13 17l-7-6-8 2-8 8z" fill="#49392f"/><path d="m29 39 3 7 5-7" fill="none" stroke="#e0e8ef" stroke-width="2"/><path d="M43 44 51 52" stroke="#ef4055" stroke-width="2"/>
+</svg>

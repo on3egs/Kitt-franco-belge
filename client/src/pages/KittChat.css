@@ -74,3 +74,24 @@
 @keyframes kc-buzz{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
 @media(max-width:740px){.kc-compose-tools>small{width:100%;margin-left:0}.kc-room-toast{right:12px;bottom:12px}}
 @media(prefers-reduced-motion:reduce){.kc-buzz-effect,.kc-toast-led{animation:none!important}}
+
+/* Fenêtre plus généreuse, émoticônes vectorielles et Buzz visible */
+.kc-page{padding-inline:clamp(12px,3.2vw,56px)}
+.kc-sitebar,.kc-intro,.kc-window,.kc-disclaimer{width:min(1600px,100%)}
+.kc-window{transform-origin:center}
+.kc-content{min-height:660px;grid-template-columns:minmax(0,1fr) 290px}
+.kc-messages{height:min(62vh,590px);min-height:460px;font-size:14px}
+.kc-roster-list{max-height:590px}
+.kc-emote-picker{grid-template-columns:repeat(2,minmax(0,1fr));width:min(430px,calc(100vw - 48px));max-height:min(430px,60vh);overflow:auto}
+.kc-emote-picker button{display:flex;align-items:center;gap:9px;min-height:55px;padding:5px 8px}
+.kc-emote-picker button img{width:42px;height:42px;flex:none}
+.kc-emote-picker button span{display:grid;gap:3px;min-width:0}
+.kc-emote-picker button strong{font:700 11px Tahoma,"Segoe UI",sans-serif}
+.kc-emote-picker button small{color:#a9bdd3;font:9px "Space Mono",monospace}
+.kc-inline-emote{display:inline-block;width:32px;height:32px;margin:0 .15em;vertical-align:middle;filter:drop-shadow(0 2px 4px #0008)}
+.kc-buzz-effect{animation:kc-buzz-rattle .13s linear 12;border-color:#ff263d!important;box-shadow:0 18px 65px #000b,0 0 48px #ff183dcc,0 0 0 3px #ff6b6b77!important}
+.kc-buzz-effect .kc-titlebar{background:linear-gradient(90deg,#78182d,#d22c43 48%,#78182d)}
+@keyframes kc-buzz-rattle{0%,100%{transform:translate(0,0) rotate(0)}20%{transform:translate(-10px,2px) rotate(-.35deg)}40%{transform:translate(10px,-2px) rotate(.35deg)}60%{transform:translate(-8px,-1px) rotate(-.25deg)}80%{transform:translate(8px,1px) rotate(.25deg)}}
+@media(max-width:900px){.kc-content{grid-template-columns:minmax(0,1fr) 260px;min-height:600px}.kc-messages{height:min(58vh,500px);min-height:380px}}
+@media(max-width:740px){.kc-content{grid-template-columns:1fr;min-height:0}.kc-messages{height:min(54vh,380px);min-height:240px}.kc-roster-list{max-height:180px}.kc-inline-emote{width:28px;height:28px}}
+@media(prefers-reduced-motion:reduce){.kc-buzz-effect{animation:none!important}}

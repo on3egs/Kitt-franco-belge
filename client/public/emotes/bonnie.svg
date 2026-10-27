@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img">
+  <defs><linearGradient id="suit" x2="0" y2="1"><stop stop-color="#a94a52"/><stop offset="1" stop-color="#34202b"/></linearGradient></defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#111521" stroke="#bf6571" stroke-width="2"/><path d="M14 57c2-12 8-18 18-18s16 6 18 18" fill="url(#suit)" stroke="#d68b91" stroke-width="1.5"/><path d="M21 29c-1-13 4-21 12-21 10 0 14 8 12 22l-3 11H24z" fill="#3b2628"/><path d="M24 26c0-9 3-14 9-14 7 0 10 6 9 15l-4 10h-9z" fill="#e2b49b"/><path d="m27 40 5 7 5-7" fill="#e7d8d2"/><path d="M20 27c4-2 6-6 6-11m17 10c-3-2-5-6-5-10" fill="none" stroke="#6d4140" stroke-width="3"/><path d="M42 46h7" stroke="#ffd35d" stroke-width="3"/>
+</svg>

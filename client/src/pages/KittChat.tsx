@@ -13,20 +13,29 @@ type SavePickerWindow = Window & {
     types: Array<{ description: string; accept: Record<string, string[]> }>;
   }) => Promise<{ createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }> }>;
 };
-const KNIGHT_RIDER_EMOTES = [
-  { label: "KITT scanner", value: "🔴 [KITT]" },
-  { label: "KARR", value: "🟡 [KARR]" },
-  { label: "Michael Knight", value: "🧑 [Michael]" },
-  { label: "Devon Miles", value: "🎩 [Devon]" },
-  { label: "Bonnie Barstow", value: "🔧 [Bonnie]" },
-  { label: "RC3", value: "🧢 [RC3]" },
-  { label: "Turbo Boost", value: "🚀 [Turbo Boost]" },
-  { label: "Voicebox", value: "🎙️ [Voicebox]" },
-  { label: "FLAG", value: "🛡️ [FLAG]" },
-  { label: "Trans Am", value: "🚘 [Trans Am]" },
-  { label: "Super Pursuit", value: "⚡ [Super Pursuit]" },
-  { label: "Radio KITT", value: "📻 [Radio KITT]" },
+type KittEmote = { code: string; label: string; src: string };
+const KNIGHT_RIDER_EMOTES: KittEmote[] = [
+  { code: ":kitt:", label: "KITT", src: "/emotes/kitt.svg" },
+  { code: ":karr:", label: "KARR", src: "/emotes/karr.svg" },
+  { code: ":michael:", label: "Michael Knight", src: "/emotes/michael.svg" },
+  { code: ":devon:", label: "Devon Miles", src: "/emotes/devon.svg" },
+  { code: ":bonnie:", label: "Bonnie Barstow", src: "/emotes/bonnie.svg" },
+  { code: ":rc3:", label: "RC3", src: "/emotes/rc3.svg" },
+  { code: ":turbo:", label: "Turbo Boost", src: "/emotes/turbo-boost.svg" },
+  { code: ":voicebox:", label: "Voicebox", src: "/emotes/voicebox.svg" },
+  { code: ":flag:", label: "FLAG", src: "/emotes/flag.svg" },
+  { code: ":transam:", label: "Pontiac Trans Am", src: "/emotes/trans-am.svg" },
 ];
+const EMOTES_BY_CODE = new Map(KNIGHT_RIDER_EMOTES.map(emote => [emote.code, emote]));
+
+function renderChatText(text: string) {
+  return text.split(/(:[a-z0-9-]+:)/gi).map((part, index) => {
+    const emote = EMOTES_BY_CODE.get(part.toLowerCase());
+    return emote
+      ? <img key={`${emote.code}-${index}`} className="kc-inline-emote" src={emote.src} alt={`[${emote.label}]`} title={emote.label} loading="lazy" />
+      : part;
+  });
+}
 const FALLBACK_ROOMS: Room[] = [
   { id: "general", label: "Le grand salon", topic: "Le rendez-vous de toute la communauté" },
   { id: "atelier", label: "Garage & répliques", topic: "Pontiac, restauration et KITT" },
@@ -117,27 +126,29 @@ export default function KittChat() {
 
   useEffect(() => { soundEnabled.current = sound; }, [sound]);
 
-  function playRoomSound(kind: "message" | "join" | "buzz") {
+  function playRoomSound(kind: "message" | "join" | "buzz" | "test") {
     if (!soundEnabled.current) return;
     try {
       audio.current ||= new AudioContext();
       const context = audio.current;
       if (context.state === "suspended") void context.resume();
-      const notes = kind === "buzz" ? [180, 120] : kind === "join" ? [660, 880] : [700];
+      const notes = kind === "buzz" ? [220, 165] : kind === "join" || kind === "test" ? [660, 880] : [700];
       const startAt = context.currentTime;
       notes.forEach((frequency, index) => {
         const oscillator = context.createOscillator();
         const gain = context.createGain();
-        const noteStart = startAt + index * (kind === "buzz" ? 0.11 : 0.09);
-        oscillator.type = kind === "buzz" ? "square" : "sine";
+        const noteStart = startAt + index * (kind === "buzz" ? 0.16 : 0.14);
+        const noteLength = kind === "buzz" ? 0.22 : kind === "test" || kind === "join" ? 0.16 : 0.11;
+        const peak = kind === "buzz" ? 0.16 : kind === "test" ? 0.12 : kind === "join" ? 0.095 : 0.07;
+        oscillator.type = kind === "buzz" ? "triangle" : "sine";
         oscillator.frequency.value = frequency;
         gain.gain.setValueAtTime(0.0001, noteStart);
-        gain.gain.exponentialRampToValueAtTime(kind === "buzz" ? 0.045 : 0.025, noteStart + 0.012);
-        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + (kind === "buzz" ? 0.075 : 0.08));
+        gain.gain.exponentialRampToValueAtTime(peak, noteStart + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + noteLength);
         oscillator.connect(gain);
         gain.connect(context.destination);
         oscillator.start(noteStart);
-        oscillator.stop(noteStart + (kind === "buzz" ? 0.08 : 0.09));
+        oscillator.stop(noteStart + noteLength + 0.01);
       });
     } catch { /* Les sons restent facultatifs selon le navigateur. */ }
   }
@@ -146,6 +157,13 @@ export default function KittChat() {
     setRoomToast(text);
     if (roomToastTimer.current) clearTimeout(roomToastTimer.current);
     roomToastTimer.current = setTimeout(() => setRoomToast(""), 4500);
+  }
+
+  function triggerBuzzEffect() {
+    setBuzzActive(false);
+    window.requestAnimationFrame(() => setBuzzActive(true));
+    if (buzzTimer.current) clearTimeout(buzzTimer.current);
+    buzzTimer.current = setTimeout(() => setBuzzActive(false), 1600);
   }
 
   useEffect(() => {
@@ -173,9 +191,7 @@ export default function KittChat() {
       if (packet.type === "buzz") {
         const sender = typeof packet.name === "string" ? packet.name : "Un membre";
         if (sender !== member) {
-          setBuzzActive(true);
-          if (buzzTimer.current) clearTimeout(buzzTimer.current);
-          buzzTimer.current = setTimeout(() => setBuzzActive(false), 900);
+          triggerBuzzEffect();
           showRoomToast(`${sender} vous fait signe avec un Buzz KITT !`);
           playRoomSound("buzz");
         }
@@ -277,6 +293,8 @@ export default function KittChat() {
   function sendBuzz() {
     if (!isMember || socketState !== "online" || buzzCooldown > 0) return;
     socket.current?.send(JSON.stringify({ type: "buzz" }));
+    triggerBuzzEffect();
+    playRoomSound("buzz");
     setBuzzCooldown(20);
     if (buzzCooldownTimer.current) clearInterval(buzzCooldownTimer.current);
     buzzCooldownTimer.current = setInterval(() => {
@@ -333,9 +351,9 @@ export default function KittChat() {
     if (next) {
       try {
         audio.current ||= new AudioContext();
-        void audio.current.resume();
+        void audio.current.resume().then(() => playRoomSound("test"));
       } catch { /* Audio indisponible dans ce navigateur. */ }
-      setNotice("Sons activés : messages, arrivées et Buzz KITT.");
+      setNotice("Test sonore joué. Les sons de messages, d’arrivée et de Buzz sont activés.");
     }
   }
 
@@ -370,7 +388,7 @@ export default function KittChat() {
             {socketState === "connecting" && <p className="kc-empty">Le salon s’ouvre…</p>}
             {socketState === "online" && !lines.length && <p className="kc-empty">Le salon s’éveille… Lance la conversation quand ton profil sera validé.</p>}
             {lines.map(line => <article className={`kc-line ${line.kind === "system" ? "system" : ""}`} key={line.id}>
-              <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong>{line.name}</strong><span>{line.text}</span>
+              <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong>{line.name}</strong><span>{renderChatText(line.text)}</span>
             </article>)}
           </div>
           {isMember ? <form className="kc-compose" onSubmit={sendMessage}>
@@ -383,7 +401,7 @@ export default function KittChat() {
               <div className="kc-emote-wrap">
                 <button type="button" className="kc-emote-toggle" aria-expanded={emotesOpen} aria-label="Ouvrir les émoticônes Knight Rider" onClick={() => setEmotesOpen(value => !value)}><Smile size={15}/> Émoticônes KITT</button>
                 {emotesOpen && <div className="kc-emote-picker" role="group" aria-label="Émoticônes Knight Rider">
-                  {KNIGHT_RIDER_EMOTES.map(emote => <button type="button" key={emote.label} aria-label={emote.label} title={emote.label} onClick={() => addEmote(emote.value)}>{emote.value}</button>)}
+                  {KNIGHT_RIDER_EMOTES.map(emote => <button type="button" key={emote.code} aria-label={`${emote.label}, insérer ${emote.code}`} title={`${emote.label} ${emote.code}`} onClick={() => addEmote(emote.code)}><img src={emote.src} alt="" loading="lazy"/><span><strong>{emote.label}</strong><small>{emote.code}</small></span></button>)}
                 </div>}
               </div>
               <button type="button" className="kc-buzz" disabled={socketState !== "online" || buzzCooldown > 0} onClick={sendBuzz}><Zap size={15}/> {buzzCooldown > 0 ? `Buzz · ${buzzCooldown}s` : "Buzz KITT"}</button>
