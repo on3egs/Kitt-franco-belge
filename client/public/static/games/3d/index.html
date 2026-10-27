@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 JEUX 3D ULTRA — KYRONEXT ARCADE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000428 0%, #004e92 50%, #000428 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
+        }
+        
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd700, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            letter-spacing: 8px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #888;
+            letter-spacing: 4px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            margin: 20px 0 40px 0;
+            background: linear-gradient(45deg, #63e9ff, #88f4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(100,233,255,0.8);
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            padding: 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .game-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b35, #f7931e, #ffd700, #00ff88);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .game-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(100,233,255,0.5);
+            box-shadow: 0 10px 40px rgba(100,233,255,0.2);
+        }
+        
+        .game-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #63e9ff, #88f4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .game-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .game-description {
+            color: #aaa;
+            text-align: center;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .game-features {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .feature-tag {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #63e9ff;
+            border: 1px solid rgba(100,233,255,0.3);
+        }
+        
+        .play-button {
+            display: block;
+            width: 100%;
+            background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd700);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,107,53,0.4);
+        }
+        
+        .version-selector {
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .version-selector span {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .version-selector select {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .stats {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #444;
+            font-size: 0.8rem;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .instructions h3 {
+            color: #63e9ff;
+            margin-bottom: 10px;
+        }
+        
+        .instructions p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .kitt-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">KYRONEXT</div>
+        <div class="subtitle">PRESENTS <span class="kitt-badge">ARCADIA 3D</span></div>
+    </div>
+    
+    <h1 class="title">🎮 JEUX 3D ULTRA</h1>
+    
+    <div class="game-grid">
+        <div class="game-card" onclick="window.location.href='space-invaders-3d-ultra.html'">
+            <div class="game-icon">👾</div>
+            <h2 class="game-title">SPACE INVADERS 3D ULTRA</h2>
+            <p class="game-description">Défendez la Terre contre des vagues d'aliens dans l'espace 3D avec des barrières et des armes puissantes</p>
+            <div class="game-features">
+                <span class="feature-tag">Combats Spatiaux</span>
+                <span class="feature-tag">Vagues Successives</span>
+                <span class="feature-tag">Barrières Protectrices</span>
+            </div>
+            <button class="play-button">JOUER</button>
+            <div class="stats">Contrôles: Flèches + Espace</div>
+        </div>
+        
+        <div class="game-card" onclick="window.location.href='asteroids-3d-ultra.html'">
+            <div class="game-icon">☄️</div>
+            <h2 class="game-title">ASTEROIDS 3D ULTRA</h2>
+            <p class="game-description">Détruisez les astéroïdes dans un espace 3D infini avec des effets visuels spectaculaires</p>
+            <div class="game-features">
+                <span class="feature-tag">Vaisseau Réactif</span>
+                <span class="feature-tag">Astéroïdes Réalistes</span>
+                <span class="feature-tag">Explosions 3D</span>
+            </div>
+            <button class="play-button">JOUER</button>
+            <div class="stats">Contrôles: Z/Q/S/D + Souris</div>
+        </div>
+        
+        <div class="game-card" onclick="window.location.href='tetris-3d-ultra.html'">
+            <div class="game-icon">🟪</div>
+            <h2 class="game-title">TETRIS 3D ULTRA</h2>
+            <p class="game-description">Jouez au Tetris classique avec des contrôles professionnels et des effets 3D magnifiques</p>
+            <div class="game-features">
+                <span class="feature-tag">Contrôles DAS/ARR</span>
+                <span class="feature-tag">Blocs 3D</span>
+                <span class="feature-tag">Animations Fluides</span>
+            </div>
+            <button class="play-button">JOUER</button>
+            <div class="stats">Contrôles: Z/Q/S/D/Flèches + Espace</div>
+        </div>
+        
+        <div class="game-card" onclick="window.location.href='pacman-3d-ultra.html'">
+            <div class="game-icon">👻</div>
+            <h2 class="game-title">PAC-MAN 3D ULTRA</h2>
+            <p class="game-description">Mangez les pac-gommes dans un labyrinthe 3D avec un mouvement ultra-fluide</p>
+            <div class="game-features">
+                <span class="feature-tag">Mouvement Fluide</span>
+                <span class="feature-tag">Fantômes Intelligents</span>
+                <span class="feature-tag">Effets Sonores</span>
+            </div>
+            <button class="play-button">JOUER</button>
+            <div class="stats">Contrôles: Flèches + Z/Q/S/D</div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h3>💡 INSTRUCTIONS</h3>
+        <p>
+            Ces jeux utilisent <strong>Three.js</strong> pour des graphismes 3D avancés.<n            <br>Pour une expérience optimale, utilisez un navigateur moderne avec support WebGL.
+            <br>Les jeux fonctionnent mieux avec une <strong>connexion internet</strong> pour charger Three.js.
+        </p>
+        <p style="margin-top: 10px;">
+            Pour tester localement: <code>python3 -m http.server 8000</code> puis ouvrez <code>http://localhost:8000/3d/</code>
+        </p>
+    </div>
+    
+    <div class="footer">
+        By Manix - KITT FRANCO BELGE - 2026 | Tous les jeux sont gratuits et open source
+    </div>
+    
+    <script>
+        // Ajouter des animations supplémentaires
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.game-card');
+            
+            // Animation au survol
+            cards.forEach((card, index) => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transitionDelay = `${index * 0.05}s`;
+                });
+            });
+            
+            // Animation au chargement
+            const animateOnLoad = () => {
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            };
+            
+            // Initialiser les cartes comme cachées
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.5s ease';
+            });
+            
+            setTimeout(animateOnLoad, 100);
+        });
+    </script>
+</body>
+</html>

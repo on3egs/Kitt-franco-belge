@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ASTEROIDS PRO — KYRONEXT ARCADE</title>
+    <link rel="stylesheet" href="/static/games/asteroids_pro/css/style.css?v=20261005-solo1">
+    <link rel="stylesheet" href="/static/games/asteroids_pro/css/digital.css?v=20261005-digital1">
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <!-- Écran de chargement (quasi instantané : aucun asset lourd) -->
+    <div id="loading-screen">
+        <div class="loader-container">
+            <div class="kitt-logo">
+                <span class="logo-text">KYRONEXT</span>
+                <span class="logo-subtitle">PRESENTS</span>
+            </div>
+            <h1 class="game-title">ASTEROIDS <span class="pro-badge">PRO</span></h1>
+            <div class="loading-progress">
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                <span class="progress-text" id="progress-text">Initialisation des systèmes...</span>
+            </div>
+            <div class="credits">By Manix for KITT FRANCO BELGE</div>
+        </div>
+    </div>
+
+    <!-- Menu principal -->
+    <div id="main-menu" class="hidden">
+        <div class="menu-overlay"></div>
+        <div class="menu-container">
+            <div class="menu-header">
+                <h1>☄️ ASTEROIDS <span class="pro-badge">PRO</span></h1>
+                <p class="subtitle">ÉDITION VECTORIELLE NÉON — <span id="jetson-name">PILOTE</span></p>
+            </div>
+            <div class="menu-highscore">
+                <span>MEILLEUR SCORE</span>
+                <strong id="menu-highscore">0</strong>
+            </div>
+            <div class="menu-actions">
+                <button id="btn-start" class="menu-btn primary">▶ JOUER</button>
+            </div>
+            <div class="menu-controls">
+                <h2>✦ CONTRÔLES ✦</h2>
+                <div class="controls-grid">
+                    <div class="control-item"><kbd>◀ ▶</kbd><span>Pivoter le vaisseau</span></div>
+                    <div class="control-item"><kbd>▲</kbd><span>Propulsion</span></div>
+                    <div class="control-item"><kbd>ESPACE</kbd><span>Tirer</span></div>
+                    <div class="control-item"><kbd>SHIFT</kbd><span>Hyperspace (risqué !)</span></div>
+                    <div class="control-item"><kbd>B</kbd><span>Bombe (via power-up 💣)</span></div>
+                    <div class="control-item"><kbd>P / ÉCHAP</kbd><span>Pause</span></div>
+                    <div class="control-item"><kbd>☄</kbd><span>Power-ups : bouclier, tirs, vie, ralenti</span></div>
+                    <div class="control-item"><kbd>🛸</kbd><span>Méfie-toi des UFO à partir de la vague 3 !</span></div>
+                    <div class="control-item"><kbd>📱</kbd><span>Joystick gauche + FIRE droite</span></div>
+                </div>
+            </div>
+            <div class="menu-footer">
+                <div class="credits">By Manix for KITT FRANCO BELGE — KYRONEXT ARCADE SYSTEM</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de jeu -->
+    <div id="game-screen" class="hidden">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-panel">
+                <div class="hud-label">SCORE</div>
+                <div class="hud-value" id="score-value">0</div>
+            </div>
+            <div class="hud-panel">
+                <div class="hud-label">VAGUE</div>
+                <div class="hud-value" id="wave-value">1</div>
+            </div>
+            <div class="hud-panel">
+                <div class="hud-label">RECORD</div>
+                <div class="hud-value" id="highscore-value">0</div>
+            </div>
+            <div class="hud-panel">
+                <div class="hud-label">COMBO</div>
+                <div class="hud-value" id="combo-value">—</div>
+            </div>
+            <div class="hud-panel">
+                <div class="hud-label">BOMBES</div>
+                <div class="hud-value" id="bomb-value">0</div>
+            </div>
+            <div class="hud-panel" id="lives-panel">
+                <div class="hud-label">VAISSEAUX</div>
+                <canvas id="lives-canvas" width="140" height="30"></canvas>
+            </div>
+        </div>
+
+        <!-- Barres de durée des bonus actifs -->
+        <div id="bonus-bars">
+            <div class="bonus-item hidden" id="bonus-shield">
+                <span class="bonus-label">🛡 BOUCLIER</span>
+                <div class="bonus-track"><div class="bonus-fill shield" id="shield-bar"></div></div>
+            </div>
+            <div class="bonus-item hidden" id="bonus-weapon">
+                <span class="bonus-label">✦ TIR AMÉLIORÉ</span>
+                <div class="bonus-track"><div class="bonus-fill weapon" id="weapon-bar"></div></div>
+            </div>
+            <div class="bonus-item hidden" id="bonus-slow">
+                <span class="bonus-label">⏱ RALENTI</span>
+                <div class="bonus-track"><div class="bonus-fill slow" id="slow-bar"></div></div>
+            </div>
+        </div>
+
+        <!-- Boutons tactiles UI -->
+        <div id="touch-ui">
+            <button id="btn-pause-ui" type="button" title="Pause">Ⅱ</button>
+            <button id="btn-sound-ui" type="button" title="Son">🔊</button>
+            <button id="btn-restart-ui" type="button" title="Recommencer">↻</button>
+            <button id="btn-hyperspace-ui" type="button" title="Hyperspace">✦</button>
+            <button id="btn-bomb-ui" type="button" class="hidden" title="Bombe">💣</button>
+        </div>
+
+        <!-- Zone joystick tactile gauche -->
+        <div id="touch-joystick" class="hidden">
+            <div id="joystick-base"><div id="joystick-knob"></div></div>
+        </div>
+
+        <!-- Gros bouton tir droit (mobile) -->
+        <button id="touch-fire" class="hidden" type="button">● FIRE</button>
+
+        <!-- Intermission vague -->
+        <div id="wave-banner" class="hidden"><span id="wave-banner-text">VAGUE 1</span></div>
+
+        <!-- Overlay pause -->
+        <div id="pause-screen" class="hidden">
+            <div class="pause-overlay"></div>
+            <div class="pause-container">
+                <h1>⏸️ PAUSE</h1>
+                <div class="pause-volume">
+                    <label for="volume-slider">VOLUME</label>
+                    <input type="range" id="volume-slider" min="0" max="100" value="70">
+                    <button id="btn-mute" class="menu-btn secondary">🔊 SON</button>
+                </div>
+                <div class="pause-actions">
+                    <button id="btn-resume" class="menu-btn primary">▶ REPRENDRE</button>
+                    <button id="btn-pause-restart" class="menu-btn secondary">↻ RECOMMENCER</button>
+                    <button id="btn-quit" class="menu-btn secondary">☰ MENU</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de Game Over -->
+    <div id="gameover-screen" class="hidden">
+        <div class="gameover-overlay"></div>
+        <div class="gameover-container">
+            <h1>💥 GAME OVER</h1>
+            <p class="gameover-subtitle" id="gameover-newrecord" style="display:none">🏆 NOUVEAU RECORD !</p>
+            <div class="gameover-stats">
+                <div class="stat-item">
+                    <span class="stat-label">SCORE FINAL</span>
+                    <span class="stat-value" id="gameover-score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">VAGUE ATTEINTE</span>
+                    <span class="stat-value" id="gameover-wave">1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">MEILLEUR SCORE</span>
+                    <span class="stat-value" id="gameover-highscore">0</span>
+                </div>
+            </div>
+            <div class="gameover-actions">
+                <button id="btn-restart" class="menu-btn primary">↻ REJOUER</button>
+                <button id="btn-menu" class="menu-btn secondary">☰ MENU PRINCIPAL</button>
+            </div>
+            <div class="credits">By Manix for KITT FRANCO BELGE</div>
+        </div>
+    </div>
+
+    <script src="/static/games/asteroids_pro/js/sfx.js?v=20261005-fluid2"></script>
+    <script src="/static/games/asteroids_pro/js/game.js?v=20261005-fluid2"></script>
+    <script>
+        // Nom du Jetson depuis l'URL (hub Kyronext)
+        const urlParams = new URLSearchParams(window.location.search);
+        const jetson = urlParams.get('jetson') || 'K2000';
+        document.getElementById('jetson-name').textContent = jetson.toUpperCase();
+    </script>
+  <script src="/static/games/solo-runtime.js?v=20261005-resume1"></script>
+</body>
+</html>

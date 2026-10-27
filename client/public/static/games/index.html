@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>KYRONEXT // JEUX</title>
+  <link rel="stylesheet" href="games.css?v=20261007-shadowkarr1">
+</head>
+<body>
+  <main class="games-shell">
+    <header class="games-header">
+      <div class="eyebrow">KYRONEXT PRESENTS // ARCADE SYSTEM</div>
+      <h1>JEUX</h1>
+      <p>Dix expériences. Un seul lancement par jeu. À toi de signer le prochain record.</p>
+    </header>
+    <nav class="arcade-menu-bar"><a href="/">← KYRONEXT</a><span>10 JEUX · SOLO · RECORDS LOCAUX</span></nav>
+    <section class="game-grid" aria-label="Sélection des dix jeux">
+      <a class="game-card race" href="/kitt-stunt-racing/?kyronex=1"><span class="game-number">01 / PILOTAGE</span><span class="game-icon">🏁</span><strong>KNIGHT RACER</strong><small>Cascades · turbo · trois caméras</small><span class="game-enter">PRENDRE LE VOLANT ↗</span></a>
+      <button class="game-card pacman" data-game="pacman"><span class="game-number">02 / LABYRINTHE</span><span class="game-icon">◉</span><strong>PAC-MAN</strong><small>Fantômes tactiques · fruits · combos</small><span class="game-enter">ENTRER DANS LE LABYRINTHE →</span></button>
+      <button class="game-card tetris" data-game="tetris"><span class="game-number">03 / PRÉCISION</span><span class="game-icon">▦</span><strong>TETRIS</strong><small>Réserve · aperçu · enchaînements</small><span class="game-enter">EMPILER LES RECORDS →</span></button>
+      <a class="game-card spaceinvaders" href="/static/games/space_invaders_pro/index.html"><span class="game-number">04 / COMBAT</span><span class="game-icon">▲</span><strong>SPACE KNIGHT RIDER</strong><small>Pilotes · boss · arsenal évolutif</small><span class="game-enter">DÉCOLLER ↗</span></a>
+      <a class="game-card asteroids3d" href="/static/games/asteroids_pro/index.html"><span class="game-number">05 / SURVIE</span><span class="game-icon">☄</span><strong>ASTÉROÏDES PRO</strong><small>Inertie · boucliers · vagues de débris</small><span class="game-enter">BRAVER LE CHAMP D’ASTÉROÏDES ↗</span></a>
+      <button class="game-card tron" data-game="tron"><span class="game-number">06 / STRATÉGIE</span><span class="game-icon">◈</span><strong>TRON</strong><small>Duel solo contre l’intelligence de KARR</small><span class="game-enter">TRACER SA ROUTE →</span></button>
+      <button class="game-card spaceinvaders" data-game="spaceinvaders"><span class="game-number">07 / ARCADE</span><span class="game-icon">👾</span><strong>SPACE INVADERS</strong><small>Arcade classique · boss · armes évolutives</small><span class="game-enter">REPOUSSER L’INVASION →</span></button>
+      <a class="game-card pacman" href="/static/games/3d/pacman-3d.html"><span class="game-number">08 / IMMERSION</span><span class="game-icon">◉</span><strong>PAC-MAN 3D</strong><small>Labyrinthe 3D · caméras · commandes tactiles</small><span class="game-enter">PLONGER DANS LE LABYRINTHE ↗</span></a>
+      <a class="game-card spaceinvaders" href="/static/games/3d/space-invaders-3d-ultra.html?v=20261005-controls2"><span class="game-number">09 / COMBAT 3D</span><span class="game-icon">✦</span><strong>INVADERS 3D</strong><small>Flottes 3D · dix vagues · boucliers</small><span class="game-enter">DÉFENDRE LA GALAXIE ↗</span></a>
+      <a class="game-card shadowkarr" data-external-game="shadowkarr" href="/static/games/shadow-of-karr/index.html"><span class="game-number">10 / AVENTURE</span><span class="game-icon">▰</span><strong>SHADOW OF KARR</strong><small>8 missions · scrolling · KITT · boss KARR</small><span class="game-enter">LANCER LA CAMPAGNE ↗</span></a>
+    </section>
+    <section id="arcade" class="arcade hidden" aria-live="polite">
+      <div class="arcade-head"><button id="back" type="button">← RETOUR</button><h2 id="arcade-title"></h2><button id="arcade-fullscreen" type="button">⛶ PLEIN ÉCRAN</button></div>
+      <canvas id="arcade-canvas" width="720" height="480" tabindex="0"></canvas>
+      <div class="arcade-controls" aria-label="Commandes tactiles">
+        <button id="arcade-restart" type="button">RECOMMENCER</button>
+        <button id="arcade-quit" type="button">QUITTER</button>
+        <button data-key="ArrowLeft">◀</button><button data-key="ArrowUp">▲</button><button data-key="ArrowDown">▼</button><button data-key="ArrowRight">▶</button>
+        <button id="arcade-hold" data-key="c" hidden>RÉSERVE</button><button id="arcade-drop" data-key="Space">DROP</button><button data-key="p">PAUSE</button><button id="arcade-sound">SON : ON</button>
+      </div>
+      <p id="arcade-help"></p>
+      <section id="hall-score" class="hall-score" aria-label="Tableau des meilleurs scores">
+        <div class="score-title">★ HALL OF FAME ★</div><div id="score-list" class="score-list"></div>
+      </section>
+      <div id="score-entry" class="score-entry hidden">
+        <div class="score-entry-card"><div class="score-entry-title">NEW HIGH SCORE</div>
+          <div id="score-final"></div><label>ENTRE TON NOM ET PRÉNOM</label>
+          <input id="score-name" maxlength="24" autocomplete="name" placeholder="MANIX GELINNE">
+          <button id="score-save" type="button">ENREGISTRER SCORE</button>
+        </div>
+      </div>
+    </section>
+    <footer><span>BY MANIX</span><span>KITT Franco-Belge</span></footer>
+  </main>
+  <div id="kyronext-arcade-intro" class="kyronext-arcade-intro" hidden aria-hidden="true" role="dialog" aria-label="Introduction Kyronext">
+    <div class="arcade-intro-stars" aria-hidden="true"></div>
+    <div class="arcade-intro-orbit orbit-one" aria-hidden="true"></div>
+    <div class="arcade-intro-orbit orbit-two" aria-hidden="true"></div>
+    <div class="arcade-intro-light" aria-hidden="true"></div>
+    <div class="arcade-intro-content">
+      <div class="arcade-intro-kicker">KYRONEXT // ARCADE SYSTEM</div>
+      <div class="arcade-intro-logo" data-intro-logo>KYRONEXT</div>
+      <div class="arcade-intro-rule"><span></span></div>
+      <div class="arcade-intro-presenter">PRÉSENTE</div>
+      <div class="arcade-intro-game" data-intro-game>ARCADE EXPERIENCE</div>
+      <div class="arcade-intro-status"><i></i><span data-intro-status>INITIALISATION DU SYSTÈME</span></div>
+      <button type="button" class="arcade-intro-skip" data-intro-skip hidden>PASSER L’INTRO</button>
+    </div>
+  </div>
+  <script src="arcade-config.js?v=20261027-agx-port"></script>
+  <script src="arcade-intro.js?v=20261007-shadowkarr1"></script>
+  <script src="games.js?v=20261005-enhanced"></script>
+  <script src="games-advanced.js?v=20261007-shadowkarr1"></script>
+  <script src="/static/games/solo-runtime.js?v=20261005-resume1"></script>
+  <script>
+    (() => {
+      const requested = new URLSearchParams(window.location.search).get("game");
+      if (!["pacman", "tetris", "tron", "spaceinvaders"].includes(requested)) return;
+      const card = document.querySelector(`.game-card[data-game="${requested}"]`);
+      if (card) window.setTimeout(() => card.click(), 250);
+    })();
+  </script>
+</body>
+</html>

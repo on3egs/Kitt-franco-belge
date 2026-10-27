@@ -1,0 +1,17 @@
+#hud{top:12px;left:12px;right:12px;gap:8px;justify-content:center}
+.hud-panel{min-width:0;width:clamp(78px,15vw,150px);padding:8px 12px;border-color:#48b9e180;background:linear-gradient(145deg,#061729ee,#02060ce8);box-shadow:0 4px 20px #0008,inset 0 1px #9ae8ff20}
+.hud-label{font-size:9px;letter-spacing:.15em;color:#9dbed2}
+.hud-value{font-size:23px;text-shadow:0 0 14px #ffd15a50}
+#game-container{position:fixed;inset:0;width:100vw;height:100dvh}
+#touch-down{position:fixed;width:50px;height:50px;border:1px solid #63e9ff80;border-radius:12px;background:linear-gradient(145deg,#173451,#081523);color:#fff;font-size:24px;z-index:50;opacity:0;visibility:hidden;touch-action:none}
+#touch-down.visible{opacity:1;visibility:visible}
+@media(pointer:coarse){
+ #touch-up,#touch-left,#touch-right,#touch-down{width:50px;height:50px;border-radius:12px;font-size:24px}
+ #touch-left{left:auto;right:110px;bottom:108px}
+ #touch-right{left:auto;right:10px;bottom:108px}
+ #touch-up{left:auto;right:60px;bottom:158px}
+ #touch-down{right:60px;bottom:58px}
+ #touch-fire{left:16px;right:auto;bottom:195px;width:90px;height:45px;font-size:12px}
+ #touch-joystick{left:16px;bottom:68px}
+ .hud-panel{padding:6px 8px}.hud-value{font-size:18px}
+}

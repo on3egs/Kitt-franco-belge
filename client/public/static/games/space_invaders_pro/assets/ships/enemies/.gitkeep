@@ -1,0 +1,9 @@
+# Dossier des sprites des ennemis pour Space Invaders PRO
+# Générez des sprites Pixel Art 64x64px pour chaque type d'ennemi
+#
+# Ennemis nécessaires :
+# - scout.png (Éclaireur - rouge)
+# - fighter.png (Chasseur - vert)
+# - bomber.png (Bombardier - bleu)
+# - drone.png (Drone - orange)
+# - elite.png (Élite - violet)

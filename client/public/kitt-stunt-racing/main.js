@@ -741,7 +741,8 @@ function initFallback2D() {
             document.getElementById('timer').textContent = formatTime(fallback.elapsed);
             document.getElementById('checkpoint-info').textContent = `${Math.floor(fallback.elapsed / 15) % 4}/3`;
             document.getElementById('turbo-fill').style.width = `${fallback.turbo}%`;
-            document.getElementById('lives').textContent = '♥ '.repeat(Math.max(0, fallback.lives)).trim() || '—';
+            const livesEl = document.getElementById('lives');
+            if (livesEl) livesEl.textContent = '♥ '.repeat(Math.max(0, fallback.lives)).trim() || '—';
             if (fallback.elapsed >= 60 || fallback.lives <= 0) endRace(fallback.lives > 0);
         }
         draw(now);

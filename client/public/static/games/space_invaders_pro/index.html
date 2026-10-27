@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SPACE INVADERS PRO — KYRONEXT ARCADE</title>
+    <link rel="stylesheet" href="/static/games/space_invaders_pro/css/style.css?v=20261005-profix1">
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <!-- Fond animé -->
+    <div id="parallax-bg">
+        <div class="parallax-layer bg-stars" data-speed="0.1"></div>
+        <div class="parallax-layer bg-nebula" data-speed="0.3"></div>
+        <div class="parallax-layer bg-planets" data-speed="0.5"></div>
+    </div>
+    
+    <!-- Écran de chargement -->
+    <div id="loading-screen">
+        <div class="loader-container">
+            <div class="kitt-logo">
+                <span class="logo-text">KYRONEXT</span>
+                <span class="logo-subtitle">PRESENTS</span>
+            </div>
+            <h1 class="game-title">SPACE INVADERS <span class="pro-badge">PRO</span></h1>
+            <div class="loading-progress">
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                <span class="progress-text" id="progress-text">Chargement des assets...</span>
+            </div>
+            <div class="loading-tips" id="loading-tips">
+                <p>"Prêt pour la bataille interstellaire ?"</p>
+            </div>
+            <div class="credits">By Manix for KITT FRANCO BELGE</div>
+        </div>
+    </div>
+
+    <!-- Menu principal -->
+    <div id="main-menu" class="hidden">
+        <div class="menu-overlay"></div>
+        <div class="menu-container">
+            <div class="menu-header">
+                <h1>👾 SPACE INVADERS PRO</h1>
+                <p class="subtitle">Sélectionnez votre pilote, <span id="jetson-name">Pilote</span></p>
+            </div>
+            
+            <!-- Sélection du pilote -->
+            <div class="pilot-section">
+                <h2>✦ PILOTES KITT ✦</h2>
+                <div class="pilot-scroll-container">
+                    <div class="pilot-grid" id="pilot-grid"></div>
+                </div>
+                
+                <!-- Aperçu du pilote -->
+                <div class="pilot-preview" id="pilot-preview">
+                    <div class="preview-card">
+                        <img id="preview-portrait" src="" alt="Portrait">
+                        <div class="preview-info">
+                            <h3 id="preview-name">--</h3>
+                            <p class="pilot-quote" id="preview-quote">"--"</p>
+                            <div class="pilot-details">
+                                <span class="detail-item"><strong>Vaisseau:</strong> <span id="preview-ship">--</span></span>
+                                <span class="detail-item"><strong>Pouvoir:</strong> <span id="preview-ability">--</span></span>
+                            </div>
+                            <div class="pilot-story" id="preview-story">
+                                <strong>Histoire:</strong> <span id="preview-story-text">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="voice-btn" id="voice-btn" title="Écouter la biographie">🔊</button>
+                </div>
+            </div>
+            
+            <!-- Sélection de la difficulté -->
+            <div class="difficulty-section">
+                <h2>⚡ DIFFICULTÉ ⚡</h2>
+                <div class="difficulty-buttons" id="difficulty-buttons"></div>
+            </div>
+            
+            <!-- Boutons d'action -->
+            <div class="menu-actions">
+                <button id="btn-start" class="menu-btn primary">▶ COMMENCER LA PARTIE</button>
+                <button id="btn-howto" class="menu-btn secondary">❓ COMMENT JOUER</button>
+                <button id="btn-scores" class="menu-btn secondary">🏆 MEILLEURS SCORES</button>
+            </div>
+            
+            <div class="menu-footer">
+                <div class="jetson-badge" id="jetson-badge"></div>
+                <div class="credits">Hommage au groupe KITT FRANCO BELGE</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran Comment Jouer -->
+    <div id="howto-screen" class="hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <h1>❓ COMMENT JOUER</h1>
+            <div class="howto-content">
+                <div class="howto-section">
+                    <h2>🎮 COMMANDES</h2>
+                    <div class="controls-grid">
+                        <div class="control-item">
+                            <kbd>FLÈCHES / WASD</kbd>
+                            <span>Déplacer rapidement</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>SOURIS / GLISSER</kbd>
+                            <span>Le vaisseau suit le pointeur ou le doigt</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>CLIC / ESPACE / FIRE</kbd>
+                            <span>Tirer, maintenir pour tir continu</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>SHIFT / SPM</kbd>
+                            <span>Pouvoir Spécial</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>ÉCHAP</kbd>
+                            <span>Pause</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>TÉLÉPHONE</kbd>
+                            <span>Glisser le doigt pour piloter, FIRE pour tirer</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>PHOTO / 🔊</kbd>
+                            <span>Photo = prénom, haut-parleur = biographie</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="howto-section">
+                    <h2>🎯 OBJECTIF</h2>
+                    <p>Détruisez les vagues d'envahisseurs extraterrestres avant qu'ils n'atteignent la Terre !</p>
+                    <ul>
+                        <li>💥 <strong>Détruire les ennemis</strong> pour gagner des points.</li>
+                        <li>🛡️ <strong>Évitez les tirs ennemis</strong> (1 touch = -10% de vie).</li>
+                        <li>⚡ <strong>Utilisez votre pouvoir spécial</strong> (SHIFT) quand la barre est pleine.</li>
+                        <li>💰 <strong>Gagnez des crédits</strong> pour acheter des améliorations entre les niveaux.</li>
+                        <li>👑 <strong>Battez les boss</strong> pour débloquer de nouveaux pilotes.</li>
+                    </ul>
+                </div>
+                <div class="howto-section">
+                    <h2>🏆 SYSTÈME DE SCORE</h2>
+                    <table class="score-table">
+                        <tr><th>Ennemi</th><th>Points</th><th>Crédits</th></tr>
+                        <tr><td>🛸 Scout</td><td>100</td><td>5</td></tr>
+                        <tr><td>⚡ Fighter</td><td>200</td><td>10</td></tr>
+                        <tr><td>💣 Bomber</td><td>300</td><td>15</td></tr>
+                        <tr><td>🤖 Drone</td><td>150</td><td>8</td></tr>
+                        <tr><td>👑 Boss</td><td>1000-5000</td><td>50-200</td></tr>
+                    </table>
+                </div>
+            </div>
+            <button id="btn-close-howto" class="menu-btn">✕ FERMER</button>
+        </div>
+    </div>
+
+    <!-- Écran des scores -->
+    <div id="scores-screen" class="hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <h1>🏆 MEILLEURS SCORES</h1>
+            <div class="scores-tabs">
+                <button class="tab-btn active" data-tab="top">🏆 TOP 10</button>
+                <button class="tab-btn" data-tab="local">💻 CE JETSON</button>
+                <button class="tab-btn" data-tab="pilots">👥 PAR PILOTE</button>
+            </div>
+            <div class="scores-content" id="scores-content">
+                <!-- Les scores seront chargés dynamiquement -->
+            </div>
+            <button id="btn-close-scores" class="menu-btn">✕ FERMER</button>
+        </div>
+    </div>
+
+    <!-- Écran de jeu -->
+    <div id="game-screen" class="hidden">
+        <canvas id="bg-canvas" tabindex="-1"></canvas>
+        <canvas id="game-canvas" tabindex="1"></canvas>
+        
+        <!-- HUD -->
+        <div id="hud">
+            <!-- Gauche -->
+            <div class="hud-left">
+                <div class="hud-panel score-panel">
+                    <div class="hud-label">SCORE</div>
+                    <div class="hud-value" id="score-value">0</div>
+                </div>
+                <div class="hud-panel">
+                    <div class="hud-label">NIVEAU</div>
+                    <div class="hud-value" id="level-value">1</div>
+                </div>
+                <div class="hud-panel">
+                    <div class="hud-label">CRÉDITS</div>
+                    <div class="hud-value" id="credits-value">0</div>
+                </div>
+            </div>
+            
+            <!-- Centre -->
+            <div class="hud-center">
+                <div class="hud-panel health-panel">
+                    <div class="hud-label">VIE</div>
+                    <div class="health-bar-container">
+                        <div class="health-bar"><div class="health-fill" id="health-fill"></div></div>
+                        <div class="health-value" id="health-value">100%</div>
+                    </div>
+                </div>
+                <div class="hud-panel pilot-info">
+                    <img id="hud-pilot-img" src="" alt="Pilote">
+                    <div class="pilot-name" id="hud-pilot-name">--</div>
+                </div>
+            </div>
+            
+            <!-- Droite -->
+            <div class="hud-right">
+                <div class="hud-panel special-panel">
+                    <div class="hud-label">POUVOIR</div>
+                    <div class="special-bar-container">
+                        <div class="special-bar"><div class="special-fill" id="special-fill"></div></div>
+                        <div class="special-timer" id="special-timer">0s</div>
+                    </div>
+                </div>
+                <div class="hud-panel wave-panel">
+                    <div class="hud-label">VAGUE</div>
+                    <div class="hud-value" id="wave-value">1/10</div>
+                </div>
+                <div class="hud-panel time-panel">
+                    <div class="hud-label">TEMPS</div>
+                    <div class="hud-value" id="time-value">00:00</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Commandes tactiles / téléphone -->
+        <div id="mobile-game-controls" aria-label="Commandes tactiles">
+            <button id="mobile-pause" type="button">Ⅱ</button>
+            <button id="mobile-special" type="button">⚡ SPM</button>
+            <button id="mobile-fullscreen" type="button" aria-label="Plein écran">⛶</button>
+            <button id="mobile-audio" type="button" aria-label="Activer ou couper le son">🔊</button>
+            <button id="mobile-fire" type="button">● FIRE</button>
+        </div>
+
+        <!-- Notifications -->
+        <div class="notification-container" id="notification-container"></div>
+        
+        <!-- Message de fin de vague -->
+        <div id="wave-complete" class="hidden">
+            <div class="wave-message">
+                <h2>✨ VAGUE TERMINÉE !</h2>
+                <p id="wave-score">Score: +0</p>
+                <p id="wave-credits">Crédits: +0</p>
+                <div class="wave-rewards" id="wave-rewards"></div>
+                <button id="btn-next-wave" class="menu-btn">▶ VAGUE SUIVANTE</button>
+                <button id="btn-shop" class="menu-btn secondary">🛒 BOUTIQUE</button>
+            </div>
+        </div>
+        
+        <!-- Shop entre les vagues -->
+        <div id="shop-screen" class="hidden">
+            <div class="shop-overlay"></div>
+            <div class="shop-container">
+                <h1>🛒 BOUTIQUE</h1>
+                <p class="shop-subtitle">Améliorez votre vaisseau avec vos crédits</p>
+                <div class="shop-currency">
+                    <span>Crédits disponibles: <strong id="shop-credits">0</strong></span>
+                </div>
+                <div class="shop-categories">
+                    <div class="shop-category">
+                        <h2>⚔️ AMELIORATIONS</h2>
+                        <div class="shop-items" id="upgrade-items"></div>
+                    </div>
+                    <div class="shop-category">
+                        <h2>🛡️ DÉFENSE</h2>
+                        <div class="shop-items" id="defense-items"></div>
+                    </div>
+                    <div class="shop-category">
+                        <h2>⚡ POUVOIRS</h2>
+                        <div class="shop-items" id="power-items"></div>
+                    </div>
+                </div>
+                <button id="btn-close-shop" class="menu-btn">✕ REPRENDRE LE JEU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de Game Over -->
+    <div id="gameover-screen" class="hidden">
+        <div class="gameover-overlay"></div>
+        <div class="gameover-container">
+            <h1>💥 GAME OVER</h1>
+            <p class="gameover-subtitle">Votre vaisseau a été détruit...</p>
+            <div class="gameover-stats">
+                <div class="stat-item">
+                    <span class="stat-label">NIVEAU ATTEINT</span>
+                    <span class="stat-value" id="gameover-level">1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">SCORE FINAL</span>
+                    <span class="stat-value" id="gameover-score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ENNEMIS DÉTRUITS</span>
+                    <span class="stat-value" id="gameover-kills">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">CRÉDITS GAGNÉS</span>
+                    <span class="stat-value" id="gameover-credits">0</span>
+                </div>
+            </div>
+            <div class="highscore-entry" id="gameover-highscore-entry">
+                <label for="gameover-player-name">🏆 ENTRE TON PRÉNOM</label>
+                <div class="highscore-entry-row">
+                    <input id="gameover-player-name" type="text" maxlength="12" autocomplete="nickname" placeholder="PILOTE">
+                    <button id="btn-save-score" class="menu-btn primary" type="button">ENREGISTRER</button>
+                </div>
+                <small id="score-save-status">Enregistre ton score dans le classement local.</small>
+            </div>
+            <div class="gameover-actions">
+                <button id="btn-restart" class="menu-btn primary">↻ REJOUER</button>
+                <button id="btn-gameover-scores" class="menu-btn secondary">🏆 HIGH SCORES</button>
+                <button id="btn-menu" class="menu-btn secondary">☰ MENU PRINCIPAL</button>
+            </div>
+            <div class="credits">By Manix — KYRONEXT ARCADE SYSTEM</div>
+        </div>
+    </div>
+
+    <!-- Écran de pause -->
+    <div id="pause-screen" class="hidden">
+        <div class="pause-overlay"></div>
+        <div class="pause-container">
+            <h1>⏸️ PAUSE</h1>
+            <div class="pause-actions">
+                <button id="btn-resume" class="menu-btn primary">▶ REPRENDRE</button>
+                <button id="btn-settings" class="menu-btn secondary">⚙️ PARAMÈTRES</button>
+                <button id="btn-quit" class="menu-btn secondary">☰ QUITTER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de victoire (boss battu) -->
+    <div id="victory-screen" class="hidden">
+        <div class="victory-overlay"></div>
+        <div class="victory-container">
+            <h1>🏆 VICTOIRE !</h1>
+            <p class="victory-subtitle" id="victory-text">Vous avez vaincu le boss !</p>
+            <div class="victory-stats">
+                <div class="stat-item">
+                    <span class="stat-label">BOSS DÉTRUIT</span>
+                    <span class="stat-value" id="victory-boss">--</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">SCORE BONUS</span>
+                    <span class="stat-value" id="victory-score">+0</span>
+                </div>
+            </div>
+            <button id="btn-continue" class="menu-btn primary">▶ CONTINUER</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/games/space_invaders_pro/js/pilots.js?v=20261005-profix1"></script>
+    <script src="/static/games/space_invaders_pro/js/engine.js?v=20261005-resume"></script>
+    <script src="/static/games/space_invaders_pro/js/game.js?v=20261005-profix1"></script>
+    <script src="/static/games/space_invaders_pro/js/ui.js?v=20261005-profix1"></script>
+    <script>
+        // Détection du Jetson
+        const urlParams = new URLSearchParams(window.location.search);
+        const jetson = urlParams.get('jetson') || 'ajx';
+        document.getElementById('jetson-name').textContent = jetson.toUpperCase();
+        document.getElementById('jetson-badge').textContent = `Jetson ${jetson.toUpperCase()}`;
+        // Le moteur démarre lui-même une seule fois au DOMContentLoaded.
+    </script>
+    <script src="/static/games/solo-runtime.js?v=20261005-resume1"></script>
+</body>
+</html>

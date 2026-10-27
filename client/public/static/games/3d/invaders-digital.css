@@ -1,0 +1,15 @@
+body{font-family:ui-monospace,monospace}
+#menu-screen{position:fixed;inset:0;z-index:950;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 70% 20%,#162254c9,#030817e8 70%);padding:24px}
+.digital-menu{width:min(660px,94vw);padding:clamp(24px,5vw,52px);border:1px solid #47c5eb70;border-radius:24px;background:linear-gradient(140deg,#112440de,#030913ed);box-shadow:0 0 80px #0aa4d522,inset 0 1px #a9f0ff30;text-align:center}
+.digital-menu .eyebrow{color:#64dfff;letter-spacing:.24em;font-size:11px}
+.digital-menu h1{font-size:clamp(30px,6vw,56px);letter-spacing:.07em;line-height:1.15;margin:24px 0;color:#effaff;text-shadow:0 0 28px #2fc8ff70}
+.digital-menu h1 span{color:#8ba5ff}
+.digital-menu p{line-height:1.8;color:#a8bddb;font-size:13px}
+#start-button{margin:26px 0 10px;padding:16px 36px;border:1px solid #77ebff;border-radius:12px;color:#eaffff;background:linear-gradient(130deg,#176184,#233984);font:700 14px monospace;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 28px #1bcbff30}
+#start-button:disabled{opacity:.4}
+#hud{top:14px;left:14px;padding:12px 18px;border:1px solid #49b9da70;border-radius:12px;background:linear-gradient(130deg,#0c2239db,#040c1ddd);box-shadow:0 0 22px #17b8dd18;font:700 13px/1.6 monospace}
+#score-display{color:#f2fbff;text-shadow:0 0 12px #5eeeff}
+#level-display,#wave-display{font-size:11px;color:#a0d3ef}
+#instructions{bottom:58px;font:11px monospace;opacity:.75}
+#game-over-screen,#pause-screen,#level-complete-screen{background:radial-gradient(ellipse,#09213ef2,#020611f5);backdrop-filter:blur(5px)}
+@media(max-width:600px){#instructions{display:none}.digital-menu p{font-size:11px}}

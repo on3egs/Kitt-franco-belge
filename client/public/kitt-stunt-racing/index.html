@@ -6,6 +6,11 @@
     <title>KITT STUNT RACING - By Manix</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="css/style.css?v=27-windows-compatibility">
+    <style>
+        .hud-lives-label { margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(255, 60, 70, .35); }
+        #lives { color: #ff6870; font-size: 1.25rem; letter-spacing: .08em; white-space: nowrap; }
+        @media (max-width: 760px) { #lives { font-size: 1rem; } }
+    </style>
 </head>
 <body>
     <!-- Canvas WebGL -->
@@ -98,6 +103,8 @@
             <div class="hud-panel small">
                 <div class="hud-label">CHECKPOINT</div>
                 <div class="hud-value" id="checkpoint-info">0/3</div>
+                <div class="hud-label hud-lives-label">VIES</div>
+                <div class="hud-value" id="lives" aria-label="Trois vies">♥ ♥ ♥</div>
             </div>
         </div>
         <div class="hud-bottom">
@@ -191,6 +198,6 @@
     <script src="js/audio.js?v=9-local-audio"></script>
     <script src="js/scores.js?v=8-local-scores"></script>
     <script src="js/editor.js?v=9-local-editor"></script>
-    <script src="main.js?v=26-canvas-fallback"></script>
+    <script src="main.js?v=27-lives-hud-fix"></script>
 </body>
 </html>

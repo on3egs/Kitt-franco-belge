@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☄️ ASTEROIDS 3D ULTRA — KYRONEXT ARCADE</title>
+    <script src="lib/three.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+        }
+        
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000428 0%, #004e92 50%, #000428 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .kitt-logo {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .logo-text {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd700, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            letter-spacing: 8px;
+        }
+        
+        .logo-subtitle {
+            font-size: 1rem;
+            color: #888;
+            letter-spacing: 4px;
+        }
+        
+        .game-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #63e9ff, #88f4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(100,233,255,0.8);
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        
+        .loading-bar {
+            width: 300px;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .loading-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #f7931e, #ffd700, #00ff88);
+            border-radius: 3px;
+            transition: width 0.3s ease-out;
+        }
+        
+        .loading-percentage {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #63e9ff;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #score-display {
+            font-size: 1.2rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700;
+            margin-bottom: 5px;
+        }
+        
+        #lives-display {
+            font-size: 1rem;
+            color: #ff6b35;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .life-icon {
+            width: 20px;
+            height: 20px;
+            background: #ff6b35;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        #level-display {
+            font-size: 1rem;
+            color: #63e9ff;
+            margin-top: 5px;
+        }
+        
+        #game-over-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 2000;
+        }
+        
+        #game-over-title {
+            font-size: 4rem;
+            color: #ff6b35;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff6b35;
+        }
+        
+        #final-score {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        
+        #high-score {
+            font-size: 1.5rem;
+            color: #63e9ff;
+            margin-bottom: 30px;
+        }
+        
+        #restart-button {
+            background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd700);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        #restart-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255,107,53,0.5);
+        }
+        
+        #pause-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        #pause-title {
+            font-size: 3rem;
+            color: #ffd700;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px #ffd700;
+        }
+        
+        #resume-button {
+            background: linear-gradient(45deg, #63e9ff, #88f4ff);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .instructions-text {
+            color: #aaa;
+            line-height: 1.4;
+        }
+        
+        .instructions-key {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #fff;
+            font-weight: bold;
+        }
+        button { cursor:pointer; padding:12px 20px; border:1px solid #63e9ff; border-radius:10px; background:#10202e; color:#fff; font-weight:bold; touch-action:none; }
+        #mobile-controls { display:none; position:fixed; bottom:45px; left:0;right:0;z-index:35;justify-content:space-around; }
+        @media (pointer:coarse) { #mobile-controls {display:flex;} #instructions {display:none;} }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="kitt-logo">
+            <span class="logo-text">KYRONEXT</span>
+            <span class="logo-subtitle">PRÉSENTE</span>
+        </div>
+        <h1 class="game-title">☄️ ASTEROIDS 3D ULTRA</h1>
+        <div class="loading-text">Chargement...</div>
+        <div class="loading-bar">
+            <div class="loading-fill" id="loading-fill"></div>
+        </div>
+        <div class="loading-percentage" id="loading-percentage">0%</div>
+    </div>
+    
+    <div id="menu-screen" style="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px">
+        <h1>☄️ ASTÉROÏDES 3D ULTRA</h1><p>Survivez aux vagues. Détruisez les astéroïdes.</p><button id="start-button">JOUER</button>
+    </div>
+    <button id="pause-button" style="position:fixed;right:12px;top:12px;z-index:30">PAUSE</button>
+    <div id="mobile-controls"><button data-key="ArrowLeft">↶</button><button data-key="ArrowUp">POUSSÉE</button><button data-key="ArrowRight">↷</button><button data-key="Space">TIR</button></div>
+    <!-- HUD -->
+    <div id="hud">
+        <div id="score-display">SCORE: 0</div>
+        <div id="lives-display">
+            <span>VIES :</span>
+            <span class="life-icon"></span>
+            <span class="life-icon"></span>
+            <span class="life-icon"></span>
+        </div>
+        <div id="level-display">NIVEAU : 1</div>
+    </div>
+    
+    <!-- Game Over Screen -->
+    <div id="game-over-screen">
+        <h1 id="game-over-title">PARTIE TERMINÉE</h1>
+        <div id="final-score">SCORE: 0</div>
+        <div id="high-score">RECORD : 0</div>
+        <button id="restart-button">RECOMMENCER</button>
+    </div>
+    
+    <!-- Pause Screen -->
+    <div id="pause-screen">
+        <h1 id="pause-title">PAUSE</h1>
+        <button id="resume-button">REPRENDRE</button>
+    </div>
+    
+    <!-- Instructions -->
+    <div id="instructions">
+        <div class="instructions-text">
+            <span class="instructions-key">Z</span> Accélérer | 
+            <span class="instructions-key">Q/D</span> Rotation | 
+            <span class="instructions-key">ESPACE</span> Tirer | 
+            <span class="instructions-key">P</span> Pause
+        </div>
+    </div>
+    
+    <script src="asteroids-3d-ultra.js?v=20261005-resume"></script>
+</body>
+</html>
