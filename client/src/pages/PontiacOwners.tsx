@@ -22,6 +22,18 @@ const FOUNDER: Owner = {
   story: "Le projet KITT Franco-Belge réunit passion automobile, électronique et culture Knight Rider.", photos: [], founder: true,
 };
 
+const COUNTRY_OPTIONS = [
+  ["be", "Belgique"], ["fr", "France"], ["nl", "Pays-Bas"], ["de", "Allemagne"],
+  ["lu", "Luxembourg"], ["gb", "Royaume-Uni"], ["ch", "Suisse"], ["es", "Espagne"],
+  ["it", "Italie"], ["pt", "Portugal"], ["se", "Suède"], ["no", "Norvège"],
+  ["dk", "Danemark"], ["pl", "Pologne"], ["ca", "Canada"], ["us", "États-Unis"],
+  ["mx", "Mexique"], ["br", "Brésil"], ["ar", "Argentine"], ["jp", "Japon"],
+  ["kr", "Corée du Sud"], ["in", "Inde"], ["au", "Australie"], ["nz", "Nouvelle-Zélande"],
+  ["eu_other", "Autre pays d’Europe"], ["na_other", "Autre région d’Amérique du Nord"],
+  ["sa_other", "Autre région d’Amérique du Sud"], ["africa", "Afrique"],
+  ["asia_other", "Autre région d’Asie"], ["oceania", "Autre région d’Océanie"],
+] as const;
+
 type Marker = { x: number; y: number; owner: Owner };
 
 function WorldGlobe({ owners, selectedId, onSelect }: { owners: Owner[]; selectedId: string; onSelect: (owner: Owner) => void }) {
@@ -187,7 +199,7 @@ export default function PontiacOwners() {
   const [error, setError] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ name: "", car: "", year: "", location: "", latitude: "", longitude: "", story: "", consent: false, showLocation: false });
+  const [form, setForm] = useState({ name: "", car: "", year: "", country: "", city: "", province: "", story: "", consent: false });
   const shownOwners = useMemo(() => owners, [owners]);
 
   const loadOwners = useCallback(async () => {
@@ -235,20 +247,17 @@ export default function PontiacOwners() {
     if (!apiReady || !apiBase) { setError("La boîte de réception sécurisée est momentanément indisponible. Ton dossier n’a pas été envoyé; réessaie plus tard."); return; }
     if (!form.consent) { setError("Confirme que tu as le droit de partager ces photos et informations."); return; }
     if (!photos.length) { setError("Ajoute au moins une photo de ta Pontiac."); return; }
-    if (form.showLocation && (!form.location.trim() || form.latitude === "" || form.longitude === "")) { setError("Pour afficher un repère, indique une région et des coordonnées arrondies."); return; }
     setSubmitting(true);
     try {
       const response = await fetch(`${apiBase}/api/pontiac-owners/submit`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, car: form.car, year: form.year, location: form.showLocation ? form.location : "",
-          latitude: form.showLocation ? Number(form.latitude) : null,
-          longitude: form.showLocation ? Number(form.longitude) : null,
-          story: form.story, showLocation: form.showLocation, consent: form.consent, website: "", photos }),
+        body: JSON.stringify({ name: form.name, car: form.car, year: form.year, country: form.country, city: form.city, province: form.province,
+          story: form.story, consent: form.consent, website: "", photos }),
       });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error || "Transmission impossible.");
       setNotice("Photo re\u00e7ue en priv\u00e9. Manix doit valider le dossier avant que ton profil et tes photos deviennent visibles publiquement.");
-      setForm({ name: "", car: "", year: "", location: "", latitude: "", longitude: "", story: "", consent: false, showLocation: false });
+      setForm({ name: "", car: "", year: "", country: "", city: "", province: "", story: "", consent: false });
       setPhotos([]);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Transmission impossible."); }
     finally { setSubmitting(false); }
@@ -307,10 +316,17 @@ export default function PontiacOwners() {
           {photos.length < 4 && <button type="button" className="po-upload-tile" onClick={()=>fileRef.current?.click()}><Upload size={22}/><strong>Ajouter des photos</strong><span>Jusqu’à {4-photos.length} · JPG, PNG, WebP</span></button>}
           <input ref={fileRef} className="po-file-input" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>void addPhotos(e.target.files)} aria-label="Choisir jusqu’à quatre photos"/>
         </div>
-        <div className="po-form-heading"><span>03 / TA RÉGION SUR LE GLOBE</span><span>FACULTATIF</span></div>
-        <div className="po-form-grid"><label className="po-span-two">Région ou pays<input maxLength={80} value={form.location} onChange={e=>setForm({...form,location:e.target.value})} placeholder="Ex. Wallonie, Belgique · pas d’adresse"/></label>
-          <label>Latitude approximative<input type="number" min="-60" max="80" step="1" value={form.latitude} onChange={e=>setForm({...form,latitude:e.target.value})} placeholder="Ex. 51"/></label><label>Longitude approximative<input type="number" min="-180" max="180" step="1" value={form.longitude} onChange={e=>setForm({...form,longitude:e.target.value})} placeholder="Ex. 5"/></label>
-          <label className="po-consent po-span-two"><input type="checkbox" checked={form.showLocation} onChange={e=>setForm({...form,showLocation:e.target.checked})}/><span>Je souhaite montrer un repère géographique approximatif sur le globe. Je n’indiquerai pas mon adresse.</span></label>
+        <div className="po-form-heading"><span>03 / TA LOCALISATION</span><span>FACULTATIF</span></div>
+        <div className="po-form-grid">
+          <label>Pays (facultatif)
+            <select value={form.country} onChange={e=>setForm({...form,country:e.target.value})}>
+              <option value="">Ne pas afficher ma position</option>
+              {COUNTRY_OPTIONS.map(([code,label])=><option key={code} value={code}>{label}</option>)}
+            </select>
+          </label>
+          <label>Ville (facultatif)<input maxLength={60} autoComplete="address-level2" value={form.city} onChange={e=>setForm({...form,city:e.target.value})} placeholder="Ex. Liège"/></label>
+          <label className="po-span-two">Région, province ou État (facultatif)<input maxLength={60} autoComplete="address-level1" value={form.province} onChange={e=>setForm({...form,province:e.target.value})} placeholder="Ex. Wallonie"/></label>
+          <p className="po-span-two po-location-note">Ville et région seront visibles sur ton profil approuvé. Le point du globe reste approximatif, placé au centre du pays. Aucune adresse ni coordonnée GPS n’est demandée.</p>
         </div>
         <label className="po-consent po-ownership"><input type="checkbox" required checked={form.consent} onChange={e=>setForm({...form,consent:e.target.checked})}/><span>Je suis propriétaire de cette Pontiac. J’ai le droit de partager les photos, j’autorise leur affichage public après validation et je comprends qu’elles pourront être copiées par des visiteurs.</span></label>
         {notice && <div className="po-success" role="status"><Check size={18}/>{notice}</div>}

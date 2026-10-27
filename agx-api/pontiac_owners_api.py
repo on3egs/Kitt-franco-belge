@@ -34,6 +34,26 @@ _PROFILE_ID = re.compile(r"^[0-9a-f]{32}$")
 _RATE_WINDOW_SECONDS = 3600
 _RATE_MAX_POSTS = 5
 _RATE_LIMIT: dict[str, list[float]] = {}
+_REGION_CENTERS = {
+    "be": ("Belgique", 50.5, 4.5), "fr": ("France", 46.2, 2.2),
+    "nl": ("Pays-Bas", 52.1, 5.3), "de": ("Allemagne", 51.2, 10.4),
+    "lu": ("Luxembourg", 49.8, 6.1), "gb": ("Royaume-Uni", 54.0, -2.0),
+    "ch": ("Suisse", 46.8, 8.2), "es": ("Espagne", 40.4, -3.7),
+    "it": ("Italie", 42.5, 12.5), "pt": ("Portugal", 39.4, -8.2),
+    "se": ("Suède", 60.1, 18.6), "no": ("Norvège", 60.5, 8.5),
+    "dk": ("Danemark", 56.0, 9.5), "pl": ("Pologne", 52.0, 19.0),
+    "ca": ("Canada", 56.1, -106.3), "us": ("États-Unis", 39.8, -98.6),
+    "mx": ("Mexique", 23.6, -102.5), "br": ("Brésil", -10.8, -52.9),
+    "ar": ("Argentine", -38.4, -63.6), "jp": ("Japon", 36.2, 138.3),
+    "kr": ("Corée du Sud", 36.5, 127.9), "in": ("Inde", 20.6, 78.9),
+    "au": ("Australie", -25.3, 133.8), "nz": ("Nouvelle-Zélande", -40.9, 174.9),
+    "eu_other": ("Autre pays d’Europe", 50.0, 15.0),
+    "na_other": ("Autre région d’Amérique du Nord", 44.0, -100.0),
+    "sa_other": ("Autre région d’Amérique du Sud", -15.0, -60.0),
+    "africa": ("Afrique", 1.0, 17.0),
+    "asia_other": ("Autre région d’Asie", 34.0, 100.0),
+    "oceania": ("Autre région d’Océanie", -25.0, 133.0),
+}
 
 
 def _cors(response: web.StreamResponse) -> web.StreamResponse:
@@ -115,17 +135,22 @@ def _clean_text(value: Any, maximum: int, field: str, *, required: bool = False)
 
 
 def _private_position(body: dict[str, Any]) -> tuple[str, float | None, float | None]:
-    if body.get("showLocation") is not True:
-        return "", None, None
-    location = _clean_text(body.get("location"), 80, "région", required=True)
-    try:
-        lat, lon = float(body["latitude"]), float(body["longitude"])
-    except (KeyError, TypeError, ValueError):
-        raise ValueError("Indique une latitude et une longitude de région approximative.")
-    if not (-60 <= lat <= 80 and -180 <= lon <= 180):
-        raise ValueError("Les coordonnées sont hors de la plage prévue.")
-    # Store only a broad geographic cell, never the visitor's entered point.
-    return location, round(lat / 2) * 2, round(lon / 2) * 2
+    """Keep human-readable location fields while placing the globe marker coarsely."""
+    country = body.get("country")
+    # Accept submissions from the previous form version during browser-cache overlap.
+    if country in (None, ""):
+        country = body.get("region")
+    city = _clean_text(body.get("city"), 60, "ville")
+    province = _clean_text(body.get("province"), 60, "région")
+    if country in (None, ""):
+        return " · ".join(part for part in (city, province) if part), None, None
+    if not isinstance(country, str) or country not in _REGION_CENTERS:
+        raise ValueError("Choisis un pays dans la liste.")
+    country_label, latitude, longitude = _REGION_CENTERS[country]
+    # These are the user-entered display labels; coordinates stay at the country center.
+    display_location = " · ".join(part for part in (city, province, country_label) if part)
+    # Round again for storage; the public marker is never a precise place.
+    return display_location, round(latitude / 2) * 2, round(longitude / 2) * 2
 
 
 def _sanitize_photo(data_url: Any) -> bytes:
