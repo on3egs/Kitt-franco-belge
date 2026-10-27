@@ -1,17 +1,9 @@
 (function(){
   var message='Téléchargement en cours.';
   function speak(){
+    if(window.KittVoice)return window.KittVoice.speak(message,{lang:'fr-FR',rate:.78,pitch:.58,replacePending:true});
     if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))return false;
-    try{
-      window.speechSynthesis.cancel();
-      var utterance=new SpeechSynthesisUtterance(message);
-      utterance.lang='fr-FR';utterance.rate=.88;utterance.pitch=.5;utterance.volume=1;
-      var voices=window.speechSynthesis.getVoices();
-      var french=voices.filter(function(voice){return /^fr([-_]|$)/i.test(voice.lang||'');});
-      var robot=french.find(function(voice){return /robot/i.test(voice.name||'');});
-      if(robot)utterance.voice=robot;else if(french.length)utterance.voice=french[0];
-      window.speechSynthesis.speak(utterance);return true;
-    }catch(_){return false;}
+    try{var utterance=new SpeechSynthesisUtterance(message);utterance.lang='fr-FR';utterance.rate=.78;utterance.pitch=.58;window.speechSynthesis.speak(utterance);return true;}catch(_){return false;}
   }
   document.addEventListener('click',function(event){
     var demo=event.target.closest('[data-robot-voice-demo]');if(!demo)return;

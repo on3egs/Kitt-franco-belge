@@ -17,18 +17,9 @@
   link.addEventListener('click', () => {
     const message = 'Téléchargement de KYRONEXT OS pour Windows. Installation par utilisateur, sans Jetson ni connexion à un serveur.';
     status.textContent = message;
-    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return;
     try {
-      window.speechSynthesis.cancel();
-      const announcement = new SpeechSynthesisUtterance(message);
-      announcement.lang = 'fr-FR';
-      announcement.rate = .94;
-      announcement.pitch = .78;
-      const frenchVoice = window.speechSynthesis.getVoices().find(voice => voice.lang.toLowerCase().startsWith('fr'));
-      if (frenchVoice) announcement.voice = frenchVoice;
-      window.speechSynthesis.speak(announcement);
-    } catch (_) {
-      status.textContent = 'Le téléchargement démarre. La voix du navigateur n’est pas disponible.';
-    }
+      if (window.KittVoice) window.KittVoice.speak(message, { lang: 'fr-FR', rate: .82, pitch: .7, replacePending: true });
+      else if ('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) { const announcement = new SpeechSynthesisUtterance(message); announcement.lang = 'fr-FR'; announcement.rate = .82; announcement.pitch = .7; window.speechSynthesis.speak(announcement); }
+    } catch (_) { status.textContent = 'Le téléchargement démarre. La voix du navigateur n’est pas disponible.'; }
   });
 })();
