@@ -346,12 +346,14 @@ const TOOLS: FileTool[] = [
     id: "image-contact-sheet",
     group: "Images",
     title: "Planche contact",
-    description: "Place plusieurs images dans une mosaïque PNG légendée.",
+    description:
+      "Compose une mosaïque PNG et choisissez si les noms de fichiers apparaissent.",
     icon: ImageIcon,
     accept: "image/*",
     multiple: true,
     option: "Nombre de colonnes (1 à 6)",
     placeholder: "3",
+    hint: "Les noms sont imprimés sous les images par défaut. Vous pouvez les numéroter ou les masquer avant de créer la planche.",
   },
   {
     id: "zip-create",
@@ -806,13 +808,18 @@ function canvasPng(canvas: HTMLCanvasElement) {
     )
   );
 }
-async function makeImageContactSheet(files: File[], rawColumns: number) {
+async function makeImageContactSheet(
+  files: File[],
+  rawColumns: number,
+  labelMode: "filename" | "number" | "hidden"
+) {
   if (!files.length) throw new Error("Choisissez au moins une image.");
   if (files.length > 40)
     throw new Error("Limite de 40 images par planche contact.");
   const columns = Math.max(1, Math.min(6, Math.round(rawColumns) || 3)),
     cellWidth = 320,
     cellHeight = 236,
+    labelHeight = labelMode === "hidden" ? 0 : 42,
     gap = 12,
     outer = 18;
   const rows = Math.ceil(files.length / columns),
@@ -832,7 +839,7 @@ async function makeImageContactSheet(files: File[], rawColumns: number) {
       row = Math.floor(index / columns),
       x = outer + column * (cellWidth + gap),
       y = outer + 36 + row * (cellHeight + gap),
-      previewHeight = cellHeight - 42;
+      previewHeight = cellHeight - labelHeight;
     ctx.fillStyle = "#111a27";
     ctx.fillRect(x, y, cellWidth, cellHeight);
     ctx.strokeStyle = "#34445a";
@@ -851,13 +858,17 @@ async function makeImageContactSheet(files: File[], rawColumns: number) {
       height
     );
     image.close();
-    ctx.fillStyle = "#e9eff8";
-    ctx.font = "12px Segoe UI, sans-serif";
-    const name =
-      files[index].name.length > 42
-        ? `${files[index].name.slice(0, 39)}…`
-        : files[index].name;
-    ctx.fillText(name, x + 9, y + cellHeight - 12, cellWidth - 18);
+    if (labelMode !== "hidden") {
+      ctx.fillStyle = "#e9eff8";
+      ctx.font = "12px Segoe UI, sans-serif";
+      const name =
+        labelMode === "number"
+          ? `IMAGE ${String(index + 1).padStart(2, "0")}`
+          : files[index].name.length > 42
+            ? `${files[index].name.slice(0, 39)}…`
+            : files[index].name;
+      ctx.fillText(name, x + 9, y + cellHeight - 12, cellWidth - 18);
+    }
   }
   return canvasPng(canvas);
 }
@@ -978,6 +989,9 @@ export default function ToolsHub() {
     [files, setFiles] = useState<File[]>([]),
     [text, setText] = useState(""),
     [option, setOption] = useState(""),
+    [contactSheetLabelMode, setContactSheetLabelMode] = useState<
+      "filename" | "number" | "hidden"
+    >("filename"),
     [quality, setQuality] = useState(88),
     [outputs, setOutputs] = useState<Output[]>([]),
     [busy, setBusy] = useState(false),
@@ -1028,6 +1042,7 @@ export default function ToolsHub() {
     setSelected(tool);
     setFiles([]);
     setText("");
+    setContactSheetLabelMode("filename");
     setOption(
       (
         {
@@ -1578,12 +1593,16 @@ export default function ToolsHub() {
           break;
         }
         case "image-contact-sheet": {
-          const blob = await makeImageContactSheet(files, Number(option));
+          const blob = await makeImageContactSheet(
+            files,
+            Number(option),
+            contactSheetLabelMode
+          );
           created = [
             {
               name: "planche-contact.png",
               blob,
-              note: `${files.length} image(s) · ${(blob.size / 1048576).toFixed(2)} Mo`,
+              note: `${files.length} image(s) · ${contactSheetLabelMode === "hidden" ? "noms masqués" : contactSheetLabelMode === "number" ? "images numérotées" : "noms affichés"} · ${(blob.size / 1048576).toFixed(2)} Mo`,
             },
           ];
           break;
@@ -2582,6 +2601,15 @@ export default function ToolsHub() {
                       placeholder={selected.placeholder}
                       aria-label="Second texte à comparer"
                     />
+                  ) : selected.id === "image-contact-sheet" ? (
+                    <input
+                      type="number"
+                      min="1"
+                      max="6"
+                      value={option}
+                      onChange={e => setOption(e.target.value)}
+                      placeholder={selected.placeholder}
+                    />
                   ) : (
                     <input
                       value={option}
@@ -2589,6 +2617,26 @@ export default function ToolsHub() {
                       placeholder={selected.placeholder}
                     />
                   )}
+                </label>
+              )}
+              {selected.id === "image-contact-sheet" && (
+                <label className="tool-option">
+                  Légendes sous les miniatures
+                  <select
+                    value={contactSheetLabelMode}
+                    onChange={e =>
+                      setContactSheetLabelMode(
+                        e.target.value as "filename" | "number" | "hidden"
+                      )
+                    }
+                  >
+                    <option value="filename">Afficher les noms de fichiers</option>
+                    <option value="number">Remplacer par des numéros</option>
+                    <option value="hidden">Masquer les légendes</option>
+                  </select>
+                  <small>
+                    Ce réglage concerne le PNG créé. Les noms restent visibles dans la liste des fichiers sélectionnés.
+                  </small>
                 </label>
               )}
               {selected.id === "image-convert" ||
