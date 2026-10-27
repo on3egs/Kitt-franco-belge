@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="0;url=/?p=%2Fadmin" />
+    <title>Administration KITT — KITT Franco-Belge</title>
+  </head>
+  <body>
+    <p>Ouverture de l’administration KITT…</p>
+    <script>
+      const destination = new URL("/", window.location.origin);
+      destination.searchParams.set("p", "/admin");
+      window.location.replace(destination.href);
+    </script>
+    <a href="/?p=%2Fadmin">Ouvrir l’administration</a>
+  </body>
+</html>
