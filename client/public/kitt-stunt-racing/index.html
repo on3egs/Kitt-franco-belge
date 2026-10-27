@@ -45,6 +45,8 @@
             <button id="btn-level2" class="menu-btn">🌃 NIVEAU 2 — Nuit rapide</button>
             <button id="btn-level3" class="menu-btn">🔁 NIVEAU 3 — Looping</button>
             <button id="btn-custom" class="menu-btn">🛠️ CIRCUIT PERSONNALISÉ</button>
+            <button id="btn-career" class="menu-btn">CARRIÈRE KITT <span id="career-progress">0/3</span></button>
+            <button id="btn-tutorial" class="mini-btn">APPRENDRE LES COMMANDES</button>
             <button id="btn-editor" class="menu-btn">🧱 CONSTRUCTION DE CIRCUIT</button>
             <button id="btn-scores" class="menu-btn">🏆 SCORES</button>
             <div class="menu-row">
@@ -107,12 +109,27 @@
                 <div class="hud-value" id="lives" aria-label="Trois vies">♥ ♥ ♥</div>
             </div>
         </div>
+        <aside class="race-radar" aria-label="Radar du circuit">
+            <div class="race-radar-head"><b>RADAR</b><span id="race-radar-progress-label">0%</span></div>
+            <canvas id="race-radar-canvas" width="180" height="120" aria-label="Position sur le circuit"></canvas>
+            <div class="race-radar-foot"><span id="race-radar-next">DÉPART</span><span id="race-radar-gap">TRAFIC 0</span></div>
+            <div class="race-radar-progress"><i id="race-radar-progress-bar"></i></div>
+        </aside>
         <div class="hud-bottom">
             <div id="hud-messages"></div>
             <div id="hud-debug" class="hud-debug"></div>
         </div>
     </div>
 
+    <div id="racer-tutorial" class="hidden" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+        <div class="tutorial-card"><button id="tutorial-close" class="tutorial-close" aria-label="Fermer">×</button>
+            <div class="driver-kicker">KYRONEXT // AIDE PILOTE</div><h2 id="tutorial-title">PRENDS LE VOLANT</h2>
+            <p id="tutorial-copy">Flèches ou WASD pour conduire. Espace déclenche le turbo, Q active le mode SPM. Sur mobile, maintiens les commandes tactiles.</p>
+            <div class="tutorial-steps"><span>1 · ACCÉLÉRER</span><span>2 · PILOTER</span><span>3 · TURBO</span></div>
+            <button id="tutorial-next" class="menu-btn">COMPRIS — DÉMARRER</button>
+        </div>
+    </div>
+    <div id="impact-flash" aria-hidden="true"></div><div id="damage-state" aria-hidden="true"></div>
     <!-- Compte à rebours -->
     <div id="countdown" class="hidden">3</div>
     <div id="spm-cinematic" class="hidden" aria-live="polite"><span>SUPER PURSUIT MODE</span><b>TRANSFORMATION 3D</b></div>
@@ -153,6 +170,7 @@
             <div class="results-line">Meilleur temps : <span id="results-best">--</span></div>
             <div class="results-line">Vitesse max : <span id="results-speed">--</span> km/h</div>
             <div class="results-line" id="results-rank"></div>
+            <button id="btn-career-next" class="menu-btn hidden">MISSION SUIVANTE</button>
             <button id="btn-restart" class="menu-btn">↻ REJOUER (R)</button>
             <button id="btn-menu" class="menu-btn">☰ MENU PRINCIPAL (M)</button>
             <div class="credits">Un hommage au groupe <span>KITT FRANCO BELGE</span></div>
@@ -198,6 +216,6 @@
     <script src="js/audio.js?v=9-local-audio"></script>
     <script src="js/scores.js?v=8-local-scores"></script>
     <script src="js/editor.js?v=9-local-editor"></script>
-    <script src="main.js?v=28-windows-controls-help"></script>
+    <script src="main.js?v=29-career-radar-traffic"></script>
 </body>
 </html>

@@ -98,6 +98,16 @@ let driverSelectEl = null;
 let pendingRaceLevel = 1;
 let selectedDriverId = localStorage.getItem('kx-racer-driver') || 'manix';
 let selectedDriver = null;
+// Modes optionnels portés depuis la candidate AGX; données locales au navigateur.
+const CAREER_LEVELS = [1, 2, 3];
+const CAREER_KEY = 'kx-racer-career-cleared-v1';
+let careerRunActive = false;
+let trafficCars = [];
+let trafficPath = [];
+let trafficPathLength = 0;
+let radarDrawAt = 0;
+let announcerLastAt = 0;
+let accumulatedDamage = 0;
 
 // Entrées mobiles : elles alimentent la même boucle physique que le clavier.
 const mobileInput = { left:false, right:false, accelerate:false, brake:false };
@@ -2585,7 +2595,8 @@ function setupControls() {
         if (e.target && (e.target.matches('input, textarea, select') || e.target.isContentEditable)) return;
         keys[e.code] = true;
 
-        if (e.code === 'Space') e.preventDefault();
+        if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+        if (e.repeat && ['Escape', 'Space', 'KeyR', 'KeyX', 'KeyQ', 'KeyT', 'Enter'].includes(e.code)) return;
 
         // Musique : partout
         if (e.code === 'KeyP' && !e.repeat) toggleMusic();
@@ -2638,12 +2649,30 @@ function setupControls() {
     window.addEventListener('keyup', (e) => {
         keys[e.code] = false;
     });
+    window.addEventListener('blur', () => {
+        clearDriveInputs();
+        if (state === 'racing') pauseGame();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) return;
+        clearDriveInputs();
+        if (state === 'racing') pauseGame();
+    });
     setupMobileControls();
+}
+
+function clearDriveInputs() {
+    keys = {};
+    Object.keys(mobileInput).forEach(key => { mobileInput[key] = false; });
+    document.querySelectorAll('[data-drive]').forEach(button => {
+        button.classList.remove('pressed');
+        button.dispatchEvent(new Event('drive-reset'));
+    });
 }
 
 function setMobileControlsVisible(visible) {
     document.body.classList.toggle('race-mobile-controls', !!visible);
-    if (!visible) Object.keys(mobileInput).forEach(k => { mobileInput[k] = false; });
+    if (!visible) clearDriveInputs();
 }
 
 function setupMobileControls() {
@@ -2652,13 +2681,17 @@ function setupMobileControls() {
     panel.dataset.bound = '1';
     panel.querySelectorAll('[data-drive]').forEach(button => {
         const key = button.dataset.drive;
+        const pointers = new Set();
+        button.addEventListener('drive-reset', () => pointers.clear());
         const release = (event) => {
             event.preventDefault();
-            mobileInput[key] = false;
-            button.classList.remove('pressed');
+            pointers.delete(event.pointerId);
+            mobileInput[key] = pointers.size > 0;
+            button.classList.toggle('pressed', mobileInput[key]);
         };
         button.addEventListener('pointerdown', (event) => {
             event.preventDefault();
+            pointers.add(event.pointerId);
             mobileInput[key] = true;
             button.classList.add('pressed');
             button.setPointerCapture?.(event.pointerId);
@@ -2711,6 +2744,91 @@ function disableMobileGyro() {
     if (status) status.textContent = 'TACTILE ACTIF';
 }
 
+function announceKitt(text) {
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance || document.hidden) return;
+    const now = Date.now();
+    if (now - announcerLastAt < 5000) return;
+    announcerLastAt = now;
+    try {
+        speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'fr-FR'; msg.rate = 1.02; msg.pitch = .72; msg.volume = .8;
+        speechSynthesis.speak(msg);
+    } catch (_) { /* La voix reste une amélioration facultative. */ }
+}
+
+function createTrafficCars() {
+    if (trafficCars.length || !scene) return;
+    const paints = [0x16394b, 0x4b2530, 0x77736a, 0x284330];
+    for (let i = 0; i < paints.length; i++) {
+        const car = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.48,.48,3.1), new THREE.MeshStandardMaterial({color:paints[i],metalness:.65,roughness:.3}));
+        body.position.y=.48; body.castShadow=true; car.add(body);
+        const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.16,.42,1.35), new THREE.MeshStandardMaterial({color:0x101a24,metalness:.45,roughness:.18}));
+        cabin.position.set(0,.87,-.2); car.add(cabin);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(1.08,.11,.08), new THREE.MeshBasicMaterial({color:0xfff0bd})); head.position.set(0,.43,1.58); car.add(head);
+        const tail = new THREE.Mesh(new THREE.BoxGeometry(1.08,.1,.08), new THREE.MeshBasicMaterial({color:0xff2238})); tail.position.set(0,.43,-1.58); car.add(tail);
+        car.visible=false; car.userData.hitCooldown=0; car.userData.index=i; scene.add(car); trafficCars.push(car);
+    }
+}
+function setupRaceTraffic() {
+    createTrafficCars();
+    trafficPath=[]; trafficPathLength=0;
+    if (trackLine.length < 8) { hideTrafficCars(); return; }
+    trafficPath.push(0);
+    for(let i=1;i<trackLine.length;i++) {
+        const a=trackLine[i-1],b=trackLine[i]; trafficPathLength+=Math.hypot(b.x-a.x,b.z-a.z); trafficPath.push(trafficPathLength);
+    }
+    const specs=[[.17,1,-2.7],[.36,1,2.7],[.64,-1,2.7],[.82,1,-2.7]];
+    trafficCars.forEach((car,i)=>{ const [fraction,direction,lane]=specs[i]; car.userData.distance=trafficPathLength*fraction; car.userData.direction=direction; car.userData.lane=lane; car.userData.hitCooldown=0; car.visible=trafficPathLength>90; });
+}
+function hideTrafficCars() { trafficCars.forEach(car=>car.visible=false); }
+function sampleTraffic(distance) {
+    if (!trafficPath.length) return null;
+    const d=Math.max(0,Math.min(trafficPathLength,distance)); let i=1;
+    while(i<trafficPath.length-1 && trafficPath[i]<d) i++;
+    const a=trackLine[i-1],b=trackLine[i],span=Math.max(.001,trafficPath[i]-trafficPath[i-1]),t=(d-trafficPath[i-1])/span;
+    return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,yaw:Math.atan2(b.x-a.x,b.z-a.z)};
+}
+function updateTrafficCars(dt) {
+    if (!trafficPathLength || !carBody) return;
+    let playerDistance=0, best=Infinity;
+    for(let i=0;i<trackLine.length;i+=2){const p=trackLine[i],d=(p.x-carBody.position.x)**2+(p.z-carBody.position.z)**2;if(d<best){best=d;playerDistance=trafficPath[i]||0;}}
+    trafficCars.forEach(car=>{
+        if(!car.visible)return;
+        const u=car.userData; u.distance+=u.direction*(18+u.index*1.7)*dt; u.hitCooldown=Math.max(0,u.hitCooldown-dt);
+        if(u.distance<0||u.distance>trafficPathLength){car.visible=false;return;}
+        const p=sampleTraffic(u.distance); if(!p)return;
+        const rx=Math.cos(p.yaw),rz=-Math.sin(p.yaw); car.position.set(p.x+rx*u.lane,p.y+.05,p.z+rz*u.lane); car.rotation.y=p.yaw+(u.direction<0?Math.PI:0);
+        const dx=car.position.x-carBody.position.x,dz=car.position.z-carBody.position.z;
+        const yaw=carMesh.rotation.y, longitudinal=dx*Math.sin(yaw)+dz*Math.cos(yaw), lateral=dx*Math.cos(yaw)-dz*Math.sin(yaw);
+        if(u.hitCooldown===0 && Math.abs(longitudinal)<3.6 && Math.abs(lateral)<1.25 && Math.abs(car.position.y-carBody.position.y)<1.3 && Math.abs(u.distance-playerDistance)<7){
+            const severity=Math.min(1,Math.max(.25,Math.hypot(carBody.velocity.x,carBody.velocity.z)/35));
+            carBody.velocity.x*=.7;carBody.velocity.z*=.7;carBody.velocity.x+=Math.sign(-dx||1)*2.8;carBody.velocity.z+=Math.sign(-dz||1)*2.8;
+            u.hitCooldown=1.1; accumulatedDamage=Math.min(1,accumulatedDamage+severity*.24); document.getElementById("damage-state")?.style.setProperty("--damage-level",String(accumulatedDamage)); camShake=Math.max(camShake,.25+severity*.42); damageFlash(); if(window.KA?.sfx?.thud)KA.sfx.thud(severity); showMessage('CONTACT TRAFIC · VITESSE RÉDUITE'); announceKitt('Attention, collision. Vérifiez votre trajectoire.');
+        }
+    });
+}
+function drawRaceRadar(now) {
+    if(now-radarDrawAt<140)return; radarDrawAt=now;
+    const canvas=document.getElementById('race-radar-canvas'),ctx=canvas?.getContext('2d'); if(!ctx)return;
+    const w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.fillStyle='rgba(2,8,14,.85)';ctx.fillRect(0,0,w,h);
+    if(trackLine.length<2)return;
+    let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+    trackLine.forEach(p=>{minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minZ=Math.min(minZ,p.z);maxZ=Math.max(maxZ,p.z);});
+    const scale=Math.min((w-18)/Math.max(1,maxX-minX),(h-18)/Math.max(1,maxZ-minZ));
+    const pt=p=>({x:(w-(maxX-minX)*scale)/2+(p.x-minX)*scale,y:h-((h-(maxZ-minZ)*scale)/2+(p.z-minZ)*scale)});
+    ctx.beginPath();trackLine.forEach((p,i)=>{const q=pt(p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);});ctx.strokeStyle='#49717d';ctx.lineWidth=4;ctx.stroke();
+    checkpoints.forEach((p,i)=>{const q=pt(p);ctx.fillStyle=i<nextCp?'#67d996':i===nextCp?'#ffe16a':'#c9d4da';ctx.fillRect(q.x-2,q.y-2,4,4);});
+    trafficCars.forEach(c=>{if(c.visible){const q=pt(c.position);ctx.fillStyle='#5bd6ee';ctx.fillRect(q.x-2,q.y-2,4,4);}});
+    if(karrActive&&karrMesh){const q=pt(karrMesh.position);ctx.fillStyle='#ffb04a';ctx.beginPath();ctx.arc(q.x,q.y,3,0,7);ctx.fill();}
+    if(carMesh){const q=pt(carMesh.position);ctx.fillStyle='#ff3557';ctx.beginPath();ctx.arc(q.x,q.y,4,0,7);ctx.fill();}
+    const pct=trackLine.length?Math.round(Math.min(1,Math.max(0,(nextCp+(raceTime>0?0.35:0))/Math.max(1,checkpoints.length+1)))*100):0;
+    const bar=document.getElementById('race-radar-progress-bar'),label=document.getElementById('race-radar-progress-label');if(bar)bar.style.width=pct+'%';if(label)label.textContent=pct+'%';
+    const next=document.getElementById('race-radar-next');if(next)next.textContent=nextCp<checkpoints.length?'CHECKPOINT '+(nextCp+1):'ARRIVÉE';
+    const gap=document.getElementById('race-radar-gap');if(gap)gap.textContent=`TRAFIC ${trafficCars.filter(c=>c.visible).length}`;
+}
+
 function setupUI() {
     document.getElementById('btn-level1').addEventListener('click', () => startRace(1));
     document.getElementById('btn-level2').addEventListener('click', () => startRace(2));
@@ -2733,7 +2851,37 @@ function setupUI() {
     document.getElementById('btn-quit').addEventListener('click', backToMenu);
     document.getElementById('btn-restart').addEventListener('click', startRace);
     document.getElementById('btn-menu').addEventListener('click', backToMenu);
+    document.getElementById('btn-career')?.addEventListener('click', startCareerMission);
+    document.getElementById('btn-tutorial')?.addEventListener('click', () => document.getElementById('racer-tutorial')?.classList.remove('hidden'));
+    document.getElementById('tutorial-close')?.addEventListener('click', closeRacerTutorial);
+    document.getElementById('tutorial-next')?.addEventListener('click', closeRacerTutorial);
+    document.getElementById('btn-career-next')?.addEventListener('click', startCareerMission);
     updateMusicButtons(window.KA ? KA.musicOn() : false);
+    updateCareerButton();
+}
+
+function readCareerCleared() {
+    try { return [...new Set(JSON.parse(localStorage.getItem(CAREER_KEY) || '[]').filter(n => CAREER_LEVELS.includes(n)))]; }
+    catch (_) { return []; }
+}
+function updateCareerButton() {
+    const done = readCareerCleared();
+    const progress = document.getElementById('career-progress');
+    if (progress) progress.textContent = `${done.length}/${CAREER_LEVELS.length}`;
+}
+function startCareerMission() {
+    const done = readCareerCleared();
+    const level = CAREER_LEVELS.find(n => !done.includes(n));
+    if (level === undefined) {
+        localStorage.setItem(CAREER_KEY, '[]'); updateCareerButton();
+        showMessage('CARRIÈRE TERMINÉE · NOUVELLE SAISON');
+        startRace(CAREER_LEVELS[0], true); return;
+    }
+    startRace(level, true);
+}
+function closeRacerTutorial() {
+    document.getElementById('racer-tutorial')?.classList.add('hidden');
+    localStorage.setItem('kx-racer-tutorial-seen', '1');
 }
 
 // ---- V7 — constructeur de circuit ----
@@ -2758,6 +2906,8 @@ function backToMenu() {
     paused = false;
     state = 'menu';
     setMobileControlsVisible(false);
+    hideTrafficCars();
+    careerRunActive = false;
     silenceVehicle();
     document.getElementById('pause-menu').classList.add('hidden');
     document.getElementById('results-screen').classList.add('hidden');
@@ -2774,7 +2924,8 @@ function backToMenu() {
 }
 
 // Toute entrée « nouvelle course » passe par la sélection du pilote.
-function startRace(level) {
+function startRace(level, career = false) {
+    careerRunActive = Boolean(career);
     openDriverSelect(level);
 }
 
@@ -2788,6 +2939,9 @@ function beginRace(level) {
         ? requestedLevel
         : currentLevel;
     setLevel(nextLevel);
+    setupRaceTraffic();
+    accumulatedDamage = 0;
+    document.getElementById("damage-state")?.style.setProperty("--damage-level", "0");
     applyDriverVehicle(selectedDriverId);
     renderDriverHud();
 
@@ -2852,6 +3006,7 @@ function beginRacing() {
     raceStartTime = Date.now();
     for (let i = 0; i < 4; i++) vehicle.setBrake(0, i);
     showMessage('C\'EST PARTI !');
+    announceKitt('C’est parti. Restez concentré sur la piste.');
 }
 
 function pauseGame() {
@@ -2897,6 +3052,20 @@ function finishRace() {
         localStorage.setItem(bestKey, String(raceTime));
         record = true;
     }
+
+    if (careerRunActive && CAREER_LEVELS.includes(currentLevel)) {
+        const cleared = readCareerCleared();
+        if (!cleared.includes(currentLevel)) cleared.push(currentLevel);
+        localStorage.setItem(CAREER_KEY, JSON.stringify(cleared));
+        updateCareerButton();
+        careerRunActive = false;
+        const next = CAREER_LEVELS.find(n => !cleared.includes(n));
+        const nextBtn = document.getElementById('btn-career-next');
+        if (nextBtn) { nextBtn.classList.remove('hidden'); nextBtn.textContent = next ? `MISSION SUIVANTE · NIVEAU ${next}` : 'CARRIÈRE TERMINÉE · REJOUER'; }
+    } else if (document.getElementById('btn-career-next')) {
+        document.getElementById('btn-career-next').classList.add('hidden');
+    }
+    hideTrafficCars();
 
     // V7 — hall of fame : enregistre le run et récupère le classement
     let rank = null;
@@ -3119,6 +3288,8 @@ function animate() {
     updateSPM(dt);
     updateEnvironment(dt);
     updateParticles(dt);
+    if (state === 'racing') updateTrafficCars(dt);
+    drawRaceRadar(performance.now());
 
     // Le soleil (et sa caméra d'ombres) suit la voiture
     if (sunLight && carMesh) {
@@ -3756,4 +3927,6 @@ function damageFlash() {
     damageFlashEl.classList.remove('flash');
     void damageFlashEl.offsetWidth;             // relance l'animation CSS
     damageFlashEl.classList.add('flash');
+    const impact = document.getElementById('impact-flash');
+    if (impact) { impact.classList.remove('active'); void impact.offsetWidth; impact.classList.add('active'); setTimeout(() => impact.classList.remove('active'), 170); }
 }

@@ -1045,6 +1045,8 @@ export default function ToolsHub() {
     [busy, setBusy] = useState(false),
     [status, setStatus] = useState(""),
     [recording, setRecording] = useState(false),
+    [microphones, setMicrophones] = useState<MediaDeviceInfo[]>([]),
+    [selectedMicrophone, setSelectedMicrophone] = useState(""),
     [playbackRate, setPlaybackRate] = useState(1),
     [mediaMeta, setMediaMeta] = useState(""),
     [dragging, setDragging] = useState(false),
@@ -1094,6 +1096,28 @@ export default function ToolsHub() {
     []
   );
   useEffect(() => setCatalogLimit(12), [category, search, toolView]);
+  useEffect(() => {
+    if (selected?.id !== "audio-record" || !navigator.mediaDevices?.enumerateDevices) return;
+    let active = true;
+    const refreshMicrophones = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const inputs = devices.filter(device => device.kind === "audioinput");
+        if (active) {
+          setMicrophones(inputs);
+          setSelectedMicrophone(current => current && !inputs.some(device => device.deviceId === current) ? "" : current);
+        }
+      } catch {
+        if (active) setMicrophones([]);
+      }
+    };
+    void refreshMicrophones();
+    navigator.mediaDevices.addEventListener?.("devicechange", refreshMicrophones);
+    return () => {
+      active = false;
+      navigator.mediaDevices.removeEventListener?.("devicechange", refreshMicrophones);
+    };
+  }, [selected?.id]);
   function openTool(tool: FileTool) {
     setSelected(tool);
     setFiles([]);
@@ -2164,7 +2188,11 @@ export default function ToolsHub() {
     ]);
     if (!selectedType)
       throw new Error("Aucun format d’enregistrement compatible trouvé.");
-    stream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.current = await navigator.mediaDevices.getUserMedia({
+      audio: selectedMicrophone
+        ? { deviceId: { exact: selectedMicrophone } }
+        : true,
+    });
     chunks.current = [];
     recorder.current = new MediaRecorder(stream.current, {
       mimeType: selectedType,
@@ -2699,14 +2727,31 @@ export default function ToolsHub() {
               )}
               {selected.id === "audio-record" && (
                 <div className="recorder-panel">
-                  <div
-                    className={`recorder-led ${recording ? "recording" : ""}`}
-                  />
-                  <p>
-                    {recording
-                      ? "Le microphone enregistre dans votre navigateur."
-                      : "Aucun enregistrement sans votre clic et l’autorisation du navigateur."}
-                  </p>
+                  <label className="tool-option">
+                    Microphone de cet appareil
+                    <select
+                      value={selectedMicrophone}
+                      onChange={event => setSelectedMicrophone(event.target.value)}
+                      disabled={recording}
+                      aria-label="Choisir le microphone de cet appareil"
+                    >
+                      <option value="">Microphone par défaut du navigateur</option>
+                      {microphones.map((microphone, index) => (
+                        <option key={microphone.deviceId || `micro-${index}`} value={microphone.deviceId}>
+                          {microphone.label || `Microphone ${index + 1} (nom masqué par le navigateur)`}
+                        </option>
+                      ))}
+                    </select>
+                    <small>La capture utilise le micro du navigateur sur votre appareil, pas celui du serveur KITT. Les noms peuvent rester masqués jusqu’à l’autorisation micro.</small>
+                  </label>
+                  <div className="recorder-state">
+                    <div className={`recorder-led ${recording ? "recording" : ""}`} />
+                    <p>
+                      {recording
+                        ? "Le microphone enregistre dans votre navigateur."
+                        : "Aucun enregistrement sans votre clic et l’autorisation du navigateur."}
+                    </p>
+                  </div>
                 </div>
               )}
               {TEXT_INPUT_IDS.has(selected.id) &&

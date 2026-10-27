@@ -1,12 +1,13 @@
 (() => {
   const catalog = [
-    'Neon Serpent','Breaker X','Pong Arena','Crossroad 86','Asteroid Shift','Memory Core','Minefield','KITT 2048','Invaders Zero','Missile Command',
+    'Neon Serpent','Breaker X','Pong Arena','Crossroad 86','Asteroid Shift','Memory Core','Minefield','KITT 2048','Invaders Zero','Missile Command','Circuit Sentinel','Signal Rhythm','Neon Solitaire',
     'Pac-Man','Tetris','TRON','Space Invaders','Space Knight Rider','Astéroïdes Pro','Astéroïdes 3D Ultra','Pac-Man 3D','Tetris 3D Ultra','Invaders 3D','Midnight Runner','KITT — Signal Zéro'
   ];
   const filters = document.getElementById('score-filters');
   const content = document.getElementById('score-content');
   let selected = 'ALL';
   const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const normalizedName = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLocaleLowerCase('fr');
   function legacyRows() {
     const rows = [];
     const arrays = [
@@ -23,11 +24,14 @@
   function render() {
     filters.innerHTML = '';
     ['ALL', ...catalog].forEach(name => {
-      const button = document.createElement('button'); button.textContent = name === 'ALL' ? 'TOUS LES JEUX' : name; button.classList.toggle('active', selected === name); button.onclick = () => { selected = name; render(); }; filters.append(button);
+      const button = document.createElement('button'); button.type = 'button'; button.textContent = name === 'ALL' ? 'TOUS LES JEUX' : name; button.classList.toggle('active', selected === name); button.setAttribute('aria-pressed', String(selected === name)); button.onclick = () => { selected = name; render(); }; filters.append(button);
     });
-    const rows = [...window.ManixScores.all(),...legacyRows()].filter(row => selected === 'ALL' || row.game === selected).sort((a,b)=>b.score-a.score||b.level-a.level).slice(0, 100);
+    const rows = [...window.ManixScores.all(),...legacyRows()].filter(row => selected === 'ALL' || normalizedName(row.game) === normalizedName(selected)).sort((a,b)=>b.score-a.score||b.level-a.level).slice(0, 100);
     if (!rows.length) { content.innerHTML = '<div class="empty-scores">Aucun record pour le moment. Lance une partie et inscris ton nom dans le classement !</div>'; return; }
     content.innerHTML = `<table class="score-table"><thead><tr><th>RANG</th><th>PILOTE</th><th>JEU</th><th>SCORE</th><th>NIVEAU</th><th>DATE</th></tr></thead><tbody>${rows.map((r, i) => `<tr><td>${String(i + 1).padStart(2, '0')}</td><td>${esc(r.player)}</td><td>${esc(r.game)}</td><td>${Number(r.score).toLocaleString('fr-FR')}</td><td>${Number(r.level)}/10</td><td>${new Date(r.date).toLocaleDateString('fr-FR')}</td></tr>`).join('')}</tbody></table>`;
   }
   render(); window.addEventListener('manix-scores-updated', render);
+  // Plusieurs jeux conservent encore leur meilleur score dans des clés historiques.
+  // Toute écriture inter-onglets doit actualiser le classement universel.
+  window.addEventListener('storage', render);
 })();

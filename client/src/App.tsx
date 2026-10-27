@@ -34,6 +34,8 @@ const Admin = lazy(() => import("./pages/Admin"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const KyronexDashboard = lazy(() => import("./pages/KyronexDashboard"));
 const Arcade = lazy(() => import("./pages/Arcade"));
+const PontiacOwners = lazy(() => import("./pages/PontiacOwners"));
+const AdminPontiacOwners = lazy(() => import("./pages/AdminPontiacOwners"));
 
 function CockpitRouteSync() {
   const [location] = useLocation();
@@ -56,6 +58,8 @@ function AppRouter() {
         <Route path={"/soumettre"} component={Soumettre} />
         <Route path={"/videos"} component={Videos} />
         <Route path={"/jeux"} component={Arcade} />
+        <Route path={"/communaute-pontiac"} component={PontiacOwners} />
+        <Route path={"/admin-pontiac"} component={AdminPontiacOwners} />
         <Route path={"/outils"} component={ToolsHub} />
         <Route path={"/studio-image"} component={ImageStudio} />
         <Route path={"/studio-pdf"} component={PdfStudio} />

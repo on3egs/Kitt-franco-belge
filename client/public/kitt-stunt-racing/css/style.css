@@ -934,3 +934,18 @@ body.spm-on #speed-lines{filter:hue-rotate(-15deg) saturate(1.5);opacity:.8}
 .turbo-fill{background:linear-gradient(90deg,#ff193e,#ff8b34,#ffe35d);box-shadow:0 0 10px #ff4b32}
 .compatibility-note{margin:12px auto;padding:10px 13px;max-width:540px;border:1px solid rgba(58,222,230,.55);border-radius:5px;background:rgba(3,19,28,.86);color:#b9f7ff;font:600 12px/1.5 'Courier New',monospace;letter-spacing:.08em;text-shadow:0 0 8px rgba(37,213,235,.35)}
 #btn-editor:disabled{opacity:.55;cursor:not-allowed;filter:saturate(.5)}
+
+/* Radar et panneaux de jeu portés depuis la candidate AGX, dessinés localement. */
+.race-radar{position:absolute;right:16px;top:110px;width:190px;padding:8px;border:1px solid #bf3449;border-radius:6px;background:rgba(3,8,13,.86);box-shadow:0 0 16px #ff233522;color:#f0d8c7;font:10px 'Courier New',monospace;z-index:5}
+.race-radar-head,.race-radar-foot{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px;color:#ffb45b;letter-spacing:1px}
+.race-radar canvas{display:block;width:100%;height:auto;border:1px solid #2d4851;background:#02070b}
+.race-radar-foot{margin:5px 0 0;color:#9dcad0;font-size:9px}
+.race-radar-progress{height:3px;background:#17242a;margin-top:5px}.race-radar-progress i{display:block;width:0;height:100%;background:#ff3c59;transition:width .2s}
+#racer-tutorial{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:rgba(0,0,0,.78);padding:18px}
+#racer-tutorial.hidden{display:none}.tutorial-card{position:relative;width:min(520px,100%);padding:28px;border:1px solid #ff405d;border-radius:10px;background:linear-gradient(145deg,#170b12,#071018);box-shadow:0 0 38px #ff214044;color:#f2e4dc}
+.tutorial-card h2{color:#ffb45b;letter-spacing:3px}.tutorial-card p{line-height:1.7}.tutorial-steps{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0;color:#91e6f1;font:11px 'Courier New',monospace}.tutorial-steps span{padding:8px;border:1px solid #38606a;border-radius:4px}.tutorial-close{position:absolute;right:12px;top:10px;background:none;border:0;color:#fff;font-size:25px;cursor:pointer}
+#impact-flash{position:fixed;inset:0;z-index:29;pointer-events:none;opacity:0;background:radial-gradient(ellipse,transparent 48%,rgba(255,25,46,.42));transition:opacity .08s}#impact-flash.active{opacity:1}
+#career-progress{color:#ffbb62;margin-left:12px}
+@media(max-width:700px){.race-radar{right:8px;top:auto;bottom:110px;width:148px}.race-radar-foot{font-size:8px}.tutorial-card{padding:20px}}
+@media(prefers-reduced-motion:reduce){.race-radar-progress i{transition:none}}
+#damage-state{position:fixed;inset:6% 3%;z-index:28;pointer-events:none;opacity:calc(var(--damage-level,0)*.62);transition:opacity .35s;background:linear-gradient(112deg,transparent 48.7%,#ff365b 49%,transparent 49.4%),linear-gradient(68deg,transparent 62%,#ff365b 62.25%,transparent 62.6%),linear-gradient(155deg,transparent 39%,#ff365b 39.2%,transparent 39.45%);filter:drop-shadow(0 0 5px #ff1538)}

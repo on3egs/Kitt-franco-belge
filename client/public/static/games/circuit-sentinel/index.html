@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080b12">
+  <title>Circuit Sentinel — By Manix</title>
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <main class="shell">
+    <header><a href="/jeux/" class="back">← ARCADE KITT</a><span class="brand">MANIX // STRATÉGIE</span><button id="sound" class="quiet" type="button" aria-pressed="true">♫ SON ON</button></header>
+    <section class="intro"><p class="eyebrow">DÉFENSE DE CIRCUIT · 8 VAGUES</p><h1>CIRCUIT <em>SENTINEL</em></h1><p>Installe les sentinelles hors de la route. Place-les pour croiser le chemin des intrus, puis améliore les meilleurs emplacements.</p></section>
+    <section class="hud" aria-label="État de la mission"><div><small>CRÉDITS</small><strong id="credits">180</strong></div><div><small>VAGUE</small><strong id="wave">0 / 8</strong></div><div><small>VIES</small><strong id="lives">20</strong></div><div><small>SCORE</small><strong id="score">0</strong></div><div><small>RECORD</small><strong id="best">0</strong></div></section>
+    <nav class="toolbar" aria-label="Commandes de défense"><button data-tower="pulse" class="selected" type="button">◉ Pulse <small>60 cr · équilibrée</small></button><button data-tower="rail" type="button">ϟ Rail <small>95 cr · longue portée</small></button><button data-tower="frost" type="button">❄ Givre <small>80 cr · ralentit</small></button><button id="pause" type="button" aria-pressed="false">PAUSE</button><button id="upgrade" type="button" disabled>Améliorer sélection</button><button id="start-wave" class="primary" type="button">Lancer la vague 1</button></nav>
+    <div class="board-wrap"><canvas id="board" width="960" height="540" aria-label="Terrain de jeu: cliquer pour placer une tour ou sélectionner une tour"></canvas><div id="toast" role="status" aria-live="polite">Choisis une tour puis place-la à côté de la route.</div><div id="end" class="end hidden" role="dialog" aria-modal="true"><div><p class="eyebrow">MISSION TERMINÉE</p><h2 id="end-title">CIRCUIT SÉCURISÉ</h2><p id="end-copy"></p><label for="pilot">Nom du pilote</label><input id="pilot" maxlength="20" autocomplete="name" value="PILOTE"><button id="save" type="button">Enregistrer le score</button><button id="again" class="quiet" type="button">Rejouer</button></div></div></div>
+    <p class="help">Commande : clique sur un type de tour, puis sur une zone libre. Clique sur une tour déjà posée pour la sélectionner. L’amélioration coûte la moitié du prix initial. Chaque intrus qui traverse le circuit retire une vie.</p>
+    <footer>BY MANIX · KITT FRANCO-BELGE <span>Les records restent dans ce navigateur.</span></footer>
+  </main>
+  <script src="../highscores.js"></script><script src="game.js"></script>
+</body>
+</html>
