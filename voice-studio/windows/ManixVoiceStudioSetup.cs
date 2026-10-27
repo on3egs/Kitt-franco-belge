@@ -91,22 +91,117 @@ internal static class Program {
     sealed class SetupForm : Form {
         CheckBox desktop;
         public SetupForm() {
-            Text = AppName + " — Installation"; ClientSize = new Size(640, 520); MinimumSize = new Size(640, 520); MaximumSize = new Size(640, 520);
-            StartPosition = FormStartPosition.CenterScreen; BackColor = Color.FromArgb(9, 12, 18); ForeColor = Color.Gainsboro; Font = new Font("Segoe UI", 10f);
+            Text = AppName + " — Installation";
+            ClientSize = new Size(700, 610);
+            MinimumSize = new Size(680, 590);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = false;
+            StartPosition = FormStartPosition.CenterScreen;
+            BackColor = Color.FromArgb(9, 12, 18);
+            ForeColor = Color.Gainsboro;
+            Font = new Font("Segoe UI", 10f);
             try { Icon = Icon.ExtractAssociatedIcon(CurrentExe); } catch { }
-            Panel hero = new Panel { Dock = DockStyle.Top, Height = 190, BackColor = Color.FromArgb(13, 18, 26) }; hero.Paint += (s,e) => {
-                using (var p = new Pen(Color.FromArgb(150, 225, 22, 45), 2)) e.Graphics.DrawLine(p, 25, 160, 615, 160);
-                using (var f = new Font("Consolas", 17, FontStyle.Bold)) e.Graphics.DrawString("K I T T", f, Brushes.WhiteSmoke, 28, 30);
-                using (var f = new Font("Consolas", 8, FontStyle.Regular)) e.Graphics.DrawString("FRANCO-BELGE  //  MANIX VOICE STUDIO", f, Brushes.IndianRed, 31, 66);
-                using (var f = new Font("Segoe UI", 24, FontStyle.Bold)) e.Graphics.DrawString("Votre studio vocal", f, Brushes.White, 28, 94);
-                using (var b = new SolidBrush(Color.FromArgb(220, 220, 25, 48))) e.Graphics.FillEllipse(b, 552, 33, 50, 22);
-            }; Controls.Add(hero);
-            Label explain = new Label { Text = "Installez l’accès Windows à votre studio de création vocal.", Location = new Point(32, 215), Size = new Size(570, 30), Font = new Font("Segoe UI", 12, FontStyle.Bold) }; Controls.Add(explain);
-            Label details = new Label { Text = "Le logiciel s’ouvre dans une fenêtre dédiée et utilise le moteur sécurisé de votre AGX lorsqu’il est en ligne. Vos modèles vocaux ne sont pas copiés sur le PC.", Location = new Point(32, 255), Size = new Size(565, 68), ForeColor = Color.Silver }; Controls.Add(details);
-            desktop = new CheckBox { Text = "Créer aussi un raccourci sur le Bureau", Checked = true, Location = new Point(33, 345), Size = new Size(390, 28), ForeColor = Color.Gainsboro }; Controls.Add(desktop);
-            Label legal = new Label { Text = "Envoi des fichiers audio au moteur AGX après votre action et votre consentement. Connexion Internet requise.", Location = new Point(33, 385), Size = new Size(570, 38), ForeColor = Color.FromArgb(177, 184, 195), Font = new Font("Segoe UI", 8.5f) }; Controls.Add(legal);
-            Button install = new Button { Text = "INSTALLER MANIX VOICE STUDIO", Location = new Point(32, 444), Size = new Size(360, 48), FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(142, 20, 37), ForeColor = Color.White, Font = new Font("Segoe UI", 10, FontStyle.Bold) }; install.FlatAppearance.BorderColor = Color.FromArgb(230, 60, 78); install.Click += (s,e) => DoInstall(); Controls.Add(install);
-            Button web = new Button { Text = "Ouvrir en ligne", Location = new Point(414, 444), Size = new Size(188, 48), FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(22, 28, 38), ForeColor = Color.Gainsboro }; web.Click += (s,e) => Process.Start(new ProcessStartInfo(AppUrl) { UseShellExecute = true }); Controls.Add(web);
+
+            var stack = new FlowLayoutPanel {
+                Dock = DockStyle.Fill, AutoScroll = true, WrapContents = false,
+                FlowDirection = FlowDirection.TopDown, Padding = new Padding(28, 24, 28, 24),
+                BackColor = Color.FromArgb(9, 12, 18)
+            };
+            Controls.Add(stack);
+
+            Panel hero = new Panel {
+                Height = 154, Margin = new Padding(0, 0, 0, 16),
+                BackColor = Color.FromArgb(13, 18, 26)
+            };
+            hero.Paint += (s,e) => {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (var p = new Pen(Color.FromArgb(150, 225, 22, 45), 2)) e.Graphics.DrawLine(p, 24, 132, hero.Width - 24, 132);
+                using (var f = new Font("Consolas", 17, FontStyle.Bold)) e.Graphics.DrawString("K I T T", f, Brushes.WhiteSmoke, 26, 20);
+                using (var f = new Font("Consolas", 8, FontStyle.Regular)) e.Graphics.DrawString("FRANCO-BELGE  //  MANIX VOICE STUDIO", f, Brushes.IndianRed, 29, 54);
+                using (var f = new Font("Segoe UI", 23, FontStyle.Bold)) e.Graphics.DrawString("Votre studio vocal", f, Brushes.White, 26, 82);
+                using (var b = new SolidBrush(Color.FromArgb(220, 220, 25, 48))) e.Graphics.FillEllipse(b, hero.Width - 66, 28, 42, 18);
+            };
+            stack.Controls.Add(hero);
+
+            var explain = new Label {
+                Text = "Installez l’accès Windows à votre studio de création vocal.",
+                Height = 38, Margin = new Padding(2, 0, 2, 7), AutoSize = false,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI", 14, FontStyle.Bold), ForeColor = Color.WhiteSmoke
+            };
+            stack.Controls.Add(explain);
+
+            var details = new Label {
+                Text = "Le studio s’ouvre dans une fenêtre dédiée et utilise le moteur sécurisé de votre AGX lorsqu’il est en ligne. Les modèles vocaux ne sont pas copiés sur le PC.",
+                Height = 62, Margin = new Padding(2, 0, 2, 13), AutoSize = false,
+                TextAlign = ContentAlignment.MiddleLeft,
+                ForeColor = Color.FromArgb(190, 200, 214), Font = new Font("Segoe UI", 10.5f)
+            };
+            stack.Controls.Add(details);
+
+            var optionCard = new Panel {
+                Height = 50, Margin = new Padding(0, 0, 0, 13),
+                BackColor = Color.FromArgb(18, 24, 34), Padding = new Padding(13, 0, 13, 0)
+            };
+            desktop = new CheckBox {
+                Text = "Créer aussi un raccourci sur le Bureau", Checked = true,
+                Dock = DockStyle.Fill, AutoSize = false, ForeColor = Color.Gainsboro,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            optionCard.Controls.Add(desktop);
+            stack.Controls.Add(optionCard);
+
+            var legalCard = new Panel {
+                Height = 64, Margin = new Padding(0, 0, 0, 15),
+                BackColor = Color.FromArgb(15, 20, 29), Padding = new Padding(13, 8, 13, 8)
+            };
+            var legal = new Label {
+                Text = "Les fichiers audio sont envoyés à l’AGX uniquement après ton action et ton consentement. Connexion Internet requise.",
+                Dock = DockStyle.Fill, AutoSize = false, TextAlign = ContentAlignment.MiddleLeft,
+                ForeColor = Color.FromArgb(177, 184, 195), Font = new Font("Segoe UI", 9f)
+            };
+            legalCard.Controls.Add(legal);
+            stack.Controls.Add(legalCard);
+
+            var actions = new TableLayoutPanel {
+                Height = 62, Margin = new Padding(0, 3, 0, 0),
+                ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent,
+                Padding = Padding.Empty, AutoSize = false
+            };
+            actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 61f));
+            actions.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 12f));
+            actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 39f));
+            actions.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+            var install = new Button {
+                Text = "INSTALLER L’APPLICATION", Dock = DockStyle.Fill,
+                FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(142, 20, 37),
+                ForeColor = Color.White, Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Margin = new Padding(0), AutoSize = false,
+                TextAlign = ContentAlignment.MiddleCenter, UseVisualStyleBackColor = false
+            };
+            install.FlatAppearance.BorderColor = Color.FromArgb(230, 60, 78);
+            install.Click += (s,e) => DoInstall();
+            var web = new Button {
+                Text = "Ouvrir en ligne", Dock = DockStyle.Fill,
+                FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(22, 28, 38),
+                ForeColor = Color.Gainsboro, Margin = new Padding(0), AutoSize = false,
+                TextAlign = ContentAlignment.MiddleCenter, UseVisualStyleBackColor = false
+            };
+            web.Click += (s,e) => Process.Start(new ProcessStartInfo(AppUrl) { UseShellExecute = true });
+            actions.Controls.Add(install, 0, 0);
+            actions.Controls.Add(new Panel { Dock = DockStyle.Fill }, 1, 0);
+            actions.Controls.Add(web, 2, 0);
+            stack.Controls.Add(actions);
+            AcceptButton = install;
+
+            EventHandler resizeContent = (s,e) => {
+                int width = Math.Max(250, stack.ClientSize.Width - stack.Padding.Horizontal - (stack.VerticalScroll.Visible ? SystemInformation.VerticalScrollBarWidth : 0));
+                foreach (Control item in stack.Controls) item.Width = width;
+                hero.Invalidate();
+            };
+            stack.Resize += resizeContent;
+            Shown += (s,e) => resizeContent(stack, EventArgs.Empty);
         }
         void DoInstall() {
             try { Install(InstallRoot, desktop.Checked, true); MessageBox.Show("Installation terminée. Le raccourci Manix Voice Studio est dans le menu Démarrer.", AppName, MessageBoxButtons.OK, MessageBoxIcon.Information); Launch(); Close(); }
