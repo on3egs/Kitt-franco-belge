@@ -276,10 +276,10 @@ export default function PontiacOwners() {
     </section>
 
     <section className="po-stats" aria-label="État du réseau">
-      <div><span>PROFILS APPROUVÉS</span><strong>{owners.length}</strong><small>Manix + membres publiés</small></div>
+      <div><span>PROFILS APPROUVÉS</span><strong>{owners.length}</strong><small>Manix et membres publiés</small></div>
       <div><span>PHOTOS PAR PROFIL</span><strong>04</strong><small>Intérieur, extérieur, détails</small></div>
-      <div><span>PROTECTION</span><strong>100%</strong><small>Position exacte jamais affichée</small></div>
-      <div className={`po-service ${apiReady ? "is-online" : "is-offline"}`}><span>RELAIS COMMUNAUTÉ</span><strong>{loading ? "TEST…" : apiReady ? "EN LIGNE" : "HORS LIGNE"}</strong><small>{loading ? "Vérification du serveur" : apiReady ? "Envoi avec validation" : "Les profils existants restent consultables"}</small></div>
+      <div><span>PROTECTION</span><strong>100%</strong><small>Aucune position exacte affichée</small></div>
+      <div className={`po-service ${apiReady ? "is-online" : "is-offline"}`}><span>RELAIS DE LA COMMUNAUTÉ</span><strong>{loading ? "TEST…" : apiReady ? "EN LIGNE" : "HORS LIGNE"}</strong><small>{loading ? "Vérification du serveur" : apiReady ? "Envoi après validation" : "Les profils existants restent consultables"}</small></div>
     </section>
 
     <section className="po-explorer" aria-labelledby="po-globe-title">
@@ -295,12 +295,12 @@ export default function PontiacOwners() {
         </article>
       </div>
       <div className="po-member-directory" aria-label="Profils de la communauté">{owners.map(owner=><button key={owner.id} type="button" onClick={()=>setSelected(owner)} aria-pressed={selected.id===owner.id}><span className={owner.founder?"is-founder":""}/><strong>{owner.name}</strong><small>{owner.location||"Profil sans position publique"}</small></button>)}</div>
-      <p className="po-privacy-line"><MapPin size={15}/> Les repères publics sont volontairement arrondis à une grande région. Aucune adresse précise n’est enregistrée ou montrée.</p>
+      <p className="po-privacy-line"><MapPin size={15}/> Les repères publics restent approximatifs. Aucune adresse ni coordonnée précise n’est affichée.</p>
     </section>
 
     <section className="po-submit" id="inscription">
       <div className="po-submit-intro"><p className="po-eyebrow">À TON TOUR DE REJOINDRE LE RÉSEAU</p><h2>Présente ta Pontiac</h2><p>Partage jusqu’à quatre vues, quelques mots sur ton projet et une région approximative. Chaque profil est relu avant publication.</p>
-        <ul><li><Check size={16}/> Photos transformées en JPEG léger dans ton navigateur</li><li><Check size={16}/> Pas de plaque affichée à part si elle apparaît sur ta photo</li><li><Check size={16}/> Aucune position GPS exacte publiée</li></ul>
+        <ul><li><Check size={16}/> Photos converties en JPEG allégés dans ton navigateur</li><li><Check size={16}/> Les plaques visibles sur les photos ne sont pas floutées</li><li><Check size={16}/> Aucune coordonnée GPS précise n’est publiée</li></ul>
       </div>
       <form className="po-form" onSubmit={submit}>
         <div className="po-form-heading"><span>01 / IDENTITÉ & VOITURE</span><span>BY MANIX</span></div>
@@ -320,13 +320,13 @@ export default function PontiacOwners() {
         <div className="po-form-grid">
           <label>Pays (facultatif)
             <select value={form.country} onChange={e=>setForm({...form,country:e.target.value})}>
-              <option value="">Ne pas afficher ma position</option>
+              <option value="">Sélectionner un pays</option>
               {COUNTRY_OPTIONS.map(([code,label])=><option key={code} value={code}>{label}</option>)}
             </select>
           </label>
           <label>Ville (facultatif)<input maxLength={60} autoComplete="address-level2" value={form.city} onChange={e=>setForm({...form,city:e.target.value})} placeholder="Ex. Liège"/></label>
           <label className="po-span-two">Région, province ou État (facultatif)<input maxLength={60} autoComplete="address-level1" value={form.province} onChange={e=>setForm({...form,province:e.target.value})} placeholder="Ex. Wallonie"/></label>
-          <p className="po-span-two po-location-note">Ville et région seront visibles sur ton profil approuvé. Le point du globe reste approximatif, placé au centre du pays. Aucune adresse ni coordonnée GPS n’est demandée.</p>
+          <p className="po-span-two po-location-note">La ville et la région seront visibles sur ton profil après validation. Le repère du globe reste approximatif, vers le centre du pays. Aucune adresse ni coordonnée GPS n’est demandée. Laisse ces champs vides si tu ne souhaites pas afficher ta localisation.</p>
         </div>
         <label className="po-consent po-ownership"><input type="checkbox" required checked={form.consent} onChange={e=>setForm({...form,consent:e.target.checked})}/><span>Je suis propriétaire de cette Pontiac. J’ai le droit de partager les photos, j’autorise leur affichage public après validation et je comprends qu’elles pourront être copiées par des visiteurs.</span></label>
         {notice && <div className="po-success" role="status"><Check size={18}/>{notice}</div>}
@@ -337,6 +337,6 @@ export default function PontiacOwners() {
       </form>
     </section>
 
-    <footer className="po-footer"><span>KITT FRANCO-BELGE · BY MANIX</span><span>KNIGHT RIDER FRANCE · PONTIAC OWNERS NETWORK</span><a href="/">RETOUR À L’ACCUEIL ↗</a><a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noreferrer">MAP DATA ? MADE WITH NATURAL EARTH</a></footer>
+    <footer className="po-footer"><span>KITT FRANCO-BELGE · BY MANIX</span><span>KNIGHT RIDER FRANCE · PONTIAC OWNERS NETWORK</span><a href="/">RETOUR À L’ACCUEIL ↗</a><a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noreferrer">DONNÉES CARTOGRAPHIQUES : NATURAL EARTH</a></footer>
   </main>;
 }
