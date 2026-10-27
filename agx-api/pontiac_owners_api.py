@@ -163,6 +163,21 @@ def _public_profile(profile: dict[str, Any]) -> dict[str, Any]:
     } | {"photos": [f"/api/pontiac-owners/photo/{profile['id']}/{index}" for index in range(len(profile.get("photoNames", [])))]}
 
 
+async def get_approved_owner(profile_id: str) -> dict[str, str] | None:
+    """Return the minimal identity needed by KITT Chat for an approved, photo-backed owner."""
+    if not isinstance(profile_id, str) or not _PROFILE_ID.fullmatch(profile_id):
+        return None
+    async with _LOCK:
+        profile = next(
+            (item for item in _read_data()["approved"] if item.get("id") == profile_id),
+            None,
+        )
+        first_photo = PHOTO_ROOT / profile_id / "0.jpg"
+        if not profile or not profile.get("photoNames") or not first_photo.is_file():
+            return None
+        return {"id": profile_id, "name": str(profile.get("name") or "")}
+
+
 def register_pontiac_owner_routes(
     app: web.Application,
     *,
@@ -205,6 +220,8 @@ def register_pontiac_owner_routes(
             raw_photos = body.get("photos", [])
             if not isinstance(raw_photos, list) or len(raw_photos) > MAX_PHOTOS:
                 raise ValueError("Quatre photos au maximum sont acceptées.")
+            if not raw_photos:
+                raise ValueError("Ajoute au moins une photo de ta Pontiac.")
             photos = [_sanitize_photo(item) for item in raw_photos]
             if not body.get("consent"):
                 raise ValueError("Le consentement de partage est requis.")

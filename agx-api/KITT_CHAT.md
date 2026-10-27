@@ -1,62 +1,79 @@
 # KITT community chat (MSN Chat style)
 
-The website route is `/salon-kitt`. The React client calls the KYRONEXT API
-through the existing permanent KITT relay. No admin token is placed in the
-website.
+The website route is `/salon-kitt`. It uses the existing permanent KITT relay.
+Visitors can read the public salons without an account. Posting requires an
+approved Pontiac owner profile that includes at least one photo, plus a
+one-use invitation bound to that profile. The administrator token is never
+sent to the website.
 
-## AGX integration
+## Owner access flow
 
-Copy `kitt_chat_api.py` beside `/home/kitt/kitt-ai/kyronex_server.py`. Add this
-import next to the other API imports:
+1. The visitor submits their Pontiac profile and one to four photos at
+   `/communaute-pontiac#inscription`.
+2. Manix reviews the private submission and approves it. Only then does the
+   profile and its photos appear on the public globe and become selectable in
+   the chat form.
+3. When Manix approves a profile in `/admin-pontiac`, the site creates a
+   one-use code bound to that profile and displays it once. Manix copies it and
+   sends it privately to the owner, who selects the same Pontiac profile and
+   enters the code on the chat page.
+4. The server rechecks the approved, photo-backed profile both when issuing the
+   invitation and when the owner joins and opens the live chat. The profile's
+   approved name is used as the chat identity; the browser cannot choose a
+   different name or profile ID.
 
-```python
-from kitt_chat_api import register_kitt_chat_routes
-```
-
-Inside `create_app()`, after `app = web.Application(...)` and after `_ADMIN_TOKEN`
-has been defined, register the routes before `return app`:
-
-```python
-register_kitt_chat_routes(app, admin_token=_ADMIN_TOKEN)
-```
-
-Then run `python3 -m py_compile kitt_chat_api.py kyronex_server.py` and restart
-`kitt-kyronex.service`. The front end reports the room offline until
-`GET /api/kitt-chat/status` succeeds.
-
-## Inviting a verified owner
-
-Manix first verifies the person through the community, then creates a one-use
-code prebound to the exact nickname. Call this endpoint from a trusted admin
-session; substitute the admin token in the local shell without putting it in
-the website or a public command transcript:
+To issue a code from a trusted AGX shell, send the approved profile ID to this
+endpoint with the admin token held only on the server:
 
 ```http
 POST /api/kitt-chat/invitations
 X-Admin-Token: <KYRONEX_ADMIN_TOKEN>
 Content-Type: application/json
 
-{"name":"Pilote86"}
+{"ownerId":"<APPROVED_PROFILE_ID>"}
 ```
 
-The response contains the one-time code. Send it privately to that verified
-owner. It expires after seven days, is consumed on first successful use, and is
-bound to the requested nickname. The API permits up to 250 active invites.
-Invite sessions and online membership are checked by the server, not by the
-browser.
+The code expires after seven days, is single-use, and is cryptographically
+bound to the selected profile. Do not publish it. The endpoint permits up to
+250 active invitations. The admin page calls it automatically after approval;
+the endpoint is also available for a trusted server-side retry if generation
+was interrupted.
 
-## Current MVP boundaries
+## AGX integration
 
-- The chat is restricted to administrator-issued, one-use invitations. The
-  invite route requires `KYRONEXT_ADMIN_TOKEN`; it is never sent to the page.
-- Members authenticate over the encrypted WebSocket with a 30-day session
-  token. The page keeps it in `sessionStorage`; the **Quitter le salon** button
-  removes it, and the browser clears it when the tab closes.
-- Presence is pseudonym-only. The chat does not request or reveal a member's
-  location, and direct messages are not implemented.
-- Messages and sessions stay in server memory: up to 100 recent messages per
-  room, eight messages per member per ten seconds, and 80 connected members.
-  A KYRONEXT restart clears messages and sessions; owners must request a fresh
-  invite afterwards. No transcript is persisted.
-- The website addition does not itself integrate or restart the live AGX
-  service. A server operator must apply the two-line integration above.
+The server must import both helpers from the Pontiac API and register chat with
+the approved-owner lookup:
+
+```python
+from pontiac_owners_api import get_approved_owner, register_pontiac_owner_routes
+from kitt_chat_api import register_kitt_chat_routes
+```
+
+Inside `create_app()`, after `_ADMIN_TOKEN` has been defined and the Pontiac
+routes are registered:
+
+```python
+register_kitt_chat_routes(
+    app, admin_token=_ADMIN_TOKEN, owner_lookup=get_approved_owner
+)
+```
+
+Run `python3 -m py_compile pontiac_owners_api.py kitt_chat_api.py kyronex_server.py`
+and restart `kitt-kyronex.service` after changing the server.
+
+## Visitor and privacy limits
+
+- Guests can read up to 30 recent messages per room and see member pseudonyms.
+  Guests are not included in the online member count and cannot post; the
+  server rejects their write attempts even if they bypass the page controls.
+- The guest preview is capped at 50 simultaneous visitors and 30 connection
+  attempts per source address per ten minutes.
+- Members authenticate over WSS with a 30-day token stored in `sessionStorage`.
+  The **Quitter le salon** button removes it; the browser clears it when the tab
+  closes.
+- The four salons have no direct messaging or location sharing. Member posts
+  are limited to eight per ten seconds and 500 characters each.
+- Messages, invitations and member sessions stay in server memory. Each room
+  retains up to 100 recent lines. A KYRONEXT restart clears messages, sessions
+  and unused invitation codes; owners would need to request a fresh code.
+  No transcript is persisted.
