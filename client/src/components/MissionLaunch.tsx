@@ -9,7 +9,7 @@ const journeys = {
   'Écouter & regarder': [
     ['La galerie vidéo', 'Découvrez les réalisations et les vidéos de la communauté.', '/videos', '01 · REGARDER'],
     ['Les créations musicales', 'Parcourez les musiques et les contributions partagées.', '/musique', '02 · ÉCOUTER'],
-    ['Le cockpit Hi-Fi', 'Découvrez le lecteur Kyronext Studio pour Windows.', '/kyronext-studio/', '03 · EMPORTER'],
+    ['La salle d’arcade KITT', 'Jouez aux jeux du projet dans votre navigateur.', '/jeux/', '03 · JOUER'],
   ],
   'Équiper mon cockpit': [
     ['Choisir un logiciel', 'Commencez par le catalogue et les guides de prise en main.', '/guide-logiciels/', '01 · COMPARER'],

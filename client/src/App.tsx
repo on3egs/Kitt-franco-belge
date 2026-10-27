@@ -30,6 +30,7 @@ const AdminPdfs = lazy(() => import("./pages/AdminPdfs"));
 const Admin = lazy(() => import("./pages/Admin"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const KyronexDashboard = lazy(() => import("./pages/KyronexDashboard"));
+const Arcade = lazy(() => import("./pages/Arcade"));
 
 function CockpitRouteSync() {
   const [location] = useLocation();
@@ -51,6 +52,7 @@ function AppRouter() {
         <Route path={"/manix"} component={Manix} />
         <Route path={"/soumettre"} component={Soumettre} />
         <Route path={"/videos"} component={Videos} />
+        <Route path={"/jeux"} component={Arcade} />
         <Route path={"/outils"} component={ToolsHub} />
         <Route path={"/admin-videos"} component={AdminVideos} />
         <Route path={"/musique"} component={Musique} />

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knight Rider: KITT Adventure - Jeu</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <i class="fas fa-car"></i>
+        <span>KITT</span>
+      </div>
+      <div class="loading-bar">
+        <div class="loading-progress" id="loadingProgress"></div>
+      </div>
+      <p class="loading-text">Chargement des systèmes...</p>
+      <p class="loading-tip" id="loadingTip">Préparez-vous pour l'aventure !</p>
+    </div>
+  </div>
+
+  <!-- Background Effects -->
+  <div class="game-background">
+    <div class="road-container" id="roadContainer"></div>
+    <div class="sky-effect"></div>
+    <canvas id="particleCanvas"></canvas>
+  </div>
+
+  <!-- Game UI -->
+  <div class="game-ui">
+    <!-- Header -->
+    <header class="game-header">
+      <div class="header-left">
+        <a href="/jeux/" class="back-btn">
+          <i class="fas fa-arrow-left"></i>
+          <span>Retour</span>
+        </a>
+      </div>
+      <div class="header-center">
+        <h1 class="game-title">KNIGHT RIDER</h1>
+        <p class="game-subtitle">K.I.T.T. ADVENTURE</p>
+      </div>
+      <div class="header-right">
+        <button class="settings-btn" id="settingsBtn">
+          <i class="fas fa-cog"></i>
+        </button>
+        <button class="sound-btn" id="soundBtn">
+          <i class="fas fa-volume-up"></i>
+        </button>
+        <button class="fullscreen-btn" id="fullscreenBtn">
+          <i class="fas fa-expand"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Game Info Panel -->
+    <div class="game-info-panel">
+      <div class="info-left">
+        <div class="info-item score">
+          <i class="fas fa-trophy"></i>
+          <span class="label">Score</span>
+          <span class="value" id="score">0</span>
+        </div>
+        <div class="info-item lives">
+          <i class="fas fa-heart"></i>
+          <span class="label">Vies</span>
+          <span class="value" id="lives">3</span>
+        </div>
+      </div>
+      <div class="info-center">
+        <div class="level-display">
+          <span class="level-label">Niveau</span>
+          <span class="level-value" id="level">1</span>
+        </div>
+      </div>
+      <div class="info-right">
+        <div class="power-ups">
+          <div class="power-up turbo" id="turboStatus">
+            <i class="fas fa-bolt"></i>
+            <span class="power-name">Turbo</span>
+            <span class="power-timer" id="turboTimer">PRÊT</span>
+          </div>
+          <div class="power-up shield" id="shieldStatus">
+            <i class="fas fa-shield-alt"></i>
+            <span class="power-name">Bouclier</span>
+            <span class="power-timer" id="shieldTimer">PRÊT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Canvas -->
+    <div class="canvas-container">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- Controls Display -->
+    <div class="controls-panel">
+      <div class="controls-title">
+        <i class="fas fa-gamepad"></i>
+        <span>Contrôles</span>
+      </div>
+      <div class="controls-grid">
+        <div class="control-item">
+          <kbd>â†‘</kbd>
+          <span>Accélérer</span>
+        </div>
+        <div class="control-item">
+          <kbd>â†“</kbd>
+          <span>Ralentir</span>
+        </div>
+        <div class="control-item">
+          <kbd>â†</kbd>
+          <span>Gauche</span>
+        </div>
+        <div class="control-item">
+          <kbd>â†’</kbd>
+          <span>Droite</span>
+        </div>
+        <div class="control-item special">
+          <kbd>Espace</kbd>
+          <span>Turbo Boost</span>
+        </div>
+        <div class="control-item special">
+          <kbd>T</kbd>
+          <span>Bouclier</span>
+        </div>
+        <div class="control-item special">
+          <kbd>Échap</kbd>
+          <span>Pause</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal" id="gameOverModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>GAME OVER</h2>
+      </div>
+      <div class="modal-body">
+        <div class="final-stats">
+          <div class="stat-item">
+            <span class="stat-label">Score Final</span>
+            <span class="stat-value" id="finalScore">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Niveau Atteint</span>
+            <span class="stat-value" id="finalLevel">1</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Ennemis Évités</span>
+            <span class="stat-value" id="finalEnemies">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="restartBtn">
+          <i class="fas fa-redo"></i>
+          <span>Recommencer</span>
+        </button>
+        <a href="/jeux/" class="btn btn-outline">
+          <i class="fas fa-list"></i>
+          <span>Retour aux Jeux</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="pauseModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>PAUSE</h2>
+      </div>
+      <div class="modal-body">
+        <p>Le jeu est en pause</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="resumeBtn">
+          <i class="fas fa-play"></i>
+          <span>Rependre</span>
+        </button>
+        <button class="btn btn-outline" id="quitPauseBtn">
+          <i class="fas fa-times"></i>
+          <span>Quitter</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="levelUpModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>NIVEAU <span id="newLevel">2</span> !</h2>
+      </div>
+      <div class="modal-body">
+        <p>Félicitations ! Vous avez atteint le niveau <span id="newLevelText">2</span>.</p>
+        <p>Préparez-vous, ça va être plus difficile !</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="continueLevelBtn">
+          <i class="fas fa-check"></i>
+          <span>Continuer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>PARAMÈTRES</h2>
+        <button class="modal-close" id="settingsCloseBtn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <h3><i class="fas fa-volume-up"></i> Son</h3>
+          <div class="setting-item">
+            <label>Musique</label>
+            <div class="slider-container">
+              <input type="range" id="musicSlider" min="0" max="100" value="20">
+              <span id="musicValue">20%</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label>Effets Sonores</label>
+            <div class="slider-container">
+              <input type="range" id="soundSlider" min="0" max="100" value="30">
+              <span id="soundValue">30%</span>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3><i class="fas fa-paint-brush"></i> Graphismes</h3>
+          <div class="setting-item">
+            <label>Qualité</label>
+            <select id="qualitySelect">
+              <option value="high">Élevée</option>
+              <option value="medium" selected>Moyenne</option>
+              <option value="low">Faible</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>Effets Visuels</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="effectsToggle" checked>
+              <span class="slider round"></span>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3><i class="fas fa-keyboard"></i> Contrôles</h3>
+          <p>Personnalisez vos touches dans une future mise à jour.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="resetSettingsBtn">
+          <i class="fas fa-undo"></i>
+          <span>Réinitialiser</span>
+        </button>
+        <button class="btn btn-primary" id="saveSettingsBtn">
+          <i class="fas fa-save"></i>
+          <span>Sauvegarder</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Elements -->
+  <audio id="engineSound" loop>
+    <source src="assets/sounds/engine.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="turboSound">
+    <source src="assets/sounds/turbo.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="shieldSound">
+    <source src="assets/sounds/shield.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="explosionSound">
+    <source src="assets/sounds/explosion.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="themeMusic" loop>
+    <source src="assets/sounds/theme.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="levelUpSound">
+    <source src="assets/sounds/levelup.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="game.js"></script>
+</body>
+</html>
+
