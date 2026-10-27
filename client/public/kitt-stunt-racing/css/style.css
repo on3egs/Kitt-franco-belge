@@ -932,3 +932,5 @@ body.spm-on #speed-lines{filter:hue-rotate(-15deg) saturate(1.5);opacity:.8}
 .spm-toggle:hover,.fire-toggle:hover{box-shadow:0 0 14px rgba(255,52,65,.7),inset 0 0 14px rgba(255,177,67,.16);transform:translateY(-1px)}
 .turbo-bar{height:12px;border-color:#ff9c45;background:#090c12;box-shadow:inset 0 0 7px #000}
 .turbo-fill{background:linear-gradient(90deg,#ff193e,#ff8b34,#ffe35d);box-shadow:0 0 10px #ff4b32}
+.compatibility-note{margin:12px auto;padding:10px 13px;max-width:540px;border:1px solid rgba(58,222,230,.55);border-radius:5px;background:rgba(3,19,28,.86);color:#b9f7ff;font:600 12px/1.5 'Courier New',monospace;letter-spacing:.08em;text-shadow:0 0 8px rgba(37,213,235,.35)}
+#btn-editor:disabled{opacity:.55;cursor:not-allowed;filter:saturate(.5)}

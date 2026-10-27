@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, ArrowUpRight, Search } from "lucide-react";
+import { Menu, X, ArrowUpRight, Search, Monitor } from "lucide-react";
 import LangSelector from "./LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -48,6 +48,7 @@ export default function SiteNavigation() {
     <div className="site-header-actions">
       <button className="site-icon-button nav-search" onClick={() => window.dispatchEvent(new Event("kitt-open-search"))} aria-label="Rechercher dans le site"><Search size={18}/></button>
       <LangSelector />
+      <a className="site-os-access" href="/kyronext-os/" aria-label="Ouvrir Kyronext OS"><Monitor size={16}/><span>KYRONEXT OS</span></a>
       <a className="site-access" href="/kyronex/">{t("nav.access")} <ArrowUpRight size={15}/></a>
       <button ref={toggle} className="site-icon-button" aria-label={open ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={open} aria-controls="site-menu" onClick={() => setOpen(!open)}>{open ? <X size={20}/> : <Menu size={20}/>}</button>
     </div>

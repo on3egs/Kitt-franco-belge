@@ -135,71 +135,7 @@ const spriteData = {
   }
 };
 
-// Charger les sprites depuis les fichiers
-function loadSprites() {
-  const spritePaths = {
-    kitt: 'assets/sprites/kitt.png',
-    enemy1: 'assets/sprites/enemy1.png',
-    enemy2: 'assets/sprites/enemy2.png',
-    enemy3: 'assets/sprites/enemy3.png',
-    turbo: 'assets/sprites/turbo.png',
-    shield: 'assets/sprites/shield.png',
-    life: 'assets/sprites/life.png'
-  };
-
-  let loadedCount = 0;
-  const totalSprites = Object.keys(spritePaths).length;
-
-  // Mise à jour de la barre de chargement
-  function updateLoading(progress) {
-    loadingProgress.style.width = `${progress}%`;
-    
-    const tips = [
-      "Préparez-vous pour l'aventure !",
-      "KITT est prêt à rouler...",
-      "Les années 80 vous attendent !",
-      "Turbo Boost engagé !",
-      "Activation du bouclier molecular...",
-      "Initialisation des systèmes...",
-      "Chargement des cartes...",
-      "Prêt à défier Goliath ?"
-    ];
-    loadingTip.textContent = tips[Math.floor(Math.random() * tips.length)];
-  }
-
-  // Charger chaque sprite
-  Object.entries(spritePaths).forEach(([name, path]) => {
-    const img = new Image();
-    img.onload = () => {
-      spriteData[name].data = img;
-      loadedCount++;
-      const progress = Math.round((loadedCount / totalSprites) * 100);
-      updateLoading(progress);
-      
-      if (loadedCount === totalSprites) {
-        // Tous les sprites sont chargés
-        setTimeout(() => {
-          loadingScreen.classList.add('hidden');
-          initGame();
-        }, 500);
-      }
-    };
-    img.onerror = () => {
-      console.log(`Sprite non trouvé: ${path}, utilisation du fallback`);
-      loadedCount++;
-      const progress = Math.round((loadedCount / totalSprites) * 100);
-      updateLoading(progress);
-      
-      if (loadedCount === totalSprites) {
-        setTimeout(() => {
-          loadingScreen.classList.add('hidden');
-          initGame();
-        }, 500);
-      }
-    };
-    img.src = path;
-  });
-}
+// Pas de sprites externes : les formes KITT et ennemis sont dessinées par le canvas.
 
 // ============================================
 // ENNEMIS
@@ -432,16 +368,115 @@ window.addEventListener('keyup', (e) => {
 // GESTION DES SONS
 // ============================================
 
+let soundsMuted = false;
+
+// Sons originaux synthétisés localement : aucune piste audio externe ou manquante.
+// Les boucles démarrent après une interaction, conformément aux règles audio des navigateurs.
+let gameAudioContext = null;
+let gameAudioUnlocked = false;
+const activeAudioLoops = new Map();
+
+function getGameAudioContext() {
+  if (!gameAudioUnlocked) return null;
+  if (!gameAudioContext) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    gameAudioContext = new AudioContextClass();
+  }
+  if (gameAudioContext.state === 'suspended') gameAudioContext.resume().catch(() => {});
+  return gameAudioContext;
+}
+
+function playSynthTone(frequency, duration, volume, type = 'square', endFrequency = frequency) {
+  const audio = getGameAudioContext();
+  if (!audio || volume <= 0) return;
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  const now = audio.currentTime;
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, now);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(25, endFrequency), now + duration);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume * 0.11), now + 0.018);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  osc.connect(gain).connect(audio.destination);
+  osc.start(now);
+  osc.stop(now + duration + 0.025);
+}
+
+function startSynthLoop(name, volume) {
+  const audio = getGameAudioContext();
+  if (!audio || activeAudioLoops.has(name)) return;
+  if (name === 'engine') {
+    const osc = audio.createOscillator();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    osc.type = 'sawtooth'; osc.frequency.value = 58;
+    filter.type = 'lowpass'; filter.frequency.value = 185; filter.Q.value = 1.2;
+    gain.gain.value = Math.max(0, volume) * 0.055;
+    osc.connect(filter).connect(gain).connect(audio.destination);
+    osc.start(); activeAudioLoops.set(name, { nodes:[osc,filter,gain], gain });
+    return;
+  }
+  if (name === 'theme') {
+    const notes = [220,277.18,329.63,392,329.63,277.18,246.94,293.66,369.99,440,369.99,293.66];
+    let step = 0;
+    const timer = window.setInterval(() => {
+      if (!soundsMuted) playSynthTone(notes[step++ % notes.length], .19, soundElements.theme.volume * .48, 'square');
+    }, 240);
+    activeAudioLoops.set(name, { timer });
+  }
+}
+
+function stopSynthLoop(name) {
+  const loop = activeAudioLoops.get(name);
+  if (!loop) return;
+  if (loop.timer) window.clearInterval(loop.timer);
+  if (loop.nodes) loop.nodes.forEach(node => { try { if (node.stop) node.stop(); else node.disconnect(); } catch (_) {} });
+  activeAudioLoops.delete(name);
+}
+
+function createSoundHandle(name) {
+  let volume = name === 'theme' ? .32 : .45;
+  return {
+    get volume() { return volume; },
+    set volume(value) {
+      volume = Math.max(0, Math.min(1, Number(value) || 0));
+      const loop = activeAudioLoops.get(name);
+      if (loop?.gain && gameAudioContext) loop.gain.gain.setTargetAtTime(volume * .055, gameAudioContext.currentTime, .05);
+    },
+    set currentTime(_) { /* API de compatibilité avec les anciens appels audio. */ },
+    play() {
+      if (soundsMuted) return Promise.resolve();
+      try {
+        if (name === 'engine' || name === 'theme') startSynthLoop(name, volume);
+        else if (name === 'turbo') playSynthTone(150, .55, volume, 'sawtooth', 740);
+        else if (name === 'shield') playSynthTone(420, .38, volume, 'triangle', 980);
+        else if (name === 'levelUp') { [523.25,659.25,783.99].forEach((n,i)=>setTimeout(()=>playSynthTone(n,.18,volume,'triangle'),i*125)); }
+        else if (name === 'explosion') { playSynthTone(95,.48,volume,'sawtooth',35); playSynthTone(170,.22,volume*.45,'triangle',55); }
+      } catch (_) { /* Aucun périphérique audio ne doit bloquer le jeu. */ }
+      return Promise.resolve();
+    },
+    pause() { stopSynthLoop(name); }
+  };
+}
+
 const soundElements = {
-  engine: document.getElementById('engineSound'),
-  turbo: document.getElementById('turboSound'),
-  shield: document.getElementById('shieldSound'),
-  explosion: document.getElementById('explosionSound'),
-  theme: document.getElementById('themeMusic'),
-  levelUp: document.getElementById('levelUpSound')
+  engine: createSoundHandle('engine'), turbo: createSoundHandle('turbo'),
+  shield: createSoundHandle('shield'), explosion: createSoundHandle('explosion'),
+  theme: createSoundHandle('theme'), levelUp: createSoundHandle('levelUp')
 };
 
-let soundsMuted = false;
+function unlockGameAudio() {
+  gameAudioUnlocked = true;
+  if (soundsMuted) return;
+  soundElements.engine.volume = gameState.settings.soundVolume / 100;
+  soundElements.theme.volume = gameState.settings.musicVolume / 100;
+  soundElements.engine.play();
+  if (gameState.settings.musicVolume > 0) soundElements.theme.play();
+}
+document.addEventListener('pointerdown', unlockGameAudio, { once:true });
+document.addEventListener('keydown', unlockGameAudio, { once:true });
 
 function playSound(name) {
   if (soundsMuted) return;
@@ -450,8 +485,7 @@ function playSound(name) {
   if (sound) {
     const volume = name === 'theme' ? gameState.settings.musicVolume / 100 : gameState.settings.soundVolume / 100;
     sound.volume = volume;
-    sound.currentTime = 0;
-    sound.play().catch(e => console.log(`Erreur de lecture du son ${name}:`, e));
+    sound.play().catch(() => {});
   }
 }
 
@@ -1144,8 +1178,9 @@ function gameLoop() {
 // ============================================
 
 function initGame() {
-  // Charger les sprites
-  loadSprites();
+  // Les sprites de secours sont dessinés par le canvas : aucun fichier externe requis.
+  loadingProgress.style.width = '100%';
+  loadingScreen.classList.add('hidden');
   
   // Générer la route
   generateRoad();
@@ -1156,8 +1191,6 @@ function initGame() {
   // Initialiser les sons
   soundElements.engine.volume = gameState.settings.soundVolume / 100;
   soundElements.theme.volume = gameState.settings.musicVolume / 100;
-  soundElements.engine.play().catch(() => console.log("Impossible de jouer le son du moteur"));
-  soundElements.theme.play().catch(() => console.log("Impossible de jouer la musique"));
   
   // Configurer les boutons de l'UI
   setupUI();
@@ -1287,8 +1320,8 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 // DÉMARRAGE
 // ============================================
 
-// Démarrer le chargement
-loadSprites();
+// Démarrer directement avec le rendu canvas intégré.
+initGame();
 
 // Console Easter Egg
 console.log('%c🚗 Knight Rider: KITT Adventure v2.0', 'color: #ff0000; font-size: 20px; font-weight: bold;');

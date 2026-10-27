@@ -23,3 +23,4 @@ section[id]{scroll-margin-top:95px}.kitt-btn{border-radius:7px}.service-card,.re
 
 html{overflow-x:clip}
 @media(prefers-reduced-motion:reduce){section div[style*="translate"]{transform:none!important}}
+.site-os-access{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:1px solid #86e8ff72;border-radius:7px;color:#b6f1ff;text-decoration:none;background:#3edaff0a;font:600 10px Orbitron,sans-serif;white-space:nowrap;transition:background .2s,border-color .2s,box-shadow .2s}.site-os-access:hover{background:#3edaff19;border-color:#8eeeff;box-shadow:0 0 18px #48d9ff30;color:#fff}.kyronext-os-card .software-card-top,.kyronext-os-card .software-cta{color:#91e8ff}.kyronext-os-card:hover{border-color:#70dfff90}@media(max-width:700px){.site-os-access{width:42px;height:42px;padding:0}.site-os-access span{display:none}}
