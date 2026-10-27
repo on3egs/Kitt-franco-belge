@@ -168,6 +168,19 @@
 .vs-hero-action:hover {
   filter: brightness(1.12);
 }
+
+.vs-windows-download {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  color: #e7bac0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(225, 35, 57, 0.58);
+  text-underline-offset: 4px;
+}
+.vs-windows-download:hover { color: #fff; }
 .vs-voicebox {
   width: min(100%, 300px);
   justify-self: center;

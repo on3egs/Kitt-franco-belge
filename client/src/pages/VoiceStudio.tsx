@@ -719,6 +719,13 @@ export default function VoiceStudio() {
           <a className="vs-hero-action" href="#voice-workspace">
             Créer mon extrait <ChevronRight size={16} />
           </a>
+          <a
+            className="vs-windows-download"
+            href="/downloads/ManixVoiceStudioSetup.exe"
+            download
+          >
+            Télécharger l’application Windows 11
+          </a>
         </div>
         <div className="vs-voicebox" aria-hidden="true">
           <div className="vs-device-top">
