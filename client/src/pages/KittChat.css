@@ -7,3 +7,44 @@
 .kc-guest-join{display:grid;gap:10px;margin:8px;padding:12px;border:1px solid #a9b4c3;background:#fff;box-shadow:0 5px 16px #20314e16}.kc-guest-join label{display:grid;gap:5px;color:#34465c;font:11px Tahoma,"Segoe UI",sans-serif}.kc-guest-join input,.kc-guest-join select{width:100%;min-width:0;height:auto;min-height:38px;padding:7px 9px;border:1px solid #a8b5c4;background:#fafdff;color:#18263a;font:12px Tahoma,"Segoe UI",sans-serif}.kc-guest-join>button{min-height:39px;display:flex;align-items:center;justify-content:center;gap:7px;padding:7px;border:1px solid #9e3644;background:linear-gradient(#d84e5c,#a92e40);color:#fff;cursor:pointer;font:700 11px Tahoma,"Segoe UI",sans-serif}.kc-guest-join>button:disabled{opacity:.5;cursor:not-allowed}.kc-guest-join>p{margin:0;color:#667286;font:11px/1.45 Tahoma,"Segoe UI",sans-serif}.kc-guest-join>p a{color:#245e9c}.kc-globe-cta{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:1px solid #91a9bf;background:#edf4fb;color:#24547f;text-decoration:none;font:700 10px Tahoma,"Segoe UI",sans-serif}.kc-readonly{display:flex;align-items:flex-start;gap:9px;padding:11px;border-top:1px solid #c6cfda;background:#edf3f8;color:#4a5d72;font:11px/1.45 Tahoma,"Segoe UI",sans-serif}.kc-readonly svg{flex:none;color:#3978a5}.kc-no-members{display:block;padding:10px;color:#788599;font:11px/1.4 Tahoma,"Segoe UI",sans-serif}.kc-offline{min-height:230px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:14px;padding:24px;background:linear-gradient(140deg,#f6f8fb,#e8edf4);color:#234b7a}.kc-offline>div{max-width:480px}.kc-offline strong{font:700 16px Orbitron,"Segoe UI",sans-serif}.kc-offline p{margin:6px 0 0;color:#647287;font:13px Tahoma,"Segoe UI",sans-serif}.kc-offline>a{display:flex;align-items:center;gap:7px;padding:10px 12px;border:1px solid #9e3644;background:#ad3445;color:#fff;text-decoration:none;font:700 11px Tahoma,"Segoe UI",sans-serif}
 @media(max-width:740px){.kc-guest-join{margin:8px}.kc-offline{align-items:flex-start;flex-direction:column}}
 .kc-offline>button{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;border:1px solid #9e3644;background:#ad3445;color:#fff;cursor:pointer;font:700 11px Tahoma,"Segoe UI",sans-serif}
+.kc-admin-link{display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid #75404a;background:#160f15;color:#edb8a6;text-decoration:none;font:10px "Space Mono",monospace;white-space:nowrap}.kc-admin-link:hover{border-color:#f16b78;color:#fff}
+@media(max-width:740px){.kc-sitebar{height:auto;min-height:66px;flex-wrap:wrap;gap:10px;padding-block:10px}.kc-admin-link{margin-left:auto}}
+/* Salon bleu nuit : conserve la barre MSN rétro, assombrit la lecture. */
+.kc-window{border-color:#536982;background:#111a26;color:#e5edf6}
+.kc-toolbar{border-color:#36475c;background:linear-gradient(#263448,#1b2736);color:#d6e1ee}
+.kc-toolbar-right{color:#9eafc4}
+.kc-room-tabs{background:#111a26}
+.kc-room-tabs button{border-color:#3d526b;background:linear-gradient(#26364a,#1a2737);color:#c6d6e8}
+.kc-room-tabs button.active{background:#152334;color:#fff}
+.kc-content{background:#0d1520}
+.kc-conversation{border-color:#34475d;background:#0c131d}
+.kc-room-topic{border-color:#34475d;background:linear-gradient(#19283a,#131d2a)}
+.kc-room-topic strong{color:#a8d9ff}
+.kc-room-topic span{color:#afbdcc}
+.kc-messages{background:#080f18;color:#d8e2ee;scrollbar-color:#536b86 #101925}
+.kc-line{color:#d8e2ee}
+.kc-line time{color:#8292a8}
+.kc-line strong{color:#79caff}
+.kc-line.system,.kc-line.system span,.kc-line.system strong{color:#9aa8ba}
+.kc-empty{color:#9aa9bb}
+.kc-compose{border-color:#34475d;background:#141e2a}
+.kc-compose input{border-color:#3d526a;background:#080f18;color:#f1f5f9}
+.kc-compose input::placeholder{color:#8492a5}
+.kc-roster{border-color:#34475d;background:#111a26}
+.kc-roster-heading{border-color:#34475d;color:#b8dcff}
+.kc-roster-heading span{background:#24354a;color:#c6d9ee}
+.kc-person{color:#d5e1ef}
+.kc-avatar{border-color:#40566f;background:linear-gradient(140deg,#26384c,#172333);color:#a7d7ff}
+.kc-no-members{color:#94a3b7}
+.kc-sound,.kc-leave{border-color:#40566f;background:#172435;color:#dbe7f4}
+.kc-guest-join{border-color:#3b5069;background:#131e2b;box-shadow:0 5px 16px #0004}
+.kc-guest-join label{color:#d1dfed}
+.kc-guest-join input,.kc-guest-join select{border-color:#40566a;background:#0b131d;color:#eef4fb}
+.kc-guest-join>p{color:#a8b6c8}
+.kc-guest-join>p a{color:#8dccff}
+.kc-globe-cta{border-color:#425c77;background:#192a3d;color:#b8dcff}
+.kc-readonly{border-color:#35485c;background:#172333;color:#bdcad8}
+.kc-readonly svg{color:#8dccff}
+.kc-offline{border:1px solid #35485c;background:linear-gradient(140deg,#172333,#101925);color:#c0d8f2}
+.kc-offline p{color:#a6b6ca}
+.kc-offline>a,.kc-offline>button{border-color:#7d3442;background:linear-gradient(#bd4657,#8e2c3c);color:#fff}

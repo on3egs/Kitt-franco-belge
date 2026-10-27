@@ -212,6 +212,7 @@ export default function KittChat() {
     <header className="kc-sitebar">
       <a href="/" className="kc-brand"><span className="kc-brand-led"/>KITT <small>FRANCO-BELGE</small></a>
       <a className="kc-world-link" href="/communaute-pontiac"><CarFront size={16}/> Globe Pontiac <ArrowRight size={14}/></a>
+      <a className="kc-admin-link" href="/admin-pontiac"><ShieldCheck size={14}/> Administration</a>
     </header>
     <section className="kc-intro">
       <div><p className="kc-eyebrow">KNIGHT RIDER COMMUNITY · EST. 1998</p><h1>Le salon <em>KITT</em></h1>
