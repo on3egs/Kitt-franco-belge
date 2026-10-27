@@ -17,6 +17,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const DataDeletion = lazy(() => import("./pages/DataDeletion"));
 const Karr = lazy(() => import("./pages/Karr"));
 const ToolsHub = lazy(() => import("./pages/ToolsHub"));
+const ImageStudio = lazy(() => import("./pages/ImageStudio"));
 const Manix = lazy(() => import("./pages/Manix"));
 const Soumettre = lazy(() => import("./pages/Soumettre"));
 const AdminVideos = lazy(() => import("./pages/AdminVideos"));
@@ -54,6 +55,7 @@ function AppRouter() {
         <Route path={"/videos"} component={Videos} />
         <Route path={"/jeux"} component={Arcade} />
         <Route path={"/outils"} component={ToolsHub} />
+        <Route path={"/studio-image"} component={ImageStudio} />
         <Route path={"/admin-videos"} component={AdminVideos} />
         <Route path={"/musique"} component={Musique} />
         <Route path={"/soumettre-musique"} component={SoumettreMusique} />

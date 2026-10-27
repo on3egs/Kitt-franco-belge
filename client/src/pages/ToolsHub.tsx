@@ -29,6 +29,7 @@ import {
   X,
 } from "lucide-react";
 import "./ToolsHub.css";
+import "./StudioPromo.css";
 
 type Group =
   | "Vidéo"
@@ -2224,6 +2225,15 @@ export default function ToolsHub() {
         </p>
         <a href="/outils-licences.html">Licences et limites →</a>
       </div>
+      <a className="tools-image-studio-promo" href="/studio-image">
+        <span className="tools-image-studio-icon"><ImageIcon size={22} /></span>
+        <span className="tools-image-studio-copy">
+          <small>NOUVEAU · BY MANIX</small>
+          <strong>Studio Image</strong>
+          <span>Retouche, détourage de personne et montage photo dans ton navigateur.</span>
+        </span>
+        <span className="tools-image-studio-action">Ouvrir le studio <ArrowRight size={16} /></span>
+      </a>
       <section className="tools-starter" aria-labelledby="tools-starter-title">
         <div className="tools-starter-heading">
           <div>
