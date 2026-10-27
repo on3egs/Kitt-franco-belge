@@ -1,0 +1,29 @@
+.kxDesktopLink{display:inline-flex;align-items:center;justify-content:center;padding:9px 11px;border:1px solid #8b261f;color:#ffc3b7;text-decoration:none;background:linear-gradient(180deg,#210604,#100100);font:700 9px "Courier New",monospace;letter-spacing:1px;white-space:nowrap;box-shadow:0 0 12px #ff39221b;transition:color .16s,border-color .16s,box-shadow .16s}
+.kxDesktopLink:hover{color:#fff;border-color:#ff6452;box-shadow:0 0 18px #ff392240}
+#kxExtraOverlay{position:fixed;inset:0;z-index:420;display:none;align-items:center;justify-content:center;padding:10px;background:rgba(0,0,0,.96);color:#ffe7e0;font-family:"Courier New",monospace}
+#kxExtraOverlay.show{display:flex}
+.kxExtraShell{position:relative;width:min(760px,100%);max-height:96vh;overflow:auto;border:2px solid #a62820;background:radial-gradient(ellipse at 50% 25%,#0b1920,#030709 55%,#050000);box-shadow:0 0 34px #ff392236,0 0 90px #0e4c7040;display:flex;flex-direction:column;align-items:center;padding:10px;gap:8px}
+.kxExtraHeader{display:flex;align-items:center;gap:10px;width:100%;min-height:38px;border-bottom:1px solid #42120f;padding:2px 2px 8px}
+.kxExtraTitle{font-size:clamp(14px,2.2vw,19px);font-weight:900;letter-spacing:1.3px;color:#ffd1c8;text-shadow:0 0 10px #ff382c55}
+.kxExtraStats{margin-left:auto;display:flex;gap:12px;color:#73ffc0;font-size:11px;white-space:nowrap}
+.kxExtraHeader button,.kxExtraAction{border:1px solid #64201b;background:#140403;color:#ffb1a7;padding:7px 10px;font:700 10px "Courier New",monospace;cursor:pointer}
+.kxExtraHeader button:hover,.kxExtraAction:hover{border-color:#ff6656;color:#fff}
+#kxExtraCanvas{display:block;width:min(68vh, min(620px, 100%));height:auto;aspect-ratio:1/1;border:1px solid #35201d;background:#020507;touch-action:none;image-rendering:pixelated;box-shadow:0 0 24px #4fdfff13}
+.kxExtraHelp{width:100%;margin:0;padding:4px 2px;text-align:center;color:#a1bab8;font-size:11px;line-height:1.45}
+.kxExtraControls{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:42px}
+.kxExtraControls button{min-width:92px;min-height:38px;border:1px solid #31515c;background:#071219;color:#d9f8ff;padding:8px 12px;font:700 11px "Courier New",monospace;touch-action:manipulation;cursor:pointer}
+.kxExtraControls button:active{background:#153440;border-color:#73eaff}
+.kxExtraControls .kxSimonPad{min-width:112px;height:42px;font-size:10px;letter-spacing:.5px}
+.kxSimonPad[data-simon="0"]{border-color:#a43731;color:#ff9b8e;background:#210706}
+.kxSimonPad[data-simon="1"]{border-color:#236788;color:#7fe0ff;background:#051622}
+.kxSimonPad[data-simon="2"]{border-color:#308953;color:#8affaa;background:#05150b}
+.kxSimonPad[data-simon="3"]{border-color:#9d7922;color:#ffdc76;background:#1b1403}
+.kxExtraResult{position:absolute;inset:0;z-index:2;display:none;align-items:center;justify-content:center;padding:16px;background:#010306d9}
+.kxExtraResult.show{display:flex}
+.kxExtraResultCard{width:min(440px,100%);border:1px solid #a52a20;background:linear-gradient(180deg,#100504,#050607);box-shadow:0 0 30px #ff342933;padding:20px;text-align:center}
+.kxExtraResultCard h2{margin:0 0 8px;color:#ffd4cb;font-size:22px}
+.kxExtraResultCard p{color:#b4c4c4;line-height:1.55}
+.kxExtraResultActions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:15px}
+.kxExtraResultActions button{border:1px solid #74251e;background:#200503;color:#ffd1c8;padding:9px 13px;font:700 11px "Courier New",monospace;cursor:pointer}
+@media(max-width:700px){.kxDesktopLink{padding:6px 7px;font-size:8px;letter-spacing:.4px}.kxExtraShell{max-height:98vh;padding:7px;gap:6px}.kxExtraStats{gap:6px;font-size:9px}.kxExtraHeader button{padding:6px 7px}.kxExtraHelp{font-size:10px}.kxExtraControls{gap:5px}.kxExtraControls button{min-width:66px;padding:7px 5px}.kxExtraControls .kxSimonPad{min-width:76px;font-size:9px}}
+@media(prefers-reduced-motion:reduce){.kxDesktopLink{transition:none}}

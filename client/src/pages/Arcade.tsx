@@ -36,6 +36,7 @@ const SITE_GAMES: Game[] = [
   { id: "maze", name: "KITT Maze Run", mode: "Labyrinthe · arcade", description: "Récupère les cellules d’énergie et échappe aux drones dans un labyrinthe original.", src: "/kitt-maze/", controls: "Flèches · WASD · ZQSD · commandes à l’écran", badge: "CRÉATION ORIGINALE", icon: "⌘", group: "site" },
   { id: "blocks", name: "KITT Block Drop", mode: "Puzzle · arcade", description: "Empile les blocs, complète des lignes et améliore ton meilleur score.", src: "/kitt-blocks/", controls: "← → déplacer · ↑ tourner · ↓ accélérer · Espace : chute", badge: "CRÉATION ORIGINALE", icon: "▥", group: "site" },
   { id: "midnight-runner", name: "Midnight Runner", mode: "Course · arcade 16-bit", description: "Faufile-toi dans la ville de nuit, évite le trafic, récupère l’énergie et tiens jusqu’à l’arrivée.", src: "/static/games/midnight-runner/", controls: "← → ou A/D · Espace : turbo · P/Échap : pause · M : sons · tactile", badge: "NOUVEAU · BY MANIX", icon: "🏎️", group: "site" },
+  { id: "signal-zero", name: "KITT — Signal Zéro", mode: "Survie · arcade 16-bit", description: "Explore une région plongée dans le noir, rassemble carburant et pièces, sauve des survivants et rallume la balise avec l’aide de KITT.", src: "/static/games/signal-zero/", controls: "Flèches/ZQSD/WASD · E : agir · F : scanner · Maj : sprint · P : pause · tactile", badge: "NOUVEAU · BY MANIX", icon: "⚡", group: "site" },
 ];
 
 const GAMES = [...AGX_GAMES, ...SITE_GAMES];

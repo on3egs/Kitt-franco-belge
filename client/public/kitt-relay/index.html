@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08090d">
+  <meta name="description" content="KITT Relais transfère vos fichiers directement entre appareils sur le même réseau local.">
+  <title>KITT Relais — transfert local By Manix</title>
+  <link rel="stylesheet" href="./relay.css">
+  <script src="./relay.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Aller au transfert</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Retour à KITT Franco-Belge">
+      <span class="brand-mark" aria-hidden="true"><i></i></span>
+      <span><strong>KITT RELAIS</strong><small>LINK // LOCAL TRANSFER</small></span>
+    </a>
+    <nav aria-label="Navigation principale">
+      <a href="/outils">Outils</a>
+      <a href="/">KITT Franco-Belge</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="live-dot"></span> RELAIS DIRECT · RÉSEAU LOCAL</p>
+        <h1 id="page-title">Vos fichiers.<br><em>Vos appareils.</em></h1>
+        <p class="hero-lead">Envoyez un fichier entre votre PC, votre téléphone et votre Jetson, sans compte et sans le déposer sur un service de stockage.</p>
+        <div class="hero-facts" aria-label="Caractéristiques">
+          <span><b>01</b> Pair-à-pair</span>
+          <span><b>02</b> Code temporaire</span>
+          <span><b>03</b> Réception acceptée par vous</span>
+        </div>
+      </div>
+      <aside class="hero-card" aria-label="État du réseau">
+        <div class="scanner" aria-hidden="true"><span></span></div>
+        <p class="eyebrow">ÉTAT DU RELAIS</p>
+        <strong id="support-state">PRÊT À CONNECTER</strong>
+        <small id="network-note">Ouvrez cette page sur les deux appareils reliés au même réseau Wi-Fi ou Ethernet.</small>
+      </aside>
+    </section>
+
+    <section class="relay-shell" aria-labelledby="relay-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">CONNEXION MANUELLE SÉCURISÉE</p><h2 id="relay-title">Choisissez votre rôle</h2></div>
+        <span class="version-pill">BÊTA LOCALE · 1.0</span>
+      </div>
+
+      <div class="role-grid" id="role-picker">
+        <button class="role-card" type="button" data-role="send" aria-pressed="false">
+          <span class="role-icon" aria-hidden="true">↑</span>
+          <span class="role-title">Envoyer</span>
+          <span class="role-desc">Sélectionnez des fichiers, puis partagez un code temporaire avec l’autre appareil.</span>
+          <span class="role-arrow" aria-hidden="true">COMMENCER →</span>
+        </button>
+        <button class="role-card" type="button" data-role="receive" aria-pressed="false">
+          <span class="role-icon" aria-hidden="true">↓</span>
+          <span class="role-title">Recevoir</span>
+          <span class="role-desc">Collez le code fourni par l’expéditeur. Vous déciderez fichier par fichier.</span>
+          <span class="role-arrow" aria-hidden="true">COMMENCER →</span>
+        </button>
+      </div>
+
+      <div id="send-setup" class="setup-panel" hidden>
+        <div class="setup-title"><span class="step-index">01</span><div><h3>Préparez l’envoi</h3><p>Choisissez un ou plusieurs fichiers sur cet appareil.</p></div></div>
+        <label class="file-drop" for="send-files">
+          <span class="file-drop-icon" aria-hidden="true">＋</span>
+          <strong>Choisir les fichiers</strong>
+          <span>Ils restent sur votre appareil jusqu’à ce que vous lanciez l’envoi.</span>
+          <input id="send-files" type="file" multiple>
+        </label>
+        <div id="selected-files" class="selected-files" aria-live="polite">Aucun fichier sélectionné.</div>
+        <button id="create-offer" class="primary-button" type="button" disabled>Créer un code de connexion <span aria-hidden="true">→</span></button>
+        <p class="micro-copy">Le code contient des informations temporaires de connexion au réseau local. Transmettez-le uniquement à l’appareil destinataire.</p>
+        <div id="offer-panel" class="code-panel" hidden>
+          <div class="code-title"><span class="step-index">02</span><div><h3>Copiez ce code sur l’appareil destinataire</h3><p>Le code expire après 10 minutes. Gardez cette page ouverte.</p></div></div>
+          <label class="visually-hidden" for="offer-code">Code temporaire à transmettre</label>
+          <textarea id="offer-code" rows="5" readonly spellcheck="false" autocomplete="off"></textarea>
+          <div class="button-row"><button class="secondary-button" type="button" data-copy="offer-code">Copier le code</button><span class="copy-status" id="offer-copy-status" aria-live="polite"></span></div>
+          <label class="field-label" for="answer-code">Quand l’autre appareil renvoie son code réponse, collez-le ici</label>
+          <textarea id="answer-code" rows="4" spellcheck="false" autocomplete="off" placeholder="Collez le code KR1 reçu ici…"></textarea>
+          <button id="apply-answer" class="primary-button" type="button">Valider et connecter <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+
+      <div id="receive-setup" class="setup-panel" hidden>
+        <div class="setup-title"><span class="step-index">01</span><div><h3>Collez le code de l’expéditeur</h3><p>Le code doit commencer par <code>KR1.</code> et être encore valide.</p></div></div>
+        <label class="field-label" for="incoming-offer">Code de connexion reçu</label>
+        <textarea id="incoming-offer" rows="6" spellcheck="false" autocomplete="off" placeholder="Collez le code KR1 fourni par l’expéditeur…"></textarea>
+        <button id="create-answer" class="primary-button" type="button">Préparer ma réponse <span aria-hidden="true">→</span></button>
+        <div id="answer-panel" class="code-panel" hidden>
+          <div class="code-title"><span class="step-index">02</span><div><h3>Renvoyez ce code à l’expéditeur</h3><p>La connexion démarre lorsque l’expéditeur le valide.</p></div></div>
+          <label class="visually-hidden" for="local-answer-code">Code réponse temporaire</label>
+          <textarea id="local-answer-code" rows="5" readonly spellcheck="false" autocomplete="off"></textarea>
+          <div class="button-row"><button class="secondary-button" type="button" data-copy="local-answer-code">Copier le code réponse</button><span class="copy-status" id="answer-copy-status" aria-live="polite"></span></div>
+        </div>
+      </div>
+
+      <div id="connection-panel" class="connection-panel" hidden>
+        <div class="connection-state"><span class="connection-light" id="connection-light"></span><div><strong id="connection-title">EN ATTENTE DE L’AUTRE APPAREIL</strong><small id="connection-detail">Gardez les deux pages ouvertes pendant le transfert.</small></div></div>
+        <div id="incoming-card" class="incoming-card" hidden>
+          <p class="eyebrow">DEMANDE DE RÉCEPTION</p>
+          <h3 id="incoming-name">Fichier</h3>
+          <p id="incoming-meta"></p>
+          <p class="micro-copy">Acceptez seulement les fichiers que vous reconnaissez. Le fichier sera enregistré sur cet appareil.</p>
+          <div class="button-row"><button id="accept-file" class="primary-button" type="button">Accepter et choisir où l’enregistrer</button><button id="reject-file" class="secondary-button danger-button" type="button">Refuser</button></div>
+        </div>
+        <div id="transfer-status" class="transfer-status" hidden>
+          <div class="transfer-heading"><span id="transfer-label">Transfert en cours</span><span id="transfer-percent">0 %</span></div>
+          <progress id="transfer-progress" max="100" value="0">0%</progress>
+          <p id="transfer-detail" aria-live="polite"></p>
+        </div>
+        <div id="received-files" class="received-files" aria-live="polite"></div>
+        <button id="send-selected" class="primary-button" type="button" hidden>Envoyer les fichiers sélectionnés</button>
+        <button id="cancel-session" class="secondary-button danger-button" type="button">Terminer cette session</button>
+      </div>
+
+      <div id="global-status" class="global-status" role="status" aria-live="polite">Sélectionnez Envoyer ou Recevoir pour commencer.</div>
+    </section>
+
+    <section class="how-grid" aria-label="Comment fonctionne KITT Relais">
+      <article><span>01</span><h3>Reliez les appareils</h3><p>Ouvrez KITT Relais sur les deux appareils connectés au même réseau local. Les réseaux Wi-Fi invités peuvent bloquer les connexions directes.</p></article>
+      <article><span>02</span><h3>Échangez le code</h3><p>Le code de session est copié entre vos appareils. Il n’est pas envoyé par KITT Relais à un serveur de signalisation.</p></article>
+      <article><span>03</span><h3>Acceptez la réception</h3><p>Chaque fichier reçu demande une confirmation. Vous choisissez son emplacement avant le transfert.</p></article>
+    </section>
+
+    <section class="privacy-panel" aria-labelledby="privacy-title">
+      <p class="eyebrow">TRANSPARENCE</p>
+      <h2 id="privacy-title">Ce qui se passe avec vos fichiers</h2>
+      <div class="privacy-grid">
+        <p><strong>Le contenu ne transite pas par le site.</strong> Après l’échange des codes, les deux navigateurs établissent un canal WebRTC direct. Le canal de données WebRTC utilise le chiffrement DTLS. <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels" target="_blank" rel="noopener noreferrer">Documentation WebRTC</a>.</p>
+        <p><strong>Aucun compte ni historique serveur.</strong> Les codes restent dans les champs; les blocs reçus peuvent rester temporairement dans la mémoire de l’onglet. Terminer la session efface ces données temporaires et les liens de téléchargement créés.</p>
+        <p><strong>Limite de réseau.</strong> Le mode actuel utilise des candidats locaux sans serveur STUN/TURN. Les deux appareils doivent pouvoir communiquer directement sur le même réseau; certains routeurs ou réseaux isolent leurs appareils.</p>
+        <p><strong>Échangez le code en privé.</strong> Il contient les paramètres et adresses candidates de cette connexion locale. Ne le publiez pas et ne le transmettez qu’à votre propre appareil destinataire.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>BY MANIX</span><span>En collaboration avec KITT-FRANCO-BELGE</span><a href="/">Retour au site</a>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080b13">
+  <meta name="description" content="Signal Zéro — un jeu de survie arcade 16-bit original signé By Manix. Explore la région, économise l’énergie de KITT et rallume la balise." />
+  <title>KITT — Signal Zéro · By Manix</title>
+  <link rel="stylesheet" href="./signal-zero.css">
+  <script defer src="./signal-zero.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/jeux/" aria-label="Retour à l’arcade KITT Franco-Belge"><span class="brand-mark">K</span><span><b>KYRONEXT ARCADE</b><small>MISSION ORIGINALE · BY MANIX</small></span></a>
+      <div class="top-actions">
+        <button id="sound-toggle" class="icon-button" type="button" aria-pressed="true" title="Couper le son">♫ <span>SON</span></button>
+        <button id="fullscreen-toggle" class="icon-button" type="button" title="Plein écran">⛶ <span>ÉCRAN</span></button>
+        <a class="back-link" href="/jeux/">← ARCADE</a>
+      </div>
+    </header>
+
+    <section class="intro-card" id="intro" aria-labelledby="game-title">
+      <div class="intro-art" aria-hidden="true"><div class="intro-scan"></div><div class="intro-car"><i></i><b></b></div><div class="intro-signal">NO SIGNAL</div></div>
+      <div class="intro-copy">
+        <p class="eyebrow"><span class="pulse-dot"></span> 04:17 · RÉSEAU HORS SERVICE</p>
+        <h1 id="game-title">SIGNAL <em>ZÉRO</em></h1>
+        <p class="lead">La région est plongée dans le noir. Retrouve les survivants, rassemble de quoi réparer la balise et garde assez d’énergie pour rentrer auprès de KITT.</p>
+        <div class="intro-facts">
+          <div><span>OBJECTIF</span><b>Rallumer la balise</b></div>
+          <div><span>MENACE</span><b>Patrouille KARR</b></div>
+          <div><span>SAUVEGARDE</span><b>Locale · sur cet appareil</b></div>
+        </div>
+        <button id="start-button" class="primary-button" type="button"><span>▶</span> LANCER LA MISSION</button>
+        <p class="best-record" id="best-record">AUCUNE MISSION ENREGISTRÉE</p>
+      </div>
+      <aside class="briefing">
+        <h2>BRIEFING KITT</h2>
+        <p><i>01</i> Récupère <b>3 pièces</b> et <b>35 unités de carburant</b>.</p>
+        <p><i>02</i> Trouve et aide <b>2 survivants</b> au minimum.</p>
+        <p><i>03</i> Le scanner révèle les caches, mais attire KARR et consomme la batterie.</p>
+        <p><i>04</i> Retourne à la balise au nord-est et appuie sur <b>E</b>.</p>
+        <div class="briefing-tip"><span>CONSEIL DU SYSTÈME</span><b>Le coffre de KITT peut te recharger. Garde une ration pour les urgences.</b></div>
+      </aside>
+    </section>
+
+    <section class="game" id="game" hidden aria-label="Mission Signal Zéro">
+      <div class="game-heading"><div><p class="eyebrow"><span class="pulse-dot"></span> TRANSMISSION ACTIVE</p><h2>SECTEUR <span id="sector-name">BLACKOUT</span></h2></div><div class="mission-clock"><small>TEMPS ÉCOULÉ</small><b id="clock">00:00</b></div></div>
+
+      <div class="resource-grid" aria-label="État des ressources">
+        <div class="resource-card battery"><div class="resource-label"><span>BATTERIE</span><b id="battery-value">100%</b></div><div class="meter"><i id="battery-meter"></i></div></div>
+        <div class="resource-card fuel"><div class="resource-label"><span>CARBURANT</span><b id="fuel-value">25 / 100</b></div><div class="meter"><i id="fuel-meter"></i></div></div>
+        <div class="resource-card cold"><div class="resource-label"><span>FROID</span><b id="cold-value">12%</b></div><div class="meter"><i id="cold-meter"></i></div></div>
+        <div class="resource-card threat"><div class="resource-label"><span>ALERTE KARR</span><b id="threat-value">08%</b></div><div class="meter"><i id="threat-meter"></i></div></div>
+      </div>
+
+      <div class="play-layout">
+        <div class="screen-column">
+        <div class="canvas-frame"><canvas id="world" width="960" height="540" tabindex="0" aria-label="Carte de la région. Déplace Manix avec les flèches, ZQSD ou WASD. Appuie sur E pour interagir et F pour le scanner."></canvas><div id="toast" class="toast" role="status" aria-live="polite"></div>
+            <div id="pause-overlay" class="screen-overlay" hidden><div class="overlay-panel"><span class="overlay-kicker">SYSTÈME EN PAUSE</span><h3>MISSION SUSPENDUE</h3><p>Le temps est arrêté. Reprends quand tu es prêt.</p><button id="resume-button" class="primary-button" type="button">REPRENDRE</button></div></div>
+            <div id="end-overlay" class="screen-overlay" hidden><div class="overlay-panel"><span id="end-kicker" class="overlay-kicker">TRANSMISSION RÉTABLIE</span><h3 id="end-title">BALISE ACTIVE</h3><p id="end-copy"></p><button id="replay-button" class="primary-button" type="button">REJOUER LA MISSION</button></div></div>
+          </div>
+          <div class="control-strip">
+            <div class="dpad" aria-label="Commandes de déplacement">
+              <button type="button" data-hold="up" aria-label="Aller vers le haut">▲</button>
+              <button type="button" data-hold="left" aria-label="Aller vers la gauche">◀</button>
+              <button type="button" data-hold="down" aria-label="Aller vers le bas">▼</button>
+              <button type="button" data-hold="right" aria-label="Aller vers la droite">▶</button>
+            </div>
+            <div class="touch-actions"><button type="button" class="action scan" data-action="scan"><b>◉</b><span>SCANNER <kbd>F</kbd></span></button><button type="button" class="action interact" data-action="interact"><b>✦</b><span>AGIR <kbd>E</kbd></span></button><button type="button" class="action sprint" data-hold="sprint"><b>≫</b><span>SPRINT <kbd>SHIFT</kbd></span></button><button id="pause-button" type="button" class="action pause"><b>Ⅱ</b><span>PAUSE <kbd>P</kbd></span></button></div>
+          </div>
+          <p class="controls-hint">CLAVIER : FLÈCHES / ZQSD / WASD · E : INTERAGIR · F : SCANNER · SHIFT : SPRINT · P : PAUSE</p>
+        </div>
+        <aside class="mission-sidebar">
+          <section class="panel objectives"><div class="panel-heading"><span>MISSION</span><b id="objective-count">00 / 03</b></div><ol>
+            <li id="obj-parts"><i>01</i><span>Pièces de relais <b id="parts-count">0 / 3</b></span><em>×</em></li>
+            <li id="obj-survivors"><i>02</i><span>Survivants <b id="survivors-count">0 / 2</b></span><em>×</em></li>
+            <li id="obj-fuel"><i>03</i><span>Carburant <b id="fuel-count">25 / 35</b></span><em>×</em></li>
+          </ol><p class="relay-hint" id="relay-hint">La balise attend tes instructions.</p></section>
+          <section class="panel inventory"><div class="panel-heading"><span>ÉQUIPEMENT</span><b>LOCAL</b></div><div class="inventory-row"><span>✚ RATIONS</span><b id="food-count">1</b></div><div class="inventory-row"><span>♥ ÉTAT</span><b id="health-count">♥ ♥ ♥</b></div><div class="inventory-row"><span>⌘ PIÈCES</span><b id="parts-inventory">0</b></div></section>
+          <section class="panel radio-panel"><div class="panel-heading"><span>RADIO KITT</span><b class="radio-live"><i></i> LIVE</b></div><ol id="radio-log" aria-live="polite"><li><time>04:17</time><span>Canal sécurisé ouvert. À toi de jouer.</span></li></ol></section>
+          <button id="abandon-button" type="button" class="abandon-button">ABANDONNER LA MISSION</button>
+        </aside>
+      </div>
+      <p class="privacy-note">JEU ORIGINAL · AUCUN COMPTE · PROGRESSION ENREGISTRÉE UNIQUEMENT DANS TON NAVIGATEUR</p>
+    </section>
+
+    <footer><span>BY MANIX</span><span>ARCADE KITT FRANCO-BELGE</span><span>© CRÉATION ORIGINALE</span></footer>
+  </main>
+</body>
+</html>

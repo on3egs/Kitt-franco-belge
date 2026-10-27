@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import "./ToolsHub.css";
 import "./StudioPromo.css";
+import "./ToolsProducts.css";
 
 type Group =
   | "Vidéo"
@@ -2234,6 +2235,18 @@ export default function ToolsHub() {
         </span>
         <span className="tools-image-studio-action">Ouvrir le studio <ArrowRight size={16} /></span>
       </a>
+      <div className="tools-utility-links" aria-label="Autres outils KITT">
+        <a href="/kitt-media-lab/" className="tools-utility-card">
+          <span className="tools-utility-icon"><FileImage size={19} /></span>
+          <span><small>APPLICATION WINDOWS 11</small><strong>KITT Media Lab</strong><em>5 outils locaux · présentation et téléchargement</em></span>
+          <ArrowRight size={16} />
+        </a>
+        <a href="/kitt-relay/" className="tools-utility-card">
+          <span className="tools-utility-icon relay"><FolderOpen size={19} /></span>
+          <span><small>TRANSFERT ENTRE APPAREILS</small><strong>KITT Relais</strong><em>Envoie un fichier directement sur le réseau local</em></span>
+          <ArrowRight size={16} />
+        </a>
+      </div>
       <section className="tools-starter" aria-labelledby="tools-starter-title">
         <div className="tools-starter-heading">
           <div>

@@ -1,0 +1,10 @@
+KITT MEDIA LAB — LICENCE D’UTILISATION GRATUITE
+Version 1.0.0
+
+Copyright (c) 2026 KITT Franco-Belge / Manix. Tous droits réservés.
+
+KITT Media Lab est fourni gratuitement pour installation et utilisation. Cette autorisation ne transfère aucun droit d’auteur et ne donne pas le droit de vendre, redistribuer, republier ou modifier l’application ou son installateur sans autorisation écrite de KITT Franco-Belge / Manix.
+
+L’application est fournie en l’état, sans garantie. L’utilisateur reste responsable de ses fichiers, de leurs droits d’utilisation et des copies de sauvegarde.
+
+Les bibliothèques tierces embarquées restent régies par leurs propres licences, reproduites dans THIRD-PARTY-NOTICES.txt. Les noms de marques et marques déposées appartiennent à leurs propriétaires respectifs. KITT Media Lab est un projet communautaire et n’est pas présenté comme un produit officiel d’un détenteur de marque tiers.

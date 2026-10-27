@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file: blob: data:; script-src 'self' 'unsafe-inline' file:; style-src 'self' 'unsafe-inline' file:; img-src 'self' file: blob: data:; media-src 'self' file: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="color-scheme" content="dark">
+  <title>KITT Media Lab · By Manix</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="scanner" aria-hidden="true"><i></i></div>
+  <header class="topbar">
+    <a class="brand" href="#accueil" aria-label="Accueil KITT Media Lab"><span class="brand-mark">K</span><span><strong>KITT</strong><small>MEDIA LAB <b>BY MANIX</b></small></span></a>
+    <div class="privacy"><span class="privacy-dot"></span><span>TRAITEMENT LOCAL</span><small>AUCUN ENVOI DE FICHIER</small></div>
+  </header>
+  <main class="app-shell" id="accueil">
+    <section class="intro">
+      <div class="eyebrow">CENTRE DE TRAITEMENT · WINDOWS 11</div>
+      <h1>Vos fichiers.<br><em>Votre poste.</em></h1>
+      <p>Des outils directs pour vos images, sons, vidéos, PDF et textes. Choisissez une opération et voyez précisément ce qu’elle produit.</p>
+      <div class="intro-stats"><span><i>01</i> CHOISIR</span><span><i>02</i> RÉGLER</span><span><i>03</i> EXPORTER</span></div>
+    </section>
+
+    <section class="workbench" aria-labelledby="tool-title">
+      <nav class="tool-rail" aria-label="Outils média">
+        <div class="rail-heading">OUTILS LOCAUX <span>05</span></div>
+        <button class="tool-button active" type="button" data-tool="image" aria-pressed="true"><span class="tool-icon">▧</span><span><strong>Image atelier</strong><small>Redimensionner · convertir</small></span><b>01</b></button>
+        <button class="tool-button" type="button" data-tool="audio" aria-pressed="false"><span class="tool-icon">♫</span><span><strong>Découpe audio</strong><small>Exporter une sélection WAV</small></span><b>02</b></button>
+        <button class="tool-button" type="button" data-tool="video" aria-pressed="false"><span class="tool-icon">▣</span><span><strong>Planche vidéo</strong><small>Repérer les scènes</small></span><b>03</b></button>
+        <button class="tool-button" type="button" data-tool="pdf" aria-pressed="false"><span class="tool-icon">▤</span><span><strong>Fusion PDF</strong><small>Assembler jusqu’à 20 PDF</small></span><b>04</b></button>
+        <button class="tool-button" type="button" data-tool="text" aria-pressed="false"><span class="tool-icon">T</span><span><strong>Texte vers Word</strong><small>Exporter en RTF</small></span><b>05</b></button>
+        <div class="rail-note"><span>i</span><p>Les originaux ne sont jamais modifiés. Seul le fichier exporté est créé.</p></div>
+      </nav>
+
+      <div class="work-area">
+        <div class="work-heading"><div><div class="eyebrow">POSTE DE TRAVAIL / <span id="tool-id">01</span></div><h2 id="tool-title">Image atelier</h2><p id="tool-description">Redimensionnez ou convertissez une image avec l’aperçu avant export.</p></div><span class="local-tag"><i></i> HORS LIGNE</span></div>
+        <div class="work-grid">
+          <div class="file-column">
+            <div id="drop-zone" class="drop-zone" role="button" tabindex="0" aria-label="Choisir ou déposer un fichier">
+              <div class="drop-icon">＋</div><strong>Déposez votre fichier ici</strong><span>ou parcourez votre appareil</span><small>Les formats acceptés s’adaptent à l’outil sélectionné.</small>
+            </div>
+            <input id="file-input" type="file" hidden>
+            <div class="list-heading"><span>FICHIERS SÉLECTIONNÉS</span><small>STOCKÉS SUR VOTRE PC</small></div>
+            <div id="selected-files" class="selected-files"></div>
+            <div id="output" class="output"></div>
+          </div>
+          <aside class="settings-panel">
+            <div class="settings-title"><span>RÉGLAGES</span><i>CONFIG 01</i></div>
+            <div id="tool-options" class="tool-options"></div>
+            <div class="export-note"><b>EXPORT</b><span>Un nouveau fichier sera téléchargé dans votre dossier Téléchargements.</span></div>
+            <button id="run-tool" class="run-button" type="button" disabled>Convertir l’image <span>↗</span></button>
+          </aside>
+        </div>
+        <div id="status" class="status" role="status" aria-live="polite">Choisissez un fichier pour commencer.</div>
+      </div>
+    </section>
+    <footer class="footer"><span>KITT MEDIA LAB · VERSION 1.0</span><span>BY MANIX · KITT-FRANCO-BELGE · <a href="LICENCE-KITT-MEDIA-LAB.txt">CONDITIONS</a> · <a href="THIRD-PARTY-NOTICES.txt">AVIS DE LICENCES</a></span></footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

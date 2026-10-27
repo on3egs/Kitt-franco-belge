@@ -1,0 +1,10 @@
+{
+    "product":  "KITT Media Lab",
+    "version":  "1.0.0",
+    "file":  "KITT-Media-Lab-Windows11-Setup.exe",
+    "platform":  "Windows 11 x64",
+    "sizeBytes":  1974272,
+    "sizeFormatted":  "1,88 Mio",
+    "sha256":  "ab4cc1877587f692544272a519868faec908d4919c0b48f2e4235e0efb1d4978",
+    "signed":  false
+}
