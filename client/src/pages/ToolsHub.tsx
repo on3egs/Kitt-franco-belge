@@ -1029,6 +1029,7 @@ export default function ToolsHub() {
     [recentIds, setRecentIds] = useState<string[]>(() => {
       try { const saved = JSON.parse(localStorage.getItem("kitt-tool-recent-v1") || "[]"); return Array.isArray(saved) ? saved : []; } catch { return []; }
     }),
+    [catalogNotice, setCatalogNotice] = useState(""),
     [selected, setSelected] = useState<FileTool | null>(null),
     [files, setFiles] = useState<File[]>([]),
     [text, setText] = useState(""),
@@ -1096,6 +1097,23 @@ export default function ToolsHub() {
     []
   );
   useEffect(() => setCatalogLimit(12), [category, search, toolView]);
+  useEffect(() => {
+    const syncSavedTools = (event: StorageEvent) => {
+      if (event.key && event.key !== "kitt-tool-favorites-v1" && event.key !== "kitt-tool-recent-v1") return;
+      const readIds = (key: string) => {
+        try {
+          const value = JSON.parse(localStorage.getItem(key) || "[]");
+          return Array.isArray(value)
+            ? value.filter((id): id is string => typeof id === "string" && TOOLS.some(tool => tool.id === id))
+            : [];
+        } catch { return []; }
+      };
+      setFavoriteIds(readIds("kitt-tool-favorites-v1"));
+      setRecentIds(readIds("kitt-tool-recent-v1"));
+    };
+    window.addEventListener("storage", syncSavedTools);
+    return () => window.removeEventListener("storage", syncSavedTools);
+  }, []);
   useEffect(() => {
     if (selected?.id !== "audio-record" || !navigator.mediaDevices?.enumerateDevices) return;
     let active = true;
@@ -3045,6 +3063,22 @@ export default function ToolsHub() {
               <button type="button" className={toolView === "favorites" ? "active" : ""} aria-pressed={toolView === "favorites"} onClick={() => setToolView("favorites")}><Star size={14}/> Favoris <span>{favoriteIds.length}</span></button>
               <button type="button" className={toolView === "recent" ? "active" : ""} aria-pressed={toolView === "recent"} onClick={() => setToolView("recent")}><History size={14}/> Récents <span>{recentIds.length}</span></button>
             </div>
+            {(toolView === "favorites" && favoriteIds.length > 0 || toolView === "recent" && recentIds.length > 0) && (
+              <button
+                type="button"
+                className="tools-clear-saved"
+                onClick={() => {
+                  const favorites = toolView === "favorites";
+                  const key = favorites ? "kitt-tool-favorites-v1" : "kitt-tool-recent-v1";
+                  try { localStorage.removeItem(key); } catch { /* stockage local facultatif */ }
+                  if (favorites) setFavoriteIds([]); else setRecentIds([]);
+                  setCatalogNotice(favorites ? "Favoris effacés de ce navigateur." : "Historique récent effacé de ce navigateur.");
+                }}
+              >
+                <RotateCcw size={13} /> Effacer {toolView === "favorites" ? "les favoris" : "les récents"}
+              </button>
+            )}
+            <span className="tools-sr-only" role="status" aria-live="polite">{catalogNotice}</span>
             <div className="tools-categories">
               {GROUPS.map(group => (
                 <button
