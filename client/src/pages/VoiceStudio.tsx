@@ -726,6 +726,10 @@ export default function VoiceStudio() {
           >
             Télécharger l’application Windows 11
           </a>
+          <p className="vs-download-note">
+            Lanceur léger : Internet et moteur AGX en ligne requis. L’installateur
+            n’est pas signé numériquement; Windows peut signaler un éditeur inconnu.
+          </p>
         </div>
         <div className="vs-voicebox" aria-hidden="true">
           <div className="vs-device-top">

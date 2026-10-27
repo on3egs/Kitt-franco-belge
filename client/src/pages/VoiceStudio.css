@@ -181,6 +181,13 @@
   text-underline-offset: 4px;
 }
 .vs-windows-download:hover { color: #fff; }
+.vs-download-note {
+  max-width: 470px;
+  margin: 7px 0 0;
+  color: #9b9399;
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
 .vs-voicebox {
   width: min(100%, 300px);
   justify-self: center;
