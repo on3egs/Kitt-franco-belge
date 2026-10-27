@@ -48,3 +48,29 @@
 .kc-offline{border:1px solid #35485c;background:linear-gradient(140deg,#172333,#101925);color:#c0d8f2}
 .kc-offline p{color:#a6b6ca}
 .kc-offline>a,.kc-offline>button{border-color:#7d3442;background:linear-gradient(#bd4657,#8e2c3c);color:#fff}
+
+/* Emotes KITT, Buzz et raccourci Windows */
+.kc-shortcut{display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid #40566f;background:#172435;color:#dbe7f4;cursor:pointer;font:10px "Space Mono",monospace;white-space:nowrap}
+.kc-shortcut:hover,.kc-emote-toggle:hover,.kc-buzz:hover{border-color:#ff5360;color:#fff}
+.kc-room-toast{position:fixed;right:22px;bottom:22px;z-index:1000;display:flex;align-items:center;gap:10px;max-width:min(420px,calc(100vw - 32px));padding:13px 16px;border:1px solid #e65262;background:linear-gradient(130deg,#101b2a,#24111b);color:#f5f7fa;box-shadow:0 12px 34px #000a,0 0 20px #ff394833;font:600 13px Tahoma,"Segoe UI",sans-serif;animation:kc-toast-in .22s ease-out}
+.kc-toast-led{width:8px;height:8px;flex:none;border-radius:50%;background:#ff4657;box-shadow:0 0 12px #ff4657;animation:kc-led-pulse 1.2s ease-in-out infinite}
+.kc-compose{display:grid;gap:7px}
+.kc-compose-row{display:flex;align-items:center;gap:7px;min-width:0}
+.kc-compose-row input{flex:1;min-width:0}
+.kc-compose-tools{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.kc-compose-tools>small{margin-left:auto;color:#738097;font:9px "Space Mono",monospace}
+.kc-emote-wrap{position:relative}
+.kc-emote-toggle,.kc-buzz{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:31px;padding:5px 9px;border:1px solid #8295ad;background:linear-gradient(#f9fbfd,#e2e8f0);color:#324963;cursor:pointer;font:11px Tahoma,"Segoe UI",sans-serif}
+.kc-buzz{border-color:#b23c4b;background:linear-gradient(#d84e5c,#a92e40);color:#fff;font-weight:700}
+.kc-buzz:disabled{opacity:.5;cursor:not-allowed}
+.kc-emote-picker{position:absolute;left:0;bottom:calc(100% + 7px);z-index:20;display:grid;grid-template-columns:repeat(3,minmax(105px,1fr));gap:5px;width:min(390px,calc(100vw - 42px));padding:8px;border:1px solid #536982;background:#101a28;box-shadow:0 12px 28px #000a}
+.kc-emote-picker button{min-height:34px;padding:5px;border:1px solid #334a64;background:#172638;color:#f1f6fb;cursor:pointer;font:11px Tahoma,"Segoe UI",sans-serif;text-align:left}
+.kc-emote-picker button:hover,.kc-emote-picker button:focus-visible{border-color:#ff5360;background:#2a1a27}
+.kc-sound{flex-wrap:wrap}
+.kc-sound small{flex-basis:100%;color:#99abc0;font-size:9px;text-align:center}
+.kc-buzz-effect{animation:kc-buzz .42s ease-in-out 2;border-color:#ff4c5d!important;box-shadow:0 20px 60px #0008,0 0 30px #ff3048aa!important}
+@keyframes kc-toast-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes kc-led-pulse{50%{opacity:.45;transform:scale(.82)}}
+@keyframes kc-buzz{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@media(max-width:740px){.kc-compose-tools>small{width:100%;margin-left:0}.kc-room-toast{right:12px;bottom:12px}}
+@media(prefers-reduced-motion:reduce){.kc-buzz-effect,.kc-toast-led{animation:none!important}}

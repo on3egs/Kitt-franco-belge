@@ -1,3 +1,80 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080b12"><title>Signal Rhythm — By Manix</title><link rel="stylesheet" href="game.css"></head>
-<body><main class="shell"><header><a href="/jeux/" class="back">← ARCADE KITT</a><span class="brand">MANIX // TEMPO LINK</span><button id="sound" type="button" aria-pressed="true">♫ SON ON</button></header><section class="intro"><p class="eyebrow">JEU DE RYTHME · 4 PISTES · 6 SECTEURS</p><h1>SIGNAL <em>RHYTHM</em></h1><p>Synchronise les impulsions du système. Les motifs sont générés sur place : aucun morceau ou visuel tiers n’est embarqué.</p></section><section class="hud"><div><small>SECTEUR</small><strong id="sector">PRÊT</strong></div><div><small>SCORE</small><strong id="score">0</strong></div><div><small>COMBO</small><strong id="combo">0×</strong></div><div><small>PRÉCISION</small><strong id="accuracy">—</strong></div><div><small>RECORD</small><strong id="best">0</strong></div></section><nav class="controls"><button id="start" class="primary" type="button">DÉMARRER LA SESSION</button><button id="pause" type="button" disabled>PAUSE</button><button id="wide-window" type="button" aria-pressed="false" title="Fenêtre de frappe légèrement plus large">TEMPO SOUPLE</button><button id="motion" type="button" aria-pressed="true">LUMIÈRE ON</button></nav><div class="game-shell"><canvas id="board" width="800" height="600" aria-label="Jeu de rythme à quatre pistes"></canvas><div class="lanes" aria-label="Touches de rythme"><button data-lane="0" aria-label="Piste bleue, touche A">A</button><button data-lane="1" aria-label="Piste verte, touche S">S</button><button data-lane="2" aria-label="Piste ambre, touche D">D</button><button data-lane="3" aria-label="Piste rouge, touche F">F</button></div><div id="message" role="status" aria-live="polite">Les notes se lisent du haut vers la ligne lumineuse. A, S, D, F ou flèches.</div><section id="result" class="result hidden" role="dialog" aria-modal="true"><div><p class="eyebrow">SESSION TERMINÉE</p><h2 id="result-title">BEAU RYTHME</h2><p id="result-copy"></p><label for="pilot">Nom du pilote</label><input id="pilot" maxlength="20" value="PILOTE" autocomplete="name"><button id="save" type="button">ENREGISTRER LE SCORE</button><button id="again" type="button">REJOUER</button></div></section></div><p class="help">La session dure environ 54 secondes. Touche une seule fois quand une impulsion atteint la barre; active Tempo souple si tu préfères une fenêtre plus large; les touches, clics et commandes tactiles partagent le même timing. Échap ou le bouton Pause suspend la partie.</p><footer>BY MANIX · KITT FRANCO-BELGE <span>Records locaux à cet appareil</span></footer></main><script src="../highscores.js"></script><script src="game.js"></script></body></html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="Un jeu de rythme KITT à quatre pistes et six secteurs.">
+  <title>Signal Rhythm — By Manix</title>
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <a href="/jeux/" class="back">← ARCADE KITT</a>
+      <span class="brand">MANIX // TEMPO LINK</span>
+      <button id="sound" type="button" aria-pressed="true">SON ACTIVÉ</button>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">JEU DE RYTHME · 4 PISTES · 6 SECTEURS · ENVIRON 55 S</p>
+      <h1>SIGNAL <em>RHYTHM</em></h1>
+      <p>Observe les impulsions qui descendent. Appuie sur la touche de la bonne couleur au moment où le signal touche la barre lumineuse.</p>
+    </section>
+
+    <section class="how-to" aria-label="Règles du jeu">
+      <div><span class="step">01</span><p><b>Repère la couleur</b><br>Chaque couleur correspond à une piste.</p></div>
+      <div><span class="step">02</span><p><b>Attends la barre</b><br>Ne frappe ni trop tôt ni trop tard.</p></div>
+      <div><span class="step">03</span><p><b>Joue ta touche</b><br>Clavier, flèches ou boutons tactiles.</p></div>
+      <p class="key-guide"><span class="key blue">A / ←</span><span class="key green">S / ↓</span><span class="key amber">D / ↑</span><span class="key red">F / →</span></p>
+    </section>
+
+    <section class="hud" aria-label="Résultats de la partie">
+      <div><small>SECTEUR</small><strong id="sector">PRÊT</strong></div>
+      <div><small>SCORE</small><strong id="score">0</strong></div>
+      <div><small>COMBO</small><strong id="combo">0×</strong></div>
+      <div><small>PRÉCISION</small><strong id="accuracy">—</strong></div>
+      <div><small>RECORD</small><strong id="best">0</strong></div>
+    </section>
+
+    <nav class="controls" aria-label="Commandes">
+      <button id="start" class="primary" type="button">DÉMARRER</button>
+      <button id="pause" type="button" disabled>PAUSE · ÉCHAP</button>
+      <button id="wide-window" type="button" aria-pressed="false" title="Élargit la fenêtre de frappe">TEMPO SOUPLE</button>
+      <button id="motion" type="button" aria-pressed="true">LUMIÈRES ON</button>
+    </nav>
+
+    <div class="progress-wrap">
+      <label for="progress">PROGRESSION · 6 SECTEURS</label>
+      <progress id="progress" max="100" value="0">0%</progress>
+    </div>
+
+    <div class="game-shell">
+      <canvas id="board" width="800" height="600" aria-label="Pistes de rythme : les notes descendent vers la barre lumineuse"></canvas>
+      <div class="lanes" aria-label="Touches de rythme">
+        <button data-lane="0" aria-label="Piste bleue, touche A ou flèche gauche">A</button>
+        <button data-lane="1" aria-label="Piste verte, touche S ou flèche bas">S</button>
+        <button data-lane="2" aria-label="Piste ambre, touche D ou flèche haut">D</button>
+        <button data-lane="3" aria-label="Piste rouge, touche F ou flèche droite">F</button>
+      </div>
+      <div id="message" role="status" aria-live="polite">Clique sur Démarrer. Une impulsion arrive après le compte à rebours.</div>
+      <section id="result" class="result hidden" role="dialog" aria-modal="true" aria-labelledby="result-title">
+        <div>
+          <p class="eyebrow">SESSION TERMINÉE</p>
+          <h2 id="result-title">BEAU RYTHME</h2>
+          <p id="result-copy"></p>
+          <label for="pilot">Nom du pilote</label>
+          <input id="pilot" maxlength="20" value="PILOTE" autocomplete="name">
+          <button id="save" type="button">ENREGISTRER LE SCORE</button>
+          <button id="again" type="button">REJOUER</button>
+        </div>
+      </section>
+    </div>
+
+    <p class="help"><b>Bien viser :</b> frappe une fois quand une impulsion touche la ligne blanche. Une frappe très précise rapporte plus de points et fait grandir le combo. Un signal raté remet le combo à zéro. <b>Tempo souple</b> élargit la marge de 220 à 290 ms. La session compte 6 secteurs de 16 temps et dure environ 55 secondes, compte à rebours compris. Le score est gardé dans ce navigateur et peut être ajouté au Hall of Fame.</p>
+    <footer>BY MANIX · KITT FRANCO-BELGE <span>Records locaux à cet appareil</span></footer>
+  </main>
+  <script src="../highscores.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

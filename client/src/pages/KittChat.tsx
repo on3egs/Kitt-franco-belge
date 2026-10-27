@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, Bell, BellOff, CarFront, Check, CircleHelp, MessageCircle, Radio, ShieldCheck, Users, Wifi, WifiOff } from "lucide-react";
+import { ArrowRight, Bell, BellOff, CarFront, Check, CircleHelp, Download, Link2, MessageCircle, Radio, ShieldCheck, Smile, Users, Wifi, WifiOff, Zap } from "lucide-react";
 import { getApiBase } from "@/lib/tunnel";
 import "./KittChat.css";
 
@@ -7,6 +7,26 @@ type Room = { id: string; label: string; topic: string };
 type ChatLine = { id: string; name: string; text: string; timestamp: number; kind?: "system" | "message" };
 type Member = { name: string };
 type Owner = { id: string; name: string; car: string; year: string; photos: string[] };
+type SavePickerWindow = Window & {
+  showSaveFilePicker?: (options: {
+    suggestedName: string;
+    types: Array<{ description: string; accept: Record<string, string[]> }>;
+  }) => Promise<{ createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }> }>;
+};
+const KNIGHT_RIDER_EMOTES = [
+  { label: "KITT scanner", value: "🔴 [KITT]" },
+  { label: "KARR", value: "🟡 [KARR]" },
+  { label: "Michael Knight", value: "🧑 [Michael]" },
+  { label: "Devon Miles", value: "🎩 [Devon]" },
+  { label: "Bonnie Barstow", value: "🔧 [Bonnie]" },
+  { label: "RC3", value: "🧢 [RC3]" },
+  { label: "Turbo Boost", value: "🚀 [Turbo Boost]" },
+  { label: "Voicebox", value: "🎙️ [Voicebox]" },
+  { label: "FLAG", value: "🛡️ [FLAG]" },
+  { label: "Trans Am", value: "🚘 [Trans Am]" },
+  { label: "Super Pursuit", value: "⚡ [Super Pursuit]" },
+  { label: "Radio KITT", value: "📻 [Radio KITT]" },
+];
 const FALLBACK_ROOMS: Room[] = [
   { id: "general", label: "Le grand salon", topic: "Le rendez-vous de toute la communauté" },
   { id: "atelier", label: "Garage & répliques", topic: "Pontiac, restauration et KITT" },
@@ -35,12 +55,19 @@ export default function KittChat() {
   const [members, setMembers] = useState<Member[]>([]);
   const [message, setMessage] = useState("");
   const [sound, setSound] = useState(false);
+  const [emotesOpen, setEmotesOpen] = useState(false);
+  const [roomToast, setRoomToast] = useState("");
+  const [buzzActive, setBuzzActive] = useState(false);
+  const [buzzCooldown, setBuzzCooldown] = useState(0);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const socket = useRef<WebSocket | null>(null);
   const messageBox = useRef<HTMLDivElement>(null);
   const audio = useRef<AudioContext | null>(null);
   const soundEnabled = useRef(false);
+  const roomToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const buzzTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const buzzCooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMember = Boolean(sessionToken);
 
   useEffect(() => {
@@ -90,6 +117,37 @@ export default function KittChat() {
 
   useEffect(() => { soundEnabled.current = sound; }, [sound]);
 
+  function playRoomSound(kind: "message" | "join" | "buzz") {
+    if (!soundEnabled.current) return;
+    try {
+      audio.current ||= new AudioContext();
+      const context = audio.current;
+      if (context.state === "suspended") void context.resume();
+      const notes = kind === "buzz" ? [180, 120] : kind === "join" ? [660, 880] : [700];
+      const startAt = context.currentTime;
+      notes.forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        const noteStart = startAt + index * (kind === "buzz" ? 0.11 : 0.09);
+        oscillator.type = kind === "buzz" ? "square" : "sine";
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, noteStart);
+        gain.gain.exponentialRampToValueAtTime(kind === "buzz" ? 0.045 : 0.025, noteStart + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + (kind === "buzz" ? 0.075 : 0.08));
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(noteStart);
+        oscillator.stop(noteStart + (kind === "buzz" ? 0.08 : 0.09));
+      });
+    } catch { /* Les sons restent facultatifs selon le navigateur. */ }
+  }
+
+  function showRoomToast(text: string) {
+    setRoomToast(text);
+    if (roomToastTimer.current) clearTimeout(roomToastTimer.current);
+    roomToastTimer.current = setTimeout(() => setRoomToast(""), 4500);
+  }
+
   useEffect(() => {
     if (!apiBase || service !== "online") return;
     const endpoint = new URL("/api/kitt-chat/ws", apiBase);
@@ -112,21 +170,26 @@ export default function KittChat() {
         return;
       }
       if (packet.type === "presence") { setMembers(Array.isArray(packet.members) ? packet.members as Member[] : []); return; }
+      if (packet.type === "buzz") {
+        const sender = typeof packet.name === "string" ? packet.name : "Un membre";
+        if (sender !== member) {
+          setBuzzActive(true);
+          if (buzzTimer.current) clearTimeout(buzzTimer.current);
+          buzzTimer.current = setTimeout(() => setBuzzActive(false), 900);
+          showRoomToast(`${sender} vous fait signe avec un Buzz KITT !`);
+          playRoomSound("buzz");
+        }
+        return;
+      }
       if (packet.type === "message" && packet.message && typeof packet.message === "object") {
         const line = packet.message as ChatLine;
         setLines(current => [...current.slice(-98), line]);
-        if (soundEnabled.current && line.name !== member && line.kind !== "system") {
-          try {
-            audio.current ||= new AudioContext();
-            const oscillator = audio.current.createOscillator();
-            const gain = audio.current.createGain();
-            oscillator.frequency.value = 700;
-            gain.gain.value = .035;
-            oscillator.connect(gain);
-            gain.connect(audio.current.destination);
-            oscillator.start();
-            oscillator.stop(audio.current.currentTime + .06);
-          } catch { /* Notification sonore facultative */ }
+        if (line.kind === "system" && line.text.endsWith(" entre dans le salon.") && !line.text.startsWith(`${member} `)) {
+          const joinedName = line.text.slice(0, -" entre dans le salon.".length);
+          showRoomToast(`${joinedName} vient de rejoindre le salon.`);
+          playRoomSound("join");
+        } else if (line.name !== member && line.kind !== "system") {
+          playRoomSound("message");
         }
         return;
       }
@@ -159,7 +222,12 @@ export default function KittChat() {
     if (socketState === "online") socket.current?.send(JSON.stringify({ type: "switch", room: room.id }));
   }, [room.id, socketState]);
   useEffect(() => { if (messageBox.current) messageBox.current.scrollTop = messageBox.current.scrollHeight; }, [lines]);
-  useEffect(() => () => { void audio.current?.close(); }, []);
+  useEffect(() => () => {
+    if (roomToastTimer.current) clearTimeout(roomToastTimer.current);
+    if (buzzTimer.current) clearTimeout(buzzTimer.current);
+    if (buzzCooldownTimer.current) clearInterval(buzzCooldownTimer.current);
+    void audio.current?.close();
+  }, []);
 
   function disconnect() {
     socket.current?.close(1000, "Déconnexion");
@@ -206,14 +274,81 @@ export default function KittChat() {
     setMessage("");
   }
 
+  function sendBuzz() {
+    if (!isMember || socketState !== "online" || buzzCooldown > 0) return;
+    socket.current?.send(JSON.stringify({ type: "buzz" }));
+    setBuzzCooldown(20);
+    if (buzzCooldownTimer.current) clearInterval(buzzCooldownTimer.current);
+    buzzCooldownTimer.current = setInterval(() => {
+      setBuzzCooldown(remaining => {
+        if (remaining <= 1) {
+          if (buzzCooldownTimer.current) clearInterval(buzzCooldownTimer.current);
+          buzzCooldownTimer.current = null;
+          return 0;
+        }
+        return remaining - 1;
+      });
+    }, 1000);
+    showRoomToast("Buzz KITT envoyé. Le salon va vibrer !");
+  }
+
+  function addEmote(value: string) {
+    setMessage(current => `${current}${current && !current.endsWith(" ") ? " " : ""}${value} `.slice(0, 500));
+    setEmotesOpen(false);
+    document.getElementById("kc-message")?.focus();
+  }
+
+  async function createDesktopShortcut() {
+    const address = `${window.location.origin}/salon-kitt`;
+    const shortcut = new Blob([`[InternetShortcut]\r\nURL=${address}\r\n`], { type: "application/internet-shortcut" });
+    const saveWindow = window as SavePickerWindow;
+    if (saveWindow.showSaveFilePicker) {
+      try {
+        const handle = await saveWindow.showSaveFilePicker({
+          suggestedName: "Salon KITT.url",
+          types: [{ description: "Raccourci Internet Windows", accept: { "application/octet-stream": [".url"] } }],
+        });
+        const writer = await handle.createWritable();
+        await writer.write(shortcut);
+        await writer.close();
+        setNotice("Raccourci enregistré. Choisis le Bureau comme emplacement dans la fenêtre Windows.");
+        return;
+      } catch (cause) {
+        if (cause instanceof DOMException && cause.name === "AbortError") return;
+      }
+    }
+    const href = URL.createObjectURL(shortcut);
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = "Salon KITT.url";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(href), 1000);
+    setNotice("Raccourci téléchargé. Déplace Salon KITT.url sur le Bureau pour l’y retrouver.");
+  }
+
+  function toggleSound() {
+    const next = !soundEnabled.current;
+    soundEnabled.current = next;
+    setSound(next);
+    if (next) {
+      try {
+        audio.current ||= new AudioContext();
+        void audio.current.resume();
+      } catch { /* Audio indisponible dans ce navigateur. */ }
+      setNotice("Sons activés : messages, arrivées et Buzz KITT.");
+    }
+  }
+
   const headingStatus = service === "checking" ? "RECHERCHE DU RELAIS" : service === "online" ? "RELAIS PRÊT" : "SALON HORS LIGNE";
 
   return <main className="kc-page">
     <header className="kc-sitebar">
       <a href="/" className="kc-brand"><span className="kc-brand-led"/>KITT <small>FRANCO-BELGE</small></a>
       <a className="kc-world-link" href="/communaute-pontiac"><CarFront size={16}/> Globe Pontiac <ArrowRight size={14}/></a>
+      <button type="button" className="kc-shortcut" onClick={() => void createDesktopShortcut()} title="Télécharger un raccourci Windows vers le salon"><Link2 size={14}/> Bureau</button>
       <a className="kc-admin-link" href="/admin-pontiac"><ShieldCheck size={14}/> Administration</a>
     </header>
+    {roomToast && <div className="kc-room-toast" role="status" aria-live="polite"><span className="kc-toast-led"/>{roomToast}</div>}
     <section className="kc-intro">
       <div><p className="kc-eyebrow">KNIGHT RIDER COMMUNITY · EST. 1998</p><h1>Le salon <em>KITT</em></h1>
         <p>Viens découvrir l’ambiance sans compte. Pour participer, il faut être propriétaire d’une Pontiac et faire valider son profil avec une photo de la voiture sur le globe.</p>
@@ -222,7 +357,7 @@ export default function KittChat() {
         <small>{service === "online" ? "Visite libre · écriture réservée aux propriétaires validés" : "Le salon sera disponible lorsque le service sera relié."}</small>
       </div>
     </section>
-    <div className="kc-window">
+    <div className={`kc-window${buzzActive ? " kc-buzz-effect" : ""}`}>
       <div className="kc-titlebar"><span className="kc-app-icon"><MessageCircle size={15}/></span><strong>MSN CHAT · KNIGHT RIDER FRANCE</strong><div className="kc-window-buttons"><span>−</span><span>□</span><span>×</span></div></div>
       <div className="kc-toolbar"><span>Fichier</span><span>Salon</span><span>Affichage</span><span>Aide</span><span className="kc-toolbar-right">KITT Network v1.0</span></div>
       {(service === "online" || socketState === "connecting") && <div className="kc-room-tabs" role="tablist" aria-label="Salons de discussion">
@@ -239,9 +374,21 @@ export default function KittChat() {
             </article>)}
           </div>
           {isMember ? <form className="kc-compose" onSubmit={sendMessage}>
-            <label className="kc-sr-only" htmlFor="kc-message">Ton message</label>
-            <input id="kc-message" maxLength={500} value={message} onChange={event => setMessage(event.target.value)} placeholder={`Écrire dans ${room.label}…`} disabled={socketState !== "online"}/>
-            <span>{message.length}/500</span><button type="submit" disabled={!message.trim() || socketState !== "online"}>Envoyer</button>
+            <div className="kc-compose-row">
+              <label className="kc-sr-only" htmlFor="kc-message">Ton message</label>
+              <input id="kc-message" maxLength={500} value={message} onChange={event => setMessage(event.target.value)} placeholder={`Écrire dans ${room.label}…`} disabled={socketState !== "online"}/>
+              <span>{message.length}/500</span><button type="submit" disabled={!message.trim() || socketState !== "online"}>Envoyer</button>
+            </div>
+            <div className="kc-compose-tools">
+              <div className="kc-emote-wrap">
+                <button type="button" className="kc-emote-toggle" aria-expanded={emotesOpen} aria-label="Ouvrir les émoticônes Knight Rider" onClick={() => setEmotesOpen(value => !value)}><Smile size={15}/> Émoticônes KITT</button>
+                {emotesOpen && <div className="kc-emote-picker" role="group" aria-label="Émoticônes Knight Rider">
+                  {KNIGHT_RIDER_EMOTES.map(emote => <button type="button" key={emote.label} aria-label={emote.label} title={emote.label} onClick={() => addEmote(emote.value)}>{emote.value}</button>)}
+                </div>}
+              </div>
+              <button type="button" className="kc-buzz" disabled={socketState !== "online" || buzzCooldown > 0} onClick={sendBuzz}><Zap size={15}/> {buzzCooldown > 0 ? `Buzz · ${buzzCooldown}s` : "Buzz KITT"}</button>
+              <small>Les émoticônes sont dédiées à Knight Rider.</small>
+            </div>
           </form> : <div className="kc-readonly"><ShieldCheck size={17}/><span>Mode découverte : tu peux lire les salons. Pour écrire, ajoute ta Pontiac au globe et fais valider son profil avec photo.</span></div>}
         </section>
         <aside className="kc-roster">
@@ -249,7 +396,7 @@ export default function KittChat() {
           <div className="kc-roster-list">{members.length ? members.map((item,index)=><div className="kc-person" key={`${item.name}-${index}`}>
             <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span>{item.name}</span><i title="En ligne"/>
           </div>) : <small className="kc-no-members">Aucun propriétaire connecté pour l’instant.</small>}</div>
-          <button type="button" className="kc-sound" aria-pressed={sound} onClick={() => setSound(!sound)}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Désactiver les sons" : "Activer les sons"}</button>
+          <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz</small></button>
           {isMember ? <button type="button" className="kc-leave" onClick={disconnect}>Quitter le salon</button> : <form className="kc-guest-join" onSubmit={enter}>
             <div className="kc-join-heading"><span>ACCÈS PROPRIÉTAIRE</span><small>PROFIL PHOTO VALIDÉ</small></div>
             {owners.length ? <label>Ton Pontiac sur le globe

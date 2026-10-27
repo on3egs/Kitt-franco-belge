@@ -1,2 +1,80 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#06100f"><title>Neon Solitaire — By Manix</title><link rel="stylesheet" href="game.css"></head>
-<body><main class="shell"><header><a href="/jeux/" class="back">← ARCADE KITT</a><span class="brand">MANIX // SOLITAIRE</span><button id="contrast" type="button" aria-pressed="false" title="Augmente le contraste des cartes">CONTRASTE +</button><button id="new-game" type="button">NOUVELLE DONNE</button></header><section class="intro"><p class="eyebrow">PATIENCE · KLONDIKE · 1 CARTE À LA FOIS</p><h1>NEON <em>SOLITAIRE</em></h1><p>Organise les 52 cartes, révèle les colonnes et remplis les quatre familles. Interface pensée pour souris, clavier et tactile.</p></section><section class="hud"><div><small>SCORE</small><strong id="score">0</strong></div><div><small>COUPS</small><strong id="moves">0</strong></div><div><small>CHRONO</small><strong id="timer">00:00</strong></div><div><small>RECORD</small><strong id="best">0</strong></div><div><small>RETOURS</small><strong id="undo-count">0</strong></div></section><nav class="toolbar"><button id="undo" type="button">ANNULER</button><button id="hint" type="button">INDICE</button><button id="sound" type="button" aria-pressed="true">♫ SON ON</button></nav><p id="status" role="status" aria-live="polite">Sélectionne une carte face visible, puis sa destination. Un clic sur une colonne vide envoie aussi le roi sélectionné.</p><div class="playfield"><section class="top-row" aria-label="Pioche et fondations"><div id="stock" class="pile stock" tabindex="0" role="button" aria-label="Pioche"></div><div id="waste" class="pile waste" aria-label="Défausse"></div><span class="spacer"></span><div id="foundations" class="foundations"></div></section><section id="tableau" class="tableau" aria-label="Colonnes de jeu"></section></div><section id="result" class="result hidden" role="dialog" aria-modal="true"><div><p class="eyebrow">DONNE GAGNÉE</p><h2>LES QUATRE FAMILLES SONT COMPLÈTES</h2><p id="result-copy"></p><label for="pilot">Nom du pilote</label><input id="pilot" maxlength="20" value="PILOTE" autocomplete="name"><button id="save-score" type="button">ENREGISTRER LE SCORE</button><button id="play-again" type="button">REJOUER</button></div></section><p class="help"><b>Règle :</b> alterne rouge et noir en ordre décroissant dans les colonnes. Les fondations montent de l’As au Roi par famille. Pioche une carte à la fois; tu peux recycler la pioche. « Annuler » restaure le dernier coup complet.</p><footer>BY MANIX · KITT FRANCO-BELGE <span>Records locaux à cet appareil</span></footer></main><script src="../highscores.js"></script><script src="game.js"></script></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#06100f">
+  <meta name="description" content="Neon Solitaire, une patience Klondike de KITT Franco-Belge.">
+  <title>Neon Solitaire — By Manix</title>
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <a href="/jeux/" class="back">← ARCADE KITT</a>
+      <span class="brand">MANIX // SOLITAIRE</span>
+      <button id="contrast" type="button" aria-pressed="false" title="Augmente le contraste des cartes">CONTRASTE +</button>
+      <button id="new-game" type="button">NOUVELLE PARTIE</button>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">PATIENCE · KLONDIKE · PIOCHE 1 CARTE</p>
+      <h1>NEON <em>SOLITAIRE</em></h1>
+      <p>Range les 52 cartes dans les quatre familles. Clique une carte visible, puis clique sa destination. Les règles essentielles sont juste ici.</p>
+    </section>
+
+    <details class="rules" open>
+      <summary>COMMENT JOUER · 3 RÈGLES SIMPLES</summary>
+      <div class="rule-grid">
+        <article><span>01</span><div><b>Construis les colonnes</b><p>Pose une carte sur une carte de couleur opposée et de valeur immédiatement supérieure. Exemple : rouge 8 sur noir 9. Une colonne vide ne reçoit qu’un Roi.</p></div></article>
+        <article><span>02</span><div><b>Révèle les cartes</b><p>La dernière carte cachée se retourne quand tu libères sa place. Une carte visible entraîne avec elle toute la suite située dessous.</p></div></article>
+        <article><span>03</span><div><b>Complète les familles</b><p>Commence chaque fondation par un As, puis monte jusqu’au Roi avec la même famille : pique, cœur, carreau ou trèfle.</p></div></article>
+      </div>
+      <p class="rule-controls"><b>Pour jouer :</b> clique une carte, puis sa colonne ou sa fondation. Clique la pioche pour retourner une carte ; quand elle est vide, clique-la pour recycler. <kbd>Échap</kbd> désélectionne · <kbd>H</kbd> indice · <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler.</p>
+    </details>
+
+    <section class="hud" aria-label="Résultats de la partie">
+      <div><small>SCORE</small><strong id="score">0</strong></div>
+      <div><small>COUPS</small><strong id="moves">0</strong></div>
+      <div><small>CHRONO</small><strong id="timer">00:00</strong></div>
+      <div><small>RECORD</small><strong id="best">0</strong></div>
+      <div><small>RETOURS</small><strong id="undo-count">0</strong></div>
+    </section>
+
+    <nav class="toolbar" aria-label="Outils de jeu">
+      <button id="undo" type="button" disabled>ANNULER · CTRL+Z</button>
+      <button id="hint" type="button">INDICE · H</button>
+      <button id="sound" type="button" aria-pressed="true">♫ SON ON</button>
+    </nav>
+
+    <p id="status" role="status" aria-live="polite">Sélectionne une carte face visible, puis clique sa destination. Un Roi seul peut aller dans une colonne vide.</p>
+
+    <div class="playfield">
+      <section class="top-row" aria-label="Pioche, défausse et fondations">
+        <div id="stock" class="pile stock" tabindex="0" role="button" aria-label="Pioche"></div>
+        <div id="waste" class="pile waste" aria-label="Défausse"></div>
+        <span class="spacer" aria-hidden="true"></span>
+        <div id="foundations" class="foundations" aria-label="Fondations"></div>
+      </section>
+      <section id="tableau" class="tableau" aria-label="Sept colonnes de jeu"></section>
+    </div>
+
+    <section id="result" class="result hidden" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <div>
+        <p class="eyebrow">DONNE GAGNÉE</p>
+        <h2 id="result-title">LES QUATRE FAMILLES SONT COMPLÈTES</h2>
+        <p id="result-copy"></p>
+        <label for="pilot">Nom du pilote</label>
+        <input id="pilot" maxlength="20" value="PILOTE" autocomplete="name">
+        <button id="save-score" type="button">ENREGISTRER LE SCORE</button>
+        <button id="play-again" type="button">REJOUER</button>
+      </div>
+    </section>
+
+    <p class="help">Pioche une carte à la fois. <b>Annuler</b> restaure le coup précédent et <b>Indice</b> cherche un mouvement possible. Le score et le record restent enregistrés dans ce navigateur ; le score final peut aussi rejoindre le Hall of Fame.</p>
+    <footer>BY MANIX · KITT FRANCO-BELGE <span>Records conservés sur cet appareil</span></footer>
+  </main>
+  <script src="../highscores.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

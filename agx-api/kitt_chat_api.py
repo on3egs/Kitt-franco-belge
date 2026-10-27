@@ -96,6 +96,7 @@ class Client:
     room: str
     is_guest: bool = False
     sent: deque[float] = field(default_factory=deque)
+    last_buzz: float = 0.0
 
 
 def _digest(value: str) -> str:
@@ -381,6 +382,20 @@ def register_kitt_chat_routes(
                     await ws.send_json({"type": "room", "room": target, "history": history[-30:] if client.is_guest else history})
                     if not client.is_guest:
                         await _presence(target)
+                    continue
+                if data.get("type") == "buzz":
+                    if client.is_guest:
+                        await ws.send_json({"type": "error", "message": "Le Buzz KITT est réservé aux propriétaires validés."})
+                        continue
+                    now_mono = time.monotonic()
+                    if now_mono - client.last_buzz < 20:
+                        await ws.send_json({"type": "error", "message": "Laisse le Buzz KITT se calmer quelques secondes."})
+                        continue
+                    client.last_buzz = now_mono
+                    await _broadcast(client.room, {
+                        "type": "buzz", "name": client.name,
+                        "timestamp": int(time.time() * 1000),
+                    })
                     continue
                 if data.get("type") != "message":
                     continue
