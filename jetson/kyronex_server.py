@@ -6472,14 +6472,30 @@ async def handle_music_decide(request):
         return web.Response(status=400)
     entry_id = body.get("id", "")
     action   = body.get("action", "")
+    if action not in ("approve", "reject", "delete"):
+        return web.json_response({"ok": False, "error": "Action invalide"}, status=400)
     data = _load_music()
-    entry = next((m for m in data["pending"] if m["id"] == entry_id), None)
+    entry = next((m for m in data["pending"] + data["approved"] if m["id"] == entry_id), None)
     if not entry:
         return web.json_response({"ok": False, "error": "Introuvable"}, status=404)
-    data["pending"] = [m for m in data["pending"] if m["id"] != entry_id]
+    if action == "delete":
+        data["pending"] = [m for m in data["pending"] if m["id"] != entry_id]
+        data["approved"] = [m for m in data["approved"] if m["id"] != entry_id]
+        # Les fichiers gérés par l'upload portent l'UUID de l'entrée. Ne jamais
+        # suivre un chemin fourni par le navigateur ni supprimer hors du dossier média.
+        try:
+            music_id = str(_uuid_mod.UUID(entry_id))
+            media_dir = (Path(MUSIC_FILE).parent / "data" / "community_music").resolve()
+            for stored_path in media_dir.glob(f"{music_id}.*"):
+                if stored_path.resolve().parent == media_dir and stored_path.is_file():
+                    stored_path.unlink()
+        except (ValueError, OSError) as exc:
+            return web.json_response({"ok": False, "error": "Suppression du fichier impossible"}, status=500)
+    else:
+        data["pending"] = [m for m in data["pending"] if m["id"] != entry_id]
     if action == "approve":
         data["approved"].append(entry)
-    else:
+    elif action == "reject":
         data["rejected"].append(entry)
     _save_music(data)
     return web.json_response({"ok": True}, headers={"Access-Control-Allow-Origin": "*"})

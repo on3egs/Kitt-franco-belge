@@ -95,6 +95,7 @@ export default function Admin() {
   const [approvedPdfs, setApprovedPdfs] = useState<PdfEntry[]>([]);
 
   const [deciding, setDeciding] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
 
   function login(e: React.FormEvent) {
     e.preventDefault();
@@ -144,13 +145,15 @@ export default function Admin() {
   async function decide(type: "videos" | "music" | "pdfs", id: string, action: "approve" | "reject" | "delete") {
     if (!apiBase) return;
     setDeciding(id);
+    setActionError("");
     const endpoint = type === "videos" ? "videos" : type === "music" ? "music" : "pdfs";
     try {
-      await fetch(`${apiBase}/api/${endpoint}/decide`, {
+      const response = await fetch(`${apiBase}/api/${endpoint}/decide`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Admin-Token": apiToken },
         body: JSON.stringify({ id, action }),
       });
+      if (!response.ok) throw new Error(`L'action a échoué (${response.status}). Recharge la page et réessaie.`);
       if (type === "videos") {
         const entry = pendingVideos.find(v => v.id === id);
         setPendingVideos(p => p.filter(v => v.id !== id));
@@ -160,12 +163,15 @@ export default function Admin() {
         const entry = pendingMusic.find(m => m.id === id);
         setPendingMusic(p => p.filter(m => m.id !== id));
         if (action === "approve" && entry) setApprovedMusic(a => [...a, entry]);
+        if (action === "delete") setApprovedMusic(a => a.filter(m => m.id !== id));
       } else {
         const entry = pendingPdfs.find(p => p.id === id);
         setPendingPdfs(p => p.filter(x => x.id !== id));
         if (action === "approve" && entry) setApprovedPdfs(a => [...a, entry]);
       }
-    } catch {}
+    } catch (reason) {
+      setActionError(reason instanceof Error ? reason.message : "Impossible de terminer l'action. Réessaie.");
+    }
     setDeciding(null);
   }
 
@@ -231,6 +237,7 @@ export default function Admin() {
           </div>
         )}
 
+        {actionError && <p role="alert" className="mb-4" style={{ color: "#ff7777", fontFamily: "Space Mono, monospace", fontSize: "0.65rem" }}>{actionError}</p>}
         {/* Onglets */}
         <div className="flex gap-2 mb-8 flex-wrap">
           {tabs.map(t => (
@@ -337,6 +344,7 @@ export default function Admin() {
                 <div className="flex gap-3 mt-3">
                   <button onClick={() => decide("music", m.id, "approve")} disabled={deciding === m.id} style={approveBtn}>✓ APPROUVER</button>
                   <button onClick={() => decide("music", m.id, "reject")}  disabled={deciding === m.id} style={rejectBtn}>✗ REFUSER</button>
+                  <button onClick={() => { if (window.confirm("Supprimer définitivement cette musique et son fichier audio ?")) decide("music", m.id, "delete"); }} disabled={deciding === m.id} style={rejectBtn}>⌫ SUPPRIMER</button>
                 </div>
               </div>
             ))}
@@ -348,6 +356,7 @@ export default function Admin() {
                 <div style={{ fontFamily: "Orbitron, monospace", fontSize: "0.55rem", color: "#fff" }}>{m.titre}</div>
                 <div style={{ fontFamily: "Space Mono, monospace", fontSize: "0.48rem", color: "rgba(255,100,0,0.7)" }}>{m.artiste} — {m.pseudo} — {formatDate(m.ts)} {m.plays ? `— ♪ ${m.plays}` : ""}</div>
                 {m.hosted && <a href={hostedMusicUrl(m, apiBase)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", marginTop: "8px", color: "#00cc55", fontSize: "0.75rem" }}>▶ Écouter le fichier approuvé</a>}
+                <div className="mt-3"><button onClick={() => { if (window.confirm(`Supprimer définitivement « ${m.titre} » et son fichier audio ?`)) decide("music", m.id, "delete"); }} disabled={deciding === m.id} style={rejectBtn}>{deciding === m.id ? "SUPPRESSION…" : "⌫ SUPPRIMER LA MUSIQUE"}</button></div>
               </div>
             ))}
           </>
