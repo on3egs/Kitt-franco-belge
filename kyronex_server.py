@@ -6645,7 +6645,8 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
     active_file = _active_knowledge_file(session_id)
     async def _empty_rag():
         return ""
-    if _is_simple_msg(user_msg) or _is_contextual_followup(user_msg):
+    needs_retrieval = not (_is_simple_msg(user_msg) or _is_contextual_followup(user_msg))
+    if not needs_retrieval:
         rag_task = asyncio.create_task(_empty_rag())
         family_task = asyncio.create_task(_empty_rag())
         web_task = asyncio.create_task(_empty_rag())
@@ -6661,6 +6662,19 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
     resp.headers["Content-Type"] = "text/event-stream"
     resp.headers["Cache-Control"] = "no-cache"
     await resp.prepare(request)
+
+    async def emit_presence(state: str, label: str) -> None:
+        """Send factual, additive UI state over the existing chat SSE stream."""
+        try:
+            payload = {"presence": {"state": state, "label": label}}
+            await resp.write(f"data: {json.dumps(payload, ensure_ascii=False)}\n\n".encode())
+        except (ConnectionResetError, RuntimeError):
+            # The browser may have closed the stream; generation cleanup still runs.
+            pass
+
+    await emit_presence("preparing", "KITT prépare la réponse")
+    if needs_retrieval:
+        await emit_presence("searching", "KITT consulte ses ressources")
 
     # Attendre 1 seconde — si les recherches ne sont pas terminées, annoncer à voix haute
     done, pending = await asyncio.wait({rag_task, family_task, web_task}, timeout=1.0)
@@ -6740,6 +6754,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
     messages.extend(_trim_history(conversations[session_id], sys_prompt, llm_user_msg))
     messages.append({"role": "user", "content": llm_user_msg})
     mark_stage("prompt_construit")
+    await emit_presence("thinking", "KITT réfléchit avec le moteur IA")
 
     vlog(f"STREAM_LLM_START msgs={len(messages)} user={user_display}")
 
@@ -6789,6 +6804,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
 
         # Callback pour envoyer l'audio au client
         async def send_audio_callback(audio_url: str, text: str):
+            await emit_presence("audio_ready", "Voix KITT prête à être lue")
             await resp.write(f"data: {json.dumps({'audio_chunk': audio_url, 'chunk_text': text})}\n\n".encode())
 
         # Gestionnaire TTS avec PARALLELISME
@@ -6901,6 +6917,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
                                         # Ajouter au gestionnaire TTS pour traitement PARALLELE
                                         if not tts_manager_started:
                                             # Démarrer le gestionnaire TTS avec parallélisme
+                                            await emit_presence("synthesizing", "KITT prépare sa voix")
                                             await tts_manager.start_processing()
                                             tts_manager_started = True
 
@@ -6919,6 +6936,7 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
         for seg in segmenter.flush():
             if seg and any(c.isalpha() for c in seg):
                 if not tts_manager_started:
+                    await emit_presence("synthesizing", "KITT prépare sa voix")
                     await tts_manager.start_processing()
                     tts_manager_started = True
                 await tts_manager.add_segment(seg, emotion, tts_lang, karr_active)
@@ -7053,18 +7071,33 @@ async def handle_chat_stream(request: web.Request) -> web.StreamResponse:
             visual_action = _karr_visual_action(full_reply_clean, user_msg)
         if visual_action:
             done_data['action'] = visual_action
+        await emit_presence("complete", "Réponse terminée")
         await resp.write(f"data: {json.dumps(done_data)}\n\n".encode())
 
     except Exception as e:
         print(f"[LLM_STREAM] Erreur: {e}")
         vlog(f"LLM_STREAM_ERROR {e}")
-        if not full_reply:
-            full_reply = "Mes circuits ont subi une micro-interruption. Reformulez votre demande."
-            await resp.write(f"data: {json.dumps({'token': full_reply})}\n\n".encode())
+        error_code = "llm_stream_error"
+        error_message = (
+            "La liaison avec le moteur IA a été interrompue. La réponse affichée est partielle; tu peux réessayer."
+            if full_reply else
+            "Le moteur IA n’a pas répondu. Vérifie que l’AGX est en ligne, puis réessaie."
+        )
         # Toujours terminer le protocole SSE : le navigateur retire ainsi l'état
         # « réflexion » même si le moteur ou le TTS rencontre une erreur.
         try:
-            await resp.write(f"data: {json.dumps({'done': True, 'error': str(e), 'timing': {'llm_ms': round((time.time() - t0) * 1000), 'tts_ms': 0}})}\n\n".encode())
+            await emit_presence("error", "Liaison IA interrompue")
+            error_payload = {
+                "error": {"code": error_code, "message": error_message, "retryable": True}
+            }
+            await resp.write(f"data: {json.dumps(error_payload, ensure_ascii=False)}\n\n".encode())
+            done_payload = {
+                "done": True,
+                "error": True,
+                "error_code": error_code,
+                "timing": {"llm_ms": round((time.time() - t0) * 1000), "tts_ms": 0},
+            }
+            await resp.write(f"data: {json.dumps(done_payload)}\n\n".encode())
         except (ConnectionResetError, RuntimeError):
             pass
     finally:
