@@ -109,26 +109,36 @@ export default function Admin() {
   useEffect(() => {
     if (!authed) return;
     setLoading(true);
+    setOffline(false);
     getApiBase().then(async base => {
       setApiBase(base);
-      if (!base) { setOffline(true); setLoading(false); return; }
+      if (!base) { setOffline(true); return; }
 
       const headers = { "X-Admin-Token": apiToken };
-      try {
-        const [vRes, mRes, pRes] = await Promise.all([
-          fetch(`${base}/api/videos/pending`, { headers }).then(r => r.json()).catch(() => ({})),
-          fetch(`${base}/api/music/pending`,  { headers }).then(r => r.json()).catch(() => ({})),
-          fetch(`${base}/api/pdfs/pending`,   { headers }).then(r => r.json()).catch(() => ({})),
-        ]);
-        setPendingVideos(vRes.pending  || []);
-        setApprovedVideos(vRes.approved || []);
-        setPendingMusic(mRes.pending   || []);
-        setApprovedMusic(mRes.approved || []);
-        setPendingPdfs(pRes.pending    || []);
-        setApprovedPdfs(pRes.approved  || []);
-      } catch { setOffline(true); }
-      setLoading(false);
-    });
+      const responses = await Promise.all([
+        fetch(`${base}/api/videos/pending`, { headers }),
+        fetch(`${base}/api/music/pending`,  { headers }),
+        fetch(`${base}/api/pdfs/pending`,   { headers }),
+      ]);
+      if (responses.some(response => response.status === 401 || response.status === 403)) {
+        setPwdError(true);
+        setApiToken("");
+        setAuthed(false);
+        return;
+      }
+      if (responses.some(response => !response.ok)) { setOffline(true); return; }
+      const [vRes, mRes, pRes] = await Promise.all(responses.map(response => response.json()));
+      setPendingVideos(vRes.pending || []);
+      setApprovedVideos(vRes.approved || []);
+      setPendingMusic(mRes.pending || []);
+      setApprovedMusic(mRes.approved || []);
+      setPendingPdfs(pRes.pending || []);
+      setApprovedPdfs(pRes.approved || []);
+      // Ouvre directement la file qui contient une nouvelle proposition.
+      if (mRes.pending?.length) setTab("musique");
+      else if (vRes.pending?.length) setTab("videos");
+      else if (pRes.pending?.length) setTab("pdfs");
+    }).catch(() => setOffline(true)).finally(() => setLoading(false));
   }, [authed, apiToken]);
 
   async function decide(type: "videos" | "music" | "pdfs", id: string, action: "approve" | "reject" | "delete") {

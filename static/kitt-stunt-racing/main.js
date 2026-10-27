@@ -508,11 +508,11 @@ function initThreeJS() {
     camera.position.set(0, 6, -12);
 
     if (!checkWebGL()) {
-        throw new Error('WebGL non disponible dans ce navigateur.<br><br>' +
-            '<strong>Solutions :</strong><br>' +
-            '• Firefox : <code>firefox -P jetson-webgl http://localhost:8123/</code><br>' +
-            '• Chromium : <code>./chromium_jetson_launch.sh</code><br>' +
-            '(ou <code>chromium-browser --enable-unsafe-swiftshader http://localhost:8123/</code>)');
+        const windows = /Windows/i.test(navigator.userAgent);
+        const help = windows
+            ? 'Windows : Chrome/Edge > Parametres > Systeme et performances > active l’acceleration graphique, puis redemarre le navigateur.'
+            : 'Active WebGL et l’acceleration materielle dans les parametres du navigateur, puis relance-le.';
+        throw new Error('WebGL non disponible dans ce navigateur.<br><br><strong>Pour retablir le rendu 3D :</strong><br>' + help);
     }
 
     renderer = new THREE.WebGLRenderer({

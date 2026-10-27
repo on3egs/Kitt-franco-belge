@@ -5,6 +5,8 @@ import "./arcade.css";
 const GAMES = [
   { id: "stunt", name: "KITT Stunt Racing", mode: "Course · 3D", description: "Prends le volant, lance le turbo et construis tes propres circuits. Une course arcade imaginée par Manix pour KITT Franco-Belge.", src: "/kitt-stunt-racing/", controls: "Flèches ou WASD · Espace pour le turbo · Échap pour la pause", badge: "CRÉATION MANIX" },
   { id: "adventure", name: "KITT Adventure", mode: "Course · arcade", description: "Évite le trafic, ramasse les bonus et fais grimper ton score dans cette aventure inspirée des jeux rétro.", src: "/kitt-adventure/", controls: "Flèches ou WASD · Espace pour le turbo · T pour le bouclier", badge: "ÉDITION DU PROJET" },
+  { id: "maze", name: "KITT Maze Run", mode: "Labyrinthe · façon Pac-Man", description: "Parcours le labyrinthe, récupère les cellules d’énergie et échappe aux drones. Une création originale inspirée des labyrinthes arcade.", src: "/kitt-maze/", controls: "Flèches ou WASD · ZQSD · touches à l’écran sur mobile", badge: "CRÉATION ORIGINALE" },
+  { id: "blocks", name: "KITT Block Drop", mode: "Puzzle · façon Tetris", description: "Empile les blocs, complète des lignes et bats ton meilleur score dans ce puzzle original de pièces tombantes.", src: "/kitt-blocks/", controls: "← → déplacer · ↑ tourner · ↓ accélérer · Espace chute · P pause", badge: "CRÉATION ORIGINALE" },
   { id: "shadow", name: "Shadow of KARR", mode: "Action · aventure", description: "Une aventure Knight Rider déjà proposée sur le site. Ouvre-la en plein écran pour profiter du jeu.", src: "/shadow-of-karr/", controls: "Les commandes sont indiquées dans le jeu.", badge: "JEU DU SITE" },
 ];
 

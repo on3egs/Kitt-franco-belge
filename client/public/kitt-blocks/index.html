@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#08090d"><title>KITT Block Drop — Arcade KITT</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="cabinet">
+    <header><a href="/jeux/">← Arcade KITT</a><span class="brand"><i></i> KITT // BLOCK DROP</span><button id="sound" aria-label="Activer ou désactiver les effets sonores">SON : OFF</button></header>
+    <section class="intro"><span>PUZZLE DE RÉFLEXES · CRÉATION ORIGINALE</span><h1>BLOCK <b>DROP</b></h1><p>Empile les pièces, complète des lignes et garde le contrôle.</p></section>
+    <section class="game-layout" aria-label="Jeu de blocs">
+      <aside class="side"><div class="panel"><small>SCORE</small><strong id="score">0</strong></div><div class="panel"><small>RECORD LOCAL</small><strong id="best">0</strong></div><div class="panel"><small>LIGNES</small><strong id="lines">0</strong></div><div class="panel"><small>NIVEAU</small><strong id="level">1</strong></div><div class="panel next-panel"><small>PROCHAINE PIÈCE</small><canvas id="next" width="120" height="100"></canvas></div><p class="key-help">← → déplacer<br>↑ tourner · ↓ accélérer<br>Espace chute directe<br>P pause · R recommencer</p></aside>
+      <div class="board-wrap"><canvas id="board" width="300" height="600" aria-label="Plateau de jeu"></canvas><div id="overlay" class="overlay"><div><b>KITT BLOCK DROP</b><p>Prêt à empiler les pièces ?</p><button id="start">DÉMARRER</button></div></div></div>
+      <aside class="side right-side"><div class="panel"><small>OBJECTIF</small><p>Complète des lignes entières pour marquer des points et accélérer la partie.</p></div><div class="panel"><small>COMMANDES</small><p>Clavier ou boutons tactiles ci-dessous.</p></div><button id="pause" class="wide">Ⅱ PAUSE</button><button id="restart" class="wide">↻ RECOMMENCER</button></aside>
+    </section>
+    <nav class="touch" aria-label="Commandes tactiles"><button data-key="left">◀</button><button data-key="rotate">↻</button><button data-key="down">▼</button><button data-key="right">▶</button><button data-key="drop">CHUTE</button></nav>
+    <footer>BY MANIX · KITT FRANCO-BELGE · LE RECORD RESTE SUR CET APPAREIL</footer>
+  </main><script src="game.js"></script>
+</body></html>
