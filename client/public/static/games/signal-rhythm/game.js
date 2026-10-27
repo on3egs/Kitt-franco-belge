@@ -4,7 +4,7 @@
   const $=id=>document.getElementById(id),ui={sector:$('sector'),score:$('score'),combo:$('combo'),accuracy:$('accuracy'),best:$('best'),start:$('start'),pause:$('pause'),motion:$('motion'),message:$('message'),result:$('result'),title:$('result-title'),copy:$('result-copy'),pilot:$('pilot'),save:$('save'),again:$('again'),sound:$('sound')};
   const colors=['#71c9ff','#72f0be','#ffd16b','#ff6a83'],keys=['a','s','d','f'];
   const state={notes:[],started:false,paused:false,done:false,muted:false,reduced:false,wideWindow:false,sector:0,displayedSector:-1,score:0,combo:0,bestCombo:0,hits:0,misses:0,perfect:0,good:0,offset:0,pauseAt:0,last:0,raf:0};
-  const bpm=112,beat=60/bpm,travel=2.15,sectorBeats=16,totalSectors=6,totalBeats=sectorBeats*totalSectors;
+  const bpm=112,beat=60/bpm,travel=2.15,sectorBeats=16,totalSectors=10,totalBeats=sectorBeats*totalSectors;
   const bestKey='signalRhythmBest.v1';
   const bestRead=()=>{try{return Number(localStorage.getItem(bestKey))||0}catch{return 0}};
   let ac;
