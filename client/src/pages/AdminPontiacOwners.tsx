@@ -3,9 +3,12 @@ import { Check, ChevronLeft, ChevronRight, Copy, LockKeyhole, X } from "lucide-r
 import { getApiBase } from "@/lib/tunnel";
 
 type Submission = { id: string; name: string; car: string; year: string; location: string; story: string; photos: string[]; submittedAt: number; previewUrls?: string[] };
+const ADMIN_TOKEN_KEY = "kitt-pontiac-admin-token-v1";
 
 export default function AdminPontiacOwners() {
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => {
+    try { return localStorage.getItem(ADMIN_TOKEN_KEY) || ""; } catch { return ""; }
+  });
   const [items, setItems] = useState<Submission[]>([]);
   const [base, setBase] = useState("");
   const [offset, setOffset] = useState(0);
@@ -15,6 +18,7 @@ export default function AdminPontiacOwners() {
   const [issuedCode, setIssuedCode] = useState<{ name: string; code: string } | null>(null);
   const urls = useRef<string[]>([]);
   useEffect(() => () => urls.current.forEach(URL.revokeObjectURL), []);
+  useEffect(() => { if (token) void load(0); }, []);
 
   async function load(nextOffset = 0) {
     if (!token) return;
@@ -26,7 +30,14 @@ export default function AdminPontiacOwners() {
       setBase(apiBase);
       const response = await fetch(`${apiBase}/api/pontiac-owners/pending?offset=${nextOffset}`, { headers: { "X-Admin-Token": token }, cache: "no-store" });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || `Erreur ${response.status}`);
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem(ADMIN_TOKEN_KEY);
+          setToken("");
+        }
+        throw new Error(data.error || `Erreur ${response.status}`);
+      }
+      localStorage.setItem(ADMIN_TOKEN_KEY, token);
       const rows = Array.isArray(data.pending) ? data.pending as Submission[] : [];
       const prepared = await Promise.all(rows.map(async row => {
         const previewUrls: string[] = [];
@@ -45,14 +56,19 @@ export default function AdminPontiacOwners() {
     } finally { setLoading(false); }
   }
 
+  function forgetToken() {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    setToken(""); setItems([]); setTotal(0); setMessage("Jeton oublié sur cet appareil.");
+  }
+
   async function decide(id: string, action: "approve" | "reject") {
     if (!base || !token) return;
     setLoading(true); setMessage(""); setIssuedCode(null);
     try {
       const response = await fetch(`${base}/api/pontiac-owners/decide`, { method: "POST", headers: { "Content-Type": "application/json", "X-Admin-Token": token }, body: JSON.stringify({ id, action }) });
       const data = await response.json();
-      if (!response.ok || !data.ok) throw new Error(data.error || "D?cision refus?e.");
-      let resultMessage = action === "approve" ? "Profil approuv? et visible sur le globe." : "Profil refus? et photos effac?es.";
+      if (!response.ok || !data.ok) throw new Error(data.error || "Décision refusée.");
+      let resultMessage = action === "approve" ? "Profil approuvé et visible sur le globe." : "Profil refusé et photos effacées.";
       if (action === "approve") {
         const invitation = await fetch(`${base}/api/kitt-chat/invitations`, {
           method: "POST",
@@ -61,10 +77,10 @@ export default function AdminPontiacOwners() {
         });
         const inviteData = await invitation.json();
         if (!invitation.ok || !inviteData.ok || !inviteData.code) {
-          throw new Error(`Profil approuv?, mais le code salon n?a pas ?t? cr?? : ${inviteData.error || "r?essaie depuis l?administration."}`);
+          throw new Error(`Profil approuvé, mais le code du salon n’a pas été créé : ${inviteData.error || "Réessaie depuis l’administration."}`);
         }
         setIssuedCode({ name: inviteData.name, code: inviteData.code });
-        resultMessage = `Profil approuv?. Le code de ${inviteData.name} est affich? ci-dessous ; copie-le et transmets-le en priv?.`;
+        resultMessage = `Profil approuvé. Le code de ${inviteData.name} est affiché ci-dessous ; copie-le et transmets-le en privé.`;
       }
       await load(offset);
       setMessage(resultMessage);
@@ -76,8 +92,8 @@ export default function AdminPontiacOwners() {
     if (!issuedCode) return;
     try {
       await navigator.clipboard.writeText(issuedCode.code);
-      setMessage(`Code de ${issuedCode.name} copi?. Envoie-le en priv?.`);
-    } catch { setMessage("Copie automatique indisponible : s?lectionne le code affich? et copie-le manuellement."); }
+      setMessage(`Code de ${issuedCode.name} copié. Envoie-le en privé.`);
+    } catch { setMessage("Copie automatique indisponible : sélectionne le code affiché et copie-le manuellement."); }
   }
 
   return <main className="min-h-screen bg-[#09090d] px-4 py-12 text-[#f6eeee] md:px-10">
@@ -89,11 +105,13 @@ export default function AdminPontiacOwners() {
       <form className="mt-8 flex flex-col gap-3 rounded border border-rose-900/60 bg-[#100d12] p-4 sm:flex-row" onSubmit={e=>{e.preventDefault();void load(0)}}>
         <label className="flex min-w-0 flex-1 items-center gap-3 text-sm"><LockKeyhole className="shrink-0 text-amber-300" size={18}/><input type="password" autoComplete="current-password" value={token} onChange={e=>setToken(e.target.value)} placeholder="Jeton administrateur" className="min-w-0 flex-1 border border-white/10 bg-black/40 px-3 py-3 text-white outline-none focus:border-rose-400"/></label>
         <button disabled={loading || !token} className="border border-rose-500/70 bg-rose-950 px-5 py-3 font-mono text-xs tracking-wider hover:bg-rose-900 disabled:opacity-40">{loading ? "CHARGEMENT…" : "CHARGER LES DOSSIERS"}</button>
+        <button type="button" onClick={forgetToken} disabled={!token} className="border border-white/20 px-4 py-3 font-mono text-[10px] tracking-wider text-white/70 hover:border-rose-400 disabled:opacity-40">OUBLIER CE JETON</button>
       </form>
+      <p className="mt-2 text-xs text-white/45">Après connexion, le jeton reste mémorisé dans ce navigateur. Sur un appareil partagé, utilise « Oublier ce jeton » avant de partir.</p>
       <p className="mt-3 min-h-6 text-sm text-amber-200" role="status">{message}</p>
-      {issuedCode && <section className="mt-4 rounded border border-emerald-500/50 bg-emerald-950/30 p-4" aria-label="Code d?acc?s au salon KITT">
-        <p className="font-mono text-xs tracking-widest text-emerald-200">INVITATION SALON KITT ? {issuedCode.name}</p>
-        <p className="mt-1 text-xs text-white/65">Ce code est ? usage unique et expire dans sept jours. Transmets-le au propri?taire par message priv?.</p>
+      {issuedCode && <section className="mt-4 rounded border border-emerald-500/50 bg-emerald-950/30 p-4" aria-label="Code d’accès au salon KITT">
+        <p className="font-mono text-xs tracking-widest text-emerald-200">INVITATION SALON KITT · {issuedCode.name}</p>
+        <p className="mt-1 text-xs text-white/65">Ce code est à usage unique et expire dans sept jours. Transmets-le au propriétaire par message privé.</p>
         <div className="mt-3 flex flex-col gap-2 sm:flex-row"><code className="min-w-0 flex-1 break-all rounded border border-white/15 bg-black/40 px-3 py-3 font-mono text-sm text-white">{issuedCode.code}</code>
           <button type="button" onClick={()=>void copyInviteCode()} className="flex items-center justify-center gap-2 border border-emerald-400/60 bg-emerald-950 px-4 py-3 text-sm text-emerald-100 hover:bg-emerald-900"><Copy size={15}/> Copier le code</button></div>
       </section>}

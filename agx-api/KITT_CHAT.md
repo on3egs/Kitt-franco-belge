@@ -68,12 +68,17 @@ and restart `kitt-kyronex.service` after changing the server.
   server rejects their write attempts even if they bypass the page controls.
 - The guest preview is capped at 50 simultaneous visitors and 30 connection
   attempts per source address per ten minutes.
-- Members authenticate over WSS with a 30-day token stored in `sessionStorage`.
-  The **Quitter le salon** button removes it; the browser clears it when the tab
-  closes.
+- Members use the invitation code once. Their 365-day session is remembered in
+  the browser's `localStorage`; **Quitter le salon** only closes the connection.
+  **Oublier cet appareil** clears the saved session. The AGX stores only a hash
+  of each session token in a private file, so sessions survive a server restart.
+  Approval is checked whenever a member reconnects.
+- The Pontiac admin page remembers its admin token in that browser after a
+  successful login and loads the private queue automatically. **Oublier ce
+  jeton** clears it from that device.
 - The four salons have no direct messaging or location sharing. Member posts
   are limited to eight per ten seconds and 500 characters each.
-- Messages, invitations and member sessions stay in server memory. Each room
-  retains up to 100 recent lines. A KYRONEXT restart clears messages, sessions
-  and unused invitation codes; owners would need to request a fresh code.
-  No transcript is persisted.
+- Messages and unused invitation codes stay in server memory. Each room
+  retains up to 100 recent lines. A KYRONEX restart clears messages and unused
+  invitation codes, but remembered member sessions remain valid. No transcript
+  is persisted.

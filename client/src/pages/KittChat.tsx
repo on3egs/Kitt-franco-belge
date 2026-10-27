@@ -30,6 +30,7 @@ export default function KittChat() {
   const [member, setMember] = useState("");
   const [invite, setInvite] = useState("");
   const [sessionToken, setSessionToken] = useState("");
+  const [reconnectKey, setReconnectKey] = useState(0);
   const [lines, setLines] = useState<ChatLine[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [message, setMessage] = useState("");
@@ -68,16 +69,18 @@ export default function KittChat() {
         setOwnerId(approved[0]?.id || "");
         setService("online");
         try {
-          const saved = sessionStorage.getItem(SESSION_KEY);
+          const saved = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
           if (saved) {
             const parsed = JSON.parse(saved) as { token?: string; name?: string; ownerId?: string };
             if (parsed.token && parsed.name && parsed.ownerId && approved.some(owner => owner.id === parsed.ownerId)) {
+              localStorage.setItem(SESSION_KEY, saved);
+              sessionStorage.removeItem(SESSION_KEY);
               setSessionToken(parsed.token);
               setMember(parsed.name);
               setOwnerId(parsed.ownerId);
-            } else if (saved) sessionStorage.removeItem(SESSION_KEY);
+            } else if (saved) { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); }
           }
-        } catch { sessionStorage.removeItem(SESSION_KEY); }
+        } catch { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); }
       } catch {
         if (active) setService("offline");
       }
@@ -139,6 +142,7 @@ export default function KittChat() {
       if (socket.current === client) { socket.current = null; setSocketState("closed"); }
       if (event.code === 4001 && isMember) {
         setSessionToken(""); setMember("");
+        localStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem(SESSION_KEY);
         setError("La session ou le profil Pontiac n’est plus valide. Contacte Manix après l’approbation du profil.");
       } else if (event.code === 1013) setError("Le salon est momentanément complet. Réessaie dans un instant.");
@@ -149,7 +153,7 @@ export default function KittChat() {
     };
     // The room changes through a switch packet so browsing channels does not reconnect the socket.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBase, service, isMember, sessionToken, member]);
+  }, [apiBase, service, isMember, sessionToken, member, reconnectKey]);
 
   useEffect(() => {
     if (socketState === "online") socket.current?.send(JSON.stringify({ type: "switch", room: room.id }));
@@ -161,7 +165,13 @@ export default function KittChat() {
     socket.current?.close(1000, "Déconnexion");
     socket.current = null;
     setSocketState("closed"); setLines([]); setMembers([]);
-    setSessionToken(""); setMember(""); sessionStorage.removeItem(SESSION_KEY);
+  }
+
+  function forgetDevice() {
+    socket.current?.close(1000, "Oubli de cet appareil");
+    socket.current = null;
+    localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY);
+    setSessionToken(""); setMember(""); setSocketState("closed"); setLines([]); setMembers([]);
   }
 
   async function enter(event: FormEvent) {
@@ -180,8 +190,9 @@ export default function KittChat() {
       if (!response.ok || !data.token || !data.name || data.ownerId !== ownerId) {
         throw new Error(data.error || "Profil ou invitation refusé.");
       }
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ token: data.token, name: data.name, ownerId: data.ownerId }));
-      setMember(data.name); setSessionToken(data.token); setNotice("Profil Pontiac vérifié. Bienvenue dans le salon !"); setInvite("");
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ token: data.token, name: data.name, ownerId: data.ownerId }));
+      sessionStorage.removeItem(SESSION_KEY);
+      setMember(data.name); setSessionToken(data.token); setNotice("Profil Pontiac vérifié. Bienvenue ! Cet appareil mémorisera ta session : tu n’auras pas à ressaisir ton code."); setInvite("");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Impossible de rejoindre le salon.");
     }
@@ -251,7 +262,7 @@ export default function KittChat() {
             <p>Ton profil est déjà approuvé ? Demande ton code à Manix via le groupe <a href="https://www.facebook.com/groups/kittfrancobelge" target="_blank" rel="noopener noreferrer">KITT Franco-Belge</a>.</p>
           </form>}
         </aside>
-      </div> : <section className="kc-offline"><Radio size={24}/><div><strong>{service === "checking" ? "Recherche du salon…" : "Le salon est momentanément hors ligne."}</strong><p>Tu peux déjà préparer ton inscription au globe Pontiac.</p></div><a href="/communaute-pontiac#inscription">Voir l’inscription <ArrowRight size={15}/></a></section>}
+      </div> : isMember ? <section className="kc-offline"><Radio size={24}/><div><strong>{service === "online" ? `Session mémorisée pour ${member}` : "Le salon est momentanément hors ligne."}</strong><p>{service === "online" ? "Ton code a déjà été utilisé. Cet appareil se souviendra de toi." : "Ta session est conservée. Réessaie quand le relais sera disponible."}</p></div>{service === "online" ? <button type="button" onClick={() => setReconnectKey(value => value + 1)}>Revenir au salon <ArrowRight size={15}/></button> : <button type="button" onClick={() => window.location.reload()}>Réessayer <ArrowRight size={15}/></button>}<button type="button" onClick={forgetDevice}>Oublier cet appareil</button></section> : <section className="kc-offline"><Radio size={24}/><div><strong>{service === "checking" ? "Recherche du salon…" : "Le salon est momentanément hors ligne."}</strong><p>Tu peux déjà préparer ton inscription au globe Pontiac.</p></div><a href="/communaute-pontiac#inscription">Voir l’inscription <ArrowRight size={15}/></a></section>}
       {(error || notice) && <p className={error ? "kc-feedback error" : "kc-feedback"} role={error ? "alert" : "status"}>{error || notice}</p>}
       <footer className="kc-footer"><span><Wifi size={14}/> {socketState === "online" ? (isMember ? "PROPRIÉTAIRE VALIDÉ" : "VISITEUR · LECTURE SEULE") : socketState === "connecting" ? "CONNEXION…" : <><WifiOff size={14}/> DÉCONNECTÉ</>}</span><span>BY MANIX · KITT FRANCO-BELGE</span><a href="/mentions-legales"><CircleHelp size={14}/> Règles du salon</a></footer>
     </div>

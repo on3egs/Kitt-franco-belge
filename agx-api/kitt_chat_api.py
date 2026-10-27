@@ -6,6 +6,7 @@ import hashlib
 import hmac
 import ipaddress
 import json
+import os
 import re
 import secrets
 import time
@@ -13,6 +14,7 @@ import unicodedata
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from collections.abc import Awaitable, Callable
+from pathlib import Path
 from typing import Any
 
 from aiohttp import WSMsgType, web
@@ -25,12 +27,35 @@ ROOMS = [
 ]
 _ROOM_IDS = {room["id"] for room in ROOMS}
 _INVITES: dict[str, dict[str, Any]] = {}  # SHA-256 -> assigned member + expiry; single-use and memory-only.
-_SESSIONS: dict[str, dict[str, Any]] = {}  # SHA-256 -> member name and expiry.
+_SESSION_FILE = Path(os.environ.get("KITT_CHAT_SESSION_FILE", "/home/kitt/kitt-ai/data/kitt_chat/sessions.json"))
+
+
+def _load_sessions() -> dict[str, dict[str, Any]]:
+    try:
+        os.chmod(_SESSION_FILE, 0o600)
+        stored = json.loads(_SESSION_FILE.read_text(encoding="utf-8"))
+        if not isinstance(stored, dict):
+            return {}
+        now = time.time()
+        return {
+            token_hash: session for token_hash, session in stored.items()
+            if re.fullmatch(r"[0-9a-f]{64}", token_hash)
+            and isinstance(session, dict)
+            and isinstance(session.get("ownerId"), str)
+            and isinstance(session.get("name"), str)
+            and isinstance(session.get("expires"), (int, float))
+            and session["expires"] > now
+        }
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+_SESSIONS: dict[str, dict[str, Any]] = _load_sessions()  # Token hashes only; survives an AGX restart.
 _CLIENTS: dict[int, "Client"] = {}
 _HISTORY: dict[str, deque[dict[str, Any]]] = defaultdict(lambda: deque(maxlen=100))
 _JOIN_ATTEMPTS: dict[str, list[float]] = {}
 _LOCK = asyncio.Lock()
-_TOKEN_TTL = 30 * 24 * 3600
+_TOKEN_TTL = 365 * 24 * 3600
 _INVITE_TTL = 7 * 24 * 3600
 _JOIN_RATE_WINDOW = 3600
 _JOIN_RATE_MAX = 10
@@ -41,6 +66,26 @@ _NAME_MAX = 48
 _TEXT_MAX = 500
 _TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
 _GUEST_ATTEMPTS: dict[str, list[float]] = {}
+
+
+def _save_sessions() -> None:
+    _SESSION_FILE.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    os.chmod(_SESSION_FILE.parent, 0o700)
+    temporary = _SESSION_FILE.with_suffix(".json.tmp")
+    descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump(_SESSIONS, handle, ensure_ascii=False, separators=(",", ":"))
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, _SESSION_FILE)
+        os.chmod(_SESSION_FILE, 0o600)
+    except Exception:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        temporary.unlink(missing_ok=True)
+        raise
 
 
 @dataclass
@@ -216,9 +261,15 @@ def register_kitt_chat_routes(
             if len(_SESSIONS) >= 500:
                 return _cors(web.json_response({"ok": False, "error": "Capacite de membres atteinte."}, status=503))
             token = secrets.token_urlsafe(32)
-            _SESSIONS[_digest(token)] = {
+            token_hash = _digest(token)
+            _SESSIONS[token_hash] = {
                 "ownerId": owner_id, "name": name, "expires": time.time() + _TOKEN_TTL,
             }
+            try:
+                _save_sessions()
+            except OSError:
+                _SESSIONS.pop(token_hash, None)
+                return _cors(web.json_response({"ok": False, "error": "Impossible de mémoriser cette session sur le serveur. Réessaie dans un instant."}, status=503))
             _INVITES.pop(invite_hash, None)
         return _cors(web.json_response({
             "ok": True, "token": token, "ownerId": owner_id, "name": name,
@@ -257,12 +308,20 @@ def register_kitt_chat_routes(
             token_hash = _digest(raw_token)
             session = _SESSIONS.get(token_hash)
             if not session or session["expires"] < time.time():
-                _SESSIONS.pop(token_hash, None)
+                if _SESSIONS.pop(token_hash, None) is not None:
+                    try:
+                        _save_sessions()
+                    except OSError:
+                        pass
                 await ws.close(code=4001, message=b"Session expired")
                 return ws
             owner = await owner_lookup(session.get("ownerId", ""))
             if not owner or owner.get("name", "").casefold() != session["name"].casefold():
                 _SESSIONS.pop(token_hash, None)
+                try:
+                    _save_sessions()
+                except OSError:
+                    pass
                 await ws.close(code=4001, message=b"Owner profile is no longer approved")
                 return ws
             name = session["name"]
