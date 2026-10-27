@@ -49,9 +49,9 @@ browser.
 
 - The chat is restricted to administrator-issued, one-use invitations. The
   invite route requires `KYRONEXT_ADMIN_TOKEN`; it is never sent to the page.
-- Members authenticate over the encrypted WebSocket with a short-lived session
-  token. The page keeps it in `sessionStorage`, which is cleared when the user
-  leaves the room.
+- Members authenticate over the encrypted WebSocket with a 30-day session
+  token. The page keeps it in `sessionStorage`; the **Quitter le salon** button
+  removes it, and the browser clears it when the tab closes.
 - Presence is pseudonym-only. The chat does not request or reveal a member's
   location, and direct messages are not implemented.
 - Messages and sessions stay in server memory: up to 100 recent messages per
