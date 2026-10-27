@@ -4,6 +4,10 @@ import LangSelector from "./LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const SITE_LINKS = [
+  { href: "/outils#outils-quotidiens", label: "Outils du quotidien", detail: "Tableur CSV, renommage de fichiers et mots de passe · By Manix" },
+  { href: "/studio-pdf", label: "Studio PDF", detail: "Organiser, tourner, retirer et fusionner les pages avec aperçu" },
+  { href: "/studio-voix", label: "Manix Voice Studio", detail: "Enregistrer sa voix, créer une lecture ou transformer une source audio" },
+  { href: "/studio-image", label: "Studio Image", detail: "Retouche photo, avant/après, détourage et montage" },
   { href: "/outils", label: "Laboratoire d’outils", detail: "Outils locaux gratuits pour vidéo, audio, PDF et fichiers" },
   { href: "/nouveautes/", label: "Le nouveau cockpit", detail: "Découvrir les outils, les animations et les réglages sonores" },
   { href: "/netshield/", label: "Manix NetShield", detail: "Filtrage DNS, installation Windows et guide AGX" },

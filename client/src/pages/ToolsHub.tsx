@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownToLine,
+  ArrowUp,
+  ArrowDown,
   ArrowRight,
   AudioLines,
   BadgeCheck,
   ChevronDown,
   Code2,
+  Copy,
   FileArchive,
   FileAudio2,
   FileImage,
@@ -22,10 +25,13 @@ import {
   MonitorPlay,
   Music2,
   Search,
+  RotateCcw,
   ShieldCheck,
   Sparkles,
   Star,
   History,
+  LayoutGrid,
+  List,
   Subtitles,
   Wrench,
   X,
@@ -34,6 +40,7 @@ import "./ToolsHub.css";
 import "./StudioPromo.css";
 import "./ToolsProducts.css";
 import { speakSiteAnnouncement } from "../utils/siteSpeech";
+import EverydayTools from "../components/EverydayTools";
 
 type Group =
   | "Vidéo"
@@ -162,7 +169,7 @@ const TOOLS: FileTool[] = [
     id: "audio-normalize",
     group: "Audio",
     title: "Normaliser le volume",
-    description: "Ajuste le pic à −0,45 dBFS et crée une copie WAV PCM.",
+    description: "Ajuste les crêtes au niveau choisi et crée une copie WAV PCM.",
     icon: AudioLines,
     accept: "audio/*",
     hint: "Cette normalisation de crête n’égalise pas la perception sonore entre les morceaux.",
@@ -488,6 +495,31 @@ const TEXT_INPUT_IDS = new Set([
   "pdf-watermark",
 ]);
 type Output = { name: string; blob: Blob; note?: string };
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} o`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} Ko`;
+  return `${(bytes / 1048576).toFixed(2)} Mo`;
+}
+function ResultText({ result }: { result: Output }) {
+  const [value, setValue] = useState("");
+  const [copied, setCopied] = useState(false);
+  const isText = /^(text\/|application\/json)/.test(result.blob.type);
+  useEffect(() => {
+    let mounted = true;
+    setCopied(false);
+    if (isText) void result.blob.text().then(text => { if (mounted) setValue(text.replace(/^\uFEFF/, "")); });
+    return () => { mounted = false; };
+  }, [result, isText]);
+  if (!isText) return null;
+  return (
+    <div className="result-text-block">
+      <div><span>Aperçu du contenu{value.length > 6000 ? " · 6 000 premiers caractères" : ""}</span><button type="button" onClick={() => {
+        void navigator.clipboard.writeText(value).then(() => setCopied(true)).catch(() => setCopied(false));
+      }} disabled={!value || !navigator.clipboard} title="Copier le contenu complet"><Copy size={13} /> {copied ? "Copié" : "Copier"}</button></div>
+      <pre tabIndex={0}>{value.slice(0, 6000)}</pre>
+    </div>
+  );
+}
 const MAX_FILE = 512 * 1024 * 1024;
 const MAX_AUDIO_FILE = 100 * 1024 * 1024;
 const MAX_PDF_FILE = 150 * 1024 * 1024;
@@ -1015,12 +1047,17 @@ export default function ToolsHub() {
     [recording, setRecording] = useState(false),
     [playbackRate, setPlaybackRate] = useState(1),
     [mediaMeta, setMediaMeta] = useState(""),
-    [dragging, setDragging] = useState(false);
+    [dragging, setDragging] = useState(false),
+    [catalogLimit, setCatalogLimit] = useState(12),
+    [catalogLayout, setCatalogLayout] = useState<"cards" | "list">("cards");
   const input = useRef<HTMLInputElement>(null),
     recorder = useRef<MediaRecorder | null>(null),
     chunks = useRef<BlobPart[]>([]),
     stream = useRef<MediaStream | null>(null),
-    video = useRef<HTMLVideoElement>(null);
+    video = useRef<HTMLVideoElement>(null),
+    workbench = useRef<HTMLElement>(null),
+    job = useRef<AbortController | null>(null);
+  const locked = busy || recording;
   const available = useMemo(
     () =>
       TOOLS.filter(
@@ -1031,7 +1068,7 @@ export default function ToolsHub() {
             normalizeSearch(
               `${t.title} ${t.description} ${t.group} ${t.id}`
             ).includes(normalizeSearch(search.trim())))
-      ),
+      ).sort((left, right) => toolView === "recent" ? recentIds.indexOf(left.id) - recentIds.indexOf(right.id) : 0),
     [category, search, toolView, favoriteIds, recentIds]
   );
   const preview = useMemo(
@@ -1050,11 +1087,13 @@ export default function ToolsHub() {
   );
   useEffect(
     () => () => {
+      job.current?.abort();
       stream.current?.getTracks().forEach(t => t.stop());
       recorder.current?.state !== "inactive" && recorder.current?.stop();
     },
     []
   );
+  useEffect(() => setCatalogLimit(12), [category, search, toolView]);
   function openTool(tool: FileTool) {
     setSelected(tool);
     setFiles([]);
@@ -1082,22 +1121,22 @@ export default function ToolsHub() {
     setStatus("");
     setDragging(false);
     setMediaMeta("");
+    setPlaybackRate(1);
   }
   function selectFiles(incoming: FileList | File[]) {
-    if (!selected) return;
+    if (!selected || locked) return;
     const list = Array.from(incoming);
     const rejected = list.filter(
       file => !acceptsFile(file, selected.accept || "")
     );
     if (rejected.length) {
-      setFiles([]);
-      setOutputs([]);
       setStatus(
         `Format non accepté : ${rejected.map(file => file.name).join(", ")}. Formats admis : ${selected.accept || "tous"}.`
       );
       return;
     }
-    const chosen = selected.multiple ? list : list.slice(0, 1);
+    const combined = selected.multiple ? [...files, ...list] : list.slice(0, 1);
+    const chosen = combined.filter((file, index) => combined.findIndex(other => other.name === file.name && other.size === file.size && other.lastModified === file.lastModified) === index);
     setFiles(chosen);
     setOutputs([]);
     setStatus(
@@ -1106,6 +1145,14 @@ export default function ToolsHub() {
         : ""
     );
     setMediaMeta("");
+  }
+  function moveFile(index: number, direction: -1 | 1) {
+    if (locked) return;
+    const next = [...files];
+    [next[index], next[index + direction]] = [next[index + direction], next[index]];
+    setFiles(next);
+    setOutputs([]);
+    setStatus("Ordre mis à jour. L’export suivra cette liste de haut en bas.");
   }
   function download(blob: Blob, name: string) {
     const url = URL.createObjectURL(blob),
@@ -1145,9 +1192,15 @@ export default function ToolsHub() {
     [downloads]
   );
   async function processTool() {
-    if (!selected) return;
+    if (!selected || locked) return;
+    const controller = new AbortController();
+    job.current = controller;
+    const checkpoint = async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      if (controller.signal.aborted) throw new DOMException("Traitement annulé.", "AbortError");
+    };
     setBusy(true);
-    setStatus("");
+    setStatus("Préparation de vos fichiers sur cet appareil…");
     setOutputs([]);
     try {
       if (selected.id === "audio-record") {
@@ -1188,7 +1241,7 @@ export default function ToolsHub() {
               })
               .join("\n");
           created = [{ name: "texte-nettoye.txt", blob: textBlob(clean) }];
-          setText(clean);
+
           break;
         }
         case "compare-text": {
@@ -1205,7 +1258,7 @@ export default function ToolsHub() {
               "LIGNES UNIQUEMENT DANS LE SECOND TEXTE",
               ...right,
             ].join("\n");
-          setText(report);
+
           created = [
             {
               name: "comparaison.txt",
@@ -1243,7 +1296,7 @@ export default function ToolsHub() {
           const value = await extractDocx(
             new Uint8Array(await file!.arrayBuffer())
           );
-          setText(value);
+
           created = [
             { name: stem(file!.name) + ".txt", blob: textBlob(value) },
           ];
@@ -1290,7 +1343,7 @@ export default function ToolsHub() {
               note: `Séparateur détecté : ${delimiter === "\t" ? "tabulation" : delimiter}`,
             },
           ];
-          setText(result);
+
           break;
         }
         case "json-csv": {
@@ -1322,7 +1375,7 @@ export default function ToolsHub() {
               blob: textBlob(result, "text/csv;charset=utf-8"),
             },
           ];
-          setText(result);
+
           break;
         }
         case "srt": {
@@ -1337,7 +1390,7 @@ export default function ToolsHub() {
             )
             .join("\n\n");
           created = [{ name: "sous-titres.srt", blob: textBlob(result) }];
-          setText(result);
+
           break;
         }
         case "srt-vtt": {
@@ -1352,7 +1405,7 @@ export default function ToolsHub() {
               note: `Format ${direction.toUpperCase()} · horodatages classiques`,
             },
           ];
-          setText(result);
+
           break;
         }
         case "text-stats": {
@@ -1363,7 +1416,7 @@ export default function ToolsHub() {
             compact = source.replace(/\s/g, "").length,
             reading = Math.max(1, Math.ceil(words / 200)),
             value = `MOTS : ${words.toLocaleString("fr-FR")}\nCARACTÈRES (espaces compris) : ${characters.toLocaleString("fr-FR")}\nCARACTÈRES (sans espaces) : ${compact.toLocaleString("fr-FR")}\nLIGNES : ${lines.toLocaleString("fr-FR")}\nLECTURE ESTIMÉE : environ ${reading} min (200 mots/min)`;
-          setText(value);
+
           created = [{ name: "statistiques-texte.txt", blob: textBlob(value) }];
           break;
         }
@@ -1373,6 +1426,8 @@ export default function ToolsHub() {
           const { PDFDocument } = await import("pdf-lib");
           const target = await PDFDocument.create();
           for (const pdf of files) {
+            await checkpoint();
+            setStatus(`Fusion du PDF ${files.indexOf(pdf) + 1} sur ${files.length}…`);
             const source = await PDFDocument.load(await pdf.arrayBuffer());
             const pages = await target.copyPages(
               source,
@@ -1437,6 +1492,8 @@ export default function ToolsHub() {
           if (source.getPageCount() > 100)
             throw new Error("Limite de 100 pages pour cette opération.");
           for (let i = 0; i < source.getPageCount(); i++) {
+            await checkpoint();
+            setStatus(`Extraction de la page ${i + 1} sur ${source.getPageCount()}…`);
             const part = await PDFDocument.create();
             (await part.copyPages(source, [i])).forEach(p => part.addPage(p));
             zipItems[`page-${String(i + 1).padStart(3, "0")}.pdf`] =
@@ -1572,6 +1629,8 @@ export default function ToolsHub() {
           }).promise;
           const pages: string[] = [];
           for (let i = 1; i <= doc.numPages; i++) {
+            await checkpoint();
+            setStatus(`Lecture de la page ${i} sur ${doc.numPages}…`);
             const page = await doc.getPage(i),
               content = await page.getTextContent();
             pages.push(
@@ -1582,7 +1641,7 @@ export default function ToolsHub() {
             );
           }
           const value = pages.join("\n\n");
-          setText(value);
+
           created = [
             { name: stem(file!.name) + ".txt", blob: textBlob(value) },
           ];
@@ -1594,6 +1653,8 @@ export default function ToolsHub() {
           const { PDFDocument } = await import("pdf-lib");
           const pdf = await PDFDocument.create();
           for (const img of files) {
+            await checkpoint();
+            setStatus(`Ajout de l’image ${files.indexOf(img) + 1} sur ${files.length}…`);
             const bytes = await img.arrayBuffer(),
               image =
                 img.type === "image/png"
@@ -1646,6 +1707,8 @@ export default function ToolsHub() {
               ? Math.max(64, Math.min(6000, Number(option) || 1600))
               : 6000;
           for (const img of files) {
+            await checkpoint();
+            setStatus(`Conversion de l’image ${files.indexOf(img) + 1} sur ${files.length}…`);
             const bitmap = await createImageBitmap(img),
               scale = Math.min(1, max / bitmap.width, max / bitmap.height),
               canvas = document.createElement("canvas");
@@ -1701,6 +1764,7 @@ export default function ToolsHub() {
           const items: Record<string, Uint8Array> = {};
           let total = 0;
           for (const f of files) {
+            await checkpoint();
             if (f.size > MAX_FILE)
               throw new Error(
                 "Fichier trop volumineux (limite 512 Mo par élément)."
@@ -1767,7 +1831,7 @@ export default function ToolsHub() {
             const result = new TextDecoder("utf-8", { fatal: true }).decode(
               bytes
             );
-            setText(result);
+
             created = [{ name: "texte-decode.txt", blob: textBlob(result) }];
           } else {
             const bytes = new TextEncoder().encode(src);
@@ -1777,7 +1841,7 @@ export default function ToolsHub() {
                 ...Array.from(bytes.subarray(i, i + 0x8000))
               );
             const result = btoa(binary);
-            setText(result);
+
             created = [{ name: "texte-base64.txt", blob: textBlob(result) }];
           }
           break;
@@ -1785,7 +1849,7 @@ export default function ToolsHub() {
         case "audio-info": {
           const buffer = await decodeAudio(file!),
             value = `FICHIER : ${file!.name}\nDURÉE : ${buffer.duration.toFixed(2)} s (${formatTime(buffer.duration)})\nFRÉQUENCE : ${buffer.sampleRate.toLocaleString("fr-FR")} Hz\nCANAUX : ${buffer.numberOfChannels}\nTYPE DÉCLARÉ : ${file!.type || "non fourni"}\nTAILLE : ${(file!.size / 1048576).toFixed(2)} Mo`;
-          setText(value);
+
           created = [
             {
               name: stem(file!.name) + "-fiche.txt",
@@ -1908,7 +1972,7 @@ export default function ToolsHub() {
             throw new Error("Chargez une vidéo et attendez l’aperçu.");
           if (selected.id === "video-info") {
             const value = `Fichier : ${file!.name}\nDurée : ${formatTime(v.duration)} (${v.duration.toFixed(2)} s)\nDimensions : ${v.videoWidth} × ${v.videoHeight}\nType : ${file!.type || "non fourni"}\nTaille : ${(file!.size / 1048576).toFixed(2)} Mo`;
-            setText(value);
+
             created = [{ name: "fiche-video.txt", blob: textBlob(value) }];
             setMediaMeta(value);
           } else {
@@ -1936,6 +2000,8 @@ export default function ToolsHub() {
                 shots.push(t);
             const items: Record<string, Uint8Array> = {};
             for (let i = 0; i < shots.length; i++) {
+              await checkpoint();
+              setStatus(`Capture ${i + 1} sur ${shots.length}…`);
               await seekVideo(v, shots[i]);
               ctx.drawImage(v, 0, 0);
               const blob = await new Promise<Blob>(r =>
@@ -2004,6 +2070,8 @@ export default function ToolsHub() {
           ctx.font = "700 18px Consolas, monospace";
           ctx.fillText("KITT // PLANCHE DE SCÈNES", outer, outer + 20);
           for (let index = 0; index < times.length; index++) {
+            await checkpoint();
+            setStatus(`Composition de la scène ${index + 1} sur ${times.length}…`);
             await seekVideo(v, times[index]);
             const x = outer + (index % columns) * (cellWidth + gap),
               y = outer + 36 + Math.floor(index / columns) * (cellHeight + gap),
@@ -2039,14 +2107,16 @@ export default function ToolsHub() {
         }
         case "video-trim":
         case "video-audio": {
-          created = [await recordVideo(file!, selected.id, option, setStatus)];
+          created = [await recordVideo(file!, selected.id, option, setStatus, controller.signal)];
           break;
         }
         default:
           throw new Error("Cet outil sera bientôt disponible.");
       }
+      await checkpoint();
       const outputDate = new Date().toISOString().slice(0, 10);
-      const outputBase = file ? stem(file.name) : "";
+      const outputBase = files.length === 1 && file ? stem(file.name) : "";
+      const usedNames = new Set<string>();
       const formatted = created.map(result => {
         const extension = result.name.match(/\.[^.]+$/)?.[0] || "";
         const fallback = stem(result.name);
@@ -2054,7 +2124,11 @@ export default function ToolsHub() {
           .replaceAll("{nom}", outputBase || fallback)
           .replaceAll("{outil}", selected.id)
           .replaceAll("{date}", outputDate);
-        return { ...result, name: `${safeName(base)}${extension}` };
+        const cleanBase = safeName(base);
+        let name = `${cleanBase}${extension}`, suffix = 2;
+        while (usedNames.has(name.toLowerCase())) name = `${cleanBase}-${suffix++}${extension}`;
+        usedNames.add(name.toLowerCase());
+        return { ...result, name };
       });
       setOutputs(formatted);
       setStatus(
@@ -2064,12 +2138,13 @@ export default function ToolsHub() {
       );
     } catch (error) {
       setStatus(
-        error instanceof Error
+        controller.signal.aborted ? "Traitement annulé. Vous pouvez modifier les fichiers et recommencer." : error instanceof Error
           ? error.message
           : "Impossible de traiter ce fichier."
       );
     } finally {
       setBusy(false);
+      if (job.current === controller) job.current = null;
     }
   }
   async function startRecording() {
@@ -2121,8 +2196,16 @@ export default function ToolsHub() {
         `Enregistrement terminé · ${(blob.size / 1024).toFixed(0)} Ko.`
       );
     };
+    recorder.current.onerror = () => {
+      stream.current?.getTracks().forEach(track => track.stop());
+      stream.current = null;
+      setRecording(false);
+      setBusy(false);
+      setStatus("Le navigateur a interrompu l’enregistrement. Vérifiez le microphone et recommencez.");
+    };
     recorder.current.start();
     setRecording(true);
+    setBusy(false);
     setStatus(
       "Micro actif. Cliquez sur Arrêter pour terminer l’enregistrement."
     );
@@ -2131,7 +2214,8 @@ export default function ToolsHub() {
     file: File,
     mode: "video-trim" | "video-audio",
     range: string,
-    setInfo: (value: string) => void
+    setInfo: (value: string) => void,
+    signal: AbortSignal
   ): Promise<Output> {
     if (typeof MediaRecorder === "undefined")
       throw new Error("L’enregistrement de flux n’est pas pris en charge.");
@@ -2140,8 +2224,11 @@ export default function ToolsHub() {
     v.src = source;
     v.preload = "auto";
     v.playsInline = true;
+    let captureStream: MediaStream | null = null;
+    let activeRecorder: MediaRecorder | null = null;
     try {
       await once(v, "loadedmetadata");
+      if (signal.aborted) throw new DOMException("Annulé", "AbortError");
       let start = 0,
         end = v.duration;
       if (mode === "video-trim") [start, end] = parseSeconds(range, v.duration);
@@ -2160,6 +2247,7 @@ export default function ToolsHub() {
         mode === "video-audio" ? capture.getAudioTracks() : capture.getTracks();
       if (!tracks.length) throw new Error("Aucune piste audio détectée.");
       const streamOut = new MediaStream(tracks);
+      captureStream = streamOut;
       const mime = mediaRecorderType(
         mode === "video-audio"
           ? ["audio/webm;codecs=opus", "audio/webm"]
@@ -2171,6 +2259,7 @@ export default function ToolsHub() {
           videoBitsPerSecond: 2_000_000,
         }),
         parts: BlobPart[] = [];
+      activeRecorder = rec;
       const completed = new Promise<Blob>((resolve, reject) => {
         rec.ondataavailable = e => {
           if (e.data.size) parts.push(e.data);
@@ -2180,11 +2269,17 @@ export default function ToolsHub() {
         rec.onstop = () =>
           resolve(new Blob(parts, { type: mime.split(";")[0] }));
       });
+      void completed.catch(() => { /* Le chemin principal restitue l’erreur lors de l’attente. */ });
       rec.start(250);
       await v.play();
-      setInfo("Capture en cours dans le navigateur…");
+      setInfo(`Capture en cours · ${formatTime(end - start)} à enregistrer en temps réel. Vous pouvez annuler.`);
       const timeout = Math.min(120_000, (end - start) * 1000);
-      await new Promise(r => setTimeout(r, timeout));
+      await new Promise<void>((resolve, reject) => {
+        const aborted = () => { clearTimeout(timer); reject(new DOMException("Annulé", "AbortError")); };
+        const timer = setTimeout(() => { signal.removeEventListener("abort", aborted); resolve(); }, timeout);
+        if (signal.aborted) aborted();
+        else signal.addEventListener("abort", aborted, { once: true });
+      });
       if (rec.state !== "inactive") rec.stop();
       v.pause();
       const blob = await completed;
@@ -2196,6 +2291,8 @@ export default function ToolsHub() {
         note: `${formatTime(end - start)} · export WebM natif navigateur`,
       };
     } finally {
+      if (activeRecorder?.state === "recording") activeRecorder.stop();
+      captureStream?.getTracks().forEach(track => track.stop());
       v.pause();
       v.removeAttribute("src");
       v.load();
@@ -2209,17 +2306,23 @@ export default function ToolsHub() {
     }
     setBusy(true);
     void startRecording().catch(e => {
+      stream.current?.getTracks().forEach(track => track.stop());
+      stream.current = null;
       setBusy(false);
       setStatus(e instanceof Error ? e.message : String(e));
     });
   }
   function choose(tool: FileTool) {
+    if (locked) return;
     const nextRecent = [tool.id, ...recentIds.filter(id => id !== tool.id)].slice(0, 8);
     setRecentIds(nextRecent);
     try { localStorage.setItem("kitt-tool-recent-v1", JSON.stringify(nextRecent)); } catch { /* historique facultatif */ }
     speakSiteAnnouncement(`${tool.title}. Outil sélectionné. ${tool.description}`, { replacePending: true, rate: 0.86, pitch: 0.84 });
     openTool(tool);
-    setTimeout(() => input.current?.focus(), 0);
+    setTimeout(() => {
+      workbench.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+      document.getElementById("workbench-title")?.focus({ preventScroll: true });
+    }, 30);
   }
   function toggleFavorite(tool: FileTool) {
     const next = favoriteIds.includes(tool.id) ? favoriteIds.filter(id => id !== tool.id) : [tool.id, ...favoriteIds];
@@ -2260,6 +2363,11 @@ export default function ToolsHub() {
               Licences affichées
             </span>
           </div>
+          <div className="tools-hero-actions">
+            <a className="tools-primary-link" href="#catalogue-outils"><Wrench size={17} /> Trouver mon outil <ArrowRight size={16} /></a>
+            <a href="#outils-quotidiens">Outils du quotidien <ArrowDown size={15} /></a>
+          </div>
+          <p className="tools-hero-signature">CONÇU PAR MANIX <span>POUR KITT FRANCO-BELGE</span></p>
         </div>
         <div className="tools-hero-visual" aria-hidden="true">
           <div className="tools-orbit tools-orbit-a" />
@@ -2274,11 +2382,12 @@ export default function ToolsHub() {
       <div className="tools-privacy">
         <Info size={18} />
         <p>
-          <strong>Confidentialité :</strong> le traitement s’effectue dans
-          l’onglet de votre navigateur. Les outils n’envoient pas les fichiers
-          aux serveurs KITT. Le navigateur peut toutefois conserver son
-          historique de navigation. Vérifiez que vous avez les droits
-          nécessaires pour traiter et partager vos fichiers.
+          <strong>Confidentialité :</strong> le catalogue, le Studio Image et le
+          Studio PDF traitent les fichiers dans votre navigateur. Manix Voice
+          Studio envoie explicitement sa référence de voix et le passage choisi
+          au moteur AGX par HTTPS pour les convertir ; ses limites et sa durée
+          de conservation sont expliquées dans le studio. Le navigateur peut
+          conserver son historique. Vérifiez vos droits sur les fichiers.
         </p>
         <a href="/outils-licences.html">Licences et limites →</a>
       </div>
@@ -2291,7 +2400,26 @@ export default function ToolsHub() {
         </span>
         <span className="tools-image-studio-action">Ouvrir le studio <ArrowRight size={16} /></span>
       </a>
+      <a className="tools-image-studio-promo tools-voice-studio-promo" href="/studio-voix">
+        <span className="tools-image-studio-icon"><Mic size={22} /></span>
+        <span className="tools-image-studio-copy">
+          <small>NOUVEAU · BÊTA AGX · VOIX AUTORISÉE</small>
+          <strong>Manix Voice Studio</strong>
+          <span>Enregistre une voix, convertis un court audio ou crée une lecture parlée avec le timbre autorisé.</span>
+        </span>
+        <span className="tools-image-studio-action">Découvrir le studio <ArrowRight size={16} /></span>
+      </a>
       <div className="tools-utility-links" aria-label="Autres outils KITT">
+        <a href="/studio-pdf" className="tools-utility-card">
+          <span className="tools-utility-icon"><FileText size={19} /></span>
+          <span><small>NOUVEL ATELIER VISUEL</small><strong>Studio PDF</strong><em>Voir, réordonner, tourner et fusionner les pages</em></span>
+          <ArrowRight size={16} />
+        </a>
+        <a href="/studio-voix" className="tools-utility-card tools-voice-utility-card">
+          <span className="tools-utility-icon"><Mic size={19} /></span>
+          <span><small>NOUVEL ATELIER AUDIO · BÊTA AGX</small><strong>Manix Voice Studio</strong><em>Enregistre, transforme et écoute une voix autorisée</em></span>
+          <ArrowRight size={16} />
+        </a>
         <a href="/kitt-media-lab/" className="tools-utility-card">
           <span className="tools-utility-icon"><FileImage size={19} /></span>
           <span><small>APPLICATION WINDOWS 11</small><strong>KITT Media Lab</strong><em>5 outils locaux · présentation et téléchargement</em></span>
@@ -2360,6 +2488,7 @@ export default function ToolsHub() {
                 className="tools-featured-card"
                 key={tool.id}
                 onClick={() => choose(tool)}
+                disabled={locked}
               >
                 <span className="tool-card-icon">
                   <Icon size={19} />
@@ -2374,98 +2503,14 @@ export default function ToolsHub() {
           })}
         </div>
       </section>
-      <section className="tools-catalog" aria-label="Catalogue des outils">
-        <div className="tools-section-heading">
-          <div>
-            <span className="tools-kicker">ATELIER KITT</span>
-            <h2>Qu’est-ce qu’on transforme&nbsp;?</h2>
-          </div>
-          <span className="tools-count">{TOOLS.length} outils · gratuits</span>
-        </div>
-        <div className="tools-browser">
-          <aside className="tools-filters">
-            <label className="tools-search">
-              <Search size={17} />
-              <input
-                type="search"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Chercher un outil…"
-                aria-label="Chercher un outil"
-              />
-            </label>
-            <div className="tools-view-tabs" role="group" aria-label="Vue du catalogue">
-              <button type="button" className={toolView === "all" ? "active" : ""} aria-pressed={toolView === "all"} onClick={() => setToolView("all")}><Wrench size={14}/> Tous <span>{TOOLS.length}</span></button>
-              <button type="button" className={toolView === "favorites" ? "active" : ""} aria-pressed={toolView === "favorites"} onClick={() => setToolView("favorites")}><Star size={14}/> Favoris <span>{favoriteIds.length}</span></button>
-              <button type="button" className={toolView === "recent" ? "active" : ""} aria-pressed={toolView === "recent"} onClick={() => setToolView("recent")}><History size={14}/> Récents <span>{recentIds.length}</span></button>
-            </div>
-            <div className="tools-categories">
-              {GROUPS.map(group => (
-                <button
-                  type="button"
-                  key={group}
-                  className={category === group ? "active" : ""}
-                  onClick={() => setCategory(group)}
-                >
-                  {group}
-                  <span>
-                    {group === "Tout"
-                      ? TOOLS.length
-                      : TOOLS.filter(t => t.group === group).length}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <div className="tools-side-note">
-              <ShieldCheck size={17} />
-              <p>
-                Choisissez un fichier depuis votre appareil. Rien n’est transmis
-                à KITT.
-              </p>
-            </div>
-          </aside>
-          <div className="tools-grid" aria-live="polite">
-            {available.map(tool => {
-              const Icon = tool.icon;
-              return (
-                <button
-                  type="button"
-                  className={`tool-card ${selected?.id === tool.id ? "selected" : ""}`}
-                  key={tool.id}
-                  onClick={() => choose(tool)}
-                  aria-pressed={selected?.id === tool.id}
-                >
-                  <span className="tool-card-icon">
-                    <Icon size={21} />
-                  </span>
-                  {favoriteIds.includes(tool.id) && <span className="tool-card-favorite" aria-label="Outil favori"><Star size={14} fill="currentColor"/></span>}
-                  <span className="tool-card-group">{tool.group}</span>
-                  <strong>{tool.title}</strong>
-                  <span className="tool-card-description">
-                    {tool.description}
-                  </span>
-                  <span className="tool-card-action">
-                    Ouvrir l’outil <ChevronDown size={14} />
-                  </span>
-                </button>
-              );
-            })}
-            {!available.length && (
-              <div className="tools-no-results">
-                Aucun outil ne correspond. Essayez un autre mot-clé.
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
       {selected && (
-        <section className="tool-workbench" aria-labelledby="workbench-title">
+        <section ref={workbench} className="tool-workbench" aria-labelledby="workbench-title">
           <div className="workbench-heading">
             <div>
               <span className="tools-kicker">
                 OUTIL SÉLECTIONNÉ · {selected.group.toUpperCase()}
               </span>
-              <h2 id="workbench-title">{selected.title}</h2>
+              <h2 id="workbench-title" tabIndex={-1}>{selected.title}</h2>
               <p>{selected.description}</p>
               {selected.hint && (
                 <p className="tool-hint">
@@ -2484,6 +2529,7 @@ export default function ToolsHub() {
             >
               <Star fill={favoriteIds.includes(selected.id) ? "currentColor" : "none"} />
             </button>
+            <button type="button" className="workbench-close" disabled={locked} onClick={() => openTool(selected)} aria-label="Vider les fichiers et réinitialiser les réglages" title="Réinitialiser l’outil"><RotateCcw size={18} /></button>
             <button
               type="button"
               className="workbench-close"
@@ -2494,14 +2540,17 @@ export default function ToolsHub() {
                 setStatus("");
               }}
               aria-label="Fermer l’outil"
+              disabled={locked}
             >
               <X />
             </button>
           </div>
           <div className="workbench-body">
             <div className="workbench-inputs">
+              <details className="tool-output-settings">
+                <summary>Nom des fichiers exportés <span>Personnaliser</span></summary>
               <label className="tool-option tool-name-mask">
-                Masque du nom de sortie
+                Modèle de nom
                 <input
                   value={filenameTemplate}
                   maxLength={72}
@@ -2516,6 +2565,7 @@ export default function ToolsHub() {
                   Variables : <code>{"{nom}"}</code> nom d’origine, <code>{"{outil}"}</code> outil utilisé, <code>{"{date}"}</code> date du jour. L’extension du fichier reste adaptée.
                 </small>
               </label>
+              </details>
               {selected.id !== "audio-record" && (
                 <>
                   <label
@@ -2548,6 +2598,7 @@ export default function ToolsHub() {
                           : "Glissez ici ou choisissez un fichier"}
                     </strong>
                     <span>
+                      {selected.multiple && files.length > 0 ? "Ajoutez d’autres fichiers · " : ""}
                       Traitement local · limite{" "}
                       {selected.group === "Audio"
                         ? "100 Mo pour l’audio"
@@ -2561,17 +2612,22 @@ export default function ToolsHub() {
                       type="file"
                       accept={selected.accept}
                       multiple={selected.multiple}
+                      disabled={locked}
                       onChange={e => {
                         selectFiles(e.currentTarget.files || []);
                         e.currentTarget.value = "";
                       }}
                     />
                   </label>
-                  {files.map(f => (
-                    <div className="tool-file-row" key={`${f.name}-${f.size}`}>
-                      <FileText size={16} />
-                      <span>{f.name}</span>
-                      <small>{(f.size / 1048576).toFixed(2)} Mo</small>
+                  {files.length > 0 && <div className="tool-file-summary"><span>{files.length} fichier{files.length > 1 ? "s" : ""} · {formatBytes(files.reduce((total, file) => total + file.size, 0))}{selected.multiple ? " · ordre de traitement ↓" : ""}</span><button type="button" disabled={locked} onClick={() => { setFiles([]); setOutputs([]); setMediaMeta(""); setStatus("Sélection vidée."); }}>Tout retirer</button></div>}
+                  {files.map((f, index) => (
+                    <div className="tool-file-row" key={`${f.name}-${f.size}-${f.lastModified}`}>
+                      {selected.multiple ? <b className="tool-file-index">{String(index + 1).padStart(2, "0")}</b> : <FileText size={16} />}
+                      <span title={f.name}>{f.name}<small>{formatBytes(f.size)}</small></span>
+                      <div className="tool-file-actions">
+                        {selected.multiple && <><button type="button" disabled={locked || index === 0} onClick={() => moveFile(index, -1)} aria-label={`Monter ${f.name}`} title="Monter"><ArrowUp size={14} /></button><button type="button" disabled={locked || index === files.length - 1} onClick={() => moveFile(index, 1)} aria-label={`Descendre ${f.name}`} title="Descendre"><ArrowDown size={14} /></button></>}
+                        <button type="button" disabled={locked} onClick={() => { setFiles(current => current.filter((_, i) => i !== index)); setOutputs([]); setStatus("Fichier retiré de la sélection."); }} aria-label={`Retirer ${f.name}`} title="Retirer"><X size={14} /></button>
+                      </div>
                     </div>
                   ))}
                 </>
@@ -2684,7 +2740,7 @@ export default function ToolsHub() {
                     }
                   />
                 ))}
-              {selected.option && (
+              {selected.option && selected.id !== "audio-trim" && selected.id !== "video-trim" && (
                 <label className="tool-option">
                   {selected.option}
                   {selected.id === "image-convert" ? (
@@ -2696,6 +2752,8 @@ export default function ToolsHub() {
                       <option>JPEG</option>
                       <option>PNG</option>
                     </select>
+                  ) : selected.id === "pdf-rotate" ? (
+                    <select value={option || "90"} onChange={e => setOption(e.target.value)}><option value="90">90° · quart de tour à droite</option><option value="180">180° · demi-tour</option><option value="270">270° · quart de tour à gauche</option></select>
                   ) : selected.id === "srt-vtt" ? (
                     <select
                       value={option}
@@ -2729,6 +2787,12 @@ export default function ToolsHub() {
                     />
                   )}
                 </label>
+              )}
+              {(selected.id === "audio-trim" || selected.id === "video-trim") && (
+                <fieldset className="tool-range-fieldset"><legend>Plage à conserver</legend><div className="tool-trim-controls">
+                  <label><span>Début (secondes)</span><input type="number" min="0" step="0.1" value={option.split(";")[0] || ""} placeholder="0" onChange={e => setOption(`${e.target.value};${option.split(";")[1] || ""}`)} /></label>
+                  <label><span>Fin (secondes)</span><input type="number" min="0" step="0.1" value={option.split(";")[1] || ""} placeholder="15" onChange={e => setOption(`${option.split(";")[0] || "0"};${e.target.value}`)} /></label>
+                </div></fieldset>
               )}
               {selected.id === "audio-normalize" && (
                 <label className="tool-option tool-quality">
@@ -2792,8 +2856,10 @@ export default function ToolsHub() {
                 type="button"
                 className="tool-run"
                 disabled={
-                  busy ||
-                  (!files.length && !text && selected.id !== "audio-record")
+                  (busy && !recording) ||
+                  (!files.length && !text.trim() && selected.id !== "audio-record") ||
+                  (selected.id === "pdf-watermark" && (!files.length || !text.trim())) ||
+                  ((selected.id === "pdf-merge" || selected.id === "audio-join") && files.length < 2)
                 }
                 onClick={
                   selected.id === "audio-record"
@@ -2801,14 +2867,14 @@ export default function ToolsHub() {
                     : processTool
                 }
               >
-                {busy ? (
+                {recording ? (
+                  <>
+                    <X size={17} /> Arrêter et récupérer l’enregistrement
+                  </>
+                ) : busy ? (
                   <>
                     <LoaderCircle className="spin" size={18} /> Traitement en
                     cours…
-                  </>
-                ) : recording ? (
-                  <>
-                    <X size={17} /> Arrêter l’enregistrement
                   </>
                 ) : (
                   <>
@@ -2816,6 +2882,8 @@ export default function ToolsHub() {
                   </>
                 )}
               </button>
+              {busy && !recording && <button type="button" className="tool-cancel" onClick={() => { job.current?.abort(); setStatus("Annulation demandée…"); }}><X size={15} /> Annuler le traitement</button>}
+              <p className="tool-run-help">{recording ? "Le micro est actif jusqu’à votre arrêt." : selected.multiple ? "L’export suit l’ordre de votre sélection. Vos originaux sont conservés." : "Un nouveau fichier sera créé. Votre original est conservé."}</p>
               <p className="tool-status" role="status" aria-live="polite">
                 {status || ""}
               </p>
@@ -2874,10 +2942,12 @@ export default function ToolsHub() {
                             Ouvrir l’aperçu PDF dans un nouvel onglet ↗
                           </a>
                         )}
+                        <ResultText result={result} />
                         <div className="output-row">
                           <span>
                             <strong>{result.name}</strong>
                             {result.note && <small>{result.note}</small>}
+                            <small className="result-file-size">{formatBytes(result.blob.size)}</small>
                           </span>
                           <button
                             type="button"
@@ -2904,6 +2974,105 @@ export default function ToolsHub() {
           </div>
         </section>
       )}
+      <section className="tools-catalog" id="catalogue-outils" aria-label="Catalogue des outils">
+        <div className="tools-section-heading">
+          <div>
+            <span className="tools-kicker">ATELIER KITT</span>
+            <h2>Qu’est-ce qu’on transforme&nbsp;?</h2>
+          </div>
+          <span className="tools-count">{TOOLS.length} outils · gratuits</span>
+        </div>
+        <div className="tools-browser">
+          <aside className="tools-filters">
+            <label className="tools-search">
+              <Search size={17} />
+              <input
+                type="search"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Chercher un outil…"
+                aria-label="Chercher un outil"
+              />
+              {search && <button type="button" className="tools-clear-search" onClick={() => setSearch("")} aria-label="Effacer la recherche"><X size={14} /></button>}
+            </label>
+            <div className="tools-view-tabs" role="group" aria-label="Vue du catalogue">
+              <button type="button" className={toolView === "all" ? "active" : ""} aria-pressed={toolView === "all"} onClick={() => setToolView("all")}><Wrench size={14}/> Tous <span>{TOOLS.length}</span></button>
+              <button type="button" className={toolView === "favorites" ? "active" : ""} aria-pressed={toolView === "favorites"} onClick={() => setToolView("favorites")}><Star size={14}/> Favoris <span>{favoriteIds.length}</span></button>
+              <button type="button" className={toolView === "recent" ? "active" : ""} aria-pressed={toolView === "recent"} onClick={() => setToolView("recent")}><History size={14}/> Récents <span>{recentIds.length}</span></button>
+            </div>
+            <div className="tools-categories">
+              {GROUPS.map(group => (
+                <button
+                  type="button"
+                  key={group}
+                  className={category === group ? "active" : ""}
+                  onClick={() => setCategory(group)}
+                >
+                  {group}
+                  <span>
+                    {group === "Tout"
+                      ? TOOLS.length
+                      : TOOLS.filter(t => t.group === group).length}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="tools-side-note">
+              <ShieldCheck size={17} />
+              <p>
+                Choisissez un fichier depuis votre appareil. Rien n’est transmis
+                à KITT.
+              </p>
+            </div>
+          </aside>
+          <div className="tools-catalog-content">
+            <div className="tools-catalog-toolbar">
+              <p role="status"><strong>{available.length}</strong> outil{available.length > 1 ? "s" : ""}{category !== "Tout" ? ` · ${category}` : " disponibles"}{search ? ` pour « ${search} »` : ""}</p>
+              <div role="group" aria-label="Présentation des outils">
+                <button type="button" className={catalogLayout === "cards" ? "active" : ""} aria-pressed={catalogLayout === "cards"} onClick={() => setCatalogLayout("cards")} title="Cartes"><LayoutGrid size={15} /><span>Cartes</span></button>
+                <button type="button" className={catalogLayout === "list" ? "active" : ""} aria-pressed={catalogLayout === "list"} onClick={() => setCatalogLayout("list")} title="Liste compacte"><List size={15} /><span>Liste</span></button>
+              </div>
+            </div>
+            <div className={`tools-grid ${catalogLayout === "list" ? "tools-grid-list" : ""}`}>
+            {available.slice(0, catalogLimit).map(tool => {
+              const Icon = tool.icon;
+              return (
+                <button
+                  type="button"
+                  className={`tool-card ${selected?.id === tool.id ? "selected" : ""}`}
+                  key={tool.id}
+                  onClick={() => choose(tool)}
+                  aria-pressed={selected?.id === tool.id}
+                  disabled={locked}
+                >
+                  <span className="tool-card-icon">
+                    <Icon size={21} />
+                  </span>
+                  {favoriteIds.includes(tool.id) && <span className="tool-card-favorite" aria-label="Outil favori"><Star size={14} fill="currentColor"/></span>}
+                  <span className="tool-card-group">{tool.group}</span>
+                  <strong>{tool.title}</strong>
+                  <span className="tool-card-description">
+                    {tool.description}
+                  </span>
+                  <span className="tool-card-action">
+                    Ouvrir l’outil <ChevronDown size={14} />
+                  </span>
+                </button>
+              );
+            })}
+            {!available.length && (
+              <div className="tools-no-results">
+                <Search size={28} /><strong>{toolView === "favorites" && !favoriteIds.length ? "Votre garage de favoris est vide" : "Aucun outil ne correspond"}</strong>
+                <p>{toolView === "favorites" && !favoriteIds.length ? "Ouvrez un outil puis utilisez son étoile pour le retrouver ici." : "Essayez un autre mot-clé, une autre catégorie ou le catalogue complet."}</p>
+                <button type="button" onClick={() => { setSearch(""); setCategory("Tout"); setToolView("all"); }}>Voir tous les outils</button>
+              </div>
+            )}
+            </div>
+            {available.length > catalogLimit && <button type="button" className="tools-load-more" onClick={() => setCatalogLimit(limit => limit + 12)}><ChevronDown size={17} /> Afficher {Math.min(12, available.length - catalogLimit)} autres outils <span>{Math.min(catalogLimit, available.length)} / {available.length}</span></button>}
+          </div>
+        </div>
+      </section>
+      <section id="outils-quotidiens" className="tools-everyday-section" aria-label="Outils du quotidien"><EverydayTools /></section>
       <section className="tools-bottom">
         <div className="tools-bottom-icon">
           <ShieldCheck size={27} />

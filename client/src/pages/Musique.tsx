@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
-import { AlertCircle, Heart, LoaderCircle, Music2, Pause, Play, Repeat1, Search, Shuffle, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
+import { AlertCircle, Heart, LoaderCircle, Mic, Music2, Pause, Play, Repeat1, Search, Shuffle, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
 import KittScanner from "@/components/KittScanner";
 import { getApiBase } from "@/lib/tunnel";
 import "./music-pages.css";
@@ -377,6 +377,7 @@ export default function Musique() {
         <h1>La bande-son <em>de KITT</em></h1>
         <p>Des créations inspirées par l’univers Knight Rider, sélectionnées par Manix et partagées par la communauté.</p>
         <KittScanner height={5} />
+        <div className="music-voice-promo"><span><Mic size={21} /></span><div><strong>Imagine ce passage avec ta voix.</strong><small>Une courte référence, ton extrait, puis une écoute sur l’AGX.</small></div><Link className="music-button primary" href="/studio-voix">Ouvrir Voice Studio <Mic size={15} /></Link></div>
       </header>
 
       {apiError && <section className="music-state music-error" role="alert"><AlertCircle size={24} /><div><strong>La bibliothèque ne répond pas pour le moment.</strong><p>{apiError} Vos favoris enregistrés sur cet appareil restent disponibles après le retour du service.</p></div><button className="music-button secondary" onClick={() => setReload(value => value + 1)}>Réessayer</button></section>}

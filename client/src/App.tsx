@@ -18,6 +18,8 @@ const DataDeletion = lazy(() => import("./pages/DataDeletion"));
 const Karr = lazy(() => import("./pages/Karr"));
 const ToolsHub = lazy(() => import("./pages/ToolsHub"));
 const ImageStudio = lazy(() => import("./pages/ImageStudio"));
+const PdfStudio = lazy(() => import("./pages/PdfStudio"));
+const VoiceStudio = lazy(() => import("./pages/VoiceStudio"));
 const Manix = lazy(() => import("./pages/Manix"));
 const Soumettre = lazy(() => import("./pages/Soumettre"));
 const AdminVideos = lazy(() => import("./pages/AdminVideos"));
@@ -56,6 +58,8 @@ function AppRouter() {
         <Route path={"/jeux"} component={Arcade} />
         <Route path={"/outils"} component={ToolsHub} />
         <Route path={"/studio-image"} component={ImageStudio} />
+        <Route path={"/studio-pdf"} component={PdfStudio} />
+        <Route path={"/studio-voix"} component={VoiceStudio} />
         <Route path={"/admin-videos"} component={AdminVideos} />
         <Route path={"/musique"} component={Musique} />
         <Route path={"/soumettre-musique"} component={SoumettreMusique} />

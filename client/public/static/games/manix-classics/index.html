@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080b12">
   <title>Manix Arcade Classics — KYRONEXT</title>
-  <link rel="stylesheet" href="classics.css?v=20261027-1">
+  <link rel="stylesheet" href="classics.css?v=20261027-2">
 </head>
 <body>
   <main class="shell">
@@ -26,9 +26,11 @@
       <div class="game-layout">
         <div class="screen-column">
           <div class="hud"><div><small>NIVEAU</small><b id="hud-level">1 / 10</b></div><div><small>SCORE</small><b id="hud-score">0</b></div><div><small>RECORD</small><b id="hud-best">0</b></div><div class="progress-wrap"><small>CAMPAGNE</small><div class="progress"><i id="hud-progress"></i></div></div></div>
-          <div class="canvas-frame"><canvas id="game-canvas" width="960" height="600" tabindex="0" aria-label="Jeu vidéo"></canvas><div class="screen-overlay" id="screen-overlay"><div class="overlay-card"><span class="overlay-sigil">K</span><p class="eyebrow" id="overlay-kicker">ARCADE SYSTEM READY</p><h3 id="overlay-title">PRÊT POUR LA MISSION ?</h3><p id="overlay-description">Choisis un défi et lance ta partie.</p><label class="player-name-wrap" id="player-name-wrap" hidden>PSEUDO POUR LE CLASSEMENT<input id="player-name" maxlength="20" autocomplete="nickname" value="PILOTE"></label><button id="overlay-action">LANCER LA PARTIE</button></div></div></div>
+          <div class="canvas-frame"><canvas id="game-canvas" width="960" height="600" tabindex="0" aria-label="Jeu vidéo"></canvas><div class="screen-overlay" id="screen-overlay"><div class="overlay-card"><span class="overlay-sigil">K</span><p class="eyebrow" id="overlay-kicker">ARCADE SYSTEM READY</p><h3 id="overlay-title">PRÊT POUR LA MISSION ?</h3><p id="overlay-description">Choisis un défi et lance ta partie.</p><label class="player-name-wrap" id="player-name-wrap" hidden>PSEUDO POUR LE CLASSEMENT<input id="player-name" maxlength="20" autocomplete="nickname" value="PILOTE"></label><button id="save-score" class="save-score-button" hidden>ENREGISTRER MON SCORE</button><button id="overlay-action">LANCER LA PARTIE</button></div></div></div>
           <div class="controls-row"><button id="pause-button">Ⅱ PAUSE</button><button id="restart-button">↻ RECOMMENCER</button><button id="sound-button" aria-pressed="true">♫ SON : ON</button><span id="control-hint">Flèches · espace · WASD</span></div>
-          <div class="touch-controls" id="touch-controls" aria-label="Commandes tactiles"><button data-key="ArrowUp">▲</button><div><button data-key="ArrowLeft">◀</button><button data-key="Space">●</button><button data-key="ArrowRight">▶</button></div><button data-key="ArrowDown">▼</button></div>
+          <div class="special-controls" id="simon-controls" hidden aria-label="R?pondre ? la s?quence"><button data-pad="0" aria-label="Signal 1">1</button><button data-pad="1" aria-label="Signal 2">2</button><button data-pad="2" aria-label="Signal 3">3</button><button data-pad="3" aria-label="Signal 4">4</button></div>
+          <div class="special-controls" id="mine-controls" hidden><button id="flag-toggle" aria-pressed="false">? POSER DES DRAPEAUX</button><span>Le premier clic ouvre une case s?re.</span></div>
+          <div class="touch-controls" id="touch-controls" aria-label="Commandes tactiles"><button data-key="ArrowUp" aria-label="Haut">▲</button><div><button data-key="ArrowLeft" aria-label="Gauche">◀</button><button data-key="Space" aria-label="Tirer ou lancer">●</button><button data-key="ArrowRight" aria-label="Droite">▶</button></div><button data-key="ArrowDown" aria-label="Bas">▼</button></div>
         </div>
         <aside class="mission-panel"><p class="eyebrow">BRIEFING KITT</p><h3 id="mission-name">MISSION EN ATTENTE</h3><p id="mission-description">Choisis un jeu pour afficher les commandes.</p><div class="mission-target"><small>OBJECTIF DU NIVEAU</small><b id="mission-goal">—</b></div><div class="mission-best"><span>TON RECORD</span><strong id="mission-best">—</strong></div><div class="local-note">Les records sont enregistrés dans ce navigateur et regroupés dans le Hall of Fame.</div><a href="/static/games/high-scores.html" class="all-scores-link">VOIR TOUS LES RECORDS <span>↗</span></a></aside>
       </div>
@@ -36,6 +38,6 @@
     <footer><span>JEUX ORIGINAUX · BY MANIX</span><span>FANS MADE · NON AFFILIÉ AUX AYANTS DROIT DES FRANCHISES D’ORIGINE</span></footer>
   </main>
   <script src="../highscores.js?v=20261027-1"></script>
-  <script src="classics.js?v=20261027-1"></script>
+  <script src="classics.js?v=20261027-2"></script>
 </body>
 </html>

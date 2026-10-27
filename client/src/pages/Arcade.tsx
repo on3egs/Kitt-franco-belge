@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ExternalLink, Gamepad2, Maximize2, Play, ShieldCheck, Volume2, VolumeX } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ExternalLink, Gamepad2, LoaderCircle, Maximize2, Play, RotateCcw, Search, ShieldCheck, Star, Volume2, VolumeX, X } from "lucide-react";
 import { speakSiteAnnouncement, stopSiteSpeech } from "../utils/siteSpeech";
 import "./arcade.css";
 import "./arcade-enhancements.css";
@@ -59,24 +59,53 @@ export default function Arcade() {
   const [filter, setFilter] = useState<GameFilter>("all");
   const [frameLoaded, setFrameLoaded] = useState(false);
   const [plays, setPlays] = useState<Record<string, number>>({});
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [query, setQuery] = useState("");
+  const [genre, setGenre] = useState("Tout");
+  const [sort, setSort] = useState("collection");
+  const [launched, setLaunched] = useState(false);
+  const [reload, setReload] = useState(0);
+  const [slowLoad, setSlowLoad] = useState(false);
   const playSectionRef = useRef<HTMLElement>(null);
-  const visibleGames = filter === "all" ? GAMES : GAMES.filter((game) => game.group === filter);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const clean = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const visibleGames = useMemo(() => GAMES.filter(game =>
+    (filter === "all" || game.group === filter) &&
+    (!favoritesOnly || favorites.includes(game.id)) &&
+    (genre === "Tout" || clean(game.mode).includes(clean(genre))) &&
+    (!query.trim() || clean(`${game.name} ${game.description} ${game.mode}`).includes(clean(query.trim())))
+  ).sort((a, b) => sort === "popular" ? (plays[b.id] || 0) - (plays[a.id] || 0) : sort === "name" ? a.name.localeCompare(b.name, "fr") : 0), [filter, favoritesOnly, favorites, query, genre, sort, plays]);
 
   useEffect(() => {
-    try { setPlays(JSON.parse(localStorage.getItem("kitt-arcade-plays") || "{}")); } catch { setPlays({}); }
+    try { const saved = JSON.parse(localStorage.getItem("kitt-arcade-plays") || "{}"); if (saved && typeof saved === "object" && !Array.isArray(saved)) setPlays(Object.fromEntries(Object.entries(saved).filter(([id, count]) => GAMES.some(game => game.id === id) && typeof count === "number" && Number.isFinite(count) && count >= 0).map(([id, count]) => [id, Number(count)]))); } catch { setPlays({}); }
+    try { const saved = JSON.parse(localStorage.getItem("kitt-arcade-favorites-v1") || "[]"); if (Array.isArray(saved)) setFavorites(saved.filter(id => typeof id === "string" && GAMES.some(game => game.id === id))); } catch { /* favoris facultatifs */ }
   }, []);
+  useEffect(() => {
+    if (!launched || frameLoaded) return;
+    const timer = window.setTimeout(() => setSlowLoad(true), 18000);
+    return () => window.clearTimeout(timer);
+  }, [launched, frameLoaded, selected.id, reload]);
+  const toggleFavorite = (id: string) => {
+    const next = favorites.includes(id) ? favorites.filter(item => item !== id) : [...favorites, id];
+    setFavorites(next);
+    try { localStorage.setItem("kitt-arcade-favorites-v1", JSON.stringify(next)); } catch { /* favoris facultatifs */ }
+  };
 
   const choose = (game: Game) => {
     setSelected(game);
-    if (game.id !== selected.id) setFrameLoaded(false);
+    setLaunched(true);
+    setFrameLoaded(false);
+    setSlowLoad(false);
+    setReload(value => value + 1);
     const next = { ...plays, [game.id]: (plays[game.id] || 0) + 1 };
     setPlays(next);
     try { localStorage.setItem("kitt-arcade-plays", JSON.stringify(next)); } catch { /* stockage facultatif */ }
     if (sound) speakSiteAnnouncement(`${game.name}. Jeu sélectionné. Chargement du jeu.`, { replacePending: true, rate: 0.82, pitch: 0.78 });
-    window.setTimeout(() => playSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    window.setTimeout(() => playSectionRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }), 80);
   };
 
-  const fullscreen = () => document.querySelector<HTMLIFrameElement>(".arcade-frame")?.requestFullscreen?.();
+  const fullscreen = () => { void frameRef.current?.requestFullscreen?.().catch(() => { setSlowLoad(true); }); };
 
   return <main className="arcade-page">
     <section className="arcade-hero">
@@ -85,9 +114,9 @@ export default function Arcade() {
       <div className="arcade-hero-copy">
         <span className="arcade-kicker"><span className="arcade-live" /> KITT FRANCO-BELGE · SALLE D’ARCADE</span>
         <h1>À toi de <em>jouer.</em></h1>
-        <p>Les douze jeux de l’AGX et quatre créations originales sont réunis ici. Choisis une mission pour la lancer.</p>
+        <p>Courses, puzzles, labyrinthes et défis rétro : retrouve la collection AGX et les créations By Manix. Choisis ton jeu, lis les commandes et entre dans la mission.</p>
         <div className="arcade-pills">
-          <span><Gamepad2 size={15} />{GAMES.length} jeux accessibles</span>
+          <span><Gamepad2 size={15} />{GAMES.length} jeux et espaces</span>
           <span><ShieldCheck size={15} />Gratuit · sans compte</span>
           <a href="#collection"><Play size={14} />Voir les jeux ↓</a>
         </div>
@@ -95,20 +124,43 @@ export default function Arcade() {
       <div className="arcade-hero-light" aria-hidden="true"><div className="arcade-light-inner" /></div>
     </section>
 
+    {launched && <section ref={playSectionRef} className="arcade-play-section" aria-label="Jeu sélectionné">
+      <div className="arcade-stage-head">
+        <div><span className="arcade-kicker">MISSION SÉLECTIONNÉE · {selected.group === "agx" ? "COLLECTION AGX" : "CRÉATION DU SITE"}</span><h2>{selected.name}</h2></div>
+        <div className="arcade-stage-actions">
+          <button type="button" onClick={() => { setLaunched(false); setFrameLoaded(false); document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" }); }} title="Fermer le jeu et libérer ses ressources"><X size={17} /><span>Fermer</span></button>
+          <a href={selected.src} target="_blank" rel="noreferrer" title="Ouvrir le jeu dans un nouvel onglet"><ExternalLink size={17} /><span>Nouvel onglet</span></a>
+          <button type="button" onClick={fullscreen} title="Passer le jeu en plein écran"><Maximize2 size={17} /><span>Plein écran</span></button>
+        </div>
+      </div>
+      <div className="arcade-frame-shell">
+        <iframe ref={frameRef} key={`${selected.id}-${reload}`} className="arcade-frame" src={selected.src} title={selected.name} allow="fullscreen; gamepad" allowFullScreen onLoad={() => { setFrameLoaded(true); setSlowLoad(false); frameRef.current?.focus(); }} />
+        {!frameLoaded && <div className="arcade-loading"><LoaderCircle size={28} /><strong>{slowLoad ? "Le chargement prend plus de temps" : "Préparation de la mission…"}</strong><span>{slowLoad ? "Essaie le nouvel onglet ou relance le chargement." : "Le jeu se prépare dans ton navigateur."}</span>{slowLoad && <button type="button" onClick={() => { setReload(value => value + 1); setSlowLoad(false); }}><RotateCcw size={14} /> Réessayer</button>}</div>}
+        <div className="arcade-stage-bottom"><span><i className={frameLoaded ? "is-ready" : ""} />{frameLoaded ? "INTERFACE CHARGÉE" : "CHARGEMENT DU JEU"}</span><span>{selected.mode.toUpperCase()}</span></div>
+      </div>
+      <div className="arcade-controls"><Gamepad2 size={17} /><span>{selected.controls}</span><button type="button" onClick={() => { if (sound) { stopSiteSpeech(); setSound(false); } else setSound(true); }} title={sound ? "Désactiver l’annonce vocale" : "Activer l’annonce vocale"}>{sound ? <Volume2 size={16} /> : <VolumeX size={16} />}<span>Voix {sound ? "active" : "désactivée"}</span></button></div>
+      <p className="arcade-play-help">Clique dans le jeu pour lui donner le clavier. Utilise « Nouvel onglet » si un jeu manque de place. Les records sont propres à ce navigateur ; le Hall of Fame les rassemble sur cet appareil.</p>
+    </section>}
+
+
     <section id="collection" className="arcade-library" aria-label="Collection de jeux">
       <div className="arcade-library-title">
-        <div><span className="arcade-kicker">12 JEUX AGX · 4 CRÉATIONS DU SITE</span><h2>La collection KITT</h2></div>
+        <div><span className="arcade-kicker">{AGX_GAMES.length} JEUX AGX · {SITE_GAMES.length} CRÉATIONS ET ESPACES DU SITE</span><h2>La collection KITT</h2></div>
         <span className="arcade-plays">{Object.values(plays).reduce((a, b) => a + b, 0)} lancements sur cet appareil</span>
       </div>
       <div className="arcade-filters" role="group" aria-label="Filtrer les jeux">
         <button type="button" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>Tous les jeux <span>{GAMES.length}</span></button>
         <button type="button" aria-pressed={filter === "agx"} onClick={() => setFilter("agx")}>Collection AGX <span>{AGX_GAMES.length}</span></button>
         <button type="button" aria-pressed={filter === "site"} onClick={() => setFilter("site")}>Créations du site <span>{SITE_GAMES.length}</span></button>
+        <button type="button" aria-pressed={favoritesOnly} onClick={() => setFavoritesOnly(value => !value)}><Star size={13} fill={favoritesOnly ? "currentColor" : "none"} /> Mes favoris <span>{favorites.length}</span></button>
       </div>
+      <div className="arcade-search-bar"><label className="arcade-search"><Search size={17} /><input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Chercher un jeu, un style, une mission…" aria-label="Rechercher dans la collection" />{query && <button type="button" onClick={() => setQuery("")} aria-label="Effacer la recherche"><X size={15} /></button>}</label><label>Style<select value={genre} onChange={e => setGenre(e.target.value)}>{["Tout", "3D", "Course", "Puzzle", "Labyrinthe", "Combat", "Survie"].map(value => <option key={value}>{value}</option>)}</select></label><label>Trier<select value={sort} onChange={e => setSort(e.target.value)}><option value="collection">Ordre de la collection</option><option value="popular">Mes plus joués</option><option value="name">Nom de A à Z</option></select></label></div>
+      <p className="arcade-search-count" role="status">{visibleGames.length} résultat{visibleGames.length > 1 ? "s" : ""} <span>Les jeux se chargent uniquement quand tu cliques sur Jouer.</span></p>
       <div className="arcade-cards">
         {visibleGames.map((game) => <article className={`arcade-card ${selected.id === game.id ? "selected" : ""}`} key={game.id}>
           <div className={`arcade-card-art art-${game.id}`}>
             <span className="arcade-card-number">{String(GAMES.indexOf(game) + 1).padStart(2, "0")}</span>
+            <button type="button" className={`arcade-favorite ${favorites.includes(game.id) ? "is-favorite" : ""}`} onClick={() => toggleFavorite(game.id)} aria-label={`${favorites.includes(game.id) ? "Retirer" : "Ajouter"} ${game.name} ${favorites.includes(game.id) ? "des" : "aux"} favoris`} aria-pressed={favorites.includes(game.id)}><Star size={17} fill={favorites.includes(game.id) ? "currentColor" : "none"} /></button>
             <ArcadeArtwork game={game} />
             <span className="arcade-art-label">{game.mode.toUpperCase()}</span>
           </div>
@@ -122,22 +174,8 @@ export default function Arcade() {
             </div>
           </div>
         </article>)}
+        {!visibleGames.length && <div className="arcade-no-results"><Search size={28} /><h3>{favoritesOnly && !favorites.length ? "Choisis tes favoris" : "Aucun jeu trouvé"}</h3><p>{favoritesOnly && !favorites.length ? "Utilise l’étoile sur une carte pour créer ta propre collection." : "Essaie un autre mot ou retire les filtres."}</p><button type="button" onClick={() => { setQuery(""); setGenre("Tout"); setFilter("all"); setFavoritesOnly(false); }}>Afficher toute la collection</button></div>}
       </div>
-    </section>
-
-    <section ref={playSectionRef} className="arcade-play-section" aria-label="Jeu sélectionné">
-      <div className="arcade-stage-head">
-        <div><span className="arcade-kicker">MISSION SÉLECTIONNÉE · {selected.group === "agx" ? "COLLECTION AGX" : "CRÉATION DU SITE"}</span><h2>{selected.name}</h2></div>
-        <div className="arcade-stage-actions">
-          <a href={selected.src} target="_blank" rel="noreferrer" title="Ouvrir le jeu dans un nouvel onglet"><ExternalLink size={17} /><span>Nouvel onglet</span></a>
-          <button type="button" onClick={fullscreen} title="Passer le jeu en plein écran"><Maximize2 size={17} /><span>Plein écran</span></button>
-        </div>
-      </div>
-      <div className="arcade-frame-shell">
-        <iframe key={selected.id} className="arcade-frame" src={selected.src} title={selected.name} allow="fullscreen; gamepad" allowFullScreen loading="lazy" onLoad={() => setFrameLoaded(true)} />
-        <div className="arcade-stage-bottom"><span><i className={frameLoaded ? "is-ready" : ""} />{frameLoaded ? "INTERFACE CHARGÉE" : "CHARGEMENT DU JEU"}</span><span>{selected.mode.toUpperCase()}</span></div>
-      </div>
-      <div className="arcade-controls"><Gamepad2 size={17} /><span>{selected.controls}</span><button type="button" onClick={() => { if (sound) { stopSiteSpeech(); setSound(false); } else setSound(true); }} title={sound ? "Désactiver l’annonce vocale" : "Activer l’annonce vocale"}>{sound ? <Volume2 size={16} /> : <VolumeX size={16} />}<span>Voix {sound ? "active" : "désactivée"}</span></button></div>
     </section>
 
     <aside className="arcade-credits"><ShieldCheck size={18} /><p><strong>À propos des droits et des crédits</strong><br />Ces jeux sont des créations de fans associées au projet KITT Franco-Belge. Knight Rider, KITT et KARR restent des marques et personnages appartenant à leurs ayants droit. Les jeux ne sont ni officiels ni affiliés aux détenteurs de ces droits. Les éléments tiers éventuels et leurs licences sont précisés dans les crédits du jeu concerné.</p><a href="/static/games/THIRD-PARTY-LICENSES.md">Crédits des moteurs <ExternalLink size={13} /></a><a href="/mentions-legales">Mentions légales <ExternalLink size={13} /></a></aside>

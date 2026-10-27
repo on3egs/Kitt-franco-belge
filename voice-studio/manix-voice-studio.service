@@ -1,0 +1,24 @@
+[Unit]
+Description=Manix Voice Studio — Seed-VC AGX private job API
+After=network.target
+ConditionPathExists=/media/kitt/61866b44-3823-48c5-8c62-a74a85111d911/manix-seedvc-bench-20261027/app/inference.py
+
+[Service]
+Type=simple
+WorkingDirectory=/home/kitt/manix-voice-studio
+EnvironmentFile=-/home/kitt/.config/manix-voice-studio.env
+Environment=PYTHONUNBUFFERED=1
+Environment=HF_HUB_OFFLINE=1
+Environment=TRANSFORMERS_OFFLINE=1
+ExecStart=/usr/bin/python3 /home/kitt/manix-voice-studio/api.py
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=20
+KillMode=control-group
+UMask=0077
+Nice=8
+NoNewPrivileges=true
+LimitNOFILE=256
+
+[Install]
+WantedBy=default.target

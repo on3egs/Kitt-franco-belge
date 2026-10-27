@@ -19,6 +19,7 @@
 .music-atmosphere.is-active::after { opacity: .9; animation: music-scan 3.6s ease-in-out infinite alternate; }
 @keyframes music-scan { from { transform: translateY(-90px); } to { transform: translateY(80px); } }
 .music-heading { max-width: 740px; margin: 0 auto 34px; text-align: center; }
+.music-voice-promo{display:flex;align-items:center;gap:13px;margin:22px auto 0;padding:13px 15px;max-width:640px;border:1px solid rgba(241,118,91,.35);border-radius:10px;background:linear-gradient(120deg,#23161a,#111720);text-align:left;box-shadow:0 12px 35px #0003}.music-voice-promo>span{display:grid;place-items:center;width:39px;height:39px;flex:0 0 39px;border:1px solid #823f48;border-radius:9px;background:#331c23;color:#ff8d82}.music-voice-promo>div{display:grid;gap:3px;flex:1}.music-voice-promo strong{color:#f5e7e5;font-size:13px}.music-voice-promo small{color:#a9a3ad;font-size:10px}.music-voice-promo .music-button{white-space:nowrap}@media(max-width:600px){.music-voice-promo{align-items:flex-start;flex-wrap:wrap}.music-voice-promo>div{align-self:center}.music-voice-promo .music-button{width:100%;margin-left:52px}}
 .music-eyebrow, .music-kicker { display: inline-flex; align-items: center; gap: 8px; color: #f1765b; font: 700 .7rem/1.4 "Space Mono", monospace; letter-spacing: .14em; }
 .music-eyebrow { margin-bottom: 18px; }
 .music-eyebrow span { color: #68707b; }
