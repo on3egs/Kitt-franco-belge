@@ -573,23 +573,25 @@ export default function KittChat() {
     return () => window.clearInterval(timer);
   }, [pendingTurn]);
 
-  function playRoomSound(kind: "message" | "join" | "buzz" | "hyper-buzz" | "test") {
+  function playRoomSound(kind: "message" | "join" | "buzz" | "hyper-buzz" | "test" | "vision-start" | "vision-done" | "vision-error") {
     if (!soundEnabled.current) return;
     try {
       audio.current ||= new AudioContext();
       const context = audio.current;
       if (context.state === "suspended") void context.resume();
-      const notes = kind === "hyper-buzz" ? [330, 220, 294, 165] : kind === "buzz" ? [220, 165] : kind === "join" || kind === "test" ? [660, 880] : [700];
+      const notes = kind === "vision-start" ? [420, 560, 720, 540] : kind === "vision-done" ? [660, 880, 1046] : kind === "vision-error" ? [740, 554, 370] : kind === "hyper-buzz" ? [330, 220, 294, 165] : kind === "buzz" ? [220, 165] : kind === "join" || kind === "test" ? [660, 880] : [700];
       const startAt = context.currentTime;
       notes.forEach((frequency, index) => {
         const oscillator = context.createOscillator();
         const gain = context.createGain();
         const isBuzz = kind === "buzz" || kind === "hyper-buzz";
-        const noteStart = startAt + index * (kind === "hyper-buzz" ? 0.12 : isBuzz ? 0.16 : 0.14);
-        const noteLength = kind === "hyper-buzz" ? 0.18 : isBuzz ? 0.22 : kind === "test" || kind === "join" ? 0.16 : 0.11;
-        const peak = kind === "hyper-buzz" ? 0.19 : kind === "buzz" ? 0.16 : kind === "test" ? 0.12 : kind === "join" ? 0.095 : 0.07;
-        oscillator.type = isBuzz ? "triangle" : "sine";
+        const isVision = kind.startsWith("vision-");
+        const noteStart = startAt + index * (kind === "hyper-buzz" ? 0.12 : isBuzz ? 0.16 : kind === "vision-start" ? 0.085 : isVision ? 0.105 : 0.14);
+        const noteLength = kind === "hyper-buzz" ? 0.18 : isBuzz ? 0.22 : kind === "vision-start" ? 0.085 : kind === "vision-error" ? 0.13 : isVision ? 0.11 : kind === "test" || kind === "join" ? 0.16 : 0.11;
+        const peak = kind === "hyper-buzz" ? 0.19 : kind === "buzz" ? 0.16 : kind === "test" ? 0.12 : kind === "join" ? 0.095 : isVision ? 0.045 : 0.07;
+        oscillator.type = isBuzz ? "triangle" : kind === "vision-start" ? "square" : kind === "vision-error" ? "triangle" : "sine";
         oscillator.frequency.value = frequency;
+        if (kind === "vision-start") oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.12, noteStart + noteLength);
         gain.gain.setValueAtTime(0.0001, noteStart);
         gain.gain.exponentialRampToValueAtTime(peak, noteStart + 0.018);
         gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + noteLength);
@@ -1154,6 +1156,7 @@ export default function KittChat() {
   async function describeSharedImage(image: SharedImage, speaker: "KITT" | "KARR") {
     if (!sessionToken || !apiBase || !imageDescriptionAvailable || describingImageId) return;
     const progress = `${speaker} analyse la photo sur l'AGX...`;
+    playRoomSound("vision-start");
     setDescribingImageId(image.id); setImageStatus(progress); setImageActionFeedback({ imageId: image.id, text: progress, error: false });
     try {
       const response = await fetch(`${apiBase}/api/kitt-chat/images/${encodeURIComponent(image.id)}/describe`, {
@@ -1164,9 +1167,11 @@ export default function KittChat() {
       const data = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(data?.error || `La description a echoue (${response.status}).`);
       const done = `Reponse de ${speaker} publiee dans le salon.`;
+      playRoomSound("vision-done");
       setImageStatus(done); setImageActionFeedback({ imageId: image.id, text: done, error: false });
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "La description de cette photo a echoue.";
+      playRoomSound("vision-error");
       setImageStatus(message); setImageActionFeedback({ imageId: image.id, text: message, error: true });
     } finally { setDescribingImageId(""); }
   }
@@ -1234,7 +1239,7 @@ export default function KittChat() {
         audio.current ||= new AudioContext();
         void audio.current.resume().then(() => playRoomSound("test"));
       } catch { /* Audio indisponible dans ce navigateur. */ }
-      setNotice("Test sonore joué. Les sons de messages, d’arrivée et de Buzz sont activés.");
+      setNotice("Test sonore joué. Messages, arrivées, Buzz et analyses photo sont sonorisés.");
     }
   }
 
@@ -1348,7 +1353,7 @@ export default function KittChat() {
           <div className="kc-roster-list">{members.length ? members.map((item,index)=><div className={`kc-person${identityTone(item.name) ? ` kc-person-${identityTone(item.name)}` : ""}`} key={`${item.name}-${index}`}>
             <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span>{item.name}{item.role && <small className="kc-person-role">{item.role}</small>}</span><i title="En ligne"/>
           </div>) : <small className="kc-no-members">Aucun propriétaire connecté pour l’instant.</small>}</div>
-          <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz</small></button>
+          <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz · analyses photo</small></button>
           <section className="kc-arrival-voice" aria-label="Annonce vocale des arrivées">
             <label><input type="checkbox" checked={speechEnabled} onChange={event => toggleSpeechForVisit(event.target.checked)}/><Volume2 size={15}/><span>Écouter les nouvelles réponses KITT/KARR</span></label>
             <small>{speechVoices ? `Voix AGX : ${speechVoices.KITT} · ${speechVoices.KARR}` : "Voix AGX du salon; active-les pour cette visite uniquement."}</small>
