@@ -70,6 +70,14 @@ function clockLabel(timestamp: number) {
   return new Intl.DateTimeFormat("fr-BE", { hour: "2-digit", minute: "2-digit" }).format(timestamp);
 }
 
+function identityTone(name: string) {
+  const normalized = name.trim().toLocaleLowerCase("fr-BE");
+  if (normalized === "manix") return "manix";
+  if (normalized === "kitt") return "kitt";
+  if (normalized === "karr") return "karr";
+  return "";
+}
+
 export default function KittChat() {
   const [apiBase, setApiBase] = useState("");
   const [service, setService] = useState<"checking" | "online" | "offline">("checking");
@@ -89,6 +97,7 @@ export default function KittChat() {
   const [emotesOpen, setEmotesOpen] = useState(false);
   const [roomToast, setRoomToast] = useState("");
   const [buzzActive, setBuzzActive] = useState(false);
+  const [buzzIntensity, setBuzzIntensity] = useState<"normal" | "hyper">("normal");
   const [buzzCooldown, setBuzzCooldown] = useState(0);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -148,21 +157,22 @@ export default function KittChat() {
 
   useEffect(() => { soundEnabled.current = sound; }, [sound]);
 
-  function playRoomSound(kind: "message" | "join" | "buzz" | "test") {
+  function playRoomSound(kind: "message" | "join" | "buzz" | "hyper-buzz" | "test") {
     if (!soundEnabled.current) return;
     try {
       audio.current ||= new AudioContext();
       const context = audio.current;
       if (context.state === "suspended") void context.resume();
-      const notes = kind === "buzz" ? [220, 165] : kind === "join" || kind === "test" ? [660, 880] : [700];
+      const notes = kind === "hyper-buzz" ? [330, 220, 294, 165] : kind === "buzz" ? [220, 165] : kind === "join" || kind === "test" ? [660, 880] : [700];
       const startAt = context.currentTime;
       notes.forEach((frequency, index) => {
         const oscillator = context.createOscillator();
         const gain = context.createGain();
-        const noteStart = startAt + index * (kind === "buzz" ? 0.16 : 0.14);
-        const noteLength = kind === "buzz" ? 0.22 : kind === "test" || kind === "join" ? 0.16 : 0.11;
-        const peak = kind === "buzz" ? 0.16 : kind === "test" ? 0.12 : kind === "join" ? 0.095 : 0.07;
-        oscillator.type = kind === "buzz" ? "triangle" : "sine";
+        const isBuzz = kind === "buzz" || kind === "hyper-buzz";
+        const noteStart = startAt + index * (kind === "hyper-buzz" ? 0.12 : isBuzz ? 0.16 : 0.14);
+        const noteLength = kind === "hyper-buzz" ? 0.18 : isBuzz ? 0.22 : kind === "test" || kind === "join" ? 0.16 : 0.11;
+        const peak = kind === "hyper-buzz" ? 0.19 : kind === "buzz" ? 0.16 : kind === "test" ? 0.12 : kind === "join" ? 0.095 : 0.07;
+        oscillator.type = isBuzz ? "triangle" : "sine";
         oscillator.frequency.value = frequency;
         gain.gain.setValueAtTime(0.0001, noteStart);
         gain.gain.exponentialRampToValueAtTime(peak, noteStart + 0.018);
@@ -181,8 +191,9 @@ export default function KittChat() {
     roomToastTimer.current = setTimeout(() => setRoomToast(""), 4500);
   }
 
-  function triggerBuzzEffect() {
+  function triggerBuzzEffect(intensity: "normal" | "hyper" = "normal") {
     setBuzzActive(false);
+    setBuzzIntensity(intensity);
     window.requestAnimationFrame(() => setBuzzActive(true));
     if (buzzTimer.current) clearTimeout(buzzTimer.current);
     buzzTimer.current = setTimeout(() => setBuzzActive(false), 1600);
@@ -212,11 +223,20 @@ export default function KittChat() {
       if (packet.type === "presence") { setMembers(Array.isArray(packet.members) ? packet.members as Member[] : []); return; }
       if (packet.type === "buzz") {
         const sender = typeof packet.name === "string" ? packet.name : "Un membre";
+        const hyper = packet.intensity === "hyper";
         if (sender !== member) {
-          triggerBuzzEffect();
-          showRoomToast(`${sender} vous fait signe avec un Buzz KITT !`);
-          playRoomSound("buzz");
+          triggerBuzzEffect(hyper ? "hyper" : "normal");
+          showRoomToast(hyper ? `BUZZ HYPER de ${sender} — secoue le salon !` : `${sender} vous fait signe avec un Buzz KITT !`);
+          playRoomSound(hyper ? "hyper-buzz" : "buzz");
         }
+        return;
+      }
+      if (packet.type === "show") {
+        const participants = Array.isArray(packet.participants)
+          ? packet.participants.filter((name): name is string => typeof name === "string" && ["KITT", "KARR"].includes(name.toUpperCase()))
+          : [];
+        const names = participants.map(name => name.toUpperCase()).filter((name, index, all) => all.indexOf(name) === index);
+        if (names.length) showRoomToast(`Joute ${names.join("–")} en cours !`);
         return;
       }
       if (packet.type === "message" && packet.message && typeof packet.message === "object") {
@@ -397,7 +417,7 @@ export default function KittChat() {
         <small>{service === "online" ? "Visite libre · écriture réservée aux propriétaires validés" : "Le salon sera disponible lorsque le service sera relié."}</small>
       </div>
     </section>
-    <div className={`kc-window${buzzActive ? " kc-buzz-effect" : ""}`}>
+    <div className={`kc-window${buzzActive ? " kc-buzz-effect" : ""}${buzzActive && buzzIntensity === "hyper" ? " kc-buzz-hyper" : ""}`}>
       <div className="kc-titlebar"><span className="kc-app-icon"><MessageCircle size={15}/></span><strong>KITT-FRANCO-BELGE · SALON COMMUNAUTAIRE</strong><div className="kc-window-buttons"><span>−</span><span>□</span><span>×</span></div></div>
       <div className="kc-toolbar"><span>Fichier</span><span>Salon</span><span>Affichage</span><span>Aide</span><span className="kc-toolbar-right">KITT Network v1.0</span></div>
       {(service === "online" || socketState === "connecting") && <div className="kc-room-tabs" role="tablist" aria-label="Salons de discussion">
@@ -409,8 +429,8 @@ export default function KittChat() {
           <div className="kc-messages" ref={messageBox} role="log" aria-live="polite" aria-relevant="additions text">
             {socketState === "connecting" && <p className="kc-empty">Le salon s’ouvre…</p>}
             {socketState === "online" && !lines.length && <p className="kc-empty">Le salon s’éveille… Lance la conversation quand ton profil sera validé.</p>}
-            {lines.map(line => <article className={`kc-line ${line.kind === "system" ? "system" : ""}`} key={line.id}>
-              <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong>{line.name}</strong><span>{renderChatText(line.text)}</span>
+          {lines.map(line => <article className={`kc-line${line.kind === "system" ? " system" : ""}${identityTone(line.name) ? ` kc-line-${identityTone(line.name)}` : ""}`} key={line.id}>
+              <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong className={identityTone(line.name)}>{line.name}</strong><span>{renderChatText(line.text)}</span>
             </article>)}
           </div>
           {isMember ? <form className="kc-compose" onSubmit={sendMessage}>
@@ -433,7 +453,7 @@ export default function KittChat() {
         </section>
         <aside className="kc-roster">
           <div className="kc-roster-heading"><Users size={17}/><strong>Membres présents</strong><span>{members.length}</span></div>
-          <div className="kc-roster-list">{members.length ? members.map((item,index)=><div className={`kc-person${item.admin ? " kc-person-bot" : ""}`} key={`${item.name}-${index}`}>
+          <div className="kc-roster-list">{members.length ? members.map((item,index)=><div className={`kc-person${identityTone(item.name) ? ` kc-person-${identityTone(item.name)}` : ""}`} key={`${item.name}-${index}`}>
             <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span>{item.name}{item.role && <small className="kc-person-role">{item.role}</small>}</span><i title="En ligne"/>
           </div>) : <small className="kc-no-members">Aucun propriétaire connecté pour l’instant.</small>}</div>
           <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz</small></button>
