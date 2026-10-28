@@ -398,7 +398,7 @@ export default function KittChat() {
       </div>
     </section>
     <div className={`kc-window${buzzActive ? " kc-buzz-effect" : ""}`}>
-      <div className="kc-titlebar"><span className="kc-app-icon"><MessageCircle size={15}/></span><strong>MSN CHAT · KNIGHT RIDER FRANCE</strong><div className="kc-window-buttons"><span>−</span><span>□</span><span>×</span></div></div>
+      <div className="kc-titlebar"><span className="kc-app-icon"><MessageCircle size={15}/></span><strong>KITT-FRANCO-BELGE · SALON COMMUNAUTAIRE</strong><div className="kc-window-buttons"><span>−</span><span>□</span><span>×</span></div></div>
       <div className="kc-toolbar"><span>Fichier</span><span>Salon</span><span>Affichage</span><span>Aide</span><span className="kc-toolbar-right">KITT Network v1.0</span></div>
       {(service === "online" || socketState === "connecting") && <div className="kc-room-tabs" role="tablist" aria-label="Salons de discussion">
         {rooms.map(item => <button key={item.id} role="tab" aria-selected={room.id === item.id} className={room.id === item.id ? "active" : ""} onClick={() => setRoom(item)}>{item.label}</button>)}
