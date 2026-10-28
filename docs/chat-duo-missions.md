@@ -2,6 +2,8 @@
 
 Le salon KITT-Franco-Belge · Des Chevaliers propose deux administrateurs IA : KITT aide à organiser une recherche ou un diagnostic ; KARR examine les hypothèses et apporte une contre-expertise avec son humour de rival.
 
+Lorsqu'une pique vise clairement KITT, il peut répondre une fois à KARR puis rendre la parole aux membres. Cette riposte est limitée à une toutes les 90 secondes et trois par dix minutes ; ces limites n'empêchent pas un membre d'appeler KITT directement. Les échanges récents évoquant la fatigue ou un souci de santé demandent un ton calme et coupent les spectacles/Buzz. « Bonne nuit » reçoit une clôture sans question et ferme le tour en attente.
+
 ## Utilisation
 
 Appelez KITT ou KARR par leur nom. Le personnage conserve un tour de conversation pour comprendre votre réponse suivante sans répéter son nom. Les questions courantes et les variantes de français sont traitées comme de la conversation ; une difficulté technique du modèle doit être annoncée clairement.

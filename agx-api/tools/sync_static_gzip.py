@@ -1,6 +1,7 @@
 """Refresh existing gzip companions so aiohttp serves the deployed source."""
 from pathlib import Path
 import argparse
+import datetime
 import gzip
 import os
 import shutil
@@ -37,6 +38,9 @@ def sync(root: Path, backup: Path) -> int:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("static_directory", type=Path)
-    parser.add_argument("backup_directory", type=Path)
+    parser.add_argument("backup_directory", type=Path, nargs="?")
     args = parser.parse_args()
-    print("Updated:", sync(args.static_directory, args.backup_directory))
+    backup = args.backup_directory or args.static_directory.resolve().parent / "backups" / (
+        "static-gzip-" + datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+    )
+    print("Updated:", sync(args.static_directory, backup))

@@ -10,6 +10,8 @@ Le démarrage AUTO pouvait aussi attendre indéfiniment la reprise d'un AudioCon
 
 Un second défaut de livraison masquait les changements : aiohttp servait des compagnons `.gz` périmés lorsque le navigateur acceptait la compression, même si le fichier source était à jour. Cinq compagnons ont été synchronisés avec leurs sources, avec sauvegarde sous `/home/kitt/kitt-ai/backups/micro-gzip-20261028`. Après toute modification des fichiers statiques, exécuter `agx-api/tools/sync_static_gzip.py` sur l'AGX avec les chemins du dossier statique et d'un nouveau dossier de sauvegarde. Vérifier ensuite la réponse HTTP avec compression activée.
 
+La même synchronisation est installée avant chaque démarrage du service via `/etc/systemd/system/kitt-kyronex.service.d/20-static-sync.conf` (source : `agx-api/kitt-kyronex-static-sync.conf`). Elle ne touche que les compagnons compressés existants de fichiers texte et garde une sauvegarde avant modification. Une erreur de synchronisation est journalisée sans empêcher le serveur de démarrer.
+
 Après actualisation, activer **AUTO** et autoriser le microphone si le navigateur le demande. Une autorisation refusée dans le navigateur doit être rétablie pour cette adresse. La confiance dans l'autorité locale est propre à chaque appareil ; elle n'est pas transférée par le simple fait d'ouvrir la page sur un autre ordinateur.
 
 ## Fichiers et vérification
