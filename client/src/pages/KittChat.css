@@ -106,6 +106,12 @@
 .kc-person-karr .kc-person-role{padding-left:4px;border-left:2px solid #ffb633;background:linear-gradient(90deg,#ff9e2f2a,#ffe05a18 55%,transparent 95%)}
 .kc-person-manix{border-color:#347fb4;background:linear-gradient(110deg,#102638,#141923);box-shadow:inset 2px 0 #63b8ff,0 0 12px #2a8dd522}
 .kc-person-manix .kc-avatar{border-color:#63b8ff;background:linear-gradient(135deg,#153b59,#0c1d2c);color:#e8f4fb;box-shadow:0 0 12px #3aa7ff55}
+.kc-line-kitt strong{color:#ff6575}
+.kc-line-kitt>span{color:#ffb7c0}
+.kc-line-karr strong{background:linear-gradient(90deg,#ff8733,#ffc43d 55%,#fff08a);background-clip:text;-webkit-background-clip:text;color:transparent}
+.kc-line-karr>span{color:#ffe2a0}
+.kc-line-manix strong{color:#63b8ff}
+.kc-line-manix>span{color:#b8dcf9}
 .kc-buzz-hyper{animation:kc-buzz-hyper-rattle .095s linear 22;border-color:#ffcf3f!important;box-shadow:0 18px 65px #000b,0 0 48px #ff263dcc,0 0 0 4px #ffcf3f66!important}
 .kc-buzz-hyper .kc-titlebar{background:linear-gradient(90deg,#8e1526,#e33347 34%,#b98a1d 72%,#8e1526)}
 @keyframes kc-buzz-hyper-rattle{0%,100%{transform:translate(0,0) rotate(0)}20%{transform:translate(-12px,3px) rotate(-.45deg)}40%{transform:translate(12px,-3px) rotate(.45deg)}60%{transform:translate(-10px,-2px) rotate(-.3deg)}80%{transform:translate(10px,2px) rotate(.3deg)}}
