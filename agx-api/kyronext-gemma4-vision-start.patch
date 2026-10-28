@@ -5,6 +5,26 @@
  OLLAMA_MODEL="gemma4:e2b"
  GEMMA26_MODEL="/home/kitt/models/gemma-4-26B-A4B-QAT-UD-Q4_K_XL/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf"
 +GEMMA26_MMPROJ="/home/kitt/models/gemma-4-26B-A4B-QAT-UD-Q4_K_XL/mmproj-BF16.gguf"
+
+@@ -41,8 +42,8 @@ case "$HOST" in
+     THREADS=12
+     CTX=8192
+-    LLAMA_BATCH=512
+-    LLAMA_UBATCH=128
++    LLAMA_BATCH=1024
++    LLAMA_UBATCH=1024
+     LLAMA_KV_K=q8_0
+     LLAMA_KV_V=q8_0
+
+@@ -58,8 +59,8 @@ case "$HOST" in
+     THREADS=12
+     CTX=8192
+-    LLAMA_BATCH=512
+-    LLAMA_UBATCH=128
++    LLAMA_BATCH=1024
++    LLAMA_UBATCH=1024
+     LLAMA_KV_K=q8_0
+     LLAMA_KV_V=q8_0
  
 @@ -256,2 +257,10 @@
 -    $LLAMA_SERVER_BIN --model "$MODEL" --host 0.0.0.0 --port 8080 \

@@ -42,6 +42,9 @@ def _model_jpeg(data: bytes) -> bytes:
         with Image.open(BytesIO(data)) as source:
             source.seek(0)  # Animated GIFs use their first frame in the chat.
             frame = ImageOps.exif_transpose(source)
+            # Gemma 4 vision in the AGX llama.cpp build can assert on larger
+            # images (non-causal attention needs a larger physical batch).
+            frame.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
             rgba = frame.convert("RGBA")
             rgb = Image.new("RGB", rgba.size, (255, 255, 255))
             rgb.paste(rgba, mask=rgba.getchannel("A"))
