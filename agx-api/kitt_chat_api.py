@@ -277,17 +277,11 @@ def _kitt_context(room: str, context: list[dict[str, Any]] | None = None) -> str
 
 
 def _kitt_model_config() -> tuple[str, str, str]:
-    host = (
-        os.environ.get("KYRONEX_LLM_SERVER")
-        or os.environ.get("OLLAMA_HOST")
-        or "http://127.0.0.1:11434"
-    ).rstrip("/")
-    model = (
-        os.environ.get("KYRONEX_LLM_MODEL")
-        or os.environ.get("KITT_CHAT_MODEL")
-        or os.environ.get("OLLAMA_MODEL", "gemma3:1b")
-    )
-    endpoint = "/v1/chat/completions" if ":8080" in host or host.endswith(":8080") else "/api/chat"
+    # Match kyronex_server.py defaults exactly: with USE_OLLAMA=0 the launcher
+    # starts llama-server on 8080 and does not export KYRONEX_LLM_* variables.
+    host = (os.environ.get("KYRONEX_LLM_SERVER") or "http://127.0.0.1:8080").rstrip("/")
+    model = os.environ.get("KYRONEX_LLM_MODEL") or "local"
+    endpoint = "/api/chat" if "11434" in host else "/v1/chat/completions"
     return host, model, endpoint
 
 
