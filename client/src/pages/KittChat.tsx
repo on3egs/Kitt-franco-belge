@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { ArrowRight, Bell, BellOff, CarFront, Check, CircleHelp, Download, Link2, MessageCircle, Radio, ShieldCheck, Smile, Users, Wifi, WifiOff, Zap } from "lucide-react";
+import { ArrowRight, Bell, BellOff, CarFront, Check, CircleHelp, Download, FolderOpen, Link2, MessageCircle, Radio, Save, ShieldCheck, Smile, Trash2, Users, Volume2, Wifi, WifiOff, Zap } from "lucide-react";
 import { getApiBase } from "@/lib/tunnel";
 import "./KittChat.css";
 
@@ -7,7 +7,11 @@ type Room = { id: string; label: string; topic: string };
 type ChatLine = { id: string; name: string; text: string; timestamp: number; kind?: "system" | "message"; liveBot?: boolean };
 type Member = { name: string; role?: string; admin?: boolean };
 type PendingTurn = { speaker: "KITT" | "KARR"; expiresAt: number };
+type BotStatus = "KITT" | "KARR";
 type Owner = { id: string; name: string; car: string; year: string; photos: string[] };
+type MemoryFrequency = "quiet" | "balanced" | "lively";
+type MissionMemory = { notes: string; enabled: boolean; frequency: MemoryFrequency; voice: boolean };
+const EMPTY_MISSION_MEMORY: MissionMemory = { notes: "", enabled: false, frequency: "balanced", voice: false };
 type SavePickerWindow = Window & {
   showSaveFilePicker?: (options: {
     suggestedName: string;
@@ -101,8 +105,14 @@ export default function KittChat() {
   const [buzzActive, setBuzzActive] = useState(false);
   const [buzzIntensity, setBuzzIntensity] = useState<"normal" | "hyper">("normal");
   const [pendingTurn, setPendingTurn] = useState<PendingTurn | null>(null);
+  const [botStatus, setBotStatus] = useState<BotStatus | null>(null);
   const [turnRemaining, setTurnRemaining] = useState(0);
   const [buzzCooldown, setBuzzCooldown] = useState(0);
+  const [missionMemory, setMissionMemory] = useState<MissionMemory>(EMPTY_MISSION_MEMORY);
+  const [savedVoicePreference, setSavedVoicePreference] = useState(false);
+  const [memoryBusy, setMemoryBusy] = useState(false);
+  const [memoryFeedback, setMemoryFeedback] = useState("");
+  const [memoryFeedbackError, setMemoryFeedbackError] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const socket = useRef<WebSocket | null>(null);
@@ -112,7 +122,17 @@ export default function KittChat() {
   const roomToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const buzzTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const buzzCooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const botStatusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const voiceMessageIds = useRef<Set<string>>(new Set());
+  const voiceEnabled = useRef(false);
+  const memoryEditRevision = useRef(0);
+  const voicePreferenceTouched = useRef(false);
   const isMember = Boolean(sessionToken);
+
+  function showMemoryFeedback(text: string, isError = false) {
+    setMemoryFeedback(text);
+    setMemoryFeedbackError(isError);
+  }
 
   useEffect(() => {
     const line = lines.find(item => item.liveBot && (typedBotText[item.id] ?? "").length < item.text.length);
@@ -177,6 +197,94 @@ export default function KittChat() {
   }, []);
 
   useEffect(() => { soundEnabled.current = sound; }, [sound]);
+  useEffect(() => { voiceEnabled.current = missionMemory.voice; }, [missionMemory.voice]);
+
+  useEffect(() => {
+    if (!apiBase || !sessionToken) return;
+    const controller = new AbortController();
+    const revisionAtStart = memoryEditRevision.current;
+    voicePreferenceTouched.current = false;
+    setMemoryBusy(true);
+    showMemoryFeedback("Chargement du dossier...");
+    void (async () => {
+      try {
+        const response = await fetch(`${apiBase}/api/kitt-chat/memory`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${sessionToken}` },
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const data: unknown = await response.json().catch(() => null);
+        if (!response.ok) {
+          const detail = data && typeof data === "object" && "error" in data && typeof data.error === "string" ? data.error : "Le dossier n'a pas pu etre charge.";
+          throw new Error(detail);
+        }
+        if (controller.signal.aborted) return;
+        const loaded = normalizeMissionMemory(data);
+        setSavedVoicePreference(loaded.voice);
+        loaded.voice = false; // Consentement vocal local a reactiver a chaque visite.
+        if (memoryEditRevision.current === revisionAtStart) {
+          setMissionMemory(loaded);
+          showMemoryFeedback("Dossier charge. La voix reste desactivee jusqu'a son activation sur cet appareil.");
+        } else {
+          showMemoryFeedback("Le dossier a ete charge sans remplacer tes modifications en cours. Utilise Charger pour les remplacer volontairement.");
+        }
+      } catch (cause) {
+        if (!controller.signal.aborted) showMemoryFeedback(cause instanceof Error ? cause.message : "Impossible de charger le dossier.", true);
+      } finally {
+        if (!controller.signal.aborted) setMemoryBusy(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [apiBase, sessionToken]);
+
+  function stopRoomVoice() {
+    voiceMessageIds.current.clear();
+    try { window.speechSynthesis?.cancel(); } catch { /* La voix reste facultative selon le navigateur. */ }
+  }
+
+  function clearBotStatus() {
+    if (botStatusTimer.current) clearTimeout(botStatusTimer.current);
+    botStatusTimer.current = null;
+    setBotStatus(null);
+  }
+
+  function showBotStatus(speaker: BotStatus) {
+    if (botStatusTimer.current) clearTimeout(botStatusTimer.current);
+    setBotStatus(speaker);
+    botStatusTimer.current = setTimeout(() => {
+      botStatusTimer.current = null;
+      setBotStatus(null);
+    }, 30_000);
+  }
+
+  useEffect(() => {
+    if (!missionMemory.voice) return;
+    const synthesis = window.speechSynthesis;
+    if (!synthesis || typeof window.SpeechSynthesisUtterance !== "function") return;
+    for (const line of lines) {
+      if (line.liveBot || !voiceMessageIds.current.has(line.id)) continue;
+      voiceMessageIds.current.delete(line.id);
+      const text = line.text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+      if (!text) continue;
+      try {
+        const utterance = new SpeechSynthesisUtterance(text);
+        const frenchVoice = synthesis.getVoices().find(voice => /^fr(?:-|$)/i.test(voice.lang));
+        utterance.lang = frenchVoice?.lang || "fr-FR";
+        if (frenchVoice) utterance.voice = frenchVoice;
+        utterance.rate = 0.96;
+        utterance.pitch = identityTone(line.name) === "karr" ? 0.84 : 1;
+        utterance.onerror = event => {
+          if (event.error !== "canceled" && event.error !== "interrupted") {
+            showMemoryFeedback("La voix du navigateur n’a pas pu lire ce message. Vérifie la sortie audio et les voix françaises installées.", true);
+          }
+        };
+        synthesis.speak(utterance);
+      } catch {
+        showMemoryFeedback("La synthèse vocale n’est pas disponible dans ce navigateur.", true);
+      }
+    }
+  }, [lines, missionMemory.voice]);
 
   useEffect(() => {
     if (!pendingTurn) { setTurnRemaining(0); return; }
@@ -248,6 +356,7 @@ export default function KittChat() {
       let packet: Record<string, unknown>;
       try { packet = JSON.parse(String(event.data)) as Record<string, unknown>; } catch { return; }
       if (packet.type === "ready") {
+        clearBotStatus();
         setSocketState("online");
         setTypedBotText({});
         setLines(Array.isArray(packet.history) ? packet.history as ChatLine[] : []);
@@ -255,6 +364,11 @@ export default function KittChat() {
         return;
       }
       if (packet.type === "presence") { setMembers(Array.isArray(packet.members) ? packet.members as Member[] : []); return; }
+      if (packet.type === "bot_status") {
+        if (packet.active === true && (packet.speaker === "KITT" || packet.speaker === "KARR")) showBotStatus(packet.speaker);
+        else if (packet.active === false) clearBotStatus();
+        return;
+      }
       if (packet.type === "buzz") {
         const sender = typeof packet.name === "string" ? packet.name : "Un membre";
         const hyper = packet.intensity === "hyper";
@@ -285,6 +399,7 @@ export default function KittChat() {
       if (packet.type === "message" && packet.message && typeof packet.message === "object") {
         const incoming = packet.message as ChatLine;
         const line: ChatLine = { ...incoming, liveBot: incoming.kind !== "system" && ["kitt", "karr"].includes(identityTone(incoming.name)) };
+        if (line.liveBot && voiceEnabled.current) voiceMessageIds.current.add(line.id);
         setLines(current => [...current.slice(-98), line]);
         if (line.kind === "system" && line.text.endsWith(" entre dans le salon.") && !line.text.startsWith(`${member} `)) {
           const joinedName = line.text.slice(0, -" entre dans le salon.".length);
@@ -296,6 +411,8 @@ export default function KittChat() {
         return;
       }
       if (packet.type === "room") {
+        clearBotStatus();
+        stopRoomVoice();
         setTypedBotText({});
         setLines(Array.isArray(packet.history) ? packet.history as ChatLine[] : []);
         setPendingTurn(null);
@@ -306,6 +423,8 @@ export default function KittChat() {
     };
     client.onerror = () => setError("Connexion interrompue. Vérifie le relais et réessaie.");
     client.onclose = event => {
+      clearBotStatus();
+      stopRoomVoice();
       if (socket.current === client) { socket.current = null; setSocketState("closed"); }
       if (event.code === 4001 && isMember) {
         setSessionToken(""); setMember("");
@@ -315,6 +434,8 @@ export default function KittChat() {
       } else if (event.code === 1013) setError("Le salon est momentanément complet. Réessaie dans un instant.");
     };
     return () => {
+      clearBotStatus();
+      stopRoomVoice();
       if (socket.current === client) socket.current = null;
       client.close(1000, "Navigation");
     };
@@ -330,20 +451,27 @@ export default function KittChat() {
     if (roomToastTimer.current) clearTimeout(roomToastTimer.current);
     if (buzzTimer.current) clearTimeout(buzzTimer.current);
     if (buzzCooldownTimer.current) clearInterval(buzzCooldownTimer.current);
+    clearBotStatus();
+    stopRoomVoice();
     void audio.current?.close();
   }, []);
 
   function disconnect() {
+    clearBotStatus();
+    stopRoomVoice();
     socket.current?.close(1000, "Déconnexion");
     socket.current = null;
     setSocketState("closed"); setLines([]); setMembers([]);
   }
 
   function forgetDevice() {
+    clearBotStatus();
+    stopRoomVoice();
     socket.current?.close(1000, "Oubli de cet appareil");
     socket.current = null;
     localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY);
     setSessionToken(""); setMember(""); setSocketState("closed"); setLines([]); setMembers([]);
+    setMissionMemory(EMPTY_MISSION_MEMORY); setSavedVoicePreference(false); voicePreferenceTouched.current = false; showMemoryFeedback("");
   }
 
   async function enter(event: FormEvent) {
@@ -368,6 +496,124 @@ export default function KittChat() {
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Impossible de rejoindre le salon.");
     }
+  }
+
+  function normalizeMissionMemory(value: unknown): MissionMemory {
+    const data = value && typeof value === "object" ? value as Partial<MissionMemory> : {};
+    const frequency: MemoryFrequency = data.frequency === "quiet" || data.frequency === "lively" ? data.frequency : "balanced";
+    return {
+      notes: typeof data.notes === "string" ? data.notes.slice(0, 2000) : "",
+      enabled: data.enabled === true,
+      frequency,
+      voice: data.voice === true,
+    };
+  }
+
+  async function missionMemoryRequest(method: "GET" | "PUT" | "DELETE") {
+    if (!apiBase || !sessionToken) {
+      showMemoryFeedback("Reconnecte-toi au salon pour gérer ton dossier.", true);
+      return;
+    }
+    const revisionAtStart = memoryEditRevision.current;
+    const memoryToSave = method === "PUT"
+      ? { ...missionMemory, voice: voicePreferenceTouched.current ? missionMemory.voice : savedVoicePreference }
+      : missionMemory;
+    setMemoryBusy(true);
+    showMemoryFeedback(method === "GET" ? "Chargement du dossier…" : method === "PUT" ? "Enregistrement du dossier…" : "Effacement du dossier…");
+    try {
+      const response = await fetch(`${apiBase}/api/kitt-chat/memory`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+          ...(method === "PUT" ? { "Content-Type": "application/json" } : {}),
+        },
+        ...(method === "PUT" ? { body: JSON.stringify(memoryToSave) } : {}),
+        cache: "no-store",
+      });
+      let data: unknown = null;
+      if (response.status !== 204) {
+        try { data = await response.json(); } catch { data = null; }
+      }
+      if (!response.ok) {
+        const detail = data && typeof data === "object" && "error" in data && typeof data.error === "string" ? data.error : "La demande a été refusée par le serveur.";
+        throw new Error(detail);
+      }
+      if (method === "DELETE") {
+        stopRoomVoice();
+        voicePreferenceTouched.current = false;
+        memoryEditRevision.current += 1;
+        setMissionMemory(EMPTY_MISSION_MEMORY);
+        setSavedVoicePreference(false);
+        showMemoryFeedback("Dossier effacé. Les notes et options sont revenues aux réglages par défaut.");
+      } else if (method === "GET") {
+        const loaded = normalizeMissionMemory(data);
+        setSavedVoicePreference(loaded.voice);
+        loaded.voice = false;
+        if (memoryEditRevision.current !== revisionAtStart) {
+          showMemoryFeedback("Le chargement n'a pas remplacÃ© tes modifications en cours.");
+          return;
+        }
+        voicePreferenceTouched.current = false;
+        if (loaded.voice && !speechVoiceAvailable()) {
+          loaded.voice = false;
+          showMemoryFeedback("Dossier chargé, mais la synthèse vocale n’est pas disponible dans ce navigateur. Désactive l’option Voix.", true);
+        } else {
+          showMemoryFeedback("Dossier chargé depuis le serveur.");
+        }
+        setMissionMemory(loaded);
+      } else {
+        const saved = normalizeMissionMemory(data ?? missionMemory);
+        setSavedVoicePreference(saved.voice);
+        if (saved.voice && !speechVoiceAvailable()) {
+          saved.voice = false;
+          showMemoryFeedback("Dossier enregistré. La voix reste désactivée : la synthèse vocale n’est pas disponible dans ce navigateur.", true);
+        } else {
+          showMemoryFeedback("Dossier enregistré. Tes notes ne sont utilisées que si tu actives explicitement la mémoire.");
+        }
+        if (memoryEditRevision.current === revisionAtStart) {
+          setMissionMemory({ ...saved, voice: missionMemory.voice });
+        } else {
+          showMemoryFeedback("Le dossier a été enregistré. Les changements faits pendant l’enregistrement restent dans le formulaire.");
+        }
+      }
+    } catch (cause) {
+      showMemoryFeedback(cause instanceof Error ? cause.message : "Impossible de contacter le service mémoire.", true);
+    } finally {
+      setMemoryBusy(false);
+    }
+  }
+
+  function speechVoiceAvailable() {
+    try {
+      return typeof window.SpeechSynthesisUtterance === "function"
+        && typeof window.speechSynthesis?.speak === "function";
+    } catch { return false; }
+  }
+
+  function editMissionMemory(update: (current: MissionMemory) => MissionMemory) {
+    memoryEditRevision.current += 1;
+    setMissionMemory(update);
+  }
+
+  function toggleMissionVoice(enabled: boolean) {
+    if (enabled && !speechVoiceAvailable()) {
+      showMemoryFeedback("La synthèse vocale n’est pas disponible dans ce navigateur.", true);
+      return;
+    }
+    if (!enabled) stopRoomVoice();
+    voicePreferenceTouched.current = true;
+    editMissionMemory(current => ({ ...current, voice: enabled }));
+    showMemoryFeedback(enabled ? "Voix activée pour les prochains messages KITT/KARR. Enregistre pour garder ce réglage." : "Voix coupée; la lecture en cours a été arrêtée.");
+  }
+
+  function insertQuickPrompt(prompt: string) {
+    setMessage(current => current.trim() ? `${current.trim()} ${prompt}` : prompt);
+    requestAnimationFrame(() => document.getElementById("kc-message")?.focus());
+  }
+
+  function eraseMissionMemory() {
+    if (!window.confirm("Effacer les notes et réglages de ton dossier de mission ?")) return;
+    void missionMemoryRequest("DELETE");
   }
 
   function sendMessage(event: FormEvent) {
@@ -472,7 +718,10 @@ export default function KittChat() {
       {socketState !== "closed" ? <div className="kc-content">
         <section className="kc-conversation" aria-label={`Messages du salon ${room.label}`}>
           <div className="kc-room-topic"><strong>{room.label}</strong><span>{room.topic}</span></div>
-          {pendingTurn && <div className={`kc-turn-indicator kc-turn-${pendingTurn.speaker.toLowerCase()}`} role="status" aria-live="polite">
+          {botStatus ? <div className={`kc-bot-status kc-bot-${botStatus.toLowerCase()}`} role="status" aria-live="polite">
+            <span className="kc-bot-scanner" aria-hidden="true"><i/><i/><i/><i/><i/></span>
+            <strong>{botStatus} pr&#233;pare sa r&#233;ponse&#8230;</strong>
+          </div> : pendingTurn && <div className={`kc-turn-indicator kc-turn-${pendingTurn.speaker.toLowerCase()}`} role="status" aria-live="polite">
             <span className="kc-turn-led" aria-hidden="true"/>
             <strong>{pendingTurn.speaker} attend une réponse</strong>
             <span className="kc-turn-countdown" aria-hidden="true">{turnRemaining}s</span>
@@ -493,6 +742,14 @@ export default function KittChat() {
               <input id="kc-message" maxLength={500} value={message} onChange={event => setMessage(event.target.value)} placeholder={`Écrire dans ${room.label}…`} disabled={socketState !== "online"}/>
               <span>{message.length}/500</span><button type="submit" disabled={!message.trim() || socketState !== "online"}>Envoyer</button>
             </div>
+            <div className="kc-quick-prompts" role="group" aria-label="Questions rapides à insérer">
+              <span>MISSIONS RAPIDES</span>
+              <button type="button" onClick={() => insertQuickPrompt("KITT, aide-moi à préparer un diagnostic pour ma Pontiac. Pose-moi les questions une par une.")} disabled={socketState !== "online"}>Atelier technique</button>
+              <button type="button" onClick={() => insertQuickPrompt("KITT, propose-moi un quiz Knight Rider de cinq questions, une par une, et attends ma réponse entre chaque question.")} disabled={socketState !== "online"}>Quiz K2000</button>
+              <button type="button" onClick={() => insertQuickPrompt("KITT, présente-toi à un nouveau membre et explique ce que tu peux faire dans ce salon.")} disabled={socketState !== "online"}>Présentation</button>
+              <button type="button" onClick={() => insertQuickPrompt("KARR, examine les hypothèses de notre diagnostic : quelles vérifications manquent et pourquoi ?")} disabled={socketState !== "online"}>Contre-expertise KARR</button>
+              <small>Un clic prépare le texte dans la saisie; rien n’est envoyé automatiquement.</small>
+            </div>
             <div className="kc-compose-tools">
               <div className="kc-emote-wrap">
                 <button type="button" className="kc-emote-toggle" aria-expanded={emotesOpen} aria-label="Ouvrir les émoticônes Knight Rider" onClick={() => setEmotesOpen(value => !value)}><Smile size={15}/> Émoticônes KITT</button>
@@ -511,6 +768,27 @@ export default function KittChat() {
             <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span>{item.name}{item.role && <small className="kc-person-role">{item.role}</small>}</span><i title="En ligne"/>
           </div>) : <small className="kc-no-members">Aucun propriétaire connecté pour l’instant.</small>}</div>
           <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz</small></button>
+          {isMember && <details className="kc-mission-panel">
+            <summary><FolderOpen size={16}/><span><strong>Dossiers de mission</strong><small>Mémoire volontaire · {missionMemory.notes.length}/2000</small></span></summary>
+            <div className="kc-mission-body">
+              <p className="kc-mission-warning"><strong>Notes partagées avec KITT/KARR :</strong> leurs réponses dans le salon peuvent les mentionner. N’y inscris pas de secret.</p>
+              <p className="kc-mission-explainer">Tes notes restent désactivées par défaut. Active leur usage pour qu’elles servent à personnaliser les réponses publiques.</p>
+              <label className="kc-memory-check"><input type="checkbox" checked={missionMemory.enabled} onChange={event => editMissionMemory(current => ({ ...current, enabled: event.target.checked }))}/><span>Autoriser KITT/KARR à utiliser ces notes</span></label>
+              <label className="kc-memory-notes">Notes personnelles<textarea maxLength={2000} rows={5} value={missionMemory.notes} onChange={event => editMissionMemory(current => ({ ...current, notes: event.target.value.slice(0, 2000) }))} placeholder="Ex. modèle de Pontiac, projets en cours, préférences de discussion…"/><small>{missionMemory.notes.length}/2000 caractères</small></label>
+              <label className="kc-memory-select">Rythme des interventions spontanées<select value={missionMemory.frequency} onChange={event => editMissionMemory(current => ({ ...current, frequency: event.target.value as MemoryFrequency }))}><option value="quiet">Discret</option><option value="balanced">Équilibré</option><option value="lively">Plus présent</option></select></label>
+              <p className="kc-memory-frequency">Ce réglage concerne les interventions spontanées liées à tes notes. Les commandes explicites restent traitées normalement.</p>
+              <label className="kc-memory-check kc-memory-voice"><input type="checkbox" checked={missionMemory.voice} onChange={event => toggleMissionVoice(event.target.checked)}/><Volume2 size={15}/><span>Lire les nouveaux messages KITT/KARR avec une voix française du navigateur</span></label>
+              <p className="kc-memory-voice-note">La voix ne lit que les nouveaux messages reçus après activation, jamais l’historique. Désactiver la voix ou quitter le salon arrête la lecture.</p>
+              <p className="kc-memory-voice-note">Pr&eacute;f&eacute;rence de voix enregistr&eacute;e : {savedVoicePreference ? "oui" : "non"}. La voix reste d&eacute;sactiv&eacute;e au d&eacute;marrage et doit &ecirc;tre activ&eacute;e sur cet appareil &agrave; chaque visite.</p>
+              <div className="kc-memory-actions">
+                <button type="button" onClick={() => void missionMemoryRequest("GET")} disabled={memoryBusy}><FolderOpen size={14}/>Charger</button>
+                <button type="button" className="save" onClick={() => void missionMemoryRequest("PUT")} disabled={memoryBusy}><Save size={14}/>Enregistrer</button>
+                <button type="button" className="erase" onClick={eraseMissionMemory} disabled={memoryBusy}><Trash2 size={14}/>Effacer</button>
+              </div>
+              {memoryFeedback && <p className={`kc-memory-feedback${memoryFeedbackError ? " error" : ""}`} role={memoryFeedbackError ? "alert" : "status"} aria-live="polite">{memoryFeedback}</p>}
+              <p className="kc-memory-retention">Historique public : jusqu’à 500 messages par salon, conservés au maximum 90 jours.</p>
+            </div>
+          </details>}
           {isMember ? <button type="button" className="kc-leave" onClick={disconnect}>Quitter le salon</button> : <form className="kc-guest-join" onSubmit={enter}>
             <div className="kc-join-heading"><span>ACCÈS PROPRIÉTAIRE</span><small>PROFIL PHOTO VALIDÉ</small></div>
             {owners.length ? <label>Ton Pontiac sur le globe
