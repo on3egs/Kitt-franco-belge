@@ -9,6 +9,7 @@ const event=(s,name)=>new Promise((resolve,reject)=>{const t=setTimeout(()=>reje
  const ack=(s,name,p)=>s.timeout(5000).emitWithAck(name,p);
  try{
   await start();const url=`http://127.0.0.1:${service.port}`;for(const file of ['.env','server.js','package.json','test-multiplayer.js'])assert.equal((await fetch(url+'/'+file)).status,404,'Fichier privé servi : '+file);assert.equal((await fetch(url+'/block-mode.html')).status,200);
+  const privateClient=await connect(),privateCode='PRIVE-INVITATION-UNIQUE';assert.equal((await ack(privateClient,'room:join',{room:privateCode,name:'Salon prive'})).ok,true);const listing=event(privateClient,'room:list');privateClient.emit('room:list');assert.ok(!(await listing).some(r=>r.id===privateCode),'Un salon privé ne figure pas dans la liste publique');privateClient.disconnect();
   const a=await connect(),b=await connect();assert.equal((await ack(a,'profile:login',{name:'LILOU',pin:'incorrect'})).ok,false);const auth=await ack(a,'profile:login',{name:'LILOU',pin});assert.equal(auth.ok,true);
   assert.equal((await ack(a,'room:join',{room:'TEST',name:'Lilou'})).ok,true);assert.equal((await ack(b,'room:join',{room:'TEST',name:'Alex'})).players.length,2);
   const moved=event(b,'player:state');a.emit('player:state',{x:1,y:8,z:12,yaw:.4,id:'spoof',profile:'ALEXIA',driving:false});const position=await moved;assert.equal(position.id,a.id);assert.equal(position.profile,'LILOU');assert.equal(position.x,1);

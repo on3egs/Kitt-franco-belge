@@ -20,10 +20,10 @@ const {createGameServer}=require('./server');
  }
  try{
   await page.goto(`http://127.0.0.1:${service.port}/block-mode.html`);await page.waitForFunction(()=>window.KITTBlock?.inspect().ready);
-  assert.equal((await inspect()).creatures.length,13);
+  assert.equal((await inspect()).creatures.length,16);
   await page.click('#bestiaryOpen');
   await page.waitForFunction(()=>KITTBlock.inspect().audio.events.menuMusic>0);
-  for(const type of ['sheep','ghost','pumpkin','bat']){
+  for(const type of ['sheep','ghost','pumpkin','bat','demon']){
    await page.click(`[data-sample="${type}"]`);
    await page.waitForFunction(type=>KITTBlock.inspect().audio.events[type]>0,type);
   }
@@ -52,14 +52,14 @@ const {createGameServer}=require('./server');
   await key('keyup','Control','ControlLeft');await page.waitForFunction(()=>KITTBlock.inspect().player.height>1.7);
   await page.keyboard.press('Space');await page.waitForFunction(()=>KITTBlock.inspect().player.y>8.15);
   await page.waitForFunction(()=>KITTBlock.inspect().audio.events.gameMusic>0);
-  const animated=(await inspect()).creatures;assert.ok(animated.some((c,i)=>Math.hypot(c.x-initial[i].x,c.z-initial[i].z)>.1));
+  const animated=(await inspect()).creatures;assert.ok(animated.some((c,i)=>Math.hypot(c.x-initial[i].x,c.z-initial[i].z)>.1));assert.equal(animated.filter(c=>c.type==='demon').length,3);
   await page.screenshot({path:'test-results/halloween-world.png'});
   await page.keyboard.press('Escape');await page.waitForSelector('#menu:not(.hidden)');
   const stopped=(await inspect()).player;await key('keydown','z','KeyW');await page.waitForTimeout(300);await key('keyup','z','KeyW');
   assert.deepEqual((await inspect()).player,stopped,'Aucun déplacement en pause');
-  await page.click('#settingsOpen');await page.selectOption('#halloween','off');assert.equal((await inspect()).creatures.length,5);
+  await page.click('#settingsOpen');await page.selectOption('#weather','rain');assert.equal((await inspect()).weather,true);await page.selectOption('#halloween','off');assert.equal((await inspect()).creatures.length,8);
   await page.selectOption('#voice','off');await page.click('[data-close="settingsPanel"]');await page.reload();await page.waitForFunction(()=>window.KITTBlock?.inspect().ready);
-  assert.equal((await inspect()).halloween,false);assert.equal((await inspect()).speech.enabled,false);
+  assert.equal((await inspect()).halloween,false);assert.equal((await inspect()).speech.enabled,false);assert.equal((await inspect()).weather,true);
   assert.deepEqual(errors,[]);
   console.log('OK Halloween/FPS : direction du regard, pas latéral, recul, accroupissement, saut, pause, animation des 13 créatures, réglages persistants et bulles.');
   console.log(`Lecture vocale : appels réels à SpeechSynthesis vérifiés ; ${speechBefore.frenchVoices} voix françaises disponibles dans Chrome de test.`);

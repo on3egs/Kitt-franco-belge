@@ -10,6 +10,7 @@
     "test:season": "node test-season.cjs",
     "test:site": "node test-site.cjs",
     "test:browser": "node test-browser.cjs",
+    "test:progression": "node test-progression.cjs",
     "test:public": "node test-public.cjs",
     "test:live": "node test-live.cjs"
   },

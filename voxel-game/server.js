@@ -13,7 +13,7 @@ async function createGameServer(options={}){
   const roomId=raw=>String(raw||'FLAG-PUBLIC').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,24)||'FLAG-PUBLIC';
   const validBlock=b=>b&&Number.isInteger(b.x)&&Number.isInteger(b.y)&&Number.isInteger(b.z)&&Math.abs(b.x)<=4096&&Math.abs(b.z)<=4096&&b.y>=0&&b.y<HEIGHT&&(b.type==='air'||Object.hasOwn(BLOCKS,b.type));
   function getRoom(id){if(rooms.has(id))return rooms.get(id);if(rooms.size>=32)return null;const r={id,players:new Map(),blocks:new Map(),dirty:false};try{const rows=JSON.parse(fs.readFileSync(path.join(dataDir,id+'.json'),'utf8'));for(const [k,t]of rows){const [x,y,z]=k.split(',').map(Number);if(validBlock({x,y,z,type:t}))r.blocks.set(k,t)}}catch{}rooms.set(id,r);return r}
-  function list(){return [...rooms.values()].map(r=>({id:r.id,players:r.players.size,capacity:16}))}
+  function list(){return [...rooms.values()].filter(r=>!r.id.startsWith('PRIVE-')).map(r=>({id:r.id,players:r.players.size,capacity:16}))}
   function broadcastList(){io.emit('room:list',list())}
   function flush(){for(const r of rooms.values())if(r.dirty){const file=path.join(dataDir,r.id+'.json');fs.writeFileSync(file+'.tmp',JSON.stringify([...r.blocks]));fs.renameSync(file+'.tmp',file);r.dirty=false}}
   getRoom('FLAG-PUBLIC');
@@ -44,8 +44,10 @@ async function createGameServer(options={}){
       if(limited('join',3))return reply(done,{ok:false,error:'Veuillez patienter avant de changer de salle.'});
       const id=roomId(p?.room),r=getRoom(id);if(!r)return reply(done,{ok:false,error:'Le serveur a atteint sa limite de salles.'});if(r.players.size>=16&&!r.players.has(s.id))return reply(done,{ok:false,error:'Salle complète : 16/16 joueurs.'});
       leave(s);rooms.set(id,r);s.join(id);s.data.room=id;
-      const name=s.data.profile?{LILOU:'Lilou',ALEXIA:'Alexia'}[s.data.profile]:String(p?.name||'Pilote').replace(/[\u0000-\u001f<>]/g,'').slice(0,20)||'Pilote';
-      const slot=r.players.size,player={id:s.id,name,profile:s.data.profile||'MICHAEL',x:slot%2===0?-1:1,y:8,z:12+Math.floor(slot/2)*2,yaw:0,driving:false,fly:false};r.players.set(s.id,player);s.data.lastState=Date.now();reply(done,{ok:true,room:id,players:[...r.players.values()],blocks:[...r.blocks]});s.to(id).emit('player:joined',player);broadcastList();
+      const anonymous=!s.data.profile&&p?.anonymous===true;
+      const name=s.data.profile?{LILOU:'Lilou',ALEXIA:'Alexia'}[s.data.profile]:anonymous?'':String(p?.name||'Pilote').replace(/[\u0000-\u001f<>]/g,'').slice(0,20)||'Pilote';
+      const freeProfiles=['ANONYMOUS','PILOT_FEMME','PILOT_MASC'],profile=s.data.profile||(!anonymous?'MICHAEL':freeProfiles.includes(p?.profile)?p.profile:'ANONYMOUS');
+      const slot=r.players.size,player={id:s.id,name,profile,anonymous,x:slot%2===0?-1:1,y:8,z:12+Math.floor(slot/2)*2,yaw:0,driving:false,fly:false};r.players.set(s.id,player);s.data.lastState=Date.now();reply(done,{ok:true,room:id,players:[...r.players.values()],blocks:[...r.blocks]});s.to(id).emit('player:joined',player);broadcastList();
     });
     s.on('room:leave',()=>leave(s));
     s.on('player:state',state=>{

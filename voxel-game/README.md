@@ -2,6 +2,10 @@
 
 Version Halloween du 28 octobre 2026 : [rubrique Jeux du site principal](https://kitt-franco-belge.be/jeux/) et [lien direct du jeu](https://kitt.kitt-franco-belge.be/static/games/kitt-blocks/). Le jeu figure dans les deux catalogues : le site principal React/GitHub Pages et le catalogue interne de l'AGX. Le service `kitt-block-mode` est actif et activé au démarrage de l'AGX.
 
+## Mission du camion atelier FLAG
+
+Apr?s le sauvetage de Bonnie et le rapport ? Devon, entre dans le camion atelier bleu. Appuie sur la commande **UTILISER** dans la cabine pour recevoir le briefing radio de Devon, puis une seconde fois pour descendre. R?unis deux noyaux, appelle KITT, attends-le pr?s de l?atelier et appuie sur **UTILISER** devant le camion pour r?parer KITT et recevoir 80 points. Le HUD affiche chaque ?tape et la condition de r?ussite.
+
 ## Lancer sur le PC
 
 Node.js 20 ou ultérieur. Installer avec `npm ci`, puis `npm start` (`npm.cmd` dans PowerShell si npm.ps1 est bloqué). Ouvrir `http://127.0.0.1:8080/block-mode.html`. Le bouton **JEUX FLAG** de l'interface locale donne aussi accès au jeu.

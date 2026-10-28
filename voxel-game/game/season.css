@@ -1,4 +1,12 @@
 /* Halloween en douceur et lecture façon bande dessinée, y compris sur mobile. */
+/* Radar relatif, progression FLAG et choix narratifs en bulle. */
+#radar{position:absolute;right:18px;top:104px;width:150px;height:150px;border:1px solid #ff526c88;border-radius:50%;background:#07111bd9;box-shadow:0 0 22px #f3264433;pointer-events:none}
+#pointsHud{display:block;white-space:nowrap;letter-spacing:.5px;color:#8fe8f2}
+.dialog-choices{position:absolute;top:190px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:4;width:min(620px,90%);justify-content:center}
+.dialog-choices button{font-size:12px;border-color:#ff526c;background:#17121c;box-shadow:0 0 16px #ff243b33}
+.score-summary{margin:18px 0;padding:14px;border:1px solid #ff526c66;background:#140e18;font:16px ui-monospace,monospace;color:#fff}
+.score-list{padding-left:36px}.score-list li{padding:10px;margin:6px 0;border-bottom:1px solid #465260;font-size:15px}.score-list b{color:#ff536b}
+@media(max-width:760px){#radar{top:auto;right:10px;bottom:166px;width:104px;height:104px}.dialog-choices{top:auto;bottom:225px;flex-direction:column}.dialog-choices button{padding:8px;font-size:11px}}
 body.halloween .screen{background:linear-gradient(100deg,#160f24ee,#201628d9 55%,#24182ca8)}
 body.halloween #menuTitle .red{color:#ff9b50;text-shadow:3px 4px #351732}
 body.halloween .profile-stage{background:radial-gradient(ellipse at 50% 70%,#483151,#151324 75%)}
@@ -10,3 +18,14 @@ body.halloween .profile-stage{background:radial-gradient(ellipse at 50% 70%,#483
 .start-panel{margin-top:20px}.dialog>p,.dialog .muted{font-size:18px;line-height:1.6}.dialog label{font-size:16px}.dialog .binding{font-size:16px}.inventory-grid button{font-size:15px}#hudActions{display:flex;gap:6px}.pointer-prompt{position:fixed;left:50%;top:48%;transform:translate(-50%,-50%);z-index:4;background:#0a1324eb;border:1px solid #9fbcd0;border-radius:10px;padding:20px;text-align:center;max-width:90%}.pointer-prompt p{font-size:16px;color:#bcced8;margin-top:12px}.pointer-prompt button{min-width:240px}
 @media(max-width:760px){.screen header>.eyebrow{display:none}#soundToggle{padding:7px;font-size:11px}.season-banner{padding:12px;margin:10px 0}.season-banner>span{font-size:11px}.season-banner p{font-size:14px}.season-banner button{padding:8px;font-size:11px}.bestiary-grid{grid-template-columns:1fr}.bestiary-card{padding:14px}#quote.comic-bubble{top:auto;bottom:265px;font-size:18px;padding:12px 14px;max-height:33dvh}#mission.comic-bubble{display:block;top:92px;bottom:auto;left:12px;width:calc(100% - 24px);font-size:17px;padding:10px 13px;max-height:140px;overflow:auto}#mission .hint{display:none}.bubble-heading{margin-bottom:4px}#controlHint{font-size:12px}.toast{font-size:17px;bottom:85px}.dialog>.muted{font-size:16px}.hud-brand{letter-spacing:1px}#hudActions button{padding:7px;font-size:10px}}
 @media(max-height:550px){#mission.comic-bubble{display:none}#quote.comic-bubble{top:85px;bottom:auto;font-size:16px;max-height:42dvh}.touch{bottom:70px}.toast{bottom:65px}}
+
+/* Le brief de mission reste lisible pendant toute la partie, y compris en tactile. */
+#mission.comic-bubble{width:min(390px,calc(100vw - 28px));max-height:42dvh;overflow-y:auto;font-size:18px;line-height:1.5;padding:14px 16px;z-index:3}
+#missionText{margin:4px 0 8px;font-size:1em;font-weight:600}
+#missionSteps{margin:6px 0 9px;padding-left:25px}
+#missionSteps li{padding:2px 0 4px;font-size:.94em;line-height:1.45}
+#missionResult{margin:7px 0 4px;padding:7px 9px;border-left:4px solid #b7344b;background:#f1dfbd;font-weight:700}
+#mission .hint{display:block;color:#403747;font-size:13px;line-height:1.45;margin:6px 0 0}
+#radarLegend{position:absolute;top:258px;right:18px;width:150px;text-align:center;color:#d6e8ef;background:#07111bd9;border:1px solid #ff526c55;border-radius:7px;padding:4px;font:10px/1.35 ui-monospace,monospace;pointer-events:none}
+@media(max-width:760px),(pointer:coarse){#mission.comic-bubble{display:block;top:92px;bottom:auto;left:10px;width:min(430px,calc(100vw - 20px));max-height:34dvh;font-size:15px;padding:10px 13px}#mission .hint{display:block}#missionSteps li{font-size:.92em}#mission .bubble-heading{margin-bottom:3px}#radarLegend{top:auto;right:10px;bottom:270px;width:104px;font-size:8px;padding:3px}}
+@media(max-height:550px){#mission.comic-bubble{display:block;max-height:35dvh;font-size:13px;top:78px;left:10px;width:min(390px,calc(100vw - 20px));padding:8px 11px}#missionSteps li{padding:0 0 2px}#missionResult{padding:4px 7px}#mission .hint{font-size:11px}}
