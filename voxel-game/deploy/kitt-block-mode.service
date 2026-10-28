@@ -1,0 +1,21 @@
+[Unit]
+Description=KITT FLAG - Monde en blocs et salles multijoueurs
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kitt
+Group=kitt
+WorkingDirectory=/home/kitt/kitt-block-mode
+EnvironmentFile=/home/kitt/.config/kitt-block-mode/server.env
+ExecStart=/usr/bin/node /home/kitt/kitt-block-mode/server.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

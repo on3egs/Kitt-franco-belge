@@ -1,0 +1,18 @@
+# Fichiers sensibles — NE JAMAIS commiter
+.env
+.env.*
+.env.tunnel
+*.token
+*.key
+
+# Logs
+*.log
+/logs/
+/node_modules/
+/data/
+/test-results/
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db

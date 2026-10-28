@@ -1,0 +1,15 @@
+// Contrôle navigateur de la version publique, uniquement dans un monde solo éphémère.
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
+(async()=>{
+ const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',headless:true,args:['--use-angle=swiftshader','--enable-webgl','--enable-unsafe-swiftshader']});
+ const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('Page : '+e.message)});page.on('console',m=>{if(m.type()==='error')console.error('Console : '+m.text())});page.on('requestfailed',r=>console.error('Requête : '+new URL(r.url()).pathname+' '+r.failure()?.errorText));await page.addInitScript(()=>localStorage.setItem('kitt.settings.v2',JSON.stringify({quality:'low',volume:0,sensitivity:4})));fs.mkdirSync('test-results',{recursive:true});
+ try{
+  await page.goto('https://kitt.kitt-franco-belge.be/static/games/index.html');await page.locator('a[href="/static/games/kitt-blocks/"]').click();await page.waitForFunction(()=>window.KITTBlock?.inspect().ready);await page.screenshot({path:'test-results/public-menu.png'});console.log('Public : catalogue et moteur WebGL prêts');
+  await page.click('#creativeBtn');await page.waitForFunction(()=>!KITTBlock.inspect().paused);await page.locator('#world canvas').click();await page.mouse.move(640,790,{steps:10});await page.waitForFunction(()=>KITTBlock.inspect().target!==null);const initial=await page.evaluate(()=>KITTBlock.inspect().edits);
+  await page.evaluate(()=>document.querySelector('#world canvas').dispatchEvent(new PointerEvent('pointerdown',{button:2,pointerType:'mouse',bubbles:true})));await page.waitForFunction(n=>KITTBlock.inspect().edits>n,initial);console.log('Public : pose de bloc vérifiée');
+  await page.evaluate(()=>document.querySelector('#world canvas').dispatchEvent(new PointerEvent('pointerdown',{button:0,pointerType:'mouse',bubbles:true})));await page.waitForTimeout(200);
+  await page.keyboard.press('f');for(let i=0;i<5;i++){await page.waitForTimeout(700);if(await page.evaluate(()=>KITTBlock.inspect().car.driving))break;await page.keyboard.press('e')}
+  assert.equal(await page.evaluate(()=>KITTBlock.inspect().car.driving),true);await page.keyboard.press('Space');await page.waitForFunction(()=>KITTBlock.inspect().player.y>8.2);console.log('Public : conduite et Turbo Boost vérifiés');await page.screenshot({path:'test-results/public-world.png'});
+  await page.keyboard.press('Escape');await page.waitForSelector('#menu:not(.hidden)');await page.click('#exitBtn');await page.waitForURL('**/static/games/index.html');assert.deepEqual(errors,[]);console.log('OK Chrome public : catalogue, WebGL, construction, KITT, Turbo et retour aux jeux.');
+ }catch(e){console.error('URL au moment de l’échec : '+page.url());await page.screenshot({path:'test-results/public-error.png'}).catch(()=>{});throw e}finally{await browser.close()}
+})().catch(e=>{console.error(e);process.exitCode=1});
