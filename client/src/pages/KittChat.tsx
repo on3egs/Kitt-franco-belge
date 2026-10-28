@@ -579,26 +579,26 @@ export default function KittChat() {
       audio.current ||= new AudioContext();
       const context = audio.current;
       if (context.state === "suspended") void context.resume();
-      const notes = kind === "vision-start" ? [420, 560, 720, 540] : kind === "vision-done" ? [660, 880, 1046] : kind === "vision-error" ? [740, 554, 370] : kind === "hyper-buzz" ? [330, 220, 294, 165] : kind === "buzz" ? [220, 165] : kind === "join" || kind === "test" ? [660, 880] : [700];
+      const notes = kind === "vision-start" ? [420, 560, 720, 540] : kind === "vision-done" ? [660, 880, 1046] : kind === "vision-error" ? [740, 554, 370] : kind === "hyper-buzz" ? [330, 220, 294, 165] : kind === "buzz" ? [180, 120] : kind === "join" || kind === "test" ? [660, 880] : [700];
       const startAt = context.currentTime;
       notes.forEach((frequency, index) => {
         const oscillator = context.createOscillator();
         const gain = context.createGain();
         const isBuzz = kind === "buzz" || kind === "hyper-buzz";
         const isVision = kind.startsWith("vision-");
-        const noteStart = startAt + index * (kind === "hyper-buzz" ? 0.12 : isBuzz ? 0.16 : kind === "vision-start" ? 0.085 : isVision ? 0.105 : 0.14);
-        const noteLength = kind === "hyper-buzz" ? 0.18 : isBuzz ? 0.22 : kind === "vision-start" ? 0.085 : kind === "vision-error" ? 0.13 : isVision ? 0.11 : kind === "test" || kind === "join" ? 0.16 : 0.11;
-        const peak = kind === "hyper-buzz" ? 0.19 : kind === "buzz" ? 0.16 : kind === "test" ? 0.12 : kind === "join" ? 0.095 : isVision ? 0.045 : 0.07;
-        oscillator.type = isBuzz ? "triangle" : kind === "vision-start" ? "square" : kind === "vision-error" ? "triangle" : "sine";
+        const noteStart = startAt + index * (kind === "hyper-buzz" ? 0.12 : kind === "buzz" ? 0.11 : kind === "vision-start" ? 0.085 : isBuzz ? 0.16 : isVision ? 0.105 : 0.14);
+        const noteLength = kind === "hyper-buzz" ? 0.18 : kind === "buzz" ? 0.075 : isBuzz ? 0.22 : kind === "vision-start" ? 0.085 : kind === "vision-error" ? 0.13 : isVision ? 0.11 : kind === "test" || kind === "join" ? 0.16 : 0.11;
+        const peak = kind === "hyper-buzz" ? 0.19 : kind === "buzz" ? 0.045 : kind === "test" ? 0.12 : kind === "join" ? 0.095 : isVision ? 0.045 : isBuzz ? 0.16 : 0.07;
+        oscillator.type = kind === "buzz" ? "square" : isBuzz ? "triangle" : kind === "vision-start" ? "square" : kind === "vision-error" ? "triangle" : "sine";
         oscillator.frequency.value = frequency;
         if (kind === "vision-start") oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.12, noteStart + noteLength);
         gain.gain.setValueAtTime(0.0001, noteStart);
-        gain.gain.exponentialRampToValueAtTime(peak, noteStart + 0.018);
+        gain.gain.exponentialRampToValueAtTime(peak, noteStart + (kind === "buzz" ? 0.012 : 0.018));
         gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + noteLength);
         oscillator.connect(gain);
         gain.connect(context.destination);
         oscillator.start(noteStart);
-        oscillator.stop(noteStart + noteLength + 0.01);
+        oscillator.stop(noteStart + noteLength + (kind === "buzz" ? 0.005 : 0.01));
       });
     } catch { /* Les sons restent facultatifs selon le navigateur. */ }
   }
