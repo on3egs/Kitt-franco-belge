@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { ArrowRight, Bell, BellOff, CarFront, Check, CircleHelp, Download, Link2, MessageCircle, Radio, ShieldCheck, Smile, Users, Wifi, WifiOff, Zap } from "lucide-react";
 import { getApiBase } from "@/lib/tunnel";
 import "./KittChat.css";
@@ -13,7 +13,7 @@ type SavePickerWindow = Window & {
     types: Array<{ description: string; accept: Record<string, string[]> }>;
   }) => Promise<{ createWritable: () => Promise<{ write: (data: Blob) => Promise<void>; close: () => Promise<void> }> }>;
 };
-type KittEmote = { code: string; label: string; src: string };
+type KittEmote = { code: string; label: string; src: string; aliases?: string[] };
 const KNIGHT_RIDER_EMOTES: KittEmote[] = [
   { code: ":kitt:", label: "KITT", src: "/emotes/kitt.svg" },
   { code: ":karr:", label: "KARR", src: "/emotes/karr.svg" },
@@ -25,16 +25,38 @@ const KNIGHT_RIDER_EMOTES: KittEmote[] = [
   { code: ":voicebox:", label: "Voicebox", src: "/emotes/voicebox.svg" },
   { code: ":flag:", label: "FLAG", src: "/emotes/flag.svg" },
   { code: ":transam:", label: "Pontiac Trans Am", src: "/emotes/trans-am.svg" },
+  { code: ":)", label: "KITT sourit", src: "/emotes/kitt-smile.svg", aliases: [":-)"] },
+  { code: ";)", label: "Clin d’œil de KITT", src: "/emotes/kitt-wink.svg", aliases: [";-)"] },
+  { code: ":P", label: "KITT taquine", src: "/emotes/kitt-tongue.svg", aliases: [":-P", ":p", ":-p"] },
+  { code: ":D", label: "KITT éclate de rire", src: "/emotes/kitt-laugh.svg", aliases: [":-D", ":d", ":-d"] },
+  { code: ":(", label: "KITT déçu", src: "/emotes/kitt-sad.svg", aliases: [":-("] },
+  { code: ":'(", label: "KITT ému", src: "/emotes/kitt-tear.svg" },
+  { code: ":O", label: "KITT surpris", src: "/emotes/kitt-surprise.svg", aliases: [":-O", ":o", ":-o"] },
+  { code: "<3", label: "Cœur de KITT", src: "/emotes/kitt-heart.svg", aliases: ["♥"] },
 ];
-const EMOTES_BY_CODE = new Map(KNIGHT_RIDER_EMOTES.map(emote => [emote.code, emote]));
+const EMOTES_BY_CODE = new Map(KNIGHT_RIDER_EMOTES.flatMap(emote =>
+  [emote.code, ...(emote.aliases ?? [])].map(code => [code.toLowerCase(), emote] as const),
+));
 
 function renderChatText(text: string) {
-  return text.split(/(:[a-z0-9-]+:)/gi).map((part, index) => {
+  const emotePattern = /(?<![/@])(:[a-z0-9-]+:|:-?[)pPdDoO]|;\)|;-\)|:\(|:-\(|:'\(|<3|♥)(?![\w@])/gi;
+  const nodes: ReactNode[] = [];
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+  while ((match = emotePattern.exec(text)) !== null) {
+    const start = match.index ?? 0;
+    const part = match[0];
+    if (start > cursor) nodes.push(text.slice(cursor, start));
     const emote = EMOTES_BY_CODE.get(part.toLowerCase());
-    return emote
-      ? <img key={`${emote.code}-${index}`} className="kc-inline-emote" src={emote.src} alt={`[${emote.label}]`} title={emote.label} loading="lazy" />
-      : part;
-  });
+    const prefix = text.slice(0, start);
+    const insideUrl = /(?:https?:\/\/|www\.)[^\s]*$/i.test(prefix);
+    nodes.push(emote && !insideUrl
+      ? <img key={`emote-${start}`} className="kc-inline-emote" src={emote.src} alt={`[${emote.label}]`} title={emote.label} loading="lazy" />
+      : part);
+    cursor = start + part.length;
+  }
+  if (cursor < text.length) nodes.push(text.slice(cursor));
+  return nodes;
 }
 const FALLBACK_ROOMS: Room[] = [
   { id: "general", label: "Le grand salon", topic: "Le rendez-vous de toute la communauté" },
