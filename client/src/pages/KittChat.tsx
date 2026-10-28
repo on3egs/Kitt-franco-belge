@@ -4,8 +4,9 @@ import { getApiBase } from "@/lib/tunnel";
 import "./KittChat.css";
 
 type Room = { id: string; label: string; topic: string };
-type ChatLine = { id: string; name: string; text: string; timestamp: number; kind?: "system" | "message" };
+type ChatLine = { id: string; name: string; text: string; timestamp: number; kind?: "system" | "message"; liveBot?: boolean };
 type Member = { name: string; role?: string; admin?: boolean };
+type PendingTurn = { speaker: "KITT" | "KARR"; expiresAt: number };
 type Owner = { id: string; name: string; car: string; year: string; photos: string[] };
 type SavePickerWindow = Window & {
   showSaveFilePicker?: (options: {
@@ -91,6 +92,7 @@ export default function KittChat() {
   const [sessionToken, setSessionToken] = useState("");
   const [reconnectKey, setReconnectKey] = useState(0);
   const [lines, setLines] = useState<ChatLine[]>([]);
+  const [typedBotText, setTypedBotText] = useState<Record<string, string>>({});
   const [members, setMembers] = useState<Member[]>([]);
   const [message, setMessage] = useState("");
   const [sound, setSound] = useState(false);
@@ -98,6 +100,8 @@ export default function KittChat() {
   const [roomToast, setRoomToast] = useState("");
   const [buzzActive, setBuzzActive] = useState(false);
   const [buzzIntensity, setBuzzIntensity] = useState<"normal" | "hyper">("normal");
+  const [pendingTurn, setPendingTurn] = useState<PendingTurn | null>(null);
+  const [turnRemaining, setTurnRemaining] = useState(0);
   const [buzzCooldown, setBuzzCooldown] = useState(0);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -109,6 +113,23 @@ export default function KittChat() {
   const buzzTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const buzzCooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMember = Boolean(sessionToken);
+
+  useEffect(() => {
+    const line = lines.find(item => item.liveBot && (typedBotText[item.id] ?? "").length < item.text.length);
+    if (!line) return;
+    const nextLength = (typedBotText[line.id] ?? "").length + 1;
+    const latestChar = line.text[nextLength - 1];
+    const delay = /[.!?…]/.test(latestChar) ? 260 : /[,;:]/.test(latestChar) ? 120 : 29;
+    const timer = window.setTimeout(() => {
+      if (nextLength >= line.text.length) {
+        setTypedBotText(current => { const next = { ...current }; delete next[line.id]; return next; });
+        setLines(current => current.map(item => item.id === line.id ? { ...item, liveBot: false } : item));
+      } else {
+        setTypedBotText(current => ({ ...current, [line.id]: line.text.slice(0, nextLength) }));
+      }
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [lines, typedBotText]);
 
   useEffect(() => {
     let active = true;
@@ -156,6 +177,18 @@ export default function KittChat() {
   }, []);
 
   useEffect(() => { soundEnabled.current = sound; }, [sound]);
+
+  useEffect(() => {
+    if (!pendingTurn) { setTurnRemaining(0); return; }
+    const updateRemaining = () => {
+      const remaining = Math.max(0, Math.ceil((pendingTurn.expiresAt - Date.now()) / 1000));
+      setTurnRemaining(remaining);
+      if (remaining === 0) setPendingTurn(null);
+    };
+    updateRemaining();
+    const timer = window.setInterval(updateRemaining, 250);
+    return () => window.clearInterval(timer);
+  }, [pendingTurn]);
 
   function playRoomSound(kind: "message" | "join" | "buzz" | "hyper-buzz" | "test") {
     if (!soundEnabled.current) return;
@@ -216,6 +249,7 @@ export default function KittChat() {
       try { packet = JSON.parse(String(event.data)) as Record<string, unknown>; } catch { return; }
       if (packet.type === "ready") {
         setSocketState("online");
+        setTypedBotText({});
         setLines(Array.isArray(packet.history) ? packet.history as ChatLine[] : []);
         setMembers(Array.isArray(packet.members) ? packet.members as Member[] : []);
         return;
@@ -239,8 +273,18 @@ export default function KittChat() {
         if (names.length) showRoomToast(`Joute ${names.join("–")} en cours !`);
         return;
       }
+      if (packet.type === "turn") {
+        if (packet.active === true && (packet.speaker === "KITT" || packet.speaker === "KARR") && typeof packet.expiresAt === "number") {
+          const expiresAt = packet.expiresAt < 10_000_000_000 ? packet.expiresAt * 1000 : packet.expiresAt;
+          setPendingTurn(expiresAt > Date.now() ? { speaker: packet.speaker, expiresAt } : null);
+        } else if (packet.active === false) {
+          setPendingTurn(null);
+        }
+        return;
+      }
       if (packet.type === "message" && packet.message && typeof packet.message === "object") {
-        const line = packet.message as ChatLine;
+        const incoming = packet.message as ChatLine;
+        const line: ChatLine = { ...incoming, liveBot: incoming.kind !== "system" && ["kitt", "karr"].includes(identityTone(incoming.name)) };
         setLines(current => [...current.slice(-98), line]);
         if (line.kind === "system" && line.text.endsWith(" entre dans le salon.") && !line.text.startsWith(`${member} `)) {
           const joinedName = line.text.slice(0, -" entre dans le salon.".length);
@@ -252,7 +296,9 @@ export default function KittChat() {
         return;
       }
       if (packet.type === "room") {
+        setTypedBotText({});
         setLines(Array.isArray(packet.history) ? packet.history as ChatLine[] : []);
+        setPendingTurn(null);
         setRoom(rooms.find(item => item.id === packet.room) || FALLBACK_ROOMS[0]);
         return;
       }
@@ -418,7 +464,7 @@ export default function KittChat() {
       </div>
     </section>
     <div className={`kc-window${buzzActive ? " kc-buzz-effect" : ""}${buzzActive && buzzIntensity === "hyper" ? " kc-buzz-hyper" : ""}`}>
-      <div className="kc-titlebar"><span className="kc-app-icon"><MessageCircle size={15}/></span><strong>KITT-FRANCO-BELGE · SALON COMMUNAUTAIRE</strong><div className="kc-window-buttons"><span>−</span><span>□</span><span>×</span></div></div>
+      <div className="kc-titlebar"><span className="kc-app-icon"><MessageCircle size={15}/></span><strong>KITT-FRANCO-BELGE · DES CHEVALIERS</strong><div className="kc-window-buttons"><span>−</span><span>□</span><span>×</span></div></div>
       <div className="kc-toolbar"><span>Fichier</span><span>Salon</span><span>Affichage</span><span>Aide</span><span className="kc-toolbar-right">KITT Network v1.0</span></div>
       {(service === "online" || socketState === "connecting") && <div className="kc-room-tabs" role="tablist" aria-label="Salons de discussion">
         {rooms.map(item => <button key={item.id} role="tab" aria-selected={room.id === item.id} className={room.id === item.id ? "active" : ""} onClick={() => setRoom(item)}>{item.label}</button>)}
@@ -426,12 +472,20 @@ export default function KittChat() {
       {socketState !== "closed" ? <div className="kc-content">
         <section className="kc-conversation" aria-label={`Messages du salon ${room.label}`}>
           <div className="kc-room-topic"><strong>{room.label}</strong><span>{room.topic}</span></div>
+          {pendingTurn && <div className={`kc-turn-indicator kc-turn-${pendingTurn.speaker.toLowerCase()}`} role="status" aria-live="polite">
+            <span className="kc-turn-led" aria-hidden="true"/>
+            <strong>{pendingTurn.speaker} attend une réponse</strong>
+            <span className="kc-turn-countdown" aria-hidden="true">{turnRemaining}s</span>
+          </div>}
           <div className="kc-messages" ref={messageBox} role="log" aria-live="polite" aria-relevant="additions text">
             {socketState === "connecting" && <p className="kc-empty">Le salon s’ouvre…</p>}
             {socketState === "online" && !lines.length && <p className="kc-empty">Le salon s’éveille… Lance la conversation quand ton profil sera validé.</p>}
-          {lines.map(line => <article className={`kc-line${line.kind === "system" ? " system" : ""}${identityTone(line.name) ? ` kc-line-${identityTone(line.name)}` : ""}`} key={line.id}>
-              <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong className={identityTone(line.name)}>{line.name}</strong><span>{renderChatText(line.text)}</span>
-            </article>)}
+          {lines.map(line => {
+            const displayedText = line.liveBot ? typedBotText[line.id] ?? "" : line.text;
+            const typing = Boolean(line.liveBot && displayedText.length < line.text.length);
+            return <article className={`kc-line${line.kind === "system" ? " system" : ""}${identityTone(line.name) ? ` kc-line-${identityTone(line.name)}` : ""}`} key={line.id} aria-live={line.liveBot ? "off" : undefined}>
+              <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong className={identityTone(line.name)}>{line.name}</strong><span>{renderChatText(displayedText)}{typing && <i className="kc-type-cursor" aria-hidden="true"/>}</span>
+            </article>})}
           </div>
           {isMember ? <form className="kc-compose" onSubmit={sendMessage}>
             <div className="kc-compose-row">
