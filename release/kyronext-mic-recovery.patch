@@ -1,0 +1,188 @@
+--- a/static/app.js
++++ b/static/app.js
+@@ -2513,9 +2513,7 @@
+   if (!micContext || micContext.state === 'closed') {
+     micContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+   }
+-  if (micContext.state === 'suspended') {
+-    try { await micContext.resume(); } catch(e) {}
+-  }
++  await _resumeMicContext(micContext);
+   micStream = await getUserMediaCompat({ audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+   const captureStream = micStream;
+   _assertMicCaptureCurrent(captureGeneration, captureStream);
+@@ -3119,6 +3117,37 @@
+ 
+ window.__agxForceStopAllMic = _hardStopAllMicrophones;
+ 
++
++function _unlockPendingMicContext(context, mode) {
++  if (!context || context.state !== 'suspended') return false;
++  // Appel? directement depuis le clic: resume() doit voir l'activation utilisateur.
++  try {
++    const pending = context.resume();
++    if (pending && typeof pending.catch === 'function') pending.catch(error => console.warn('[KYRONEX] Reprise audio ' + mode + ':', error));
++    statusEl.textContent = mode + ': autorisation audio en cours...';
++    return true;
++  } catch (error) {
++    statusEl.textContent = mode + ': touchez le bouton pour autoriser le moteur audio.';
++    return false;
++  }
++}
++
++async function _resumeMicContext(context) {
++  if (!context || context.state === 'closed') throw new Error('Moteur audio ferme. Relancez le mode micro.');
++  if (context.state !== 'running') {
++    let timer = null;
++    try {
++      await Promise.race([
++        context.resume(),
++        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Moteur audio bloque: touchez AUTO ou MIC ON pour autoriser le mode ecoute.')), 8000); })
++      ]);
++    } finally {
++      if (timer) clearTimeout(timer);
++    }
++  }
++  if (context.state !== 'running') throw new Error('Moteur audio suspendu: touchez AUTO ou MIC ON pour autoriser le mode ecoute.');
++}
++
+ function getUserMediaCompat(constraints) {
+   const generation = _micCaptureGeneration;
+   const accept = stream => { _assertMicCaptureCurrent(generation, stream); return _watchConversationMicStream(stream); };
+@@ -3138,7 +3167,8 @@
+ async function toggleMic() {
+   if (_conversationStandby) { _publishConversationStandby(); return; }
+   if (window.__agxMicMasterEnabled === false) return;
+-  if (_micStarting || _micBusy) return;
++  if (_micStarting) { _unlockPendingMicContext(micContext, 'Micro'); return; }
++  if (_micBusy) return;
+   if (autoListenActive) stopAutoListen();
+   if (wakeListenActive) stopWakeListen();
+   if (isRecording) { stopRecording(); return; }
+@@ -3594,7 +3624,7 @@
+     setTimeout(toggleAutoListen, 50);
+     return;
+   }
+-  if (_wakeStarting) return;
++  if (_wakeStarting) { _unlockPendingMicContext(wakeContext, 'WAKE'); return; }
+   if (isRecording) stopRecording();
+   if (autoListenActive) stopAutoListen();
+   if (wakeListenActive) { stopWakeListen(); return; }
+@@ -3603,7 +3633,7 @@
+   try {
+     statusEl.innerHTML = '<span class="online">Demande micro...</span>';
+     wakeContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+-    wakeContext.resume().catch(() => {});
++    await _resumeMicContext(wakeContext);
+     wakeStream = await getUserMediaCompat({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: false } });
+     _killChromeSpeech();
+     const captureStream = wakeStream;
+@@ -3689,7 +3719,8 @@
+     scanner.classList.add('wake-listening');
+     statusEl.innerHTML = `<span class="online">${_t('wake_waiting')}</span>`;
+   } catch (e) {
+-    statusEl.innerHTML = '<span class="offline">Micro refuse: ' + e.message + '</span>';
++    stopWakeListen();
++    statusEl.textContent = 'Micro en veille indisponible: ' + (e && e.message ? e.message : e);
+   } finally {
+     _wakeStarting = false;
+     _publishConversationStandby();
+@@ -3867,7 +3898,7 @@
+ async function toggleAutoListen() {
+   const captureGeneration = _micCaptureGeneration;
+   if (window.__agxMicMasterEnabled === false) return;
+-  if (_autoStarting) return;
++  if (_autoStarting) { _unlockPendingMicContext(autoContext, 'AUTO'); return; }
+   if (isRecording) stopRecording();
+   if (wakeListenActive) stopWakeListen();
+   if (autoListenActive) { stopAutoListen(); return; }
+@@ -3879,7 +3910,7 @@
+   try {
+     statusEl.innerHTML = '<span class="online">Demande micro...</span>';
+     autoContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+-    await autoContext.resume();
++    await _resumeMicContext(autoContext);
+     autoStream = await getUserMediaCompat({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: false } });
+     _killChromeSpeech();
+     const captureStream = autoStream;
+@@ -4019,7 +4050,8 @@
+     scanner.classList.add('auto-listening');
+     statusEl.innerHTML = '<span class="online">Auto-ecoute: en attente...</span>';
+   } catch (e) {
+-    statusEl.innerHTML = '<span class="offline">Micro refuse: ' + e.message + '</span>';
++    stopAutoListen();
++    statusEl.textContent = 'Auto-ecoute indisponible: ' + (e && e.message ? e.message : e);
+   } finally {
+     _autoStarting = false;
+     _publishConversationStandby();
+--- a/static/kitt-ui/kitt-ui.js
++++ b/static/kitt-ui/kitt-ui.js
+@@ -96,11 +96,11 @@
+   function updateMicMasterUi() {
+     if (!micMasterBtn) return;
+     const enabled = window.__agxMicMasterEnabled !== false;
+-    const live = stream => !!stream && stream.getAudioTracks().some(track => track.readyState === 'live');
++    const live = (stream, context) => !!stream && stream.getAudioTracks().some(track => track.readyState === 'live') && (!context || context.state === 'running');
+     const capturing = enabled && (
+-      (typeof autoListenActive !== 'undefined' && autoListenActive && live(autoStream)) ||
+-      (typeof wakeListenActive !== 'undefined' && wakeListenActive && live(wakeStream)) ||
+-      (typeof isRecording !== 'undefined' && isRecording && live(micStream)) ||
++      (typeof autoListenActive !== 'undefined' && autoListenActive && live(autoStream, typeof autoContext !== 'undefined' ? autoContext : null)) ||
++      (typeof wakeListenActive !== 'undefined' && wakeListenActive && live(wakeStream, typeof wakeContext !== 'undefined' ? wakeContext : null)) ||
++      (typeof isRecording !== 'undefined' && isRecording && live(micStream, typeof micContext !== 'undefined' ? micContext : null)) ||
+       (typeof autoListenActive !== 'undefined' && autoListenActive && typeof _iosAutoRec !== 'undefined' && !!_iosAutoRec)
+     );
+     micMasterBtn.classList.toggle('active', enabled);
+@@ -203,20 +203,28 @@
+     try {
+       const auto = document.getElementById('automic');
+       const wake = document.getElementById('wakemic');
+-      const autoRunning = auto && (auto.classList.contains('active') || auto.classList.contains('waiting') || auto.classList.contains('hearing'));
+-      const wakeRunning = wake && (wake.classList.contains('active') || wake.classList.contains('waiting') || wake.classList.contains('hearing'));
+-      if (micRestoreMode === 'wake' && !wakeRunning && typeof toggleWakeListen === 'function') await toggleWakeListen();
+-      else if (micRestoreMode === 'auto' && !autoRunning && typeof toggleAutoListen === 'function') await toggleAutoListen();
++      const live = (stream, context) => !!stream && stream.getAudioTracks().some(track => track.readyState === 'live') && !!context && context.state === 'running';
++      const autoRunning = typeof autoListenActive !== 'undefined' && autoListenActive && live(typeof autoStream !== 'undefined' ? autoStream : null, typeof autoContext !== 'undefined' ? autoContext : null);
++      const wakeRunning = typeof wakeListenActive !== 'undefined' && wakeListenActive && live(typeof wakeStream !== 'undefined' ? wakeStream : null, typeof wakeContext !== 'undefined' ? wakeContext : null);
++      if (micRestoreMode === 'wake' && !wakeRunning && typeof toggleWakeListen === 'function') {
++        if (typeof wakeListenActive !== 'undefined' && wakeListenActive) stopWakeListen();
++        if (typeof autoListenActive !== 'undefined' && autoListenActive) stopAutoListen();
++        await toggleWakeListen();
++      } else if (micRestoreMode === 'auto' && !autoRunning && typeof toggleAutoListen === 'function') {
++        if (typeof autoListenActive !== 'undefined' && autoListenActive) stopAutoListen();
++        if (typeof wakeListenActive !== 'undefined' && wakeListenActive) stopWakeListen();
++        await toggleAutoListen();
++      }
+     } catch (e) {}
+   }
+ 
+   async function toggleMicMaster() {
+     const enabled = window.__agxMicMasterEnabled !== false;
+-    const live = stream => !!stream && stream.getAudioTracks().some(track => track.readyState === 'live');
++    const live = (stream, context) => !!stream && stream.getAudioTracks().some(track => track.readyState === 'live') && (!context || context.state === 'running');
+     const capturing = enabled && (
+-      (typeof autoListenActive !== 'undefined' && autoListenActive && live(autoStream)) ||
+-      (typeof wakeListenActive !== 'undefined' && wakeListenActive && live(wakeStream)) ||
+-      (typeof isRecording !== 'undefined' && isRecording && live(micStream)) ||
++      (typeof autoListenActive !== 'undefined' && autoListenActive && live(autoStream, typeof autoContext !== 'undefined' ? autoContext : null)) ||
++      (typeof wakeListenActive !== 'undefined' && wakeListenActive && live(wakeStream, typeof wakeContext !== 'undefined' ? wakeContext : null)) ||
++      (typeof isRecording !== 'undefined' && isRecording && live(micStream, typeof micContext !== 'undefined' ? micContext : null)) ||
+       (typeof autoListenActive !== 'undefined' && autoListenActive && typeof _iosAutoRec !== 'undefined' && !!_iosAutoRec)
+     );
+     // Un état MIC ON mémorisé ne garantit pas que le navigateur a accordé le
+--- a/static/index.html
++++ b/static/index.html
+@@ -1160,11 +1160,11 @@
+   <script src="/static/weather-dashboard.js?v=20260912weather1"></script>
+ <link rel="stylesheet" href="/static/kyronext-link.css?v=20261005-v41-perf-flags">
+ <script src="/static/kyronext-link.js?v=20261017-fluid-map-poll"></script>
+-<script src="/static/app.js?v=20261028-live-presence1"></script>
++<script src="/static/app.js?v=20261028-mic-recovery2"></script>
+ <link rel="stylesheet" href="/static/kitt-ui/kitt-ui.css?v=20261028-cinematic-presence1">
+ <link rel="stylesheet" href="/static/kitt-ui/ui-cleanup.css?v=20261018-2">
+ <link rel="stylesheet" href="/static/kitt-ui/voicebox-optics.css?v=20261026-2">
+-<script src="/static/kitt-ui/kitt-ui.js?v=20261028-live-presence1"></script>
++<script src="/static/kitt-ui/kitt-ui.js?v=20261028-mic-recovery2"></script>
+ <script src="/static/kitt-ui/voicebox-optics.js?v=20261026-1"></script>
+ <script src="/static/platform-hub.js?v=20260917platform1"></script>
+ <script>
