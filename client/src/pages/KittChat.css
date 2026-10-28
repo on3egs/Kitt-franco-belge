@@ -95,3 +95,6 @@
 @media(max-width:900px){.kc-content{grid-template-columns:minmax(0,1fr) 260px;min-height:600px}.kc-messages{height:min(58vh,500px);min-height:380px}}
 @media(max-width:740px){.kc-content{grid-template-columns:1fr;min-height:0}.kc-messages{height:min(54vh,380px);min-height:240px}.kc-roster-list{max-height:180px}.kc-inline-emote{width:28px;height:28px}}
 @media(prefers-reduced-motion:reduce){.kc-buzz-effect{animation:none!important}}
+.kc-person-bot{border-color:#8d2738;background:linear-gradient(110deg,#26111a,#141923)}
+.kc-person-bot .kc-avatar{border-color:#e44257;color:#ff7484;box-shadow:0 0 12px #e4425744}
+.kc-person-role{display:block;margin-top:2px;color:#ff8792;font:8px "Space Mono",monospace;letter-spacing:.04em}

@@ -5,7 +5,7 @@ import "./KittChat.css";
 
 type Room = { id: string; label: string; topic: string };
 type ChatLine = { id: string; name: string; text: string; timestamp: number; kind?: "system" | "message" };
-type Member = { name: string };
+type Member = { name: string; role?: string; admin?: boolean };
 type Owner = { id: string; name: string; car: string; year: string; photos: string[] };
 type SavePickerWindow = Window & {
   showSaveFilePicker?: (options: {
@@ -433,8 +433,8 @@ export default function KittChat() {
         </section>
         <aside className="kc-roster">
           <div className="kc-roster-heading"><Users size={17}/><strong>Membres présents</strong><span>{members.length}</span></div>
-          <div className="kc-roster-list">{members.length ? members.map((item,index)=><div className="kc-person" key={`${item.name}-${index}`}>
-            <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span>{item.name}</span><i title="En ligne"/>
+          <div className="kc-roster-list">{members.length ? members.map((item,index)=><div className={`kc-person${item.admin ? " kc-person-bot" : ""}`} key={`${item.name}-${index}`}>
+            <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span>{item.name}{item.role && <small className="kc-person-role">{item.role}</small>}</span><i title="En ligne"/>
           </div>) : <small className="kc-no-members">Aucun propriétaire connecté pour l’instant.</small>}</div>
           <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz</small></button>
           {isMember ? <button type="button" className="kc-leave" onClick={disconnect}>Quitter le salon</button> : <form className="kc-guest-join" onSubmit={enter}>
