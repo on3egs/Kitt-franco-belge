@@ -14,10 +14,12 @@ type Game = {
   badge: string;
   icon: string;
   group: "agx" | "site";
+  keywords?: string;
 };
 
 // Les dix jeux de l’arcade KYRONEXT installée sur l’AGX Orin.
 const AGX_GAMES: Game[] = [
+  { id: "kitt-block-mode", name: "KITT · Monde en blocs", mode: "Construction · 3D · Multijoueur", description: "Construis ton refuge FLAG, explore avec KITT et rejoins une salle de 16 pilotes. Halloween : moutons et créatures étranges au rendez-vous.", src: "https://kitt.kitt-franco-belge.be/static/games/kitt-blocks/", controls: "ZQSD / WASD · souris : vue FPS · E : utiliser · F : appeler KITT · Espace : saut · paramètres dans le jeu", badge: "NOUVEAU · HALLOWEEN · COOP", icon: "🧱", group: "agx", keywords: "minecraft minercraft voxel bac sable blocs moutons monstres halloween lilou alexia" },
   { id: "stunt", name: "Knight Racer · Stunt Racing", mode: "Course · 3D / 2D", description: "Trois courses, turbo, cascades et circuit personnalisable. Le mode 2D prend le relais si WebGL est indisponible.", src: "/kitt-stunt-racing/?kyronex=1", controls: "Flèches ou WASD · Espace : turbo · P : pause", badge: "JEU AGX · BY MANIX", icon: "🏁", group: "agx" },
   { id: "pacman", name: "Pac-Man", mode: "Labyrinthe · arcade", description: "Traverse le labyrinthe, évite les fantômes et ramasse les bonus. Une version arcade originale du projet.", src: "/static/games/index.html?game=pacman", controls: "Flèches · WASD · commandes à l’écran", badge: "JEU AGX · SOLO", icon: "◉", group: "agx" },
   { id: "tetris", name: "Tetris", mode: "Puzzle · arcade", description: "Empile les pièces, enchaîne les lignes et vise le meilleur score avec réserve et aperçu de la prochaine pièce.", src: "/static/games/index.html?game=tetris", controls: "← → déplacer · ↑ tourner · Espace : chute · P : pause", badge: "JEU AGX · SOLO", icon: "▦", group: "agx" },
@@ -77,7 +79,7 @@ export default function Arcade() {
     (filter === "all" || game.group === filter) &&
     (!favoritesOnly || favorites.includes(game.id)) &&
     (genre === "Tout" || clean(game.mode).includes(clean(genre))) &&
-    (!query.trim() || clean(`${game.name} ${game.description} ${game.mode}`).includes(clean(query.trim())))
+    (!query.trim() || clean(query.trim()).split(/\s+/).every(word => clean(`${game.name} ${game.description} ${game.mode} ${game.keywords || ""}`).includes(word)))
   ).sort((a, b) => sort === "popular" ? (plays[b.id] || 0) - (plays[a.id] || 0) : sort === "name" ? a.name.localeCompare(b.name, "fr") : 0), [filter, favoritesOnly, favorites, query, genre, sort, plays]);
 
   useEffect(() => {
@@ -110,6 +112,15 @@ export default function Arcade() {
 
   const fullscreen = () => { void frameRef.current?.requestFullscreen?.().catch(() => { setSlowLoad(true); }); };
 
+  useEffect(() => {
+    const closeBlockMode = (event: MessageEvent) => {
+      if (event.origin === "https://kitt.kitt-franco-belge.be" && event.source === frameRef.current?.contentWindow && event.data?.type === "kitt:blockmode:stop") {
+        setLaunched(false); setFrameLoaded(false); document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+    window.addEventListener("message", closeBlockMode);
+    return () => window.removeEventListener("message", closeBlockMode);
+  }, []);
   return <main className="arcade-page">
     <section className="arcade-hero">
       <div className="arcade-scan" aria-hidden="true" />
@@ -137,7 +148,7 @@ export default function Arcade() {
         </div>
       </div>
       <div className="arcade-frame-shell">
-        <iframe ref={frameRef} key={`${selected.id}-${reload}`} className="arcade-frame" src={selected.src} title={selected.name} allow="fullscreen; gamepad" allowFullScreen onLoad={() => { setFrameLoaded(true); setSlowLoad(false); frameRef.current?.focus(); }} />
+        <iframe ref={frameRef} key={`${selected.id}-${reload}`} className="arcade-frame" src={selected.src} title={selected.name} allow="fullscreen; gamepad; autoplay" allowFullScreen onLoad={() => { setFrameLoaded(true); setSlowLoad(false); frameRef.current?.focus(); }} />
         {!frameLoaded && <div className="arcade-loading"><LoaderCircle size={28} /><strong>{slowLoad ? "Le chargement prend plus de temps" : "Préparation de la mission…"}</strong><span>{slowLoad ? "Essaie le nouvel onglet ou relance le chargement." : "Le jeu se prépare dans ton navigateur."}</span>{slowLoad && <button type="button" onClick={() => { setReload(value => value + 1); setSlowLoad(false); }}><RotateCcw size={14} /> Réessayer</button>}</div>}
         <div className="arcade-stage-bottom"><span><i className={frameLoaded ? "is-ready" : ""} />{frameLoaded ? "INTERFACE CHARGÉE" : "CHARGEMENT DU JEU"}</span><span>{selected.mode.toUpperCase()}</span></div>
       </div>
@@ -157,7 +168,7 @@ export default function Arcade() {
         <button type="button" aria-pressed={filter === "site"} onClick={() => setFilter("site")}>Créations du site <span>{SITE_GAMES.length}</span></button>
         <button type="button" aria-pressed={favoritesOnly} onClick={() => setFavoritesOnly(value => !value)}><Star size={13} fill={favoritesOnly ? "currentColor" : "none"} /> Mes favoris <span>{favorites.length}</span></button>
       </div>
-      <div className="arcade-search-bar"><label className="arcade-search"><Search size={17} /><input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Chercher un jeu, un style, une mission…" aria-label="Rechercher dans la collection" />{query && <button type="button" onClick={() => setQuery("")} aria-label="Effacer la recherche"><X size={15} /></button>}</label><label>Style<select value={genre} onChange={e => setGenre(e.target.value)}>{["Tout", "3D", "Course", "Puzzle", "Labyrinthe", "Combat", "Survie"].map(value => <option key={value}>{value}</option>)}</select></label><label>Trier<select value={sort} onChange={e => setSort(e.target.value)}><option value="collection">Ordre de la collection</option><option value="popular">Mes plus joués</option><option value="name">Nom de A à Z</option></select></label></div>
+      <div className="arcade-search-bar"><label className="arcade-search"><Search size={17} /><input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Chercher un jeu, un style, une mission…" aria-label="Rechercher dans la collection" />{query && <button type="button" onClick={() => setQuery("")} aria-label="Effacer la recherche"><X size={15} /></button>}</label><label>Style<select value={genre} onChange={e => setGenre(e.target.value)}>{["Tout", "3D", "Course", "Puzzle", "Labyrinthe", "Combat", "Survie", "Construction", "Multijoueur"].map(value => <option key={value}>{value}</option>)}</select></label><label>Trier<select value={sort} onChange={e => setSort(e.target.value)}><option value="collection">Ordre de la collection</option><option value="popular">Mes plus joués</option><option value="name">Nom de A à Z</option></select></label></div>
       <p className="arcade-search-count" role="status">{visibleGames.length} résultat{visibleGames.length > 1 ? "s" : ""} <span>Les jeux se chargent uniquement quand tu cliques sur Jouer.</span></p>
       <div className="arcade-cards">
         {visibleGames.map((game) => <article className={`arcade-card ${selected.id === game.id ? "selected" : ""}`} key={game.id}>
