@@ -12,6 +12,6 @@ const ack=(s,event,p)=>s.timeout(15000).emitWithAck(event,p);
  const a=await connect(),b=await connect();assert.equal((await ack(a,'room:join',{room,name:'Contrôle réseau A'})).ok,true);assert.equal((await ack(b,'room:join',{room,name:'Contrôle réseau B'})).players.length,2);
  const state=once(b,'player:state');a.emit('player:state',{x:1,y:8,z:12,yaw:1,driving:false});assert.equal((await state).x,1);
  const oldId=b.id,left=once(a,'player:left');b.disconnect();assert.equal(await left,oldId);
- if(process.env.ADMIN_PIN_LILOU){const auth=await connect();assert.equal((await ack(auth,'profile:login',{name:'LILOU',pin:process.env.ADMIN_PIN_LILOU})).ok,true);console.log('OK public : profil privé vérifié sans afficher son PIN.');}
+ for(const name of ['LILOU','ALEXIA'])if(process.env['ADMIN_PIN_'+name]){const auth=await connect();assert.equal((await ack(auth,'profile:login',{name,pin:process.env['ADMIN_PIN_'+name]})).ok,true);console.log('OK public : profil privé '+name+' vérifié sans afficher son PIN.');}
  console.log('OK public : page, API, fichiers privés bloqués, deux clients, positions et départ.');
 }finally{for(const s of sockets)s.disconnect()}})().catch(e=>{console.error(e.message);process.exitCode=1});
