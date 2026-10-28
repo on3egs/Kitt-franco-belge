@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import base64
+from io import BytesIO
 import re
 from urllib.parse import urlsplit
 from typing import Any, Callable
 
 import aiohttp
+from PIL import Image, ImageOps
 
 
 _MAX_IMAGE_BYTES = 5 * 1024 * 1024
@@ -32,6 +34,25 @@ def _image_mime(data: bytes) -> str:
     if len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return "image/webp"
     raise ValueError("Format d’image non pris en charge (JPEG, PNG, WebP ou GIF).")
+
+
+def _model_jpeg(data: bytes) -> bytes:
+    """Convert normalized chat images to JPEG, supported by llama.cpp mtmd."""
+    try:
+        with Image.open(BytesIO(data)) as source:
+            source.seek(0)  # Animated GIFs use their first frame in the chat.
+            frame = ImageOps.exif_transpose(source)
+            rgba = frame.convert("RGBA")
+            rgb = Image.new("RGB", rgba.size, (255, 255, 255))
+            rgb.paste(rgba, mask=rgba.getchannel("A"))
+            output = BytesIO()
+            rgb.save(output, format="JPEG", quality=88, optimize=True)
+            encoded = output.getvalue()
+    except Exception as exc:
+        raise ValueError("La photo n'a pas pu etre convertie pour l'analyse.") from exc
+    if not encoded or len(encoded) > _MAX_IMAGE_BYTES:
+        raise ValueError("La photo convertie depasse la limite du moteur visuel.")
+    return encoded
 
 
 def create_image_description_provider(
@@ -59,7 +80,9 @@ def create_image_description_provider(
         image_data = bytes(data)
         if len(image_data) > _MAX_IMAGE_BYTES:
             raise ValueError("Photo supérieure à 5 Mo.")
-        mime = _image_mime(image_data)
+        _image_mime(image_data)  # Validate the normalized file signature first.
+        image_data = _model_jpeg(image_data)
+        mime = "image/jpeg"
         prompt = re.sub(r"\s+", " ", str(question or "Décris cette photo.")).strip()
         prompt = prompt[:_MAX_QUESTION_CHARS] or "Décris cette photo."
         persona = "KARR" if str(speaker or "KITT").strip().casefold() == "karr" else "KITT"

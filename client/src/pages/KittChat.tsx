@@ -137,6 +137,7 @@ export default function KittChat() {
   const [imageBusy, setImageBusy] = useState(false);
   const [imageStatus, setImageStatus] = useState("");
   const [describingImageId, setDescribingImageId] = useState("");
+  const [imageActionFeedback, setImageActionFeedback] = useState<{ imageId: string; text: string; error: boolean } | null>(null);
   const [selectedImage, setSelectedImage] = useState<SharedImage | null>(null);
   const [emotesOpen, setEmotesOpen] = useState(false);
   const [roomToast, setRoomToast] = useState("");
@@ -1152,7 +1153,8 @@ export default function KittChat() {
 
   async function describeSharedImage(image: SharedImage, speaker: "KITT" | "KARR") {
     if (!sessionToken || !apiBase || !imageDescriptionAvailable || describingImageId) return;
-    setDescribingImageId(image.id); setImageStatus(`${speaker} examine la photo...`);
+    const progress = `${speaker} analyse la photo sur l'AGX...`;
+    setDescribingImageId(image.id); setImageStatus(progress); setImageActionFeedback({ imageId: image.id, text: progress, error: false });
     try {
       const response = await fetch(`${apiBase}/api/kitt-chat/images/${encodeURIComponent(image.id)}/describe`, {
         method: "POST",
@@ -1161,9 +1163,11 @@ export default function KittChat() {
       });
       const data = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(data?.error || `La description a echoue (${response.status}).`);
-      setImageStatus(`Demande transmise a ${speaker}. Sa reponse apparaitra dans le salon.`);
+      const done = `Reponse de ${speaker} publiee dans le salon.`;
+      setImageStatus(done); setImageActionFeedback({ imageId: image.id, text: done, error: false });
     } catch (cause) {
-      setImageStatus(cause instanceof Error ? cause.message : "La description de cette photo a echoue.");
+      const message = cause instanceof Error ? cause.message : "La description de cette photo a echoue.";
+      setImageStatus(message); setImageActionFeedback({ imageId: image.id, text: message, error: true });
     } finally { setDescribingImageId(""); }
   }
 
@@ -1286,6 +1290,7 @@ export default function KittChat() {
                       <button type="button" disabled={!isMember || !imageDescriptionAvailable || describingImageId === line.image.id} title={!imageDescriptionAvailable ? "La vision par image est indisponible pour le moment." : !isMember ? "Connecte-toi pour demander une description." : "Demander une description visuelle"} onClick={() => void describeSharedImage(line.image!, "KARR")}>{describingImageId === line.image.id ? "KARR examine…" : "Décrire avec KARR"}</button>
                       {isMember && ownerId === line.image.ownerId && <button type="button" className="delete" onClick={() => void deleteSharedImage(line.image!, line.id)}>Supprimer ma photo</button>}
                     </div>
+                    {imageActionFeedback?.imageId === line.image.id && <small className={`kc-image-status${imageActionFeedback.error ? " error" : ""}`} role="status" aria-live="polite">{imageActionFeedback.text}</small>}
                     {!imageDescriptionAvailable && <small className="kc-image-vision-note">Les photos restent visibles. La description par KITT/KARR est temporairement indisponible.</small>}
                   </>}
                 </div>}
