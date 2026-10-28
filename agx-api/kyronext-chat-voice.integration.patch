@@ -1,0 +1,30 @@
+--- a/kyronex_server.py
++++ b/kyronex_server.py
+@@ -30,3 +30,5 @@
+ from pontiac_owners_api import get_approved_owner, register_pontiac_owner_routes
+ from kitt_chat_api import register_kitt_chat_routes
++from kitt_chat_voice import create_voice_providers
++from kitt_chat_vision import create_image_description_provider
+ 
+@@ -10779,6 +10780,20 @@
+     app.router.add_route("OPTIONS", "/api/pdfs/approved",  handle_pdfs_options)
+     register_pontiac_owner_routes(app, admin_token=_ADMIN_TOKEN, notify=_send_telegram_new)
+-    register_kitt_chat_routes(app, admin_token=_ADMIN_TOKEN, owner_lookup=get_approved_owner)
++    _chat_speech_provider, _chat_transcription_provider = create_voice_providers(
++        get_guy_engine,
++        _clean_tts_text,
++        apply_robot_effect_sox,
++        lambda: whisper_model,
++    )
++    _chat_image_description_provider = create_image_description_provider(LLAMA_SERVER, LLM_MODEL)
++    register_kitt_chat_routes(
++        app,
++        admin_token=_ADMIN_TOKEN,
++        owner_lookup=get_approved_owner,
++        speech_provider=_chat_speech_provider,
++        transcription_provider=_chat_transcription_provider,
++        image_description_provider=_chat_image_description_provider,
++    )
+ 
+ 
+     # ── OBD-II Surveillance véhicule — protocole ALDL 8192 baud (Firebird Trans Am) ──

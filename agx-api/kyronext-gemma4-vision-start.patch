@@ -1,0 +1,20 @@
+--- a/start_kyronex.sh
++++ b/start_kyronex.sh
+@@ -17,4 +17,5 @@
+ USE_OLLAMA=0
+ OLLAMA_MODEL="gemma4:e2b"
+ GEMMA26_MODEL="/home/kitt/models/gemma-4-26B-A4B-QAT-UD-Q4_K_XL/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf"
++GEMMA26_MMPROJ="/home/kitt/models/gemma-4-26B-A4B-QAT-UD-Q4_K_XL/mmproj-BF16.gguf"
+ 
+@@ -256,2 +257,10 @@
+-    $LLAMA_SERVER_BIN --model "$MODEL" --host 0.0.0.0 --port 8080 \
++    LLAMA_MM_PROJ_ARGS=()
++    if [ "$MODEL" = "$GEMMA26_MODEL" ] && [ -f "$GEMMA26_MMPROJ" ]; then
++        LLAMA_MM_PROJ_ARGS=(--mmproj "$GEMMA26_MMPROJ")
++        if [ "${KYRONEX_MMPROJ_CPU:-0}" = "1" ]; then
++            LLAMA_MM_PROJ_ARGS+=(--no-mmproj-offload)
++        fi
++        echo "Gemma 4 image projector enabled"
++    fi
++    $LLAMA_SERVER_BIN --model "$MODEL" "${LLAMA_MM_PROJ_ARGS[@]}" --host 0.0.0.0 --port 8080 \
+         --n-gpu-layers 99 --ctx-size "$CTX" --batch-size "$LLAMA_BATCH" --ubatch-size "$LLAMA_UBATCH" \

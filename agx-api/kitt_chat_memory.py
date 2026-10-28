@@ -29,6 +29,7 @@ class ChatMemory:
             "enabled": value.get("enabled") is True,
             "frequency": value.get("frequency") if value.get("frequency") in ("quiet", "balanced", "lively") else "balanced",
             "voice": value.get("voice") is True,
+            "mealReminders": value.get("mealReminders", True) is not False,
         }
 
     def get(self, owner: str) -> dict[str, Any]:

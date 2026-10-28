@@ -26,6 +26,9 @@ _LOCAL_DIR = str(Path(__file__).resolve().parent)
 if _LOCAL_DIR not in sys.path:
     sys.path.insert(0, _LOCAL_DIR)
 from kitt_chat_memory import ChatMemory
+from kitt_chat_audio_api import register_chat_audio_routes
+from kitt_chat_images import register_chat_image_routes
+from kitt_chat_meals import register_chat_meal_notices
 
 ROOMS = [
     {"id": "general", "label": "Le grand salon", "topic": "Le rendez-vous de toute la communauté"},
@@ -35,6 +38,11 @@ ROOMS = [
 ]
 _ROOM_IDS = {room["id"] for room in ROOMS}
 _ACCESS_CODE = "1982"
+_PTT_GUIDE = (
+    "Pour parler comme à la CB : maintiens Espace hors du champ de saisie, ou le bouton micro, puis relâche. "
+    "L’AGX transcrit tes paroles dans le champ : relis et clique sur Envoyer. "
+    "Active les voix pour entendre KITT et KARR avec Guy."
+)
 _SESSION_FILE = Path(os.environ.get("KITT_CHAT_SESSION_FILE", "/home/kitt/kitt-ai/data/kitt_chat/sessions.json"))
 _MEMORY_STORE = ChatMemory(_SESSION_FILE.parent)
 
@@ -1186,10 +1194,16 @@ def register_kitt_chat_routes(
     *,
     admin_token: str,
     owner_lookup: Callable[[str], Awaitable[dict[str, str] | None]],
+    speech_provider: Callable[[str, str], Awaitable[bytes]] | None = None,
+    transcription_provider: Callable[[bytes, str], Awaitable[dict[str, Any]]] | None = None,
+    image_description_provider: Callable[[bytes, str, str], Awaitable[str]] | None = None,
 ) -> None:
     async def status(_request: web.Request) -> web.Response:
         return _cors(web.json_response({
             "online": True, "rooms": ROOMS, "guestViewOnly": True, "ownerPhotosRequired": True,
+            "speechVoices": {"KITT": "Guy KITT AGX", "KARR": "Guy HD AGX"} if speech_provider else None,
+            "pushToTalk": transcription_provider is not None,
+            "imageSharing": True, "imageDescription": image_description_provider is not None,
         }))
 
     async def memory_owner(request: web.Request) -> str | None:
@@ -1206,6 +1220,77 @@ def register_kitt_chat_routes(
         if not owner or owner.get("name", "").casefold() != str(session.get("name", "")).casefold():
             return None
         return owner_id
+
+    def public_speech(message_id: str, text: str, speaker: str) -> bool:
+        for history in _HISTORY.values():
+            for line in reversed(history):
+                if line.get("id") != message_id:
+                    continue
+                if line.get("kind") == "message" and line.get("name") in ("KITT", "KARR"):
+                    return speaker == line["name"] and text == " ".join(str(line.get("text", "")).split())
+                if line.get("kind") == "system" and str(line.get("text", "")).endswith(" entre dans le salon."):
+                    expected = f"{line['name']} vient de se connecter au chat Rider."
+                    return speaker == "KITT" and text == expected
+                return False
+        return False
+
+    register_chat_audio_routes(
+        app, authenticate=memory_owner, cors=_cors, public_speech=public_speech,
+        speech_provider=speech_provider, transcription_provider=transcription_provider,
+    )
+
+    async def image_owner_name(owner_id: str) -> str:
+        owner = await owner_lookup(owner_id)
+        return _clean_text(owner.get("name"), _NAME_MAX) if owner else ""
+
+    async def image_broadcast(room: str, packet: dict[str, Any]) -> None:
+        if packet.get("type") == "image_removed":
+            for line in _HISTORY.get(room, ()):
+                if line.get("id") == packet.get("id") or (line.get("image") or {}).get("id") == packet.get("imageId"):
+                    line["imageRemoved"] = True
+            async with _HISTORY_SAVE_LOCK:
+                try:
+                    await asyncio.to_thread(_MEMORY_STORE.save_history, room, list(_HISTORY.get(room, ())))
+                except OSError:
+                    print("[KITT_CHAT_IMAGES] Could not persist removed-image marker", flush=True)
+        await _broadcast(room, packet)
+
+    register_chat_image_routes(
+        app, authenticate=memory_owner, owner_name=image_owner_name, cors=_cors,
+        root=_SESSION_FILE.parent / "images", append_history=_append_history,
+        broadcast=image_broadcast, allowed_rooms=_ROOM_IDS,
+        describe_provider=image_description_provider, admin_token=admin_token,
+    )
+
+    def meal_eligible_rooms() -> list[str]:
+        now = time.time() * 1000
+        eligible = set()
+        for client in _CLIENTS.values():
+            if client.is_guest or client.ws.closed or _room_rest_mode(client.room):
+                continue
+            profile = _member_profile(client.name)
+            if not profile.get("mealReminders", True) or profile.get("frequency") == "quiet":
+                continue
+            active = any(
+                line.get("kind") == "message" and line.get("name") == client.name
+                and isinstance(line.get("timestamp"), (int, float)) and now - line["timestamp"] < 5 * 60 * 1000
+                for line in reversed(_HISTORY.get(client.room, ()))
+            )
+            if active:
+                eligible.add(client.room)
+        return sorted(eligible)
+
+    async def post_meal_notice(room: str, speaker: str, text: str) -> None:
+        line = {
+            "id": secrets.token_hex(8), "name": speaker, "text": text,
+            "timestamp": int(time.time() * 1000), "kind": "message", "category": "meal",
+        }
+        await _append_history(room, line)
+        await _broadcast(room, {"type": "message", "message": line})
+
+    register_chat_meal_notices(
+        app, data_dir=_SESSION_FILE.parent, eligible_rooms=meal_eligible_rooms, post_notice=post_meal_notice,
+    )
 
     async def mission_memory(request: web.Request) -> web.Response:
         owner_id = await memory_owner(request)
@@ -1234,6 +1319,24 @@ def register_kitt_chat_routes(
             return _cors(web.json_response(value))
         except OSError:
             return _cors(web.json_response({"ok": False, "error": "Impossible d'enregistrer le dossier mémoire."}, status=503))
+
+    async def forget_session(request: web.Request) -> web.Response:
+        if await memory_owner(request) is None:
+            return _cors(web.json_response({"error": "Session valide requise."}, status=401))
+        raw_token = request.headers["Authorization"].partition(" ")[2]
+        token_hash = _digest(raw_token)
+        async with _LOCK:
+            previous = _SESSIONS.pop(token_hash, None)
+            try:
+                _save_sessions()
+            except OSError:
+                if previous:
+                    _SESSIONS[token_hash] = previous
+                return _cors(web.json_response({"error": "Impossible d’oublier cette session pour le moment."}, status=503))
+        for client in list(_CLIENTS.values()):
+            if client.token_hash == token_hash:
+                await client.ws.close(code=4001, message=b"Device forgotten")
+        return _cors(web.json_response({"ok": True}))
 
     async def create_invitation(request: web.Request) -> web.Response:
         given = request.headers.get("X-Admin-Token", "")
@@ -1365,6 +1468,9 @@ def register_kitt_chat_routes(
         client = Client(ws=ws, token_hash=token_hash, name=name, room=room, is_guest=is_guest)
         key = id(ws)
         async with _LOCK:
+            if not is_guest and not _session_is_current(_SESSIONS.get(token_hash)):
+                await ws.close(code=4001, message=b"Device session revoked")
+                return ws
             if not is_guest and any(c.name.casefold() == client.name.casefold() for c in _CLIENTS.values() if not c.is_guest):
                 await ws.close(code=4002, message=b"Name already online")
                 return ws
@@ -1389,6 +1495,18 @@ def register_kitt_chat_routes(
                     "expiresAt": pending.expires_at_ms,
                 })
             if not is_guest:
+                if _SESSIONS[token_hash].get("pttGuideVersion") != 1:
+                    guide_line = {
+                        "id": secrets.token_hex(8), "name": "KITT", "text": _PTT_GUIDE,
+                        "timestamp": int(time.time() * 1000), "kind": "message",
+                    }
+                    _SESSIONS[token_hash]["pttGuideVersion"] = 1
+                    try:
+                        _save_sessions()
+                    except OSError:
+                        print("[KITT_CHAT] Could not persist microphone guide preference", flush=True)
+                else:
+                    guide_line = None
                 now = time.monotonic()
                 for joined_name, stamp in list(_JOIN_ANNOUNCED_AT.items()):
                     if now - stamp >= 90:
@@ -1413,6 +1531,7 @@ def register_kitt_chat_routes(
             else:
                 line = None
                 joined_line = None
+                guide_line = None
         if joined_line:
             announcement = {
                 "type": "member_joined", "id": joined_line["id"],
@@ -1424,6 +1543,8 @@ def register_kitt_chat_routes(
         if line:
             await _broadcast(room, {"type": "message", "message": line})
             await _presence(room)
+        if guide_line:
+            await ws.send_json({"type": "message", "message": guide_line})
         try:
             async for packet in ws:
                 if packet.type != WSMsgType.TEXT:
@@ -1534,11 +1655,13 @@ def register_kitt_chat_routes(
 
     app.router.add_get("/api/kitt-chat/status", status)
     app.router.add_post("/api/kitt-chat/join", join)
+    app.router.add_delete("/api/kitt-chat/session", forget_session)
     app.router.add_post("/api/kitt-chat/invitations", create_invitation)
     app.router.add_get("/api/kitt-chat/ws", websocket)
     app.router.add_route("GET", "/api/kitt-chat/memory", mission_memory)
     app.router.add_route("PUT", "/api/kitt-chat/memory", mission_memory)
     app.router.add_route("DELETE", "/api/kitt-chat/memory", mission_memory)
     app.router.add_route("OPTIONS", "/api/kitt-chat/join", options)
+    app.router.add_route("OPTIONS", "/api/kitt-chat/session", options)
     app.router.add_route("OPTIONS", "/api/kitt-chat/invitations", options)
     app.router.add_route("OPTIONS", "/api/kitt-chat/memory", options)
