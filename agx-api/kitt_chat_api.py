@@ -1,4 +1,4 @@
-"""Invite-only, in-memory community chat endpoints for KYRONEXT aiohttp."""
+"""Approved-owner chat with permanent club access and bounded persistent memory."""
 from __future__ import annotations
 
 import asyncio
@@ -34,9 +34,16 @@ ROOMS = [
     {"id": "radio", "label": "Radio KITT", "topic": "Musique et souvenirs de la série"},
 ]
 _ROOM_IDS = {room["id"] for room in ROOMS}
-_INVITES: dict[str, dict[str, Any]] = {}  # SHA-256 -> assigned member + expiry; single-use and memory-only.
+_ACCESS_CODE = "1982"
 _SESSION_FILE = Path(os.environ.get("KITT_CHAT_SESSION_FILE", "/home/kitt/kitt-ai/data/kitt_chat/sessions.json"))
 _MEMORY_STORE = ChatMemory(_SESSION_FILE.parent)
+
+
+def _session_is_current(session: dict[str, Any] | None) -> bool:
+    if not session:
+        return False
+    expiry = session.get("expires")
+    return expiry is None or isinstance(expiry, (int, float)) and expiry > time.time()
 
 
 def _load_sessions() -> dict[str, dict[str, Any]]:
@@ -45,15 +52,13 @@ def _load_sessions() -> dict[str, dict[str, Any]]:
         stored = json.loads(_SESSION_FILE.read_text(encoding="utf-8"))
         if not isinstance(stored, dict):
             return {}
-        now = time.time()
         return {
-            token_hash: session for token_hash, session in stored.items()
+            token_hash: {**session, "expires": None} for token_hash, session in stored.items()
             if re.fullmatch(r"[0-9a-f]{64}", token_hash)
             and isinstance(session, dict)
             and isinstance(session.get("ownerId"), str)
             and isinstance(session.get("name"), str)
-            and isinstance(session.get("expires"), (int, float))
-            and session["expires"] > now
+            and (session.get("expires") is None or isinstance(session.get("expires"), (int, float)))
         }
     except (OSError, json.JSONDecodeError):
         return {}
@@ -61,6 +66,7 @@ def _load_sessions() -> dict[str, dict[str, Any]]:
 
 _SESSIONS: dict[str, dict[str, Any]] = _load_sessions()  # Token hashes only; survives an AGX restart.
 _CLIENTS: dict[int, "Client"] = {}
+_JOIN_ANNOUNCED_AT: dict[str, float] = {}
 _HISTORY: dict[str, deque[dict[str, Any]]] = defaultdict(lambda: deque(maxlen=500))
 for _room in _ROOM_IDS:
     _HISTORY[_room] = deque(_MEMORY_STORE.history(_room), maxlen=500)
@@ -70,8 +76,6 @@ _BOT_GENERATIONS: dict[tuple[str, str], int] = defaultdict(int)
 _BOT_GENERATION_LOCK = asyncio.Lock()
 _JOIN_ATTEMPTS: dict[str, list[float]] = {}
 _LOCK = asyncio.Lock()
-_TOKEN_TTL = 365 * 24 * 3600
-_INVITE_TTL = 7 * 24 * 3600
 _JOIN_RATE_WINDOW = 3600
 _JOIN_RATE_MAX = 10
 _GUEST_RATE_WINDOW = 600
@@ -947,10 +951,9 @@ async def _append_history(room: str, line: dict[str, Any]) -> None:
 
 
 def _member_profile(member_name: str) -> dict[str, Any]:
-    now = time.time()
     session = next((
         value for value in _SESSIONS.values()
-        if value.get("expires", 0) > now and str(value.get("name", "")).casefold() == member_name.casefold()
+        if _session_is_current(value) and str(value.get("name", "")).casefold() == member_name.casefold()
     ), None)
     return _MEMORY_STORE.get(str(session.get("ownerId", ""))) if session else _MEMORY_STORE.clean({})
 
@@ -1196,7 +1199,7 @@ def register_kitt_chat_routes(
             return None
         token_hash = _digest(token)
         session = _SESSIONS.get(token_hash)
-        if not session or session.get("expires", 0) <= time.time():
+        if not _session_is_current(session):
             return None
         owner_id = str(session.get("ownerId", ""))
         owner = await owner_lookup(owner_id)
@@ -1249,18 +1252,10 @@ def register_kitt_chat_routes(
         name = _clean_text(owner.get("name"), _NAME_MAX)
         if not 2 <= len(name) <= _NAME_MAX:
             return _cors(web.json_response({"ok": False, "error": "Le nom du profil valide doit faire 2 a 24 caracteres."}, status=400))
-        now = time.time()
-        for token, invitation in list(_INVITES.items()):
-            if invitation["expires"] <= now:
-                _INVITES.pop(token, None)
-        if len(_INVITES) >= 250:
-            return _cors(web.json_response({"ok": False, "error": "Trop d'invitations actives."}, status=429))
-        code = secrets.token_urlsafe(15)
-        _INVITES[_digest(code)] = {"ownerId": owner_id, "name": name, "expires": now + _INVITE_TTL}
         return _cors(web.json_response({
-            "ok": True, "code": code, "ownerId": owner_id, "name": name,
-            "expiresInSeconds": _INVITE_TTL,
-        }, status=201))
+            "ok": True, "code": _ACCESS_CODE, "ownerId": owner_id, "name": name,
+            "expiresInSeconds": None, "reusable": True,
+        }))
 
     async def join(request: web.Request) -> web.Response:
         if _join_rate_limited(request):
@@ -1274,42 +1269,48 @@ def register_kitt_chat_routes(
         except Exception:
             return _cors(web.json_response({"ok": False, "error": "Requete invalide."}, status=400))
         if not invite or not owner_id:
-            return _cors(web.json_response({"ok": False, "error": "Invitation et profil Pontiac valide requis."}, status=400))
+            return _cors(web.json_response({"ok": False, "error": "Code du salon et profil Pontiac valide requis."}, status=400))
+        if not hmac.compare_digest(invite.encode(), _ACCESS_CODE.encode()):
+            return _cors(web.json_response({"ok": False, "error": "Code du salon incorrect. Utilise le code permanent 1982 après validation de ton profil."}, status=403))
         owner = await owner_lookup(owner_id)
         if not owner:
             return _cors(web.json_response({"ok": False, "error": "Le profil Pontiac doit etre valide avec une photo sur le globe."}, status=403))
         name = _clean_text(owner.get("name"), _NAME_MAX)
         if not 2 <= len(name) <= _NAME_MAX:
             return _cors(web.json_response({"ok": False, "error": "Le nom du profil Pontiac est invalide."}, status=403))
-        invite_hash = _digest(invite)
         async with _LOCK:
-            invitation = _INVITES.get(invite_hash)
-            if invitation is None or invitation["expires"] < time.time():
-                _INVITES.pop(invite_hash, None)
-                return _cors(web.json_response({"ok": False, "error": "Code invalide, expire ou deja utilise."}, status=403))
-            if invitation["ownerId"] != owner_id or invitation["name"].casefold() != name.casefold():
-                return _cors(web.json_response({"ok": False, "error": "Ce code appartient a un autre profil Pontiac."}, status=403))
+            previous_sessions = dict(_SESSIONS)
             for token_hash, session in list(_SESSIONS.items()):
-                if session["expires"] < time.time():
+                if not _session_is_current(session):
                     _SESSIONS.pop(token_hash, None)
-            if any(session["name"].casefold() == name.casefold() for session in _SESSIONS.values()):
+            if any(session["name"].casefold() == name.casefold() and session["ownerId"] != owner_id for session in _SESSIONS.values()):
                 return _cors(web.json_response({"ok": False, "error": "Ce pseudo est actuellement utilise."}, status=409))
+            owner_sessions = sorted(
+                ((token_hash, session) for token_hash, session in _SESSIONS.items() if session["ownerId"] == owner_id),
+                key=lambda item: item[1].get("createdAt", 0),
+            )
+            # Allow reconnecting after clearing browser storage or using another PC.
+            # Keep five remembered devices per owner, without a time limit.
+            for old_hash, _ in owner_sessions[:-4] if len(owner_sessions) >= 5 else ():
+                _SESSIONS.pop(old_hash, None)
             if len(_SESSIONS) >= 500:
+                _SESSIONS.clear()
+                _SESSIONS.update(previous_sessions)
                 return _cors(web.json_response({"ok": False, "error": "Capacite de membres atteinte."}, status=503))
             token = secrets.token_urlsafe(32)
             token_hash = _digest(token)
             _SESSIONS[token_hash] = {
-                "ownerId": owner_id, "name": name, "expires": time.time() + _TOKEN_TTL,
+                "ownerId": owner_id, "name": name, "expires": None, "createdAt": time.time(),
             }
             try:
                 _save_sessions()
             except OSError:
-                _SESSIONS.pop(token_hash, None)
+                _SESSIONS.clear()
+                _SESSIONS.update(previous_sessions)
                 return _cors(web.json_response({"ok": False, "error": "Impossible de mémoriser cette session sur le serveur. Réessaie dans un instant."}, status=503))
-            _INVITES.pop(invite_hash, None)
         return _cors(web.json_response({
             "ok": True, "token": token, "ownerId": owner_id, "name": name,
-            "expiresInSeconds": _TOKEN_TTL,
+            "expiresInSeconds": None,
         }, status=201))
 
     async def websocket(request: web.Request) -> web.StreamResponse:
@@ -1343,7 +1344,7 @@ def register_kitt_chat_routes(
                 return ws
             token_hash = _digest(raw_token)
             session = _SESSIONS.get(token_hash)
-            if not session or session["expires"] < time.time():
+            if not _session_is_current(session):
                 if _SESSIONS.pop(token_hash, None) is not None:
                     try:
                         _save_sessions()
@@ -1388,6 +1389,21 @@ def register_kitt_chat_routes(
                     "expiresAt": pending.expires_at_ms,
                 })
             if not is_guest:
+                now = time.monotonic()
+                for joined_name, stamp in list(_JOIN_ANNOUNCED_AT.items()):
+                    if now - stamp >= 90:
+                        _JOIN_ANNOUNCED_AT.pop(joined_name, None)
+                announced_name = client.name.casefold()
+                if announced_name not in _JOIN_ANNOUNCED_AT:
+                    _JOIN_ANNOUNCED_AT[announced_name] = now
+                    joined_line = {
+                        "id": secrets.token_hex(8), "name": client.name,
+                        "text": f"{client.name} entre dans le salon.",
+                        "timestamp": int(time.time() * 1000), "kind": "system",
+                    }
+                    await _append_history(room, joined_line)
+                else:
+                    joined_line = None
                 line = {
                     "id": secrets.token_hex(8), "name": "KITT",
                     "text": f"Salut {client.name} ! KITT est l’admin IA de « KITT-Franco-Belge · Des Chevaliers ». Écris « KITT! » pour m’interpeller.",
@@ -1396,6 +1412,15 @@ def register_kitt_chat_routes(
                 await _append_history(room, line)
             else:
                 line = None
+                joined_line = None
+        if joined_line:
+            announcement = {
+                "type": "member_joined", "id": joined_line["id"],
+                "name": client.name, "room": room, "timestamp": joined_line["timestamp"],
+            }
+            for destination in _ROOM_IDS:
+                await _broadcast(destination, announcement)
+            await _broadcast(room, {"type": "message", "message": joined_line})
         if line:
             await _broadcast(room, {"type": "message", "message": line})
             await _presence(room)

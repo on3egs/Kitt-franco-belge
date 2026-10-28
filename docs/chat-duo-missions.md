@@ -12,6 +12,10 @@ Le panneau **Dossiers de mission** permet d'enregistrer des notes sur votre Pont
 
 Les raccourcis de mission préparent un message que vous pouvez modifier avant de l'envoyer : diagnostic, contre-expertise, quiz et présentation. La voix est facultative et dépend des voix françaises disponibles dans votre navigateur.
 
+Après validation du profil Pontiac avec photo, le salon affiche et préremplit le code commun **1982**. Il est réutilisable sans expiration ; aucune invitation personnelle n'est à demander à Manix. Les sessions mémorisées n'ont plus de date d'expiration et la validation du profil est toujours vérifiée à la connexion.
+
+Le réglage **Annoncer les nouveaux membres** lit le nom réel affiché lors d'une arrivée, par exemple « Pascal K Industry vient de se connecter au chat Rider ». Il couvre tous les salons lorsque la page reste ouverte, sans relire l'historique ni annoncer sa propre arrivée. Manix bénéficie de ce réglage activé par défaut ; chacun peut le désactiver ou changer le volume. Le bouton **Tester l'annonce** permet aussi d'autoriser la voix si le navigateur bloque la lecture automatique. Les reconnexions rapides ne multiplient pas les annonces.
+
 ## Mémoire et limites
 
 L'historique public conserve au maximum 500 messages par salon pendant 90 jours et survit aux redémarrages. Le contexte envoyé au modèle reste borné : conserver un message ne garantit pas que chaque réponse le relira. Une recherche par mots pertinents retrouve jusqu'à six anciens messages humains du même salon, en complément de la discussion récente. Les notes de mission activées du membre qui s'adresse au duo sont ajoutées à son contexte.

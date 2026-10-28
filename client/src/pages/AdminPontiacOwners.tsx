@@ -80,7 +80,7 @@ export default function AdminPontiacOwners() {
           throw new Error(`Profil approuvé, mais le code du salon n’a pas été créé : ${inviteData.error || "Réessaie depuis l’administration."}`);
         }
         setIssuedCode({ name: inviteData.name, code: inviteData.code });
-        resultMessage = `Profil approuvé. Le code de ${inviteData.name} est affiché ci-dessous ; copie-le et transmets-le en privé.`;
+        resultMessage = `Profil approuvé. ${inviteData.name} peut maintenant rejoindre le salon avec le code commun 1982.`;
       }
       await load(offset);
       setMessage(resultMessage);
@@ -92,7 +92,7 @@ export default function AdminPontiacOwners() {
     if (!issuedCode) return;
     try {
       await navigator.clipboard.writeText(issuedCode.code);
-      setMessage(`Code de ${issuedCode.name} copié. Envoie-le en privé.`);
+      setMessage(`Code commun 1982 copié. Il est permanent et n’a pas à être envoyé en privé à ${issuedCode.name}.`);
     } catch { setMessage("Copie automatique indisponible : sélectionne le code affiché et copie-le manuellement."); }
   }
 
@@ -111,7 +111,7 @@ export default function AdminPontiacOwners() {
       <p className="mt-3 min-h-6 text-sm text-amber-200" role="status">{message}</p>
       {issuedCode && <section className="mt-4 rounded border border-emerald-500/50 bg-emerald-950/30 p-4" aria-label="Code d’accès au salon KITT">
         <p className="font-mono text-xs tracking-widest text-emerald-200">INVITATION SALON KITT · {issuedCode.name}</p>
-        <p className="mt-1 text-xs text-white/65">Ce code est à usage unique et expire dans sept jours. Transmets-le au propriétaire par message privé.</p>
+        <p className="mt-1 text-xs text-white/65">Code commun permanent : le propriétaire approuvé le saisit directement sur la page du salon. Pas d’invitation privée ni de code à usage unique.</p>
         <div className="mt-3 flex flex-col gap-2 sm:flex-row"><code className="min-w-0 flex-1 break-all rounded border border-white/15 bg-black/40 px-3 py-3 font-mono text-sm text-white">{issuedCode.code}</code>
           <button type="button" onClick={()=>void copyInviteCode()} className="flex items-center justify-center gap-2 border border-emerald-400/60 bg-emerald-950 px-4 py-3 text-sm text-emerald-100 hover:bg-emerald-900"><Copy size={15}/> Copier le code</button></div>
       </section>}

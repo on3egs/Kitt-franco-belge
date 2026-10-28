@@ -275,6 +275,12 @@ export default function PontiacOwners() {
       <div className="po-scan-art" aria-hidden="true"><div className="po-scan-ring"><i/><i/><i/></div><span>KITT / COMMUNITY LINK</span></div>
     </section>
 
+    <section className="po-chat-access" aria-labelledby="po-chat-access-title">
+      <div><p className="po-eyebrow">ACCÈS AU SALON KITT</p><h2 id="po-chat-access-title">Une inscription, puis l’accès permanent</h2></div>
+      <ol><li><strong>Présente ta Pontiac</strong><span>Ajoute une photo et quelques informations sur ta voiture.</span></li><li><strong>Attends la validation</strong><span>Manix vérifie le profil avant sa publication sur le globe.</span></li><li><strong>Entre dans le salon</strong><span>Une fois approuvé, choisis ton profil et le code commun <code>1982</code>. Aucun code privé à attendre.</span></li></ol>
+      <a href="/salon-kitt">Découvrir le salon <ChevronRight size={15}/></a>
+    </section>
+
     <section className="po-stats" aria-label="État du réseau">
       <div><span>PROFILS APPROUVÉS</span><strong>{owners.length}</strong><small>Manix et membres publiés</small></div>
       <div><span>PHOTOS PAR PROFIL</span><strong>04</strong><small>Intérieur, extérieur, détails</small></div>
@@ -299,7 +305,7 @@ export default function PontiacOwners() {
     </section>
 
     <section className="po-submit" id="inscription">
-      <div className="po-submit-intro"><p className="po-eyebrow">À TON TOUR DE REJOINDRE LE RÉSEAU</p><h2>Présente ta Pontiac</h2><p>Partage jusqu’à quatre vues, quelques mots sur ton projet et une région approximative. Chaque profil est relu avant publication.</p>
+      <div className="po-submit-intro"><p className="po-eyebrow">À TON TOUR DE REJOINDRE LE RÉSEAU</p><h2>Présente ta Pontiac</h2><p>Partage jusqu’à quatre vues, quelques mots sur ton projet et une région approximative. Chaque profil est relu avant publication. Après approbation, ton profil te donne accès au salon KITT avec le code commun 1982, sans invitation individuelle.</p>
         <ul><li><Check size={16}/> Photos converties en JPEG allégés dans ton navigateur</li><li><Check size={16}/> Les plaques visibles sur les photos ne sont pas floutées</li><li><Check size={16}/> Aucune coordonnée GPS précise n’est publiée</li></ul>
       </div>
       <form className="po-form" onSubmit={submit}>

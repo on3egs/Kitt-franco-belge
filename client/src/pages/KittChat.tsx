@@ -11,6 +11,7 @@ type BotStatus = "KITT" | "KARR";
 type Owner = { id: string; name: string; car: string; year: string; photos: string[] };
 type MemoryFrequency = "quiet" | "balanced" | "lively";
 type MissionMemory = { notes: string; enabled: boolean; frequency: MemoryFrequency; voice: boolean };
+type SpeechJob = { utterance: SpeechSynthesisUtterance; kind: "bot" | "arrival" };
 const EMPTY_MISSION_MEMORY: MissionMemory = { notes: "", enabled: false, frequency: "balanced", voice: false };
 type SavePickerWindow = Window & {
   showSaveFilePicker?: (options: {
@@ -70,6 +71,8 @@ const FALLBACK_ROOMS: Room[] = [
   { id: "radio", label: "Radio KITT", topic: "Musique et souvenirs de la série" },
 ];
 const SESSION_KEY = "kitt-msn-chat-session-v1";
+const COMMUNITY_ACCESS_CODE = "1982";
+const ARRIVAL_VOICE_KEY = "kitt-msn-arrival-voice-v1";
 
 function clockLabel(timestamp: number) {
   return new Intl.DateTimeFormat("fr-BE", { hour: "2-digit", minute: "2-digit" }).format(timestamp);
@@ -92,7 +95,7 @@ export default function KittChat() {
   const [owners, setOwners] = useState<Owner[]>([]);
   const [ownerId, setOwnerId] = useState("");
   const [member, setMember] = useState("");
-  const [invite, setInvite] = useState("");
+  const [invite, setInvite] = useState(COMMUNITY_ACCESS_CODE);
   const [sessionToken, setSessionToken] = useState("");
   const [reconnectKey, setReconnectKey] = useState(0);
   const [lines, setLines] = useState<ChatLine[]>([]);
@@ -100,6 +103,9 @@ export default function KittChat() {
   const [members, setMembers] = useState<Member[]>([]);
   const [message, setMessage] = useState("");
   const [sound, setSound] = useState(false);
+  const [arrivalVoiceEnabled, setArrivalVoiceEnabled] = useState(false);
+  const [arrivalVoiceVolume, setArrivalVoiceVolume] = useState(75);
+  const [arrivalVoiceStatus, setArrivalVoiceStatus] = useState("");
   const [emotesOpen, setEmotesOpen] = useState(false);
   const [roomToast, setRoomToast] = useState("");
   const [buzzActive, setBuzzActive] = useState(false);
@@ -125,6 +131,11 @@ export default function KittChat() {
   const botStatusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceMessageIds = useRef<Set<string>>(new Set());
   const voiceEnabled = useRef(false);
+  const arrivalVoiceEnabledRef = useRef(false);
+  const arrivalVoiceVolumeRef = useRef(75);
+  const speechQueue = useRef<SpeechJob[]>([]);
+  const activeSpeech = useRef<SpeechJob | null>(null);
+  const announcedJoinIds = useRef<string[]>([]);
   const memoryEditRevision = useRef(0);
   const voicePreferenceTouched = useRef(false);
   const isMember = Boolean(sessionToken);
@@ -198,6 +209,18 @@ export default function KittChat() {
 
   useEffect(() => { soundEnabled.current = sound; }, [sound]);
   useEffect(() => { voiceEnabled.current = missionMemory.voice; }, [missionMemory.voice]);
+  useEffect(() => {
+    if (!member) return;
+    let saved: { enabled?: boolean; volume?: number } | null = null;
+    try { saved = JSON.parse(localStorage.getItem(`${ARRIVAL_VOICE_KEY}:${member.toLocaleLowerCase("fr-BE")}`) || "null"); } catch { saved = null; }
+    const enabled = typeof saved?.enabled === "boolean" ? saved.enabled : identityTone(member) === "manix";
+    const volume = typeof saved?.volume === "number" ? Math.max(0, Math.min(100, Math.round(saved.volume))) : 75;
+    setArrivalVoiceEnabled(enabled); arrivalVoiceEnabledRef.current = enabled;
+    setArrivalVoiceVolume(volume); arrivalVoiceVolumeRef.current = volume;
+    setArrivalVoiceStatus("");
+  }, [member]);
+  useEffect(() => { arrivalVoiceEnabledRef.current = arrivalVoiceEnabled; }, [arrivalVoiceEnabled]);
+  useEffect(() => { arrivalVoiceVolumeRef.current = arrivalVoiceVolume; }, [arrivalVoiceVolume]);
 
   useEffect(() => {
     if (!apiBase || !sessionToken) return;
@@ -238,9 +261,102 @@ export default function KittChat() {
     return () => controller.abort();
   }, [apiBase, sessionToken]);
 
+  function pumpSpeechQueue() {
+    if (activeSpeech.current || !speechQueue.current.length) return;
+    const job = speechQueue.current.shift();
+    if (!job) return;
+    activeSpeech.current = job;
+    const originalEnd = job.utterance.onend;
+    const originalError = job.utterance.onerror;
+    const finish = () => {
+      if (activeSpeech.current !== job) return;
+      activeSpeech.current = null;
+      window.setTimeout(pumpSpeechQueue, 40);
+    };
+    job.utterance.onend = event => { originalEnd?.call(job.utterance, event); finish(); };
+    job.utterance.onerror = event => { originalError?.call(job.utterance, event); finish(); };
+    try { window.speechSynthesis.speak(job.utterance); }
+    catch {
+      activeSpeech.current = null;
+      if (job.kind === "arrival") setArrivalVoiceStatus("Le navigateur a bloqué la voix. Clique sur « Tester l’annonce » pour l’activer.");
+      window.setTimeout(pumpSpeechQueue, 40);
+    }
+  }
+
+  function enqueueSpeech(utterance: SpeechSynthesisUtterance, kind: SpeechJob["kind"]) {
+    speechQueue.current.push({ utterance, kind });
+    pumpSpeechQueue();
+  }
+
+  function cancelSpeechKind(kind: SpeechJob["kind"]) {
+    speechQueue.current = speechQueue.current.filter(job => job.kind !== kind);
+    if (activeSpeech.current?.kind === kind) {
+      activeSpeech.current = null;
+      try { window.speechSynthesis?.cancel(); } catch { /* Voix optionnelle selon le navigateur. */ }
+      window.setTimeout(pumpSpeechQueue, 40);
+    }
+  }
+
+  function cancelArrivalSpeech() { cancelSpeechKind("arrival"); }
+
   function stopRoomVoice() {
     voiceMessageIds.current.clear();
+    speechQueue.current = [];
+    activeSpeech.current = null;
     try { window.speechSynthesis?.cancel(); } catch { /* La voix reste facultative selon le navigateur. */ }
+  }
+
+  function saveArrivalVoicePreference(enabled: boolean, volume = arrivalVoiceVolumeRef.current) {
+    const safeVolume = Math.max(0, Math.min(100, Math.round(volume)));
+    setArrivalVoiceEnabled(enabled); arrivalVoiceEnabledRef.current = enabled;
+    setArrivalVoiceVolume(safeVolume); arrivalVoiceVolumeRef.current = safeVolume;
+    if (member) {
+      try { localStorage.setItem(`${ARRIVAL_VOICE_KEY}:${member.toLocaleLowerCase("fr-BE")}`, JSON.stringify({ enabled, volume: safeVolume })); } catch { /* Le réglage reste actif pour cette visite. */ }
+    }
+    if (!enabled) {
+      cancelArrivalSpeech();
+      setArrivalVoiceStatus("Annonces vocales désactivées.");
+    } else {
+      setArrivalVoiceStatus("Annonces vocales activées pour les prochaines arrivées.");
+    }
+  }
+
+  function announceMemberJoined(id: string, rawName: string) {
+    const name = rawName.replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 60);
+    if (!id || !name || name.toLocaleLowerCase("fr-BE") === member.trim().toLocaleLowerCase("fr-BE")) return false;
+    if (announcedJoinIds.current.includes(id)) return false;
+    announcedJoinIds.current.push(id);
+    if (announcedJoinIds.current.length > 200) announcedJoinIds.current.splice(0, announcedJoinIds.current.length - 200);
+    showRoomToast(`${name} vient de rejoindre le salon.`);
+    playRoomSound("join");
+    if (!arrivalVoiceEnabledRef.current) return true;
+    if (typeof window.SpeechSynthesisUtterance !== "function" || !window.speechSynthesis) {
+      setArrivalVoiceStatus("La synthèse vocale n’est pas disponible dans ce navigateur.");
+      return true;
+    }
+    const synthesis = window.speechSynthesis;
+    const waitingArrivals = speechQueue.current.filter(job => job.kind === "arrival").length + (activeSpeech.current?.kind === "arrival" ? 1 : 0);
+    if (waitingArrivals >= 3) {
+      setArrivalVoiceStatus("Plusieurs membres arrivent : les annonces vocales en attente sont limitées.");
+      return true;
+    }
+    try {
+      const utterance = new SpeechSynthesisUtterance(`${name} vient de se connecter au chat Rider.`);
+      const frenchVoice = synthesis.getVoices().find(voice => /^fr(?:-|$)/i.test(voice.lang));
+      utterance.lang = frenchVoice?.lang || "fr-FR";
+      if (frenchVoice) utterance.voice = frenchVoice;
+      utterance.volume = arrivalVoiceVolumeRef.current / 100;
+      utterance.rate = 0.96;
+      utterance.onerror = event => {
+        if (event.error !== "canceled" && event.error !== "interrupted") {
+          setArrivalVoiceStatus("Le navigateur a bloqué l’annonce. Clique sur « Tester l’annonce » pour activer la voix.");
+        }
+      };
+      enqueueSpeech(utterance, "arrival");
+    } catch {
+      setArrivalVoiceStatus("La synthèse vocale n’est pas disponible dans ce navigateur.");
+    }
+    return true;
   }
 
   function clearBotStatus() {
@@ -279,7 +395,7 @@ export default function KittChat() {
             showMemoryFeedback("La voix du navigateur n’a pas pu lire ce message. Vérifie la sortie audio et les voix françaises installées.", true);
           }
         };
-        synthesis.speak(utterance);
+        enqueueSpeech(utterance, "bot");
       } catch {
         showMemoryFeedback("La synthèse vocale n’est pas disponible dans ce navigateur.", true);
       }
@@ -364,6 +480,10 @@ export default function KittChat() {
         return;
       }
       if (packet.type === "presence") { setMembers(Array.isArray(packet.members) ? packet.members as Member[] : []); return; }
+      if (packet.type === "member_joined") {
+        if (typeof packet.id === "string" && typeof packet.name === "string") announceMemberJoined(packet.id, packet.name);
+        return;
+      }
       if (packet.type === "bot_status") {
         if (packet.active === true && (packet.speaker === "KITT" || packet.speaker === "KARR")) showBotStatus(packet.speaker);
         else if (packet.active === false) clearBotStatus();
@@ -401,10 +521,9 @@ export default function KittChat() {
         const line: ChatLine = { ...incoming, liveBot: incoming.kind !== "system" && ["kitt", "karr"].includes(identityTone(incoming.name)) };
         if (line.liveBot && voiceEnabled.current) voiceMessageIds.current.add(line.id);
         setLines(current => [...current.slice(-98), line]);
-        if (line.kind === "system" && line.text.endsWith(" entre dans le salon.") && !line.text.startsWith(`${member} `)) {
+        if (line.kind === "system" && line.text.endsWith(" entre dans le salon.")) {
           const joinedName = line.text.slice(0, -" entre dans le salon.".length);
-          showRoomToast(`${joinedName} vient de rejoindre le salon.`);
-          playRoomSound("join");
+          announceMemberJoined(line.id, joinedName);
         } else if (line.name !== member && line.kind !== "system") {
           playRoomSound("message");
         }
@@ -477,7 +596,7 @@ export default function KittChat() {
   async function enter(event: FormEvent) {
     event.preventDefault(); setError(""); setNotice("");
     if (!apiBase || !ownerId || !invite.trim()) {
-      setError("Choisis ton profil Pontiac approuvé et saisis le code personnel reçu de Manix.");
+      setError("Choisis ton profil Pontiac approuvé et utilise le code commun 1982.");
       return;
     }
     try {
@@ -492,7 +611,7 @@ export default function KittChat() {
       }
       localStorage.setItem(SESSION_KEY, JSON.stringify({ token: data.token, name: data.name, ownerId: data.ownerId }));
       sessionStorage.removeItem(SESSION_KEY);
-      setMember(data.name); setSessionToken(data.token); setNotice("Profil Pontiac vérifié. Bienvenue ! Cet appareil mémorisera ta session : tu n’auras pas à ressaisir ton code."); setInvite("");
+      setMember(data.name); setSessionToken(data.token); setNotice("Profil Pontiac vérifié. Bienvenue ! Ton accès au salon est permanent sur ce profil."); setInvite(COMMUNITY_ACCESS_CODE);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Impossible de rejoindre le salon.");
     }
@@ -600,7 +719,10 @@ export default function KittChat() {
       showMemoryFeedback("La synthèse vocale n’est pas disponible dans ce navigateur.", true);
       return;
     }
-    if (!enabled) stopRoomVoice();
+    if (!enabled) {
+      voiceMessageIds.current.clear();
+      cancelSpeechKind("bot");
+    }
     voicePreferenceTouched.current = true;
     editMissionMemory(current => ({ ...current, voice: enabled }));
     showMemoryFeedback(enabled ? "Voix activée pour les prochains messages KITT/KARR. Enregistre pour garder ce réglage." : "Voix coupée; la lecture en cours a été arrêtée.");
@@ -609,6 +731,31 @@ export default function KittChat() {
   function insertQuickPrompt(prompt: string) {
     setMessage(current => current.trim() ? `${current.trim()} ${prompt}` : prompt);
     requestAnimationFrame(() => document.getElementById("kc-message")?.focus());
+  }
+
+  function testArrivalVoice() {
+    if (typeof window.SpeechSynthesisUtterance !== "function" || !window.speechSynthesis) {
+      setArrivalVoiceStatus("La synthèse vocale n’est pas disponible dans ce navigateur.");
+      return;
+    }
+    try {
+      const utterance = new SpeechSynthesisUtterance("Annonce de test. Pascal K Industry vient de se connecter au chat Rider.");
+      const frenchVoice = window.speechSynthesis.getVoices().find(voice => /^fr(?:-|$)/i.test(voice.lang));
+      utterance.lang = frenchVoice?.lang || "fr-FR";
+      if (frenchVoice) utterance.voice = frenchVoice;
+      utterance.volume = arrivalVoiceVolumeRef.current / 100;
+      utterance.rate = 0.96;
+      utterance.onerror = event => {
+        if (event.error !== "canceled" && event.error !== "interrupted") {
+          setArrivalVoiceStatus("Lecture bloquée. Vérifie la voix française et le volume, puis clique encore sur « Tester l’annonce ».");
+        }
+      };
+      setArrivalVoiceStatus("Test vocal en cours…");
+      utterance.onend = () => setArrivalVoiceStatus("Test terminé. Les annonces d’arrivée sont prêtes.");
+      enqueueSpeech(utterance, "arrival");
+    } catch {
+      setArrivalVoiceStatus("Le navigateur ne peut pas lancer la synthèse vocale.");
+    }
   }
 
   function eraseMissionMemory() {
@@ -768,6 +915,12 @@ export default function KittChat() {
             <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span>{item.name}{item.role && <small className="kc-person-role">{item.role}</small>}</span><i title="En ligne"/>
           </div>) : <small className="kc-no-members">Aucun propriétaire connecté pour l’instant.</small>}</div>
           <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz</small></button>
+          <section className="kc-arrival-voice" aria-label="Annonce vocale des arrivées">
+            <label><input type="checkbox" checked={arrivalVoiceEnabled} onChange={event => saveArrivalVoicePreference(event.target.checked)}/><Volume2 size={15}/><span>Annoncer les nouveaux membres</span></label>
+            <div className="kc-arrival-volume"><label htmlFor="kc-arrival-volume">Volume vocal</label><output htmlFor="kc-arrival-volume">{arrivalVoiceVolume}%</output><input id="kc-arrival-volume" type="range" min="0" max="100" step="1" value={arrivalVoiceVolume} onChange={event => saveArrivalVoicePreference(arrivalVoiceEnabledRef.current, Number(event.target.value))} aria-label={`Volume des annonces ${arrivalVoiceVolume} pour cent`}/></div>
+            <button type="button" onClick={testArrivalVoice}>Tester l’annonce</button>
+            {arrivalVoiceStatus && <small role="status" aria-live="polite">{arrivalVoiceStatus}</small>}
+          </section>
           {isMember && <details className="kc-mission-panel">
             <summary><FolderOpen size={16}/><span><strong>Dossiers de mission</strong><small>Mémoire volontaire · {missionMemory.notes.length}/2000</small></span></summary>
             <div className="kc-mission-body">
@@ -796,10 +949,14 @@ export default function KittChat() {
                 {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.name} · {owner.car} {owner.year}</option>)}
               </select>
             </label> : <p>Aucun profil avec photo n’est encore approuvé. Inscris ta voiture sur le globe, puis attends la validation.</p>}
-            <label>Code personnel<input required maxLength={80} autoComplete="one-time-code" value={invite} onChange={event => setInvite(event.target.value)} placeholder="Code remis après validation" disabled={!owners.length}/></label>
+            <div className="kc-common-access" role="note">
+              <strong>Code commun du salon : <code>1982</code></strong>
+              <span>Après validation de ta Pontiac avec photo, tu peux entrer directement. Aucun code personnel à demander à Manix.</span>
+            </div>
+            <label>Code d’accès<input required maxLength={80} autoComplete="off" inputMode="numeric" value={invite} onChange={event => setInvite(event.target.value)} placeholder="1982" disabled={!owners.length}/></label>
             <button type="submit" disabled={!owners.length || !invite.trim() || service !== "online"}>Entrer dans le salon <ArrowRight size={15}/></button>
             <a className="kc-globe-cta" href="/communaute-pontiac#inscription"><CarFront size={15}/> Inscrire ma Pontiac sur le globe</a>
-            <p>Ton profil est déjà approuvé ? Demande ton code à Manix via le groupe <a href="https://www.facebook.com/groups/kittfrancobelge" target="_blank" rel="noopener noreferrer">KITT Franco-Belge</a>.</p>
+            <p>Étapes : inscris ta Pontiac avec une photo, attends la validation du profil, puis entre avec le code commun 1982. L’accès reste associé à ton profil approuvé.</p>
           </form>}
         </aside>
       </div> : isMember ? <section className="kc-offline"><Radio size={24}/><div><strong>{service === "online" ? `Session mémorisée pour ${member}` : "Le salon est momentanément hors ligne."}</strong><p>{service === "online" ? "Ton code a déjà été utilisé. Cet appareil se souviendra de toi." : "Ta session est conservée. Réessaie quand le relais sera disponible."}</p></div>{service === "online" ? <button type="button" onClick={() => setReconnectKey(value => value + 1)}>Revenir au salon <ArrowRight size={15}/></button> : <button type="button" onClick={() => window.location.reload()}>Réessayer <ArrowRight size={15}/></button>}<button type="button" onClick={forgetDevice}>Oublier cet appareil</button></section> : <section className="kc-offline"><Radio size={24}/><div><strong>{service === "checking" ? "Recherche du salon…" : "Le salon est momentanément hors ligne."}</strong><p>Tu peux déjà préparer ton inscription au globe Pontiac.</p></div><a href="/communaute-pontiac#inscription">Voir l’inscription <ArrowRight size={15}/></a></section>}
