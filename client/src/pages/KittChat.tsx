@@ -104,6 +104,10 @@ export default function KittChat() {
   const [socketState, setSocketState] = useState<"closed" | "connecting" | "online">("closed");
   const [rooms, setRooms] = useState<Room[]>(FALLBACK_ROOMS);
   const [room, setRoom] = useState(FALLBACK_ROOMS[0]);
+  const [publicGuestsCanWrite, setPublicGuestsCanWrite] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestNameDraft, setGuestNameDraft] = useState("");
+  const [guestDisplayName, setGuestDisplayName] = useState("");
   const [owners, setOwners] = useState<Owner[]>([]);
   const [ownerId, setOwnerId] = useState("");
   const [member, setMember] = useState("");
@@ -194,6 +198,7 @@ export default function KittChat() {
   const memoryEditRevision = useRef(0);
   const voicePreferenceTouched = useRef(false);
   const isMember = Boolean(sessionToken);
+  const canWriteMessages = isMember || (publicGuestsCanWrite && Boolean(guestName));
 
   function showMemoryFeedback(text: string, isError = false) {
     setMemoryFeedback(text);
@@ -236,6 +241,8 @@ export default function KittChat() {
           : [];
         if (!active) return;
         const availableRooms = statusData.rooms as Room[];
+        const openChat = statusData.publicGuestsCanWrite === true;
+        setPublicGuestsCanWrite(openChat);
         setSpeechVoices(statusData.speechVoices && typeof statusData.speechVoices.KITT === "string" && typeof statusData.speechVoices.KARR === "string" ? statusData.speechVoices as { KITT: string; KARR: string } : null);
         setPushToTalkAvailable(statusData.pushToTalk === true);
         setImageSharingAvailable(statusData.imageSharing === true);
@@ -246,7 +253,9 @@ export default function KittChat() {
         setOwners(approved);
         setOwnerId(approved[0]?.id || "");
         setService("online");
-        try {
+        // Le mode libre ignore les anciennes sessions sans les effacer : l'accès
+        // propriétaire reste réactivable via la configuration du serveur.
+        if (!openChat) try {
           const saved = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
           if (saved) {
             const parsed = JSON.parse(saved) as { token?: string; name?: string; ownerId?: string };
@@ -619,6 +628,10 @@ export default function KittChat() {
 
   useEffect(() => {
     if (!apiBase || service !== "online") return;
+    if (publicGuestsCanWrite && !isMember && !guestName) {
+      setSocketState("closed");
+      return;
+    }
     const endpoint = new URL("/api/kitt-chat/ws", apiBase);
     endpoint.protocol = endpoint.protocol === "https:" ? "wss:" : "ws:";
     const client = new WebSocket(endpoint);
@@ -627,13 +640,14 @@ export default function KittChat() {
     client.onopen = () => client.send(JSON.stringify(
       isMember
         ? { type: "auth", token: sessionToken, room: room.id }
-        : { type: "guest", room: room.id },
+        : { type: "guest", name: guestName, room: room.id },
     ));
     client.onmessage = event => {
       let packet: Record<string, unknown>;
       try { packet = JSON.parse(String(event.data)) as Record<string, unknown>; } catch { return; }
       if (packet.type === "ready") {
         clearBotStatus();
+        if (!isMember && typeof packet.name === "string") setGuestDisplayName(packet.name);
         setSocketState("online");
         setTypedBotText({});
         setLines(Array.isArray(packet.history) ? packet.history as ChatLine[] : []);
@@ -692,7 +706,7 @@ export default function KittChat() {
         if (line.kind === "system" && line.text.endsWith(" entre dans le salon.")) {
           const joinedName = line.text.slice(0, -" entre dans le salon.".length);
           announceMemberJoined(line.id, joinedName);
-        } else if (line.name !== member && line.kind !== "system") {
+        } else if (line.name !== (isMember ? member : guestName) && line.kind !== "system") {
           playRoomSound("message");
         }
         return;
@@ -718,6 +732,8 @@ export default function KittChat() {
         localStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem(SESSION_KEY);
         setError("La session ou le profil Pontiac n’est plus valide. Contacte Manix après l’approbation du profil.");
+      } else if (event.code === 4003 && publicGuestsCanWrite) {
+        setGuestName(""); setGuestDisplayName("");
       } else if (event.code === 1013) setError("Le salon est momentanément complet. Réessaie dans un instant.");
     };
     return () => {
@@ -728,7 +744,7 @@ export default function KittChat() {
     };
     // The room changes through a switch packet so browsing channels does not reconnect the socket.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBase, service, isMember, sessionToken, member, reconnectKey]);
+  }, [apiBase, service, isMember, sessionToken, member, reconnectKey, publicGuestsCanWrite, guestName]);
 
   useEffect(() => {
     if (socketState === "online") socket.current?.send(JSON.stringify({ type: "switch", room: room.id }));
@@ -749,6 +765,24 @@ export default function KittChat() {
     socket.current?.close(1000, "Déconnexion");
     socket.current = null;
     setSocketState("closed"); setLines([]); setMembers([]);
+  }
+
+  function enterPublicGuest(event: FormEvent) {
+    event.preventDefault();
+    setError(""); setNotice("");
+    const clean = guestNameDraft.replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, 24);
+    if (clean.length < 2) { setError("Choisis un pseudo de 2 à 24 caractères."); return; }
+    if (["kitt", "karr", "manix"].includes(clean.toLocaleLowerCase("fr-BE"))) {
+      setError("Ce pseudo est réservé aux personnages et aux administrateurs du salon."); return;
+    }
+    setGuestName(clean);
+  }
+
+  function leavePublicGuest() {
+    clearBotStatus(); stopRoomVoice();
+    socket.current?.close(1000, "Fin de la visite"); socket.current = null;
+    setSocketState("closed"); setLines([]); setMembers([]); setMessage("");
+    setGuestName(""); setGuestNameDraft(""); setGuestDisplayName("");
   }
 
   function forgetDevice() {
@@ -1097,7 +1131,7 @@ export default function KittChat() {
   function sendMessage(event: FormEvent) {
     event.preventDefault();
     const clean = message.trim().slice(0, 500);
-    if (!clean || !isMember || socketState !== "online") return;
+    if (!clean || !canWriteMessages || socketState !== "online") return;
     socket.current?.send(JSON.stringify({ type: "message", text: clean }));
     setMessage("");
   }
@@ -1256,10 +1290,10 @@ export default function KittChat() {
     {roomToast && <div className="kc-room-toast" role="status" aria-live="polite"><span className="kc-toast-led"/>{roomToast}</div>}
     <section className="kc-intro">
       <div><p className="kc-eyebrow">KNIGHT RIDER COMMUNITY · EST. 1998</p><h1>Le salon <em>KITT</em></h1>
-        <p>Viens découvrir l’ambiance sans compte. Pour participer, il faut être propriétaire d’une Pontiac et faire valider son profil avec une photo de la voiture sur le globe.</p>
+        <p>{publicGuestsCanWrite ? "Rejoins la discussion librement : choisis un pseudo pour cette visite et parle avec la communauté, KITT et KARR." : "Viens découvrir l’ambiance sans compte. Pour participer, il faut être propriétaire d’une Pontiac et faire valider son profil avec une photo de la voiture sur le globe."}</p>
       </div>
       <div className="kc-status"><span className={service === "online" ? "is-online" : ""}/><strong>{headingStatus}</strong>
-        <small>{service === "online" ? "Visite libre · écriture réservée aux propriétaires validés" : "Le salon sera disponible lorsque le service sera relié."}</small>
+        <small>{service === "online" ? (publicGuestsCanWrite ? "Salon public · pseudo temporaire · aucune inscription" : "Visite libre · écriture réservée aux propriétaires validés") : "Le salon sera disponible lorsque le service sera relié."}</small>
       </div>
     </section>
     <div className={`kc-window${buzzActive ? " kc-buzz-effect" : ""}${buzzActive && buzzIntensity === "hyper" ? " kc-buzz-hyper" : ""}`}>
@@ -1281,7 +1315,7 @@ export default function KittChat() {
           </div>}
           <div className="kc-messages" ref={messageBox} role="log" aria-live="polite" aria-relevant="additions text">
             {socketState === "connecting" && <p className="kc-empty">Le salon s’ouvre…</p>}
-            {socketState === "online" && !visibleLines.length && <p className="kc-empty">Le salon s’éveille… Lance la conversation quand ton profil sera validé.</p>}
+            {socketState === "online" && !visibleLines.length && <p className="kc-empty">Le salon s’éveille… Écris un message, ou interpelle KITT avec « KITT ! ».</p>}
           {visibleLines.map(line => {
             const displayedText = line.liveBot ? typedBotText[line.id] ?? "" : line.text;
             const typing = Boolean(line.liveBot && displayedText.length < line.text.length);
@@ -1346,7 +1380,14 @@ export default function KittChat() {
               <button type="button" className="kc-buzz" disabled={socketState !== "online" || buzzCooldown > 0} onClick={sendBuzz}><Zap size={15}/> {buzzCooldown > 0 ? `Buzz · ${buzzCooldown}s` : "Buzz KITT"}</button>
               <small>Les émoticônes sont dédiées à Knight Rider.</small>
             </div>
-          </form> : <div className="kc-readonly"><ShieldCheck size={17}/><span>Mode découverte : tu peux lire les salons. Pour écrire, ajoute ta Pontiac au globe et fais valider son profil avec photo.</span></div>}
+          </form> : publicGuestsCanWrite && guestName ? <form className="kc-compose kc-public-compose" onSubmit={sendMessage}>
+            <div className="kc-compose-row">
+              <label className="kc-sr-only" htmlFor="kc-message">Ton message</label>
+              <input id="kc-message" maxLength={500} value={message} onChange={event => setMessage(event.target.value)} placeholder={`Écrire dans ${room.label}…`} disabled={socketState !== "online"}/>
+              <span>{message.length}/500</span><button type="submit" disabled={!message.trim() || socketState !== "online"}>Envoyer</button>
+            </div>
+            <small>Connecté comme <strong>{guestDisplayName || guestName}</strong>. Pour parler à KITT ou KARR, écris leur nom dans ton message.</small>
+          </form> : <div className="kc-readonly"><ShieldCheck size={17}/><span>Choisis ton pseudo pour rejoindre la conversation.</span></div>}
         </section>
         <aside className="kc-roster">
           <div className="kc-roster-heading"><Users size={17}/><strong>Membres présents</strong><span>{members.length}</span></div>
@@ -1385,7 +1426,7 @@ export default function KittChat() {
               <p className="kc-memory-retention">Historique public : jusqu’à 500 messages par salon, conservés au maximum 90 jours.</p>
             </div>
           </details>}
-          {isMember ? <button type="button" className="kc-leave" onClick={disconnect}>Quitter le salon</button> : <form className="kc-guest-join" onSubmit={enter}>
+          {isMember ? <button type="button" className="kc-leave" onClick={disconnect}>Quitter le salon</button> : publicGuestsCanWrite && guestName ? <div className="kc-guest-join"><div className="kc-join-heading"><span>VISITEUR</span><small>ACCÈS LIBRE</small></div><p>Tu participes sous le pseudo <strong>{guestDisplayName || guestName}</strong>. Il ne sera pas retenu comme compte.</p><button type="button" onClick={leavePublicGuest}>Quitter · changer de pseudo</button></div> : !publicGuestsCanWrite ? <form className="kc-guest-join" onSubmit={enter}>
             <div className="kc-join-heading"><span>ACCÈS PROPRIÉTAIRE</span><small>PROFIL PHOTO VALIDÉ</small></div>
             {owners.length ? <label>Ton Pontiac sur le globe
               <select required value={ownerId} onChange={event => setOwnerId(event.target.value)}>
@@ -1400,11 +1441,16 @@ export default function KittChat() {
             <button type="submit" disabled={!owners.length || !invite.trim() || service !== "online"}>Entrer dans le salon <ArrowRight size={15}/></button>
             <a className="kc-globe-cta" href="/communaute-pontiac#inscription"><CarFront size={15}/> Inscrire ma Pontiac sur le globe</a>
             <p>Étapes : inscris ta Pontiac avec une photo, attends la validation du profil, puis entre avec le code commun 1982. L’accès reste associé à ton profil approuvé.</p>
-          </form>}
+          </form> : <div className="kc-guest-join"><p>Choisis un pseudo pour cette visite afin d’entrer dans le salon.</p></div>}
         </aside>
-      </div> : isMember ? <section className="kc-offline"><Radio size={24}/><div><strong>{service === "online" ? `Session mémorisée pour ${member}` : "Le salon est momentanément hors ligne."}</strong><p>{service === "online" ? "Ton code a déjà été utilisé. Cet appareil se souviendra de toi." : "Ta session est conservée. Réessaie quand le relais sera disponible."}</p></div>{service === "online" ? <button type="button" onClick={() => setReconnectKey(value => value + 1)}>Revenir au salon <ArrowRight size={15}/></button> : <button type="button" onClick={() => window.location.reload()}>Réessayer <ArrowRight size={15}/></button>}<button type="button" onClick={forgetDevice}>Oublier cet appareil</button></section> : <section className="kc-offline"><Radio size={24}/><div><strong>{service === "checking" ? "Recherche du salon…" : "Le salon est momentanément hors ligne."}</strong><p>Tu peux déjà préparer ton inscription au globe Pontiac.</p></div><a href="/communaute-pontiac#inscription">Voir l’inscription <ArrowRight size={15}/></a></section>}
+      </div> : publicGuestsCanWrite && service === "online" ? <section className="kc-offline kc-open-entry"><Radio size={24}/><form className="kc-guest-join" onSubmit={enterPublicGuest}>
+        <div className="kc-join-heading"><span>ENTRÉE LIBRE</span><small>SANS COMPTE</small></div>
+        <p>Choisis un pseudo pour cette visite. Il ne sera pas mémorisé : tu le retaperas à ta prochaine connexion. Le message affichera ce pseudo dans l’historique du salon.</p>
+        <label htmlFor="kc-guest-name">Ton pseudo (2 à 24 caractères)<input id="kc-guest-name" maxLength={24} minLength={2} autoComplete="off" value={guestNameDraft} onChange={event => setGuestNameDraft(event.target.value)} placeholder="Ex. Pilote Liège" required/></label>
+        <button type="submit" disabled={service !== "online"}>Entrer dans le salon <ArrowRight size={15}/></button>
+      </form></section> : isMember ? <section className="kc-offline"><Radio size={24}/><div><strong>{service === "online" ? `Session mémorisée pour ${member}` : "Le salon est momentanément hors ligne."}</strong><p>{service === "online" ? "Ton code a déjà été utilisé. Cet appareil se souviendra de toi." : "Ta session est conservée. Réessaie quand le relais sera disponible."}</p></div>{service === "online" ? <button type="button" onClick={() => setReconnectKey(value => value + 1)}>Revenir au salon <ArrowRight size={15}/></button> : <button type="button" onClick={() => window.location.reload()}>Réessayer <ArrowRight size={15}/></button>}<button type="button" onClick={forgetDevice}>Oublier cet appareil</button></section> : <section className="kc-offline"><Radio size={24}/><div><strong>{service === "checking" ? "Recherche du salon…" : "Le salon est momentanément hors ligne."}</strong><p>Tu peux déjà préparer ton inscription au globe Pontiac.</p></div><a href="/communaute-pontiac#inscription">Voir l’inscription <ArrowRight size={15}/></a></section>}
       {(error || notice) && <p className={error ? "kc-feedback error" : "kc-feedback"} role={error ? "alert" : "status"}>{error || notice}</p>}
-      <footer className="kc-footer"><span><Wifi size={14}/> {socketState === "online" ? (isMember ? "PROPRIÉTAIRE VALIDÉ" : "VISITEUR · LECTURE SEULE") : socketState === "connecting" ? "CONNEXION…" : <><WifiOff size={14}/> DÉCONNECTÉ</>}</span><span>BY MANIX · KITT FRANCO-BELGE</span><a href="/mentions-legales"><CircleHelp size={14}/> Règles du salon</a></footer>
+      <footer className="kc-footer"><span><Wifi size={14}/> {socketState === "online" ? (isMember ? "PROPRIÉTAIRE VALIDÉ" : publicGuestsCanWrite ? `PILOTE INVITÉ · ${guestDisplayName || guestName}` : "VISITEUR · LECTURE SEULE") : socketState === "connecting" ? "CONNEXION…" : <><WifiOff size={14}/> DÉCONNECTÉ</>}</span><span>BY MANIX · KITT FRANCO-BELGE</span><a href="/mentions-legales"><CircleHelp size={14}/> Règles du salon</a></footer>
     </div>
     {selectedImage && <div className="kc-image-modal-backdrop" role="presentation" onClick={event => { if (event.target === event.currentTarget) setSelectedImage(null); }}>
       <section className="kc-image-modal" role="dialog" aria-modal="true" aria-labelledby="kc-image-modal-title">
