@@ -126,6 +126,10 @@ let gameOver = false;
 let scoreSubmitted = false;
 let nextLifeScore=10000,totalGhostsEaten=0,ghostAccumulator=0,fruitStage=0;
 let readyUntil=0,deathFreezeUntil=0,runGeneration=0,runStartedAt=0;
+// Contrat FLAG par niveau : vider le labyrinthe à temps rapporte des points,
+// sans retirer de points ni de vie si le chrono est dépassé.
+const FLAG_CONTRACT_SECONDS=105;
+let flagLevelStartedAt=0,flagBonusTotal=0,flagPauseAt=0;
 
 // Combo de pastilles (fenêtre de 1,4 s entre chaque pastille)
 let comboCount=0,comboUntil=0,comboMult=1;
@@ -815,6 +819,7 @@ function playUIClick(){window.PacmanSfx?.unlock();if(soundEnabled)window.PacmanS
 
 function resetGame() {
     runGeneration++;runStartedAt=Date.now();ghostAccumulator=0;readyUntil=Date.now()+950;deathFreezeUntil=0;
+    flagLevelStartedAt=readyUntil;flagPauseAt=0;
     hudStamp='';
     for(const object of [...scene.children]){
         if(object.isLight||object.isCamera)continue;
@@ -891,6 +896,7 @@ function resetGame() {
     
     // Update UI
     updateHud();
+    updateFlagContractHud(Date.now());
     
     // Show ready banner
     showBanner('READY!', 1000);
@@ -900,6 +906,7 @@ function startGame() {
     window.PacmanSfx?.unlock();
     gridAccumulator=0;
     Object.keys(keys).forEach(key=>delete keys[key]);
+    flagBonusTotal=0;
     resetGame();
     showScreen('game');
     state = 'playing';
@@ -914,6 +921,7 @@ function showScreen(name) {
     document.getElementById('gameover-screen').classList.toggle('visible', name === 'gameover');
     document.getElementById('pause-screen').classList.remove('visible');
     document.getElementById('hud').style.display = name === 'game' ? 'flex' : 'none';
+    const contract=document.getElementById('flag-contract');if(contract)contract.hidden=name!=='game';
     document.getElementById('game-banner').classList.remove('visible');
     document.getElementById('fruit-display').classList.remove('visible');
 }
@@ -1146,10 +1154,15 @@ function checkGhostEat() {
 }
 
 function checkWin() {
-    if (pelletMeshes.length === 0 && powerPelletMeshes.length === 0) {
+    if (!won && pelletMeshes.length === 0 && powerPelletMeshes.length === 0) {
         won = true;
         paused = true;
-        showBanner('LABYRINTHE TERMINÉ!', 2000);playClear();
+        const completedLevel=level;
+        const secondsLeft=flagSecondsLeft(Date.now());
+        const bonus=secondsLeft>0?completedLevel*250+secondsLeft*12:0;
+        if(bonus){score+=bonus;flagBonusTotal+=bonus;showBanner(`CONTRAT FLAG RÉUSSI · +${bonus} PTS`,2300)}
+        else showBanner('LABYRINTHE TERMINÉ · CONTRAT SUIVANT',2300);
+        playClear();updateHud();updateFlagContractHud(Date.now());
         const completedRun=runGeneration;
         
         // Advance to next level
@@ -1158,9 +1171,9 @@ function checkWin() {
         // Show level up
         setTimeout(() => {
             if(state!=='playing'||runGeneration!==completedRun)return;
-            const saved={score,lives,level,nextLifeScore,totalGhostsEaten};
+            const saved={score,lives,level,nextLifeScore,totalGhostsEaten,flagBonusTotal};
             resetGame();
-            score=saved.score;lives=saved.lives;level=saved.level;nextLifeScore=saved.nextLifeScore;totalGhostsEaten=saved.totalGhostsEaten;updateHud();playReady();
+            score=saved.score;lives=saved.lives;level=saved.level;nextLifeScore=saved.nextLifeScore;totalGhostsEaten=saved.totalGhostsEaten;flagBonusTotal=saved.flagBonusTotal;updateHud();playReady();
             showBanner(`NIVEAU ${level}!`, 1000);
         }, 2500);
     }
@@ -1184,6 +1197,7 @@ function endGame() {
     document.getElementById('gameover-score').textContent = score;
     document.getElementById('gameover-level').textContent = level;
     document.getElementById('gameover-ghosts').textContent = totalGhostsEaten;
+    const bonusStat=document.getElementById('gameover-flag-bonus');if(bonusStat)bonusStat.textContent=flagBonusTotal.toLocaleString('fr-BE');
     document.getElementById('gameover-highscore').textContent = highScore;
     document.getElementById('gameover-newrecord').style.display = isRecord ? 'block' : 'none';
     
@@ -1731,6 +1745,7 @@ function updateHud() {
 }
 
 function updateStatusHud(now) {
+    updateFlagContractHud(now);
     const powerPanel=el('power-panel'),powerBar=el('power-bar');
     const powerRemaining=Math.max(0,powerUntil-now);
     if(powerPanel)powerPanel.classList.toggle('visible',powerRemaining>0);
@@ -1744,6 +1759,22 @@ function updateStatusHud(now) {
     if(comboValue)comboValue.textContent=String(comboMult);
 }
 
+function updateFlagContractHud(now){
+    const clock=el('flag-contract-clock'),fill=el('flag-contract-progress'),label=el('flag-contract-level');
+    if(!clock)return;
+    const left=flagSecondsLeft(now);
+    clock.textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
+    clock.classList.toggle('urgent',left>0&&left<=20);
+    if(fill)fill.style.width=`${left/FLAG_CONTRACT_SECONDS*100}%`;
+    if(label)label.textContent=String(level);
+}
+
+function flagSecondsLeft(now=Date.now()){
+    const effectiveNow=flagPauseAt||now;
+    const elapsed=Math.max(0,Math.floor((effectiveNow-flagLevelStartedAt)/1000));
+    return Math.max(0,FLAG_CONTRACT_SECONDS-elapsed);
+}
+
 let pauseStarted=0;
 function togglePause(force) {
     if (state !== 'playing' && state !== 'paused') return;
@@ -1751,11 +1782,14 @@ function togglePause(force) {
     window.PacmanSfx?.pause();
     if (toPause) {
         pauseStarted=Date.now();
+        flagPauseAt=pauseStarted;
         state = 'paused';window.PacmanSfx?.stop();
         el('pause-screen').classList.add('visible');
     } else {
         const gap=Date.now()-pauseStarted;if(powerUntil)powerUntil+=gap;if(frightenedUntil)frightenedUntil+=gap;if(comboUntil)comboUntil+=gap;if(invincibleUntil)invincibleUntil+=gap;readyUntil+=gap;deathFreezeUntil+=gap;
         ghostStates.forEach(g=>{if(g.releaseAt)g.releaseAt+=gap});
+        flagLevelStartedAt+=gap;
+        flagPauseAt=0;
         state = 'playing';
         el('pause-screen').classList.remove('visible');
     }
@@ -2046,5 +2080,5 @@ if (document.readyState === 'loading') {
     boot();
 }
 
-window.PACMAN_3D={startGame,togglePause,toggleViewZoom,toggleCamera,state:()=>({state,score,lives,level,pelletsEaten,player:{x:player.x,y:player.y,direction:{...player.dir},buffered:{...player.want}},ghosts:ghostStates.map(g=>({x:g.x,y:g.y,returning:g.returning})),powered:frightenedUntil>Date.now(),camera:cameraMode,zoom:viewZoom,drawCalls:renderer?.info.render.calls})};
+window.PACMAN_3D={startGame,togglePause,toggleViewZoom,toggleCamera,state:()=>({state,score,lives,level,pelletsEaten,flagContract:{secondsLeft:flagSecondsLeft(),bonus:flagBonusTotal},player:{x:player.x,y:player.y,direction:{...player.dir},buffered:{...player.want}},ghosts:ghostStates.map(g=>({x:g.x,y:g.y,returning:g.returning})),powered:frightenedUntil>Date.now(),camera:cameraMode,zoom:viewZoom,drawCalls:renderer?.info.render.calls})};
 })();

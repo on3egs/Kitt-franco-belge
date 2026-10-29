@@ -16,6 +16,7 @@
     "test:live-bistro": "node test-live-bistro-arcades.cjs",
     "test:live-patrol": "node test-live-patrol.cjs",
     "test:bistro": "node test-bistro.cjs",
+    "test:bistro-barman": "node test-bistro-barman-browser.cjs",
     "test:bistro-arcade": "node test-bistro-arcade.cjs",
     "test:arcade": "node test-kitt-arcade.cjs",
     "test:radio-bistro": "node test-radio-bistro-browser.cjs",

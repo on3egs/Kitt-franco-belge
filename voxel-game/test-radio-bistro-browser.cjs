@@ -26,6 +26,12 @@ const { createGameServer } = require('./server');
     await page.click('#bistroVisitBtn');
     await page.waitForFunction(() => !KITTBlock.inspect().paused);
     await page.screenshot({path:'test-results/bistro-integrated-interior.png'});
+    await page.waitForFunction(()=>{const n=document.querySelector('#targetName');return !n.hidden&&n.textContent.includes('BORNE 10 JEUX')});
+    await page.keyboard.press('e');await page.waitForSelector('#arcadePanel:not(.hidden)');
+    await page.frameLocator('#arcadeFrame').locator('.game').first().waitFor({state:'visible',timeout:10000});
+    assert.equal(await page.frameLocator('#arcadeFrame').locator('.game').count(),10,'La borne des dix jeux doit réellement s’ouvrir à l’entrée.');
+    await page.locator('#arcadeClose').click();
+    assert.equal(await page.locator('#menu').evaluate(n=>n.classList.contains('hidden')),true,'Retour du kiosque : rester dans le bistrot.');
     assert.ok(await page.locator('#radioOpen').isVisible(), 'Le bouton radio doit apparaître dans le HUD.');
     await page.keyboard.press('F9');
     await page.waitForFunction(()=>KITTBlock.inspect().paused&&!KITTBlock.inspect().captured);
@@ -68,7 +74,8 @@ const { createGameServer } = require('./server');
       await page.waitForFunction(()=>KITTBlock.inspect().captured&&!KITTBlock.inspect().paused,{timeout:10000});
     }
     assert.deepEqual(await page.evaluate(()=>KITTBlock.inspect().bistro.cabinets),['pacman','tetris','space-invaders','stunt','arcade-hub']);
-    await walkTo(-21.9,-15.4);
+    // Revenir par l’allée devant la borne, qui est tournée vers l’est.
+    await walkTo(-20.6,-16.5);
     await page.waitForFunction(() => document.querySelector('#targetName').textContent.includes('BORNE TETRIS'));
     await page.keyboard.press('e');
     await page.waitForSelector('#arcadePanel:not(.hidden)');
@@ -101,7 +108,7 @@ const { createGameServer } = require('./server');
     await page.waitForTimeout(100);
     assert.equal(await page.locator('#menu').evaluate(node=>node.classList.contains('hidden')),true,'Le menu initial doit rester fermé après Tetris.');
     assert.equal(await page.locator('#hud').evaluate(node=>node.classList.contains('hidden')),false,'Le HUD doit rester disponible après Tetris.');
-    console.log('OK Chrome : Tetris plein écran, Pac-Man et cinq bornes présentes dans le bistrot.');
+    console.log('OK Chrome : kiosque des dix jeux, Pac-Man et retour Tetris plein écran sans réouvrir le menu.');
   } finally {
     await browser.close();
     await service.close();

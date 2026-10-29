@@ -8,7 +8,7 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 </style></head>
 <body><main><header><div><div class="brand">KITT Arcade · entraînement FLAG</div><h1>Mémoire du scanner</h1></div><a class="back" href="../../index.html">← Arcade</a></header><p>Retrouve les paires de signaux lumineux. Moins tu retournes de cartes, plus ton score grimpe.</p><div class="stats" aria-live="polite"><div class="stat"><small>Coups</small><strong id="moves">0</strong></div><div class="stat"><small>Temps</small><strong id="time">00:00</strong></div><div class="stat"><small>Score</small><strong id="score">0</strong></div><div class="stat"><small>Record</small><strong id="best">0</strong></div></div><div id="board" class="board" role="group" aria-label="Jeu de mémoire"></div><div class="controls"><button class="action" id="restart">Nouvelle partie</button></div><div id="message" class="message" role="status" aria-live="polite">Prêt pour le briefing, Michael ?</div><div class="hint">Clique ou touche deux cartes pour révéler leur signal.</div></main>
-<script>
+<script src="../../arcade-ambience.js?v=kitt-arcade-audio-20261029"></script><script>
 // Petit jeu de mémoire : tout le score reste sur cet appareil.
 const symbols=['🔴','🔵','🟢','🟡','🟣','🟠','⚡','🚘'];let deck=[],first=null,lock=false,moves=0,matched=0,seconds=0,timer=null,score=0;
 const board=document.querySelector('#board'),moveEl=document.querySelector('#moves'),timeEl=document.querySelector('#time'),scoreEl=document.querySelector('#score'),bestEl=document.querySelector('#best'),message=document.querySelector('#message');

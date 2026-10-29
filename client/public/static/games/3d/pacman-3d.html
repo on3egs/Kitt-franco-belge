@@ -327,6 +327,14 @@
         #power-panel.visible { display: block; }
         .hud-bar { height: 6px; background: rgba(255,255,255,0.12); border-radius: 3px; overflow: hidden; margin-top: 6px; width: 120px; }
         .hud-bar-fill { height: 100%; background: linear-gradient(90deg, #ff8c00, #ffd15a); border-radius: 3px; transition: width .1s linear; }
+        #flag-contract { position:fixed; top:92px; left:50%; transform:translateX(-50%); width:min(360px,76vw); padding:9px 14px; border:1px solid #ff4055; border-radius:8px; background:rgba(4,5,11,.88); color:#fff; text-align:center; z-index:11; box-shadow:0 0 16px #e4254633; pointer-events:none; }
+        #flag-contract[hidden] { display:none; }
+        #flag-contract-heading { color:#ff6678; font-size:11px; font-weight:bold; letter-spacing:.13em; text-transform:uppercase; }
+        #flag-contract-clock { color:#fff; font-size:22px; font-weight:bold; font-variant-numeric:tabular-nums; text-shadow:0 0 10px #ff304d; }
+        #flag-contract-clock.urgent { color:#ff5166; animation:comboPop .35s infinite alternate; }
+        #flag-contract-track { height:4px; margin-top:5px; overflow:hidden; border-radius:4px; background:#ffffff20; }
+        #flag-contract-progress { width:100%; height:100%; background:linear-gradient(90deg,#a5102f,#ff334f,#ff9b5a); transition:width .3s linear; }
+        #flag-contract-rule { display:block; margin-top:4px; color:#a9b9d7; font-size:10px; }
 
         /* Flash d'impact */
         #hit-flash {
@@ -545,6 +553,9 @@
             .menu-btn { padding: 12px 30px; min-width: 160px; }
             .hud-panel { padding: 8px 15px; min-width: 100px; }
             .hud-value { font-size: 18px; }
+            #hud { flex-wrap:wrap; gap:5px; }
+            #hud .hud-panel { flex:1 1 19%; min-width:0; padding:6px 8px; }
+            #flag-contract { top:120px; width:min(320px,82vw); }
         }
         
         @media (max-height: 600px) {
@@ -593,6 +604,7 @@
                 <h2 id="objective-title">MISSION</h2>
                 <p>Parcours le labyrinthe et ramasse <strong>toutes les pastilles</strong>. Les pastilles bleues te rendent assez puissant pour manger les fantômes pendant un court instant. Attrape aussi le fruit bonus et évite les fantômes lorsqu’ils ne sont pas bleus.</p>
                 <p class="movement-tip">Les virages sont mémorisés : indique ta prochaine direction un peu avant le carrefour.</p>
+                <p>Contrat FLAG : vide le labyrinthe en 1 min 45 pour gagner une prime de score. Le chrono s’arrête en pause et aucun point n’est retiré si le temps s’écoule.</p>
             </section>
             <div class="menu-controls">
                 <h2>COMMANDES — CLAVIER</h2>
@@ -652,6 +664,13 @@
             <div class="hud-label">PUISSANCE</div>
             <div class="hud-bar"><div class="hud-bar-fill" id="power-bar" style="width:100%"></div></div>
         </div>
+    </div>
+
+    <div id="flag-contract" role="status" aria-live="polite" hidden>
+        <div id="flag-contract-heading">CONTRAT FLAG · NIVEAU <span id="flag-contract-level">1</span></div>
+        <div id="flag-contract-clock">01:45</div>
+        <div id="flag-contract-track"><div id="flag-contract-progress"></div></div>
+        <small id="flag-contract-rule">Termine vite pour obtenir la prime. Pas de pénalité.</small>
     </div>
 
     <!-- Flash d'impact + textes flottants -->
@@ -742,6 +761,10 @@
                     <span class="stat-value" id="gameover-ghosts">0</span>
                 </div>
                 <div class="stat-item">
+                    <span class="stat-label">PRIMES FLAG</span>
+                    <span class="stat-value" id="gameover-flag-bonus">0</span>
+                </div>
+                <div class="stat-item">
                     <span class="stat-label">MEILLEUR SCORE</span>
                     <span class="stat-value" id="gameover-highscore">0</span>
                 </div>
@@ -764,7 +787,7 @@
     <script src="/static/games/3d/lib/three.min.js"></script>
     <script src="pacman-sfx.js?v=20261005-max1"></script>
     <script src="/static/games/highscores.js?v=20261027-arcade-sync1"></script>
-    <script src="pacman-3d.js?v=20261028-gameplay1"></script>
+    <script src="pacman-3d.js?v=flag-contract-20261029"></script>
     <script src="controls-solo.js?v=20261005-viewfix1"></script>
     <script src="/static/games/solo-runtime.js?v=20261005-resume1"></script>
     

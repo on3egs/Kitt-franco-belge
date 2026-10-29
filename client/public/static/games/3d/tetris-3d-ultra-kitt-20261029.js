@@ -41,6 +41,7 @@ let currentPiece, nextPiece, heldPiece;
 let currentX = 0, currentY = 0, currentZ = 0;
 let currentRotation = 0;
 let pieceQueue = [];
+let pieceBag = [];
 
 let state = 'loading';
 let score = 0, level = 1, lines = 0, combo = 0;
@@ -421,7 +422,15 @@ function initGrid() {
 const PIECE_TYPES = ['I', 'O', 'T', 'L', 'J', 'S', 'Z'];
 
 function getRandomPieceType() {
-    return PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
+    // Le sac de sept évite les longues séries injustes sans pièce I ou O.
+    if (pieceBag.length === 0) {
+        pieceBag = [...PIECE_TYPES];
+        for (let i = pieceBag.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pieceBag[i], pieceBag[j]] = [pieceBag[j], pieceBag[i]];
+        }
+    }
+    return pieceBag.pop();
 }
 
 function createPiece(type, rotation = 0) {
@@ -982,6 +991,7 @@ function startGame() {
     won = false;
     runStartedAt = Date.now();
     scoreSubmitted = false;
+    softDropActive = false;
     
     // Reset score
     score = 0;
@@ -1002,6 +1012,7 @@ function startGame() {
     
     // Reset queue
     pieceQueue = [];
+    pieceBag = [];
     
     // Create initial background
     createBackground();
@@ -1068,7 +1079,7 @@ function update(dt) {
 }
 
 function handleDAS(now) {
-    const dasKeys = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'KeyA', 'KeyD', 'KeyS', 'KeyF', 'KeyV'];
+    const dasKeys = ['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyQ', 'KeyD', 'KeyZ', 'KeyS', 'KeyF', 'KeyV'];
     
     for (const key of dasKeys) {
         if (keys[key]) {
@@ -1102,14 +1113,15 @@ function getDirectionFromKey(key) {
         case 'ArrowRight':
         case 'KeyD':
             return { x: 1, y: 0, z: 0 };
-        case 'ArrowDown':
-        case 'KeyS':
-            return { x: 0, y: -1, z: 0 };
+        // Q/D conviennent au clavier AZERTY ; A/D restent disponibles en QWERTY.
+        // Z/S et F/V déplacent la pièce dans la profondeur du plateau.
+        case 'KeyQ':
+            return { x: -1, y: 0, z: 0 };
+        case 'KeyZ':
         case 'KeyF':
-            return { x: 0, y: 0, z: 1 };
-        case 'KeyV':
             return { x: 0, y: 0, z: -1 };
-        case 'KeyE':
+        case 'KeyS':
+        case 'KeyV':
             return { x: 0, y: 0, z: 1 };
         default:
             return null;
@@ -1226,6 +1238,7 @@ function initControls() {
         if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
         if (e.repeat) return;
         keys[e.code] = true;
+        if (e.code === 'ArrowDown') softDropActive = state === 'playing' && !paused && !gameOver;
         // Une pression courte doit agir dès keydown, même si keyup arrive
         // avant la prochaine image (clavier tactile, iframe ou cadence faible).
         const direction = getDirectionFromKey(e.code);
@@ -1247,7 +1260,7 @@ function initControls() {
             case 'KeyE':
                 rotatePiece(1);
                 break;
-            case 'KeyQ':
+            case 'KeyX':
                 rotatePiece(-1);
                 break;
             case 'ShiftLeft':
@@ -1273,22 +1286,54 @@ function initControls() {
     
     document.addEventListener('keyup', (e) => {
         keys[e.code] = false;
+        if (e.code === 'ArrowDown') softDropActive = false;
         dasActive[e.code] = false;
     });
     for (const id of ['start-button','restart-button']) document.getElementById(id)?.addEventListener('click', startGame);
     document.getElementById('resume-button')?.addEventListener('click', togglePause);
     document.getElementById('pause-button')?.addEventListener('click', togglePause);
+    // Les commandes tactiles proposent les deux sens de profondeur et une chute douce maintenue.
+    const depthControl = document.querySelector('#mobile-controls [data-action="depth"]');
+    if (depthControl) {
+        depthControl.dataset.action = 'depth-forward';
+        depthControl.textContent = 'Z PROF.';
+        depthControl.setAttribute('aria-label', 'Avancer dans la profondeur');
+        const depthBack = depthControl.cloneNode(true);
+        depthBack.dataset.action = 'depth-back';
+        depthBack.textContent = 'S PROF.';
+        depthBack.setAttribute('aria-label', 'Reculer dans la profondeur');
+        depthControl.after(depthBack);
+    }
+    const mobileControls = document.getElementById('mobile-controls');
+    if (mobileControls && !mobileControls.querySelector('[data-action="softdrop"]')) {
+        const softDropControl = document.createElement('button');
+        softDropControl.type = 'button';
+        softDropControl.dataset.action = 'softdrop';
+        softDropControl.textContent = '↓ CHUTE';
+        softDropControl.setAttribute('aria-label', 'Accélérer la chute tant que le bouton est maintenu');
+        mobileControls.insertBefore(softDropControl, mobileControls.querySelector('[data-action="hold"]'));
+    }
+    const instructionText = document.querySelector('#instructions .instructions-text');
+    if (instructionText) instructionText.textContent = 'Q/D (ou A/D) : gauche / droite · Z/S (ou F/V) : profondeur · ↓ : chute douce · ↑ / E : tourner · X : rotation inverse · ESPACE : chute immédiate · MAJ : réserve · P : pause';
     for (const button of document.querySelectorAll('[data-action]')) button.addEventListener('click', () => {
         if (state !== 'playing' || paused || gameOver) return;
         const action = button.dataset.action;
         if (action === 'left') movePiece(-1,0,0);
         if (action === 'right') movePiece(1,0,0);
-        if (action === 'depth') movePiece(0,0,currentZ >= DEPTH - 2 ? -currentZ : 1);
+        if (action === 'depth-forward') movePiece(0,0,-1);
+        if (action === 'depth-back') movePiece(0,0,1);
         if (action === 'rotate') rotatePiece();
         if (action === 'drop') hardDrop();
         if (action === 'hold') holdPiece();
     });
-    const pauseOnLeave = () => { for (const code in keys) keys[code] = false; if (state === 'playing' && !paused && !gameOver) togglePause(); };
+    const softDropButton = document.querySelector('[data-action="softdrop"]');
+    if (softDropButton) {
+        const beginSoftDrop = (e) => { e.preventDefault(); if (state === 'playing' && !paused && !gameOver) softDropActive = true; };
+        const endSoftDrop = () => { softDropActive = false; };
+        softDropButton.addEventListener('pointerdown', beginSoftDrop);
+        for (const type of ['pointerup','pointercancel','lostpointercapture','pointerleave']) softDropButton.addEventListener(type, endSoftDrop);
+    }
+    const pauseOnLeave = () => { for (const code in keys) keys[code] = false; softDropActive = false; if (state === 'playing' && !paused && !gameOver) togglePause(); };
     window.addEventListener('blur', pauseOnLeave);
     document.addEventListener('visibilitychange', () => { if (document.hidden) pauseOnLeave(); });
 }
@@ -1296,6 +1341,7 @@ function initControls() {
 function togglePause() {
     if (state !== 'playing' || gameOver) return;
     for (const code in keys) keys[code] = false;
+    softDropActive = false;
     paused = !paused;
     
     if (paused) {
@@ -1329,6 +1375,11 @@ function updateHud() {
     const linesDisplay = document.getElementById('lines-display');
     if (linesDisplay) {
         linesDisplay.textContent = `LIGNES : ${lines}`;
+    }
+    const comboDisplay = document.getElementById('combo-display');
+    if (comboDisplay) {
+        comboDisplay.classList.toggle('visible', combo > 0);
+        comboDisplay.textContent = `FLAG COMBO ×${combo}`;
     }
 }
 
@@ -1434,6 +1485,6 @@ window.TETRIS_3D_ULTRA = {
     getScore: () => score,
     getLevel: () => level,
     getLines: () => lines,
-    debugState: () => ({ state, paused, gameOver, heldPiece, canHold, currentType: currentPiece?.userData.type, rotation: currentPiece?.userData.rotation, position: [currentX,currentY,currentZ], blocks: grid.reduce((sum,row) => sum + row.reduce((n,col) => n + col.filter(Boolean).length,0),0) })
+    debugState: () => ({ state, paused, gameOver, heldPiece, canHold, softDropActive, combo, nextQueue: [...pieceQueue], bagRemaining: pieceBag.length, currentType: currentPiece?.userData.type, rotation: currentPiece?.userData.rotation, position: [currentX,currentY,currentZ], blocks: grid.reduce((sum,row) => sum + row.reduce((n,col) => n + col.filter(Boolean).length,0),0) })
 };
 })();

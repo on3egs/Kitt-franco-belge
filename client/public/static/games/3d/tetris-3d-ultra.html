@@ -131,6 +131,8 @@
             color: #3a86ff;
             margin-bottom: 5px;
         }
+        #combo-display { display:none; padding:4px 8px; margin-top:4px; border:1px solid #ff4057; border-radius:6px; color:#ff6576; background:rgba(16,4,12,.78); font-weight:bold; text-shadow:0 0 9px #f23c58; animation:pulse 1s ease-in-out infinite; }
+        #combo-display.visible { display:inline-block; }
         
         #next-piece-display {
             font-size: 1rem;
@@ -309,8 +311,11 @@
             border: 1px solid #444;
         }
         button { cursor:pointer; padding:12px 16px; border:1px solid #63e9ff; border-radius:10px; background:#10202e; color:#fff; font-weight:bold; touch-action:manipulation; }
-        #mobile-controls { display:none; position:fixed; bottom:20px; left:0;right:0;z-index:35;justify-content:space-around;flex-wrap:wrap;gap:8px; }
-        @media (pointer:coarse) { #mobile-controls {display:flex;} #instructions {display:none;} }
+        #mobile-controls { display:none; position:fixed; bottom:max(10px,env(safe-area-inset-bottom)); left:0;right:0;z-index:35;justify-content:center;flex-wrap:wrap;gap:7px;padding:0 8px; }
+        #mobile-controls button { min-width:52px; min-height:48px; padding:10px 12px; border-color:#ff425b; background:linear-gradient(145deg,rgba(25,15,25,.96),rgba(10,25,37,.96)); color:#eafaff; box-shadow:0 0 12px rgba(255,55,83,.22); font-size:.82rem; touch-action:none; }
+        #mobile-controls button:active { background:#b82039; transform:scale(.96); }
+        @media (pointer:coarse) { #mobile-controls {display:flex;} #instructions {display:none;} #hud {transform:scale(.82);transform-origin:top left;} #hold-piece-display {transform:scale(.82);transform-origin:top right;} }
+        @media (max-width:600px) { #mobile-controls button { flex:1 1 20%; } #score-display {font-size:1rem;} }
     </style>
 </head>
 <body>
@@ -338,6 +343,7 @@
         <div id="score-display">SCORE: 0</div>
         <div id="level-display">NIVEAU : 1</div>
         <div id="lines-display">LIGNES : 0</div>
+        <div id="combo-display" hidden>FLAG COMBO ×2</div>
         <div id="next-piece-display">
             <span>SUIVANTE :</span>
             <div id="next-piece-grid"></div>
@@ -377,6 +383,6 @@
     </div>
     
     <script src="/static/games/highscores.js?v=20261027-arcade-sync1"></script>
-    <script src="tetris-3d-ultra-kitt-20261029.js"></script>
+    <script src="tetris-3d-ultra-kitt-20261029.js?v=kitt-azerty-7bag-20261029"></script>
 </body>
 </html>

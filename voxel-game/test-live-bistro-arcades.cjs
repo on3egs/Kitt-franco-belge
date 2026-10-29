@@ -12,10 +12,13 @@ const {chromium}=require('playwright'),fs=require('node:fs');
   await page.waitForFunction(()=>window.KITTBlock?.inspect().ready,{timeout:60000});
   await page.locator('#bistroVisitBtn').click();
   await page.waitForFunction(()=>!KITTBlock.inspect().paused,{timeout:30000});
-  await page.waitForTimeout(1800);
-  const state=await page.evaluate(()=>({bistro:KITTBlock.inspect().bistro,labels:[...document.querySelectorAll('#targetName')].map(x=>x.textContent),welcome:document.querySelector('#quoteText')?.textContent}));
+  // Laisse disparaître la bulle d'accueil pour inspecter les machines sans masque.
+  await page.waitForTimeout(9000);
+  const state=await page.evaluate(()=>({bistro:KITTBlock.inspect().bistro,target:{text:document.querySelector('#targetName').textContent,hidden:document.querySelector('#targetName').hidden},welcome:document.querySelector('#quoteText')?.textContent}));
   await page.screenshot({path:'test-results/live-bistro-five-arcades.png'});
   assert.deepEqual(state.bistro.cabinets,['pacman','tetris','space-invaders','stunt','arcade-hub']);
+  assert.equal(state.target.hidden,false,'Le kiosque des dix jeux doit être repéré dès l’entrée.');
+  assert.match(state.target.text,/BORNE 10 JEUX/);
   assert.deepEqual(errors,[],'Aucune erreur JavaScript sur le bistrot publié.');
   console.log('OK Chrome public : cinq bornes instanciées; capture test-results/live-bistro-five-arcades.png');
  }finally{await browser.close()}

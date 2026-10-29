@@ -1,6 +1,6 @@
 // Lecture locale des dialogues du jeu.
 const FEMALE_SPEAKERS = new Set(['LILOU', 'ALEXIA', 'BONNIE', 'BONNIE_BARSTOW', 'APRIL', 'APRIL_CURTIS', 'PILOT_FEMME']);
-const MALE_SPEAKERS = new Set(['MICHAEL', 'MICHAEL_KNIGHT', 'DEVON', 'DEVON_MILES', 'RC3', 'REGINALD_CORNELIUS_III', 'ANONYMOUS', 'PILOT_MASC', 'KITT', 'KARR', 'GOLIATH']);
+const MALE_SPEAKERS = new Set(['MICHAEL', 'MICHAEL_KNIGHT', 'DEVON', 'DEVON_MILES', 'RC3', 'REGINALD_CORNELIUS_III', 'ANONYMOUS', 'PILOT_MASC', 'KITT', 'KARR', 'GOLIATH', 'MARCEL', 'MARCEL_BARMAN']);
 
 function normalizeSpeaker(value) {
   return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '');
