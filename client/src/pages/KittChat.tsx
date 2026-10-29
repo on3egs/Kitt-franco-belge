@@ -5,7 +5,7 @@ import "./KittChat.css";
 
 type Room = { id: string; label: string; topic: string };
 type SharedImage = { id: string; url: string; width: number; height: number; alt: string; ownerId: string };
-type ChatLine = { id: string; name: string; text: string; timestamp: number; kind?: "system" | "message"; category?: string; liveBot?: boolean; image?: SharedImage; imageRemoved?: boolean };
+type ChatLine = { id: string; name: string; text: string; timestamp: number; kind?: "system" | "message"; category?: string; liveBot?: boolean; image?: SharedImage; imageRemoved?: boolean; translation?: string; translationLanguage?: string; translationUnavailable?: boolean };
 type Member = { name: string; role?: string; admin?: boolean };
 type PendingTurn = { speaker: "KITT" | "KARR"; expiresAt: number };
 type BotStatus = "KITT" | "KARR";
@@ -73,8 +73,17 @@ const FALLBACK_ROOMS: Room[] = [
   { id: "radio", label: "Radio KITT", topic: "Musique et souvenirs de la série" },
 ];
 const SESSION_KEY = "kitt-msn-chat-session-v1";
-const COMMUNITY_ACCESS_CODE = "1982";
+const ADMIN_TOKEN_KEY = "kitt-pontiac-admin-token-v1";
 const ARRIVAL_VOICE_KEY = "kitt-msn-arrival-voice-v1";
+const CHAT_LANGUAGES = [{ id: "fr", label: "Français" }, { id: "nl", label: "Nederlands" }, { id: "en", label: "English" }, { id: "de", label: "Deutsch" }, { id: "es", label: "Español" }, { id: "it", label: "Italiano" }];
+const CHAT_LANGUAGE_KEY = "kitt-chat-language-v1";
+function initialChatLanguage() {
+  const saved = localStorage.getItem(CHAT_LANGUAGE_KEY)?.toLowerCase().split("-")[0];
+  if (saved && CHAT_LANGUAGES.some(item => item.id === saved)) return saved;
+  const browser = navigator.languages?.[0] || navigator.language || "fr";
+  const detected = browser.toLowerCase().split("-")[0];
+  return CHAT_LANGUAGES.some(item => item.id === detected) ? detected : "fr";
+}
 
 function clockLabel(timestamp: number) {
   return new Intl.DateTimeFormat("fr-BE", { hour: "2-digit", minute: "2-digit" }).format(timestamp);
@@ -104,15 +113,21 @@ export default function KittChat() {
   const [socketState, setSocketState] = useState<"closed" | "connecting" | "online">("closed");
   const [rooms, setRooms] = useState<Room[]>(FALLBACK_ROOMS);
   const [room, setRoom] = useState(FALLBACK_ROOMS[0]);
+  const [chatLanguage, setChatLanguage] = useState(initialChatLanguage);
   const [publicGuestsCanWrite, setPublicGuestsCanWrite] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [guestNameDraft, setGuestNameDraft] = useState("");
   const [guestDisplayName, setGuestDisplayName] = useState("");
+  const [showOwnerLogin, setShowOwnerLogin] = useState(false);
   const [owners, setOwners] = useState<Owner[]>([]);
   const [ownerId, setOwnerId] = useState("");
   const [member, setMember] = useState("");
-  const [invite, setInvite] = useState(COMMUNITY_ACCESS_CODE);
+  const [invite, setInvite] = useState("");
   const [sessionToken, setSessionToken] = useState("");
+  const [adminToken, setAdminToken] = useState("");
+  const [adminTokenDraft, setAdminTokenDraft] = useState("");
+  const [adminVerified, setAdminVerified] = useState(false);
+  const [adminBusy, setAdminBusy] = useState(false);
   const [reconnectKey, setReconnectKey] = useState(0);
   const [lines, setLines] = useState<ChatLine[]>([]);
   const [typedBotText, setTypedBotText] = useState<Record<string, string>>({});
@@ -253,9 +268,9 @@ export default function KittChat() {
         setOwners(approved);
         setOwnerId(approved[0]?.id || "");
         setService("online");
-        // Le mode libre ignore les anciennes sessions sans les effacer : l'accès
-        // propriétaire reste réactivable via la configuration du serveur.
-        if (!openChat) try {
+        // Le salon public et l'accès propriétaire sont deux portes distinctes.
+        // Une session propriétaire vérifiée reste donc disponible en mode libre.
+        try {
           const saved = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
           if (saved) {
             const parsed = JSON.parse(saved) as { token?: string; name?: string; ownerId?: string };
@@ -278,6 +293,26 @@ export default function KittChat() {
   useEffect(() => { soundEnabled.current = sound; }, [sound]);
   useEffect(() => { voiceEnabled.current = speechEnabled; }, [speechEnabled]);
   useEffect(() => { mealRemindersEnabled.current = missionMemory.mealReminders; }, [missionMemory.mealReminders]);
+  useEffect(() => {
+    if (!apiBase || service !== "online") return;
+    let active = true;
+    let saved = "";
+    try { saved = localStorage.getItem(ADMIN_TOKEN_KEY) || ""; } catch { /* Stockage local indisponible. */ }
+    setAdminToken(saved);
+    setAdminVerified(false);
+    if (!saved) return () => { active = false; };
+    void fetch(`${apiBase}/api/kitt-chat/admin/verify`, { headers: { "X-Admin-Token": saved }, cache: "no-store" })
+      .then(response => {
+        if (!active) return;
+        if (response.ok) setAdminVerified(true);
+        else if (response.status === 401) {
+          localStorage.removeItem(ADMIN_TOKEN_KEY);
+          setAdminToken("");
+        }
+      })
+      .catch(() => { /* L’outil admin restera masqué si le relais ne répond pas. */ });
+    return () => { active = false; };
+  }, [apiBase, service]);
   useEffect(() => {
     if (!imageFile) { setImagePreview(""); return; }
     const previewUrl = URL.createObjectURL(imageFile);
@@ -418,8 +453,8 @@ export default function KittChat() {
       utterance.lang = frenchVoice?.lang || "fr-FR";
       if (frenchVoice) utterance.voice = frenchVoice;
       utterance.volume = job.volume;
-      utterance.rate = 0.96;
-      utterance.pitch = job.speaker === "KARR" ? 0.84 : 1;
+      utterance.rate = job.speaker === "KARR" ? 0.88 : 0.96;
+      utterance.pitch = job.speaker === "KARR" ? 0.72 : 1;
       utterance.onend = finish;
       utterance.onerror = event => event.error === "canceled" || event.error === "interrupted"
         ? finish()
@@ -639,8 +674,8 @@ export default function KittChat() {
     setSocketState("connecting");
     client.onopen = () => client.send(JSON.stringify(
       isMember
-        ? { type: "auth", token: sessionToken, room: room.id }
-        : { type: "guest", name: guestName, room: room.id },
+        ? { type: "auth", token: sessionToken, room: room.id, language: chatLanguage }
+        : { type: "guest", name: guestName, room: room.id, language: chatLanguage },
     ));
     client.onmessage = event => {
       let packet: Record<string, unknown>;
@@ -655,6 +690,19 @@ export default function KittChat() {
         return;
       }
       if (packet.type === "presence") { setMembers(Array.isArray(packet.members) ? packet.members as Member[] : []); return; }
+      if (packet.type === "translation" && typeof packet.id === "string" && typeof packet.text === "string") {
+        setLines(current => current.map(line => line.id === packet.id ? { ...line, translation: packet.text as string, translationLanguage: typeof packet.languageName === "string" ? packet.languageName : chatLanguage, translationUnavailable: false } : line));
+        return;
+      }
+      if (packet.type === "translation_unavailable" && typeof packet.id === "string") {
+        setLines(current => current.map(line => line.id === packet.id ? { ...line, translationUnavailable: true, translationLanguage: typeof packet.languageName === "string" ? packet.languageName : chatLanguage } : line));
+        return;
+      }
+      if (packet.type === "history_cleared") {
+        setLines([]); setTypedBotText({}); setPendingTurn(null); clearBotStatus();
+        setNotice("L’historique de ce salon a été effacé par un administrateur.");
+        return;
+      }
       if (packet.type === "image_removed") {
         const imageId = typeof packet.imageId === "string" ? packet.imageId : "";
         const messageId = typeof packet.messageId === "string" ? packet.messageId : typeof packet.id === "string" ? packet.id : "";
@@ -747,6 +795,11 @@ export default function KittChat() {
   }, [apiBase, service, isMember, sessionToken, member, reconnectKey, publicGuestsCanWrite, guestName]);
 
   useEffect(() => {
+    localStorage.setItem(CHAT_LANGUAGE_KEY, chatLanguage);
+    if (socketState === "online") socket.current?.send(JSON.stringify({ type: "language", language: chatLanguage }));
+  }, [chatLanguage, socketState]);
+
+  useEffect(() => {
     if (socketState === "online") socket.current?.send(JSON.stringify({ type: "switch", room: room.id }));
   }, [room.id, socketState]);
   useEffect(() => { if (messageBox.current) messageBox.current.scrollTop = messageBox.current.scrollHeight; }, [lines]);
@@ -778,6 +831,51 @@ export default function KittChat() {
     setGuestName(clean);
   }
 
+  async function verifyAdminAccess(event: FormEvent) {
+    event.preventDefault();
+    if (!apiBase) return;
+    const token = adminTokenDraft.trim() || adminToken;
+    if (!token) { setError("Saisis le jeton administrateur."); return; }
+    setAdminBusy(true); setError(""); setNotice("");
+    try {
+      const response = await fetch(`${apiBase}/api/kitt-chat/admin/verify`, { headers: { "X-Admin-Token": token }, cache: "no-store" });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || "Jeton administrateur refusé.");
+      localStorage.setItem(ADMIN_TOKEN_KEY, token);
+      setAdminToken(token); setAdminTokenDraft(""); setAdminVerified(true);
+      setNotice("Accès administrateur vérifié sur cet appareil.");
+    } catch (cause) {
+      setAdminVerified(false);
+      setError(cause instanceof Error ? cause.message : "Vérification administrateur impossible.");
+    } finally { setAdminBusy(false); }
+  }
+
+  async function clearRoomHistory() {
+    if (!adminVerified || !adminToken || !apiBase) return;
+    if (!window.confirm(`Effacer définitivement tout l’historique de « ${room.label} » ? Cette action est irréversible.`)) return;
+    setAdminBusy(true); setError(""); setNotice("");
+    try {
+      const response = await fetch(`${apiBase}/api/kitt-chat/history/clear`, {
+        method: "POST", headers: { "Content-Type": "application/json", "X-Admin-Token": adminToken },
+        body: JSON.stringify({ room: room.id }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (response.status === 401) {
+        localStorage.removeItem(ADMIN_TOKEN_KEY); setAdminToken(""); setAdminVerified(false);
+      }
+      if (!response.ok) throw new Error(data?.error || "Impossible d’effacer l’historique.");
+      setLines([]); setTypedBotText({}); setPendingTurn(null);
+      setNotice(`Historique de « ${room.label} » effacé.`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Impossible d’effacer l’historique.");
+    } finally { setAdminBusy(false); }
+  }
+
+  function forgetAdminToken() {
+    localStorage.removeItem(ADMIN_TOKEN_KEY); setAdminToken(""); setAdminTokenDraft(""); setAdminVerified(false);
+    setNotice("Jeton administrateur oublié sur cet appareil.");
+  }
+
   function leavePublicGuest() {
     clearBotStatus(); stopRoomVoice();
     socket.current?.close(1000, "Fin de la visite"); socket.current = null;
@@ -806,7 +904,7 @@ export default function KittChat() {
   async function enter(event: FormEvent) {
     event.preventDefault(); setError(""); setNotice("");
     if (!apiBase || !ownerId || !invite.trim()) {
-      setError("Choisis ton profil Pontiac approuvé et utilise le code commun 1982.");
+      setError("Choisis ton profil Pontiac approuvé et saisis le code d’accès communiqué aux membres.");
       return;
     }
     try {
@@ -821,7 +919,7 @@ export default function KittChat() {
       }
       localStorage.setItem(SESSION_KEY, JSON.stringify({ token: data.token, name: data.name, ownerId: data.ownerId }));
       sessionStorage.removeItem(SESSION_KEY);
-      setMember(data.name); setSessionToken(data.token); setNotice("Profil Pontiac vérifié. Bienvenue ! Ton accès au salon est permanent sur ce profil."); setInvite(COMMUNITY_ACCESS_CODE);
+      setMember(data.name); setSessionToken(data.token); setNotice("Profil Pontiac vérifié. Bienvenue ! Ton accès au salon est permanent sur ce profil."); setInvite("");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Impossible de rejoindre le salon.");
     }
@@ -1304,7 +1402,7 @@ export default function KittChat() {
       </div>}
       {socketState !== "closed" ? <div className="kc-content">
         <section className="kc-conversation" aria-label={`Messages du salon ${room.label}`}>
-          <div className="kc-room-topic"><strong>{room.label}</strong><span>{room.topic}</span></div>
+          <div className="kc-room-topic"><strong>{room.label}</strong><span>{room.topic}</span><label className="kc-translation-choice">Traduire pour moi<select aria-label="Langue de traduction" value={chatLanguage} onChange={event => { setChatLanguage(event.target.value); setLines(current => current.map(line => ({ ...line, translation: undefined, translationLanguage: undefined, translationUnavailable: false }))); }}>{CHAT_LANGUAGES.map(language => <option key={language.id} value={language.id}>{language.label}</option>)}</select></label></div>
           {botStatus ? <div className={`kc-bot-status kc-bot-${botStatus.toLowerCase()}`} role="status" aria-live="polite">
             <span className="kc-bot-scanner" aria-hidden="true"><i/><i/><i/><i/><i/></span>
             <strong>{botStatus} pr&#233;pare sa r&#233;ponse&#8230;</strong>
@@ -1320,7 +1418,7 @@ export default function KittChat() {
             const displayedText = line.liveBot ? typedBotText[line.id] ?? "" : line.text;
             const typing = Boolean(line.liveBot && displayedText.length < line.text.length);
             return <article className={`kc-line${line.kind === "system" ? " system" : ""}${identityTone(line.name) ? ` kc-line-${identityTone(line.name)}` : ""}`} key={line.id} aria-live={line.liveBot ? "off" : undefined}>
-              <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong className={identityTone(line.name)}>{line.name}</strong><div className="kc-line-body"><span className="kc-line-text">{renderChatText(displayedText)}{typing && <i className="kc-type-cursor" aria-hidden="true"/>}</span>
+              <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong className={identityTone(line.name)}>{line.name}</strong><div className="kc-line-body"><span className="kc-line-text">{renderChatText(displayedText)}{typing && <i className="kc-type-cursor" aria-hidden="true"/>}</span>{line.translation && <small className="kc-translation-line"><span>Traduction automatique · {line.translationLanguage} :</span> {renderChatText(line.translation)}</small>}{line.translationUnavailable && <small className="kc-translation-line unavailable">Traduction temporairement indisponible · {line.translationLanguage}</small>}
                 {line.image && <div className="kc-shared-image">
                   {line.imageRemoved ? <p className="kc-image-removed">Photo supprimée par son propriétaire.</p> : <>
                     {communityImageHref(apiBase, line.image) ? <button type="button" className="kc-image-thumb" aria-label={`Agrandir la photo : ${line.image.alt || "photo partagée"}`} onClick={event => { imageTrigger.current = event.currentTarget; setSelectedImage(line.image || null); }}><img src={communityImageHref(apiBase, line.image)} alt={line.image.alt || "Photo partagée dans le salon"} loading="lazy" width={line.image.width} height={line.image.height} onError={() => setLines(current => current.map(item => item.id === line.id ? { ...item, imageRemoved: true } : item))}/><span>Agrandir la photo</span></button> : <p className="kc-image-removed">Adresse de photo non valide.</p>}
@@ -1386,6 +1484,12 @@ export default function KittChat() {
               <input id="kc-message" maxLength={500} value={message} onChange={event => setMessage(event.target.value)} placeholder={`Écrire dans ${room.label}…`} disabled={socketState !== "online"}/>
               <span>{message.length}/500</span><button type="submit" disabled={!message.trim() || socketState !== "online"}>Envoyer</button>
             </div>
+            <div className="kc-public-tools">
+              <button type="button" className="kc-emote-toggle" aria-expanded={emotesOpen} aria-label="Ouvrir les émoticônes Knight Rider" onClick={() => setEmotesOpen(value => !value)}><Smile size={15}/> Émoticônes KITT</button>
+              {emotesOpen && <div className="kc-emote-picker" role="group" aria-label="Émoticônes Knight Rider">
+                {KNIGHT_RIDER_EMOTES.map(emote => <button type="button" key={emote.code} aria-label={`${emote.label}, insérer ${emote.code}`} title={`${emote.label} ${emote.code}`} onClick={() => addEmote(emote.code)}><img src={emote.src} alt="" loading="lazy"/><span><strong>{emote.label}</strong><small>{emote.code}</small></span></button>)}
+              </div>}
+            </div>
             <small>Connecté comme <strong>{guestDisplayName || guestName}</strong>. Pour parler à KITT ou KARR, écris leur nom dans ton message.</small>
           </form> : <div className="kc-readonly"><ShieldCheck size={17}/><span>Choisis ton pseudo pour rejoindre la conversation.</span></div>}
         </section>
@@ -1404,6 +1508,18 @@ export default function KittChat() {
             <button type="button" onClick={testArrivalVoice} disabled={!sessionToken}>Tester l’annonce {sessionToken ? "" : "(membre connecté)"}</button>
             {arrivalVoiceStatus && <small role="status" aria-live="polite">{arrivalVoiceStatus}</small>}
             {voiceError && <div className="kc-voice-error" role="alert"><span>{voiceError}</span>{failedVoiceJob && <div><button type="button" onClick={retryFailedVoice}>Réessayer l’audio AGX</button><button type="button" onClick={useBrowserVoiceFallback}>Voix navigateur (secours explicite)</button></div>}</div>}
+          </section>
+          <section className="kc-admin-tools" aria-label="Outils administrateur">
+            {adminVerified ? <>
+              <div><strong>ADMINISTRATEUR VÉRIFIÉ</strong><small>Effacement du salon sélectionné uniquement.</small></div>
+              <button type="button" className="kc-admin-clear" onClick={() => void clearRoomHistory()} disabled={adminBusy || socketState !== "online"}>Effacer l’historique de « {room.label} »</button>
+              <button type="button" className="kc-admin-forget" onClick={forgetAdminToken} disabled={adminBusy}>Oublier le jeton sur cet appareil</button>
+            </> : <form onSubmit={verifyAdminAccess}>
+              <label htmlFor="kc-admin-token">Accès administrateur
+                <input id="kc-admin-token" type="password" autoComplete="current-password" value={adminTokenDraft} onChange={event => setAdminTokenDraft(event.target.value)} placeholder="Jeton administrateur"/>
+              </label>
+              <button type="submit" disabled={adminBusy || service !== "online"}>{adminBusy ? "VÉRIFICATION…" : "Vérifier le jeton"}</button>
+            </form>}
           </section>
           {isMember && <details className="kc-mission-panel">
             <summary><FolderOpen size={16}/><span><strong>Dossiers de mission</strong><small>Mémoire volontaire · {missionMemory.notes.length}/2000</small></span></summary>
@@ -1433,14 +1549,10 @@ export default function KittChat() {
                 {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.name} · {owner.car} {owner.year}</option>)}
               </select>
             </label> : <p>Aucun profil avec photo n’est encore approuvé. Inscris ta voiture sur le globe, puis attends la validation.</p>}
-            <div className="kc-common-access" role="note">
-              <strong>Code commun du salon : <code>1982</code></strong>
-              <span>Après validation de ta Pontiac avec photo, tu peux entrer directement. Aucun code personnel à demander à Manix.</span>
-            </div>
-            <label>Code d’accès<input required maxLength={80} autoComplete="off" inputMode="numeric" value={invite} onChange={event => setInvite(event.target.value)} placeholder="1982" disabled={!owners.length}/></label>
+            <label>Code d’accès<input required maxLength={80} autoComplete="off" inputMode="numeric" value={invite} onChange={event => setInvite(event.target.value)} placeholder="Code communiqué aux membres" disabled={!owners.length}/></label>
             <button type="submit" disabled={!owners.length || !invite.trim() || service !== "online"}>Entrer dans le salon <ArrowRight size={15}/></button>
             <a className="kc-globe-cta" href="/communaute-pontiac#inscription"><CarFront size={15}/> Inscrire ma Pontiac sur le globe</a>
-            <p>Étapes : inscris ta Pontiac avec une photo, attends la validation du profil, puis entre avec le code commun 1982. L’accès reste associé à ton profil approuvé.</p>
+            <p>Étapes : inscris ta Pontiac avec une photo, attends la validation du profil, puis utilise le code communiqué aux membres. L’accès reste associé à ton profil approuvé.</p>
           </form> : <div className="kc-guest-join"><p>Choisis un pseudo pour cette visite afin d’entrer dans le salon.</p></div>}
         </aside>
       </div> : publicGuestsCanWrite && service === "online" ? <section className="kc-offline kc-open-entry"><Radio size={24}/><form className="kc-guest-join" onSubmit={enterPublicGuest}>
@@ -1448,7 +1560,22 @@ export default function KittChat() {
         <p>Choisis un pseudo pour cette visite. Il ne sera pas mémorisé : tu le retaperas à ta prochaine connexion. Le message affichera ce pseudo dans l’historique du salon.</p>
         <label htmlFor="kc-guest-name">Ton pseudo (2 à 24 caractères)<input id="kc-guest-name" maxLength={24} minLength={2} autoComplete="off" value={guestNameDraft} onChange={event => setGuestNameDraft(event.target.value)} placeholder="Ex. Pilote Liège" required/></label>
         <button type="submit" disabled={service !== "online"}>Entrer dans le salon <ArrowRight size={15}/></button>
-      </form></section> : isMember ? <section className="kc-offline"><Radio size={24}/><div><strong>{service === "online" ? `Session mémorisée pour ${member}` : "Le salon est momentanément hors ligne."}</strong><p>{service === "online" ? "Ton code a déjà été utilisé. Cet appareil se souviendra de toi." : "Ta session est conservée. Réessaie quand le relais sera disponible."}</p></div>{service === "online" ? <button type="button" onClick={() => setReconnectKey(value => value + 1)}>Revenir au salon <ArrowRight size={15}/></button> : <button type="button" onClick={() => window.location.reload()}>Réessayer <ArrowRight size={15}/></button>}<button type="button" onClick={forgetDevice}>Oublier cet appareil</button></section> : <section className="kc-offline"><Radio size={24}/><div><strong>{service === "checking" ? "Recherche du salon…" : "Le salon est momentanément hors ligne."}</strong><p>Tu peux déjà préparer ton inscription au globe Pontiac.</p></div><a href="/communaute-pontiac#inscription">Voir l’inscription <ArrowRight size={15}/></a></section>}
+      </form>
+      <button type="button" className="kc-owner-toggle" aria-expanded={showOwnerLogin} onClick={() => setShowOwnerLogin(value => !value)}>
+        {showOwnerLogin ? "Masquer l’accès propriétaire" : "Déjà propriétaire Pontiac ? Connexion propriétaire"}
+      </button>
+      {showOwnerLogin && <form className="kc-guest-join kc-owner-entry" onSubmit={enter}>
+        <div className="kc-join-heading"><span>ACCÈS PROPRIÉTAIRE</span><small>PROFIL VALIDÉ</small></div>
+        {owners.length ? <label>Choisis ton profil Pontiac
+          <select required value={ownerId} onChange={event => setOwnerId(event.target.value)}>
+            {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.name} · {owner.car} {owner.year}</option>)}
+          </select>
+        </label> : <p>Aucun profil Pontiac approuvé n’est disponible. Inscris ta voiture sur le globe et attends sa validation.</p>}
+        <label>Code d’accès<input required maxLength={80} autoComplete="off" inputMode="numeric" value={invite} onChange={event => setInvite(event.target.value)} placeholder="Code d’accès" disabled={!owners.length}/></label>
+        <button type="submit" disabled={!owners.length || !invite.trim() || service !== "online"}>Connexion propriétaire <ArrowRight size={15}/></button>
+        <a className="kc-globe-cta" href="/communaute-pontiac#inscription"><CarFront size={15}/> Inscrire ma Pontiac sur le globe</a>
+      </form>}
+      </section> : isMember ? <section className="kc-offline"><Radio size={24}/><div><strong>{service === "online" ? `Session mémorisée pour ${member}` : "Le salon est momentanément hors ligne."}</strong><p>{service === "online" ? "Ton code a déjà été utilisé. Cet appareil se souviendra de toi." : "Ta session est conservée. Réessaie quand le relais sera disponible."}</p></div>{service === "online" ? <button type="button" onClick={() => setReconnectKey(value => value + 1)}>Revenir au salon <ArrowRight size={15}/></button> : <button type="button" onClick={() => window.location.reload()}>Réessayer <ArrowRight size={15}/></button>}<button type="button" onClick={forgetDevice}>Oublier cet appareil</button></section> : <section className="kc-offline"><Radio size={24}/><div><strong>{service === "checking" ? "Recherche du salon…" : "Le salon est momentanément hors ligne."}</strong><p>Tu peux déjà préparer ton inscription au globe Pontiac.</p></div><a href="/communaute-pontiac#inscription">Voir l’inscription <ArrowRight size={15}/></a></section>}
       {(error || notice) && <p className={error ? "kc-feedback error" : "kc-feedback"} role={error ? "alert" : "status"}>{error || notice}</p>}
       <footer className="kc-footer"><span><Wifi size={14}/> {socketState === "online" ? (isMember ? "PROPRIÉTAIRE VALIDÉ" : publicGuestsCanWrite ? `PILOTE INVITÉ · ${guestDisplayName || guestName}` : "VISITEUR · LECTURE SEULE") : socketState === "connecting" ? "CONNEXION…" : <><WifiOff size={14}/> DÉCONNECTÉ</>}</span><span>BY MANIX · KITT FRANCO-BELGE</span><a href="/mentions-legales"><CircleHelp size={14}/> Règles du salon</a></footer>
     </div>

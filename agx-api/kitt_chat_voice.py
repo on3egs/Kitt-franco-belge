@@ -67,10 +67,10 @@ def create_voice_providers(
 ) -> tuple[Callable[[str, str], Any], Callable[[bytes, str], Any]]:
     """Return async `(speech, transcribe)` providers for chat routes.
 
-    KITT speaks with the cached Guy v3 engine plus the existing KITT robot
-    effect. KARR uses that same cached voice cleanly; neither provider changes
-    global voice state. Work is serialized per engine to avoid concurrent Piper
-    synthesis corrupting temporary/intermediate state.
+    Both characters use the cached Guy v3 engine. KITT receives the normal
+    Knight Rider radio effect; KARR receives the darker KARR profile. Neither
+    provider changes global voice state. Work is serialized per engine to avoid
+    concurrent Piper synthesis corrupting temporary/intermediate state.
     """
     speech_lock = asyncio.Lock()
     transcription_lock = asyncio.Lock()
@@ -106,12 +106,15 @@ def create_voice_providers(
                     length_scale=0.85,
                     natural_pauses=True,
                 )
-                if speaker_key == "kitt":
+                if speaker_key in {"kitt", "karr"}:
                     robot_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
                     robot_path = robot_file.name
                     robot_file.close()
                     await asyncio.to_thread(
-                        apply_robot_effect_sox, clean_path, robot_path, "karr"
+                        apply_robot_effect_sox,
+                        clean_path,
+                        robot_path,
+                        "normal" if speaker_key == "kitt" else "karr",
                     )
                     output_path = robot_path
                 return await asyncio.to_thread(Path(output_path).read_bytes)

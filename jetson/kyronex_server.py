@@ -1249,13 +1249,13 @@ _SOX_PROFILES = {
         "norm", "-3",
     ],
     "karr": [
-        "highpass", "100",                       # coupe basses propre
-        "pitch", "-150",                         # grave intense KARR (-8.5%)
-        "overdrive", "4",                        # saturation agressive menaçante
+        "highpass", "80",                        # conserve un grave plus profond
+        "pitch", "-220",                         # voix KARR plus grave et inquiétante
+        "overdrive", "5",                        # saturation métallique plus marquée
         "equalizer", "300", "200", "-4",         # nettoie les basses médiums
-        "equalizer", "3500", "2500h", "+6",      # présence agressive 2-6kHz
-        "equalizer", "7000", "2000h", "+3",      # brillance dure et métallique
-        "echo", "0.82", "0.90", "80", "0.30",   # echo plus présent et menaçant
+        "equalizer", "3500", "2500h", "+4",      # garde les consonnes intelligibles
+        "equalizer", "7000", "2000h", "+1",      # timbre plus sombre, moins sifflant
+        "echo", "0.84", "0.92", "110", "0.32",  # réverbération plus profonde
         "compand", "0.01,0.1", "-60,-60,-20,-11,0,-4", "5", "-70", "0.05",
         "norm", "-3",                            # niveau fort pour KARR dominateur
     ],

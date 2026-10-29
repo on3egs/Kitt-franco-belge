@@ -152,6 +152,7 @@ def register_chat_image_routes(
     allowed_rooms: set[str],
     describe_provider: Callable[[bytes, str, str], Awaitable[str]] | None = None,
     admin_token: str = "",
+    after_upload: Callable[[str, str, bytes, asyncio.Lock], None] | None = None,
 ) -> None:
     store = ChatImageStore(root)
     storage_lock = asyncio.Lock()
@@ -242,6 +243,8 @@ def register_chat_image_routes(
         line = {"id": message_id, "name": name, "text": caption, "timestamp": timestamp, "kind": "message", "image": photo}
         await append_history(room, line)
         await broadcast(room, {"type": "message", "message": line})
+        if after_upload is not None and describe_provider is not None:
+            after_upload(room, image_id, clean, vision_lock)
         return cors(web.json_response({"ok": True, "message": line}, status=201))
 
     async def upload(request: web.Request) -> web.Response:
