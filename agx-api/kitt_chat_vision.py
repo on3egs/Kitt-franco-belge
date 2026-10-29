@@ -42,9 +42,12 @@ def _model_jpeg(data: bytes) -> bytes:
         with Image.open(BytesIO(data)) as source:
             source.seek(0)  # Animated GIFs use their first frame in the chat.
             frame = ImageOps.exif_transpose(source)
-            # Gemma 4 vision in the AGX llama.cpp build can assert on larger
-            # images (non-causal attention needs a larger physical batch).
-            frame.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
+            # Le projector Gemma 4 produit des lots d'image non causaux. Une
+            # photo de 1024 px dépassait le n_ubatch=128 du profil AJX et
+            # faisait tomber llama-server (GGML_ASSERT). On borne les photos
+            # à 768 px ; le serveur AJX doit aussi démarrer avec un ubatch de
+            # 1024, comme indiqué dans kyronext-gemma4-vision-start.patch.
+            frame.thumbnail((768, 768), Image.Resampling.LANCZOS)
             rgba = frame.convert("RGBA")
             rgb = Image.new("RGB", rgba.size, (255, 255, 255))
             rgb.paste(rgba, mask=rgba.getchannel("A"))

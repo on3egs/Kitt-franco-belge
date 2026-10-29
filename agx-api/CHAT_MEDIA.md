@@ -28,6 +28,8 @@ Le patch `kyronext-gemma4-vision-start.patch` ajoute `--mmproj` seulement pour c
 
 ## Vérifications réalisées
 
+**Régression AGX corrigée le 30 octobre 2026 :** le profil `kitt-ajx` doit lancer `llama-server` avec `--batch-size 1024 --ubatch-size 1024`. La valeur `ubatch=128` faisait planter llama.cpp pendant le décodage Gemma 4 image (`non-causal attention requires n_ubatch >= n_tokens`) et coupait ensuite les réponses textuelles. Le provider borne maintenant les photos à 768 px avant l'inférence.
+
 - Voix Guy réelle : WAV différents pour KITT avec effets et KARR propre ; répétition du même texte servie à l'identique par le cache.
 - Whisper réel : transcription d'un WebM de type navigateur, sans post dans le salon ; session de diagnostic révoquée ensuite.
 - Vision réelle : lecture de « KYRONEXT 42 », carré rouge et cercle bleu sur une image synthétique en 3,57 secondes. Une photo quelconque peut prendre plus longtemps ou rester ambiguë.
