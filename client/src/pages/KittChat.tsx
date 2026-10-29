@@ -75,7 +75,7 @@ const FALLBACK_ROOMS: Room[] = [
 const SESSION_KEY = "kitt-msn-chat-session-v1";
 const ADMIN_TOKEN_KEY = "kitt-pontiac-admin-token-v1";
 const ARRIVAL_VOICE_KEY = "kitt-msn-arrival-voice-v1";
-const CHAT_LANGUAGES = [{ id: "fr", label: "Français" }, { id: "nl", label: "Nederlands" }, { id: "en", label: "English" }, { id: "de", label: "Deutsch" }, { id: "es", label: "Español" }, { id: "it", label: "Italiano" }];
+const CHAT_LANGUAGES = [{ id: "fr", label: "Français" }, { id: "nl", label: "Nederlands" }, { id: "en", label: "English" }, { id: "de", label: "Deutsch" }, { id: "es", label: "Español" }, { id: "it", label: "Italiano" }, { id: "pt", label: "Português" }];
 const CHAT_LANGUAGE_KEY = "kitt-chat-language-v1";
 function initialChatLanguage() {
   const saved = localStorage.getItem(CHAT_LANGUAGE_KEY)?.toLowerCase().split("-")[0];
@@ -139,6 +139,8 @@ export default function KittChat() {
   const [arrivalVoiceStatus, setArrivalVoiceStatus] = useState("");
   const [speechEnabled, setSpeechEnabled] = useState(true);
   const [speechStatus, setSpeechStatus] = useState("");
+  const [speakingBot, setSpeakingBot] = useState<BotStatus | null>(null);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
   const [speechVoices, setSpeechVoices] = useState<{ KITT: string; KARR: string } | null>(null);
   const [pushToTalkAvailable, setPushToTalkAvailable] = useState(false);
   const [imageSharingAvailable, setImageSharingAvailable] = useState(false);
@@ -426,10 +428,14 @@ export default function KittChat() {
     const job = speechQueue.current.shift();
     if (!job) return;
     activeSpeech.current = job;
+    setSpeakingBot(job.kind === "bot" ? job.speaker : null);
+    setSpeakingMessageId(job.kind === "bot" ? job.messageId || null : null);
     const generation = ++speechGeneration.current;
     const finish = () => {
       if (activeSpeech.current !== job || speechGeneration.current !== generation) return;
       activeSpeech.current = null;
+      setSpeakingBot(null);
+      setSpeakingMessageId(null);
       speechRequest.current = null;
       speechAudio.current = null;
       if (speechBlobUrl.current) URL.revokeObjectURL(speechBlobUrl.current);
@@ -485,6 +491,8 @@ export default function KittChat() {
         if (pttHeld.current || pttRecorder.current?.state === "recording" || pttRecorder.current?.state === "paused") {
           speechRequest.current = null;
           activeSpeech.current = null;
+          setSpeakingBot(null);
+          setSpeakingMessageId(null);
           pumpSpeechQueue();
           return;
         }
@@ -513,6 +521,8 @@ export default function KittChat() {
     speechQueue.current = speechQueue.current.filter(job => job.kind !== kind);
     if (activeSpeech.current?.kind === kind) {
       activeSpeech.current = null;
+      setSpeakingBot(null);
+      setSpeakingMessageId(null);
       clearSpeechOutput();
       window.setTimeout(pumpSpeechQueue, 40);
     }
@@ -524,6 +534,8 @@ export default function KittChat() {
     speechQueue.current = speechQueue.current.filter(job => job.category !== category);
     if (activeSpeech.current?.category === category) {
       activeSpeech.current = null;
+      setSpeakingBot(null);
+      setSpeakingMessageId(null);
       clearSpeechOutput();
       window.setTimeout(pumpSpeechQueue, 40);
     }
@@ -533,12 +545,16 @@ export default function KittChat() {
     voiceMessageIds.current.clear();
     speechQueue.current = [];
     activeSpeech.current = null;
+    setSpeakingBot(null);
+    setSpeakingMessageId(null);
     clearSpeechOutput();
   }
 
   function pauseSpeechForPushToTalk() {
     const interrupted = activeSpeech.current;
     activeSpeech.current = null;
+    setSpeakingBot(null);
+    setSpeakingMessageId(null);
     clearSpeechOutput();
     if (interrupted) speechQueue.current.unshift(interrupted);
   }
@@ -1416,13 +1432,13 @@ export default function KittChat() {
     {roomToast && <div className="kc-room-toast" role="status" aria-live="polite"><span className="kc-toast-led"/>{roomToast}</div>}
     <section className="kc-intro">
       <div><p className="kc-eyebrow">KNIGHT RIDER COMMUNITY · EST. 1998</p><h1>Le salon <em>KITT</em></h1>
-        <p>{publicGuestsCanWrite ? "Rejoins la discussion librement : entre ton prénom ou pseudo avant d’entrer, puis parle avec la communauté, KITT et KARR." : "Viens découvrir l’ambiance sans compte. Pour participer, il faut être propriétaire d’une Pontiac et faire valider son profil avec une photo de la voiture sur le globe."}</p>
+        <p>{publicGuestsCanWrite ? "Rejoins la discussion librement : entre ton prénom ou pseudo avant d’entrer, puis parle avec la communauté, KITT et KARR. Dis « bonjour », « hallo », « hello », « hola », « ciao » ou « bom dia » : ils te répondent dans la langue reconnue, à voix haute." : "Viens découvrir l’ambiance sans compte. Pour participer, il faut être propriétaire d’une Pontiac et faire valider son profil avec une photo de la voiture sur le globe."}</p>
       </div>
       <div className="kc-status"><span className={service === "online" ? "is-online" : ""}/><strong>{headingStatus}</strong>
         <small>{service === "online" ? (publicGuestsCanWrite ? "Salon public · pseudo temporaire · aucune inscription" : "Visite libre · écriture réservée aux propriétaires validés") : "Le salon sera disponible lorsque le service sera relié."}</small>
       </div>
     </section>
-    <div className={`kc-window${buzzActive ? " kc-buzz-effect" : ""}${buzzActive && buzzIntensity === "hyper" ? " kc-buzz-hyper" : ""}`}>
+    <div className={`kc-window${buzzActive ? " kc-buzz-effect" : ""}${buzzActive && buzzIntensity === "hyper" ? " kc-buzz-hyper" : ""}`} data-room={room.id}>
       <div className="kc-titlebar"><span className="kc-app-icon"><MessageCircle size={15}/></span><strong>KITT-FRANCO-BELGE · DES CHEVALIERS</strong><div className="kc-window-buttons"><span>−</span><span>□</span><span>×</span></div></div>
       <div className="kc-toolbar"><span>Fichier</span><span>Salon</span><span>Affichage</span><span>Aide</span><span className="kc-toolbar-right">KITT Network v1.0</span></div>
       {(service === "online" || socketState === "connecting") && <div className="kc-room-tabs" role="tablist" aria-label="Salons de discussion">
@@ -1439,13 +1455,13 @@ export default function KittChat() {
             <strong>{pendingTurn.speaker} attend une réponse</strong>
             <span className="kc-turn-countdown" aria-hidden="true">{turnRemaining}s</span>
           </div>}
-          <div className="kc-messages" ref={messageBox} role="log" aria-live="polite" aria-relevant="additions text">
+                    {speakingBot && <div className={`kc-speaking-status kc-speaking-${speakingBot.toLowerCase()}`} role="status" aria-live="polite"><span className="kc-speaking-scanner" aria-hidden="true"><i/><i/><i/><i/><i/></span><strong>{speakingBot} parle</strong><span className="kc-wave" aria-hidden="true">{Array.from({ length: 14 }, (_, index) => <i key={index}/>)}</span><small>Voix et texte synchronisés</small></div>}<div className="kc-messages" ref={messageBox} role="log" aria-live="polite" aria-relevant="additions text">
             {socketState === "connecting" && <p className="kc-empty">Le salon s’ouvre…</p>}
             {socketState === "online" && !visibleLines.length && <p className="kc-empty">Le salon s’éveille… Écris un message, ou interpelle KITT avec « KITT ! ».</p>}
           {visibleLines.map(line => {
             const displayedText = line.liveBot ? typedBotText[line.id] ?? "" : line.text;
             const typing = Boolean(line.liveBot && displayedText.length < line.text.length);
-            return <article className={`kc-line${line.kind === "system" ? " system" : ""}${identityTone(line.name) ? ` kc-line-${identityTone(line.name)}` : ""}`} key={line.id} aria-live={line.liveBot ? "off" : undefined}>
+            return <article className={`kc-line${line.kind === "system" ? " system" : ""}${identityTone(line.name) ? ` kc-line-${identityTone(line.name)}` : ""}${speakingMessageId === line.id ? " kc-speaking-line" : ""}`} key={line.id} aria-live={line.liveBot ? "off" : undefined}>
               <time dateTime={new Date(line.timestamp).toISOString()}>{clockLabel(line.timestamp)}</time><strong className={identityTone(line.name)}>{line.name}</strong><div className="kc-line-body"><span className="kc-line-text">{renderChatText(displayedText)}{typing && <i className="kc-type-cursor" aria-hidden="true"/>}</span>{line.translation && <small className="kc-translation-line"><span>Traduction automatique · {line.translationLanguage} :</span> {renderChatText(line.translation)}</small>}{line.translationUnavailable && <small className="kc-translation-line unavailable">Traduction temporairement indisponible · {line.translationLanguage}</small>}
                 {line.image && <div className="kc-shared-image">
                   {line.imageRemoved ? <p className="kc-image-removed">Photo supprimée par son propriétaire.</p> : <>

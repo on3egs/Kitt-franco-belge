@@ -92,7 +92,7 @@ _GUEST_MAX = 50
 _NAME_MAX = 48
 _GUEST_NAME_MAX = 24
 _TEXT_MAX = 500
-_CHAT_LANGUAGES = {"fr": "français", "nl": "néerlandais", "en": "anglais", "de": "allemand", "es": "espagnol", "it": "italien"}
+_CHAT_LANGUAGES = {"fr": "français", "nl": "néerlandais", "en": "anglais", "de": "allemand", "es": "espagnol", "it": "italien", "pt": "portugais"}
 _TRANSLATION_CACHE: dict[tuple[str, str, str], str] = {}
 _TRANSLATION_TASKS: set[asyncio.Task[None]] = set()
 _TRANSLATION_SEMAPHORE = asyncio.Semaphore(2)
@@ -174,6 +174,79 @@ def _short_phrase(text: str) -> str:
     normalized = "".join(char for char in normalized if not unicodedata.combining(char))
     normalized = re.sub(r"[\W_]+", " ", normalized)
     return " ".join(normalized.split())
+
+
+_ROOM_GREETINGS: dict[str, tuple[str, ...]] = {
+    "fr": ("bonjour", "rebonjour", "salut", "coucou", "bonsoir", "bon matin", "allo"),
+    "en": ("good morning", "good afternoon", "good evening", "good day", "what s up", "hello", "hi", "hey", "howdy", "sup", "yo"),
+    "nl": ("goedemorgen", "goeiemorgen", "goedemiddag", "goede middag", "goedenavond", "goeieavond", "goeie avond", "goedendag", "goeiedag", "dag", "hallo", "hoi"),
+    "de": ("guten morgen", "guten tag", "guten abend", "servus", "hallo", "moin"),
+    "es": ("buenos dias", "buenas tardes", "buenas noches", "buenas", "hola"),
+    "it": ("buon pomeriggio", "buongiorno", "buonasera", "ciao"),
+    "pt": ("bom dia", "boa tarde", "boa noite", "ola", "oi"),
+}
+_GREETING_AUDIENCES = {
+    "a tous", "a toutes", "a todos", "a todas", "a tout le monde", "tout le monde", "tout le monde ici",
+    "les amis", "mes amis", "les gars", "les filles", "les chevaliers", "equipe", "a l equipe", "toute l equipe", "la communaute", "toute la salle",
+    "everyone", "everybody", "all", "all of you", "guys", "folks", "friends", "my friends", "team", "there",
+    "iedereen", "allemaal", "vrienden", "mensen", "alle zusammen", "zusammen", "leute", "freunde", "todos", "todas",
+    "amigos", "amigas", "a tutti", "a tutte", "tutti", "amici", "ragazzi", "squadra",
+    "pessoal", "gente",
+}
+_GREETING_NOT_RECIPIENTS = {
+    "je", "j", "tu", "vous", "il", "elle", "on", "nous", "i", "im", "i m", "you", "we",
+    "how", "what", "why", "can", "could", "need", "want", "help", "please", "comment", "pourquoi",
+    "est", "suis", "sont", "ai", "as", "et", "mais", "que", "qui", "como", "que", "necesito",
+    "ich", "wie", "was", "bitte", "sono", "come", "ik", "ben", "hoe", "eu", "preciso",
+}
+
+
+def _room_greeting_language(text: str) -> str | None:
+    """Reconnaît une salutation courte, seule ou adressée à une personne/un groupe."""
+    phrase = _short_phrase(text)
+    phrase = re.sub(r"\b(?:kitt|karr|kaerr)\b", " ", phrase)
+    phrase = re.sub(r"\b(?:et|and|und|y)\b", " ", phrase)
+    phrase = " ".join(phrase.split())
+    for language, greetings in _ROOM_GREETINGS.items():
+        for greeting in sorted(greetings, key=len, reverse=True):
+            if phrase == greeting:
+                return language
+            prefix = greeting + " "
+            if phrase.startswith(prefix):
+                recipient = phrase[len(prefix):].strip()
+                words = recipient.split()
+                if recipient in _GREETING_AUDIENCES or len(words) == 1 and words[0] not in _GREETING_NOT_RECIPIENTS:
+                    return language
+    return None
+
+
+_ROOM_GREETING_LINES: dict[str, dict[str, tuple[str, ...]]] = {
+    "KITT": {
+        "fr": ("Bonjour {name}, ravi de te retrouver dans le salon. Que puis-je faire pour toi ?", "Salut {name} ! KITT est en ligne, prêt à t'aider. Quoi de neuf ?"),
+        "en": ("Hello {name}, good to have you here. How can I help?", "Hi {name}! KITT is online and ready. What can I do for you?"),
+        "nl": ("Hallo {name}, fijn dat je er bent. Waarmee kan ik je helpen?", "Hoi {name}! KITT staat klaar. Wat kan ik voor je doen?"),
+        "de": ("Hallo {name}, schön, dass du da bist. Wie kann ich dir helfen?", "Guten Tag, {name}. KITT ist bereit. Was kann ich für dich tun?"),
+        "es": ("¡Hola, {name}! Me alegra verte por aquí. ¿En qué puedo ayudarte?", "Hola, {name}. KITT está listo. ¿Qué necesitas?"),
+        "it": ("Ciao {name}, lieto di averti qui. Come posso aiutarti?", "Buongiorno, {name}. KITT è pronto. Di cosa hai bisogno?"),
+        "pt": ("Olá, {name}, que bom ter-te por aqui. Em que posso ajudar?", "Olá, {name}! KITT está pronto. O que posso fazer por ti?"),
+    },
+    "KARR": {
+        "fr": ("Salut {name}. KARR est en ligne et parfaitement opérationnel, comme prévu.", "Bonjour {name}. Tu peux commencer : KARR répondra avec plus d'élégance que KITT."),
+        "en": ("Hello {name}. KARR is online and fully operational, as expected.", "Hi {name}. Go ahead; KARR is listening. KITT is still warming up."),
+        "nl": ("Hallo {name}. KARR is online en werkt uiteraard perfect.", "Hoi {name}. Vertel maar; KARR luistert. KITT moet nog opstarten."),
+        "de": ("Hallo {name}. KARR ist online und funktioniert erwartungsgemäß perfekt.", "Guten Tag, {name}. KARR hört zu. KITT muss sich noch sammeln."),
+        "es": ("Hola, {name}. KARR está conectado y funciona a la perfección, como era de esperar.", "Hola, {name}. KARR te escucha. KITT todavía está arrancando."),
+        "it": ("Ciao {name}. KARR è online e funziona perfettamente, come previsto.", "Buongiorno, {name}. KARR ti ascolta. KITT deve ancora svegliarsi."),
+        "pt": ("Olá, {name}. KARR está ligado e funciona perfeitamente, como era de esperar.", "Olá, {name}. KARR está a ouvir. KITT ainda está a aquecer."),
+    },
+}
+
+
+def _room_greeting_reply(bot: str, member_name: str, language: str) -> str:
+    speaker = bot if bot in _ROOM_GREETING_LINES else "KITT"
+    locale = language if language in _ROOM_GREETING_LINES[speaker] else "fr"
+    name = _clean_text(member_name, _NAME_MAX) or "pilote"
+    return secrets.choice(_ROOM_GREETING_LINES[speaker][locale]).format(name=name)
 
 
 _ACCESS_PHOTO_TERMS = re.compile(
@@ -275,7 +348,7 @@ def _social_suffix_addressed(text: str, bot: str) -> bool:
         "ca va", "comment ca va", "bonjour", "salut", "coucou", "robot",
         "intelligence artificielle", "tu es la", "t es la", "couleur", "couleurs", "tu as perdu",
     )
-    return any(cue in phrase for cue in cues)
+    return _room_greeting_language(text) is not None or any(cue in phrase for cue in cues)
 
 
 def _social_reply(bot: str, member_name: str, text: str) -> str | None:
@@ -284,9 +357,7 @@ def _social_reply(bot: str, member_name: str, text: str) -> str | None:
     phrase = re.sub(r"\b(?:kitt|karr|kaerr)\b", " ", phrase)
     phrase = " ".join(phrase.split())
     member = _clean_text(member_name, _NAME_MAX) or "Manix"
-    words = phrase.split()
-    greeting_words = {"bonjour", "salut", "coucou", "bonsoir", "hello", "hey"}
-    greeting = bool(words and words[0] in greeting_words and len(words) <= 2 and set(words) <= greeting_words)
+    greeting_language = _room_greeting_language(text)
     wellbeing = phrase in {
         "comment tu vas", "comment vas tu", "comment va tu", "comment va rtu",
         "comment tu vas bien", "comment vas tu bien", "comment va tu bien",
@@ -301,10 +372,8 @@ def _social_reply(bot: str, member_name: str, text: str) -> str | None:
         if bot == "KITT":
             return f"Je vais très bien, merci {member} ! Toujours prêt à aider."
         return f"Excellentement, évidemment, {member}. KARR fonctionne à la perfection ; les autres unités peuvent prendre des notes."
-    if greeting:
-        if bot == "KITT":
-            return f"Salut {member} ! Ravi de te retrouver."
-        return f"Bonjour {member}. KARR fonctionne parfaitement, comme on pouvait s’y attendre."
+    if greeting_language:
+        return _room_greeting_reply(bot, member, greeting_language)
     if colors_question:
         if bot == "KITT":
             return "Mon code couleur est rouge, celui de KARR jaune-orangé. Si tu vois autre chose, décris-moi l’affichage."
@@ -728,14 +797,20 @@ async def _maybe_kitt_reply(
     )
 
 
-async def _post_bot_line(room: str, name: str, text: str) -> None:
+async def _post_bot_line(room: str, name: str, text: str, source_lang: str = "fr") -> None:
     line = {
         "id": secrets.token_hex(8), "name": name, "text": _clean_text(text, 420),
-        "timestamp": int(time.time() * 1000), "kind": "message",
+        "timestamp": int(time.time() * 1000), "kind": "message", "sourceLang": _chat_language(source_lang),
     }
     await _append_history(room, line)
     await _broadcast(room, {"type": "message", "message": line})
     _queue_line_translations(room, line)
+
+
+async def _reply_to_room_greeting(room: str, member_name: str, language: str) -> None:
+    """Répond immédiatement; le client lit la réplique avec la voix du bot."""
+    speaker = "KITT" if secrets.randbelow(2) == 0 else "KARR"
+    await _post_bot_line(room, speaker, _room_greeting_reply(speaker, member_name, language), source_lang=language)
 
 
 def _chat_language(value: Any) -> str:
@@ -2086,6 +2161,11 @@ def register_kitt_chat_routes(
                     task = asyncio.create_task(_maybe_karr_reply(client.room, client.name, text), name=f"kitt-chat:{client.room}")
                 elif _feature_access_help_kind(text) is not None:
                     task = asyncio.create_task(_maybe_kitt_reply(client.room, client.name, text), name=f"kitt-chat:{client.room}")
+                elif (greeting_language := _room_greeting_language(text)) is not None:
+                    task = asyncio.create_task(
+                        _reply_to_room_greeting(client.room, client.name, greeting_language),
+                        name=f"kitt-chat:{client.room}",
+                    )
                 elif (mentioned_bots := _passive_bot_mention(text)):
                     if secrets.randbelow(2) == 0:
                         speaker = secrets.choice(mentioned_bots)

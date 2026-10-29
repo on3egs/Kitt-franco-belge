@@ -12,7 +12,10 @@
     "test:browser": "node test-browser.cjs",
     "test:progression": "node test-progression.cjs",
     "test:public": "node test-public.cjs",
-    "test:live": "node test-live.cjs"
+    "test:live": "node test-live.cjs",
+    "test:bistro": "node test-bistro.cjs",
+    "test:arcade": "node test-kitt-arcade.cjs",
+    "test:radio-bistro": "node test-radio-bistro-browser.cjs"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
