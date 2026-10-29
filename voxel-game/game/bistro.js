@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {BISTRO_ORIGIN,BISTRO_ARCADES,BISTRO_COLLIDERS,isInsideBistro} from './bistro-layout.mjs?v=marcel-entry-20261029';
+import {BISTRO_ORIGIN,BISTRO_ARCADES,BISTRO_COLLIDERS,isInsideBistro} from './bistro-layout.mjs?v=pacman-shelf-fix-20261030';
 
 // Toutes les textures sont dessinées ici ; aucun visuel ni morceau protégé n'est chargé.
 function canvasTexture(draw,w=512,h=512){const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;draw(canvas.getContext('2d'),w,h);const t=new THREE.CanvasTexture(canvas);t.colorSpace=THREE.SRGBColorSpace;return t}

@@ -4,7 +4,8 @@ export const BISTRO_SPAWN={x:-17.5,y:8,z:-8,yaw:-Math.PI/2,pitch:-.04};
 // Quatre bornes classiques longent le mur ouest, rapprochées de l'allée pour
 // rester visibles. Le kiosque multijeux est juste devant le point d'accueil.
 export const BISTRO_ARCADES=[
- {id:'pacman',name:'PAC-MAN',x:-22.1,z:-20},
+ // PAC-MAN avance dans l'allée pour dégager les étagères du fond du bar.
+ {id:'pacman',name:'PAC-MAN',x:-22.1,z:-18.7},
  {id:'tetris',name:'TETRIS',x:-22.1,z:-16.5},
  {id:'space-invaders',name:'SPACE INVADERS',x:-22.1,z:-13},
  {id:'stunt',name:'STUNT',x:-22.1,z:-10.5},

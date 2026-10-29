@@ -6,5 +6,8 @@ const assert=require('node:assert/strict');
  for(const b of BISTRO_ARCADES){const front=b.front==='west'?-1.1:1.1;assert.equal(bistroCollision(b.x,8,b.z),true,'La borne est un volume solide');assert.equal(bistroCollision(b.x+front,8,b.z),false,'Le joueur peut se placer devant la borne')}
  assert.ok(BISTRO_COLLIDERS.some(b=>b.id==='comptoir'));assert.ok(BISTRO_COLLIDERS.some(b=>b.id==='banquette'));assert.equal(generatedBlock(-18,12,-6),'metal');
  assert.deepEqual(BISTRO_ARCADES.map(b=>b.id),['pacman','tetris','space-invaders','stunt','arcade-hub']);
+ const backbar=BISTRO_COLLIDERS.find(b=>b.w===12.5&&b.d===.65&&b.h===3.6),pacman=BISTRO_COLLIDERS.filter(b=>b.id==='borne')[0];
+ const pacmanOnShelves=Math.abs(pacman.x-backbar.x)<(pacman.w+backbar.w)/2&&Math.abs(pacman.z-backbar.z)<(pacman.d+backbar.d)/2;
+ assert.equal(pacmanOnShelves,false,'La borne PAC-MAN doit rester devant les Ã©tagÃ¨res du bar.');
  console.log('OK bar : entrée plain-pied, allée traversable, collisions mobilier et cinq bornes jouables.');
 })().catch(e=>{console.error(e);process.exitCode=1});
