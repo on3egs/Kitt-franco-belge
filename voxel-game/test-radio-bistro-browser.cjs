@@ -61,6 +61,8 @@ const { createGameServer } = require('./server');
     await page.screenshot({ path: 'test-results/bistro-pacman-cabinet.png' });
     await page.click('#arcadeClose');
     assert.equal(await page.locator('#arcadePanel').evaluate(node => node.classList.contains('hidden')), true);
+    assert.equal(await page.locator('#menu').evaluate(node => node.classList.contains('hidden')), true, 'Le menu initial ne doit pas recouvrir le jeu après la borne.');
+    assert.equal(await page.locator('#hud').evaluate(node => node.classList.contains('hidden')), false, 'Le HUD doit réapparaître après Pac-Man.');
     if (!(await page.evaluate(()=>KITTBlock.inspect().captured&&!KITTBlock.inspect().paused))) {
       await page.locator('#capturePointer').click({timeout:10000});
       await page.waitForFunction(()=>KITTBlock.inspect().captured&&!KITTBlock.inspect().paused,{timeout:10000});
@@ -86,6 +88,8 @@ const { createGameServer } = require('./server');
     assert.ok(tetrisMoved,'Une flèche doit déplacer la pièce Tetris.');
     await page.locator('#arcadeClose').click();
     await page.waitForFunction(()=>document.querySelector('#arcadePanel').classList.contains('hidden'),null,{timeout:5000});
+    assert.equal(await page.locator('#menu').evaluate(node=>node.classList.contains('hidden')),true,'Le menu initial doit rester fermé après Tetris.');
+    assert.equal(await page.locator('#hud').evaluate(node=>node.classList.contains('hidden')),false,'Le HUD doit rester disponible après Tetris.');
     console.log('OK Chrome : radio F9, bistrot, accès à pied et bornes Tetris + Pac-Man.');
   } finally {
     await browser.close();
