@@ -137,7 +137,7 @@ export default function KittChat() {
   const [arrivalVoiceEnabled, setArrivalVoiceEnabled] = useState(false);
   const [arrivalVoiceVolume, setArrivalVoiceVolume] = useState(75);
   const [arrivalVoiceStatus, setArrivalVoiceStatus] = useState("");
-  const [speechEnabled, setSpeechEnabled] = useState(false);
+  const [speechEnabled, setSpeechEnabled] = useState(true);
   const [speechStatus, setSpeechStatus] = useState("");
   const [speechVoices, setSpeechVoices] = useState<{ KITT: string; KARR: string } | null>(null);
   const [pushToTalkAvailable, setPushToTalkAvailable] = useState(false);
@@ -186,7 +186,7 @@ export default function KittChat() {
   const buzzCooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const botStatusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceMessageIds = useRef<Set<string>>(new Set());
-  const voiceEnabled = useRef(false);
+  const voiceEnabled = useRef(true);
   const mealRemindersEnabled = useRef(true);
   const arrivalVoiceEnabledRef = useRef(false);
   const arrivalVoiceVolumeRef = useRef(75);
@@ -399,7 +399,7 @@ export default function KittChat() {
         loaded.voice = false; // Consentement vocal local a reactiver a chaque visite.
         if (memoryEditRevision.current === revisionAtStart) {
           setMissionMemory(loaded);
-          showMemoryFeedback("Dossier charge. La voix reste desactivee jusqu'a son activation sur cet appareil.");
+          showMemoryFeedback("Dossier chargé. Les réponses KITT/KARR sont lues par défaut; tu peux couper leur voix à tout moment.");
         } else {
           showMemoryFeedback("Le dossier a ete charge sans remplacer tes modifications en cours. Utilise Charger pour les remplacer volontairement.");
         }
@@ -982,12 +982,12 @@ export default function KittChat() {
           return;
         }
         voicePreferenceTouched.current = false;
-        showMemoryFeedback("Dossier charge. La voix AGX reste a activer pour cette visite.");
+        showMemoryFeedback("Dossier chargé. La lecture vocale du salon est activée par défaut.");
         setMissionMemory(loaded);
       } else {
         const saved = normalizeMissionMemory(data ?? missionMemory);
         setSavedVoicePreference(saved.voice);
-        showMemoryFeedback("Dossier enregistre. La preference vocale est memorisee, mais l'activation reste necessaire a chaque visite.");
+        showMemoryFeedback("Dossier enregistré. La préférence vocale du profil est mémorisée; la lecture du salon démarre activée par défaut.");
         if (memoryEditRevision.current === revisionAtStart) {
           setMissionMemory({ ...saved, voice: missionMemory.voice });
         } else {
@@ -1501,7 +1501,7 @@ export default function KittChat() {
           <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz · analyses photo</small></button>
           <section className="kc-arrival-voice" aria-label="Annonce vocale des arrivées">
             <label><input type="checkbox" checked={speechEnabled} onChange={event => toggleSpeechForVisit(event.target.checked)}/><Volume2 size={15}/><span>Écouter les nouvelles réponses KITT/KARR</span></label>
-            <small>{speechVoices ? `Voix AGX : ${speechVoices.KITT} · ${speechVoices.KARR}` : "Voix AGX du salon; active-les pour cette visite uniquement."}</small>
+            <small>{speechVoices ? `Voix AGX : ${speechVoices.KITT} · ${speechVoices.KARR}` : "Voix AGX du salon; activées par défaut pendant cette visite."}</small>
             {speechStatus && <small role="status" aria-live="polite">{speechStatus}</small>}
             <label><input type="checkbox" checked={arrivalVoiceEnabled} onChange={event => saveArrivalVoicePreference(event.target.checked)}/><Volume2 size={15}/><span>Annoncer les nouveaux membres</span></label>
             <div className="kc-arrival-volume"><label htmlFor="kc-arrival-volume">Volume vocal</label><output htmlFor="kc-arrival-volume">{arrivalVoiceVolume}%</output><input id="kc-arrival-volume" type="range" min="0" max="100" step="1" value={arrivalVoiceVolume} onChange={event => saveArrivalVoicePreference(arrivalVoiceEnabledRef.current, Number(event.target.value))} aria-label={`Volume des annonces ${arrivalVoiceVolume} pour cent`}/></div>
@@ -1532,7 +1532,7 @@ export default function KittChat() {
               <p className="kc-memory-frequency">Ce réglage concerne les interventions spontanées liées à tes notes. Les commandes explicites restent traitées normalement.</p>
               <label className="kc-memory-check"><input type="checkbox" checked={missionMemory.mealReminders} onChange={event => toggleMealReminders(event.target.checked)}/><span>Rappels de pause repas occasionnels</span></label>
               <p className="kc-memory-frequency">KITT ou KARR peut proposer une pause pendant les plages de repas. Décoche pour masquer ces rappels dans l’historique et couper leur voix.</p>
-              <p className="kc-memory-voice-note">Préférence de voix enregistrée : {savedVoicePreference ? "oui" : "non"}. L’activation se fait dans le panneau global et reste à refaire à chaque visite.</p>
+              <p className="kc-memory-voice-note">Préférence de voix enregistrée : {savedVoicePreference ? "oui" : "non"}. La lecture vocale du salon est activée par défaut; tu peux la couper avec la case du panneau global.</p>
               <div className="kc-memory-actions">
                 <button type="button" onClick={() => void missionMemoryRequest("GET")} disabled={memoryBusy}><FolderOpen size={14}/>Charger</button>
                 <button type="button" className="save" onClick={() => void missionMemoryRequest("PUT")} disabled={memoryBusy}><Save size={14}/>Enregistrer</button>
