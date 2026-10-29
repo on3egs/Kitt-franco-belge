@@ -13,8 +13,8 @@ import {SoundEngine} from './audio.js?v=flag-patrol-20261029';
 import {Narrator} from './voice.js?v=marcel-stories-20261029';
 import {KittRadio} from './radio.js?v=flag-patrol-20261029';
 import {PatrolDirector} from './patrol-director.js?v=flag-patrol-20261029';
-import {createBistro} from './bistro.js?v=marcel-bar-20261029';
-import {bistroCollision,isInsideBistro,BISTRO_SPAWN,BISTRO_ARCADES} from './bistro-layout.mjs?v=marcel-bar-20261029';
+import {createBistro} from './bistro.js?v=marcel-entry-20261029';
+import {bistroCollision,isInsideBistro,BISTRO_SPAWN,BISTRO_ARCADES} from './bistro-layout.mjs?v=marcel-entry-20261029';
 
 const $=id=>document.getElementById(id),show=(id,on=true)=>$(id).classList.toggle('hidden',!on),coarse=matchMedia('(pointer:coarse)').matches;
 const read=(k,fallback)=>{try{return JSON.parse(localStorage.getItem(k))??fallback}catch{return fallback}},save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
