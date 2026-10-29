@@ -3,6 +3,7 @@ const {io}=require('socket.io-client'),assert=require('node:assert/strict'),fs=r
 const {createGameServer}=require('./server');
 const event=(s,name)=>new Promise((resolve,reject)=>{const t=setTimeout(()=>reject(new Error('Événement manquant : '+name)),5000);s.once(name,v=>{clearTimeout(t);resolve(v)})});
 (async()=>{
+ const {WORLD_LIMIT}=await import('./game/world.mjs');
  const data=fs.mkdtempSync(path.join(os.tmpdir(),'kitt-network-')),pin=crypto.randomBytes(10).toString('hex'),clients=[];let service;
  const start=async()=>service=await createGameServer({port:0,dataDir:data,pins:{LILOU:pin,ALEXIA:pin}});
  const connect=async()=>{const s=io(`http://127.0.0.1:${service.port}`,{reconnection:false});clients.push(s);await event(s,'connect');return s};
@@ -14,12 +15,15 @@ const event=(s,name)=>new Promise((resolve,reject)=>{const t=setTimeout(()=>reje
   assert.equal((await ack(a,'room:join',{room:'TEST',name:'Lilou'})).ok,true);assert.equal((await ack(b,'room:join',{room:'TEST',name:'Alex'})).players.length,2);
   const moved=event(b,'player:state');a.emit('player:state',{x:1,y:8,z:12,yaw:.4,id:'spoof',profile:'ALEXIA',driving:false});const position=await moved;assert.equal(position.id,a.id);assert.equal(position.profile,'LILOU');assert.equal(position.x,1);
   const blockEvent=event(b,'world:block');assert.equal((await ack(a,'world:block',{x:1,y:8,z:10,type:'metal'})).ok,true);assert.equal((await blockEvent).type,'metal');
+  const edgeX=WORLD_LIMIT-8,farPosition=event(b,'player:state');a.emit('player:state',{x:edgeX,y:8,z:12,yaw:0});assert.equal((await farPosition).x,edgeX,'Le déplacement doit fonctionner près de la nouvelle frontière.');
+  const farBlockEvent=event(b,'world:block');assert.equal((await ack(a,'world:block',{x:edgeX,y:8,z:12,type:'metal'})).ok,true,'La construction doit fonctionner près de la nouvelle frontière.');assert.equal((await farBlockEvent).x,edgeX);
+  assert.equal((await ack(a,'world:block',{x:WORLD_LIMIT+1,y:8,z:12,type:'metal'})).ok,false,'La construction hors monde doit rester refusée.');
   assert.equal((await ack(a,'world:block',{x:1,y:8,z:10,type:'unknown'})).ok,false);assert.equal((await ack(a,'world:block',{x:150,y:8,z:10,type:'metal'})).ok,false);assert.equal((await ack(b,'admin:tool',{action:'fly'})).ok,false);assert.equal((await ack(a,'admin:tool',{action:'fly'})).enabled,true);
-  for(let i=2;i<16;i++){const s=await connect();const r=await ack(s,'room:join',{room:'TEST',name:'Pilote'+i});assert.equal(r.ok,true);assert.ok(r.blocks.some(([k,t])=>k==='1,8,10'&&t==='metal'))}
+  for(let i=2;i<16;i++){const s=await connect();const r=await ack(s,'room:join',{room:'TEST',name:'Pilote'+i});assert.equal(r.ok,true);assert.ok(r.blocks.some(([k,t])=>k==='1,8,10'&&t==='metal'));assert.ok(r.blocks.some(([k,t])=>k===`${edgeX},8,12`&&t==='metal'),'Les nouveaux joueurs doivent charger les constructions éloignées.')}
   const extra=await connect();assert.equal((await ack(extra,'room:join',{room:'TEST'})).ok,false,'Le 17e joueur doit être refusé');
   const oldId=b.id,departed=event(a,'player:left');b.disconnect();assert.equal(await departed,oldId);
   const isolated=await ack(extra,'room:join',{room:'ISOLATED',name:'Seul'});assert.equal(isolated.ok,true);assert.equal(isolated.blocks.length,0);
-  for(const c of clients)c.disconnect();await service.close();service=null;await start();const resumed=await connect();const snapshot=await ack(resumed,'room:join',{room:'TEST'});assert.ok(snapshot.blocks.some(([k,t])=>k==='1,8,10'&&t==='metal'),'Les blocs doivent survivre au redémarrage');
+  for(const c of clients)c.disconnect();await service.close();service=null;await start();const resumed=await connect();const snapshot=await ack(resumed,'room:join',{room:'TEST'});assert.ok(snapshot.blocks.some(([k,t])=>k==='1,8,10'&&t==='metal'),'Les blocs doivent survivre au redémarrage');assert.ok(snapshot.blocks.some(([k,t])=>k===`${edgeX},8,12`&&t==='metal'),'Les blocs construits près de la frontière doivent survivre au redémarrage.');
  }finally{for(const c of clients)c.disconnect();if(service)await service.close();if(path.resolve(data).startsWith(path.resolve(os.tmpdir())+path.sep))fs.rmSync(data,{recursive:true,force:true})}
  console.log('OK réseau : HTTP privé, PIN, deux clients, positions, blocs, validation, admin et 16 places.');
 })().catch(e=>{console.error(e);process.exitCode=1});

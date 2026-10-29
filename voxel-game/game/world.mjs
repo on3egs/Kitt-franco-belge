@@ -1,7 +1,14 @@
 // Génération déterministe partagée par le navigateur et le serveur.
 import {truckRoad,flagParking} from './roads.mjs';
 import {outpostPad} from './construction.mjs';
-export const CHUNK = 16, HEIGHT = 48, SEED = 'FLAG-1982';
+export const CHUNK = 16, HEIGHT = 48, WORLD_LIMIT = 16384, SEED = 'FLAG-1982';
+// Les grandes villes et la zone FLAG sont reliées par les deux routes principales.
+export const WORLD_CITIES = Object.freeze([
+  {name:'LIEGE',x:0,z:256,radius:64},
+  {name:'BRUXELLES',x:256,z:-28,radius:72},
+  {name:'PARIS',x:-320,z:-28,radius:80}
+]);
+const CITY_BIOMES = new Set(WORLD_CITIES.map(city=>city.name));
 export const BLOCKS = {
   herbe: {name:'Herbe',color:0x64884b}, terre:{name:'Terre',color:0x805a40},
   pierre:{name:'Pierre',color:0x78818a}, sable:{name:'Sable du Nevada',color:0xd6b77e},
@@ -17,11 +24,29 @@ export function hash(x,z){let h=Math.imul(x|0,374761393)^Math.imul(z|0,668265263
 // Les tables restent côté droit pour laisser une allée libre entre l'entrée et les bornes.
 export function noise(x,z){const ix=Math.floor(x),iz=Math.floor(z);let u=x-ix,v=z-iz;u=u*u*(3-2*u);v=v*v*(3-2*v);const a=hash(ix,iz)*(1-u)+hash(ix+1,iz)*u,b=hash(ix,iz+1)*(1-u)+hash(ix+1,iz+1)*u;return a*(1-v)+b*v}
 const cache=new Map();
+function biomeAt(x,z){
+  for(const city of WORLD_CITIES){const dx=x-city.x,dz=z-city.z;if(Math.abs(dx)<=city.radius&&Math.abs(dz)<=city.radius&&dx*dx+dz*dz<=city.radius*city.radius)return city.name}
+  if(z < -100)return'MONTAGNES';
+  if(x>72&&z>-96&&z<-34)return'INDUSTRIE';
+  if(x < -72&&z>28&&z<92)return'LITTORAL';
+  if(z>=32&&z<=92&&x>-54&&x<64)return'CAMPAGNE';
+  if(z>92)return'CAMPAGNE';
+  if(x>65)return'NEVADA';
+  if(x < -55)return'FORÊT';
+  return'FLAG';
+}
+function farmSoil(x,z){
+  const cx=Math.floor(x/80)*80+40,cz=Math.floor(z/80)*80+40;
+  return hash(cx,cz)>.52&&Math.abs(x-cx)<14&&Math.abs(z-cz)<18&&mod(x-cx,5)!==0;
+}
 export function column(x,z){
   x=Math.floor(x);z=Math.floor(z);const id=`${x},${z}`;if(cache.has(id))return cache.get(id);
-  const biome=z < -100?'MONTAGNES':z>92?'VILLE':x>65?'NEVADA':x < -55?'FORÊT':'FLAG';
+  const biome=biomeAt(x,z);
   let height=5+Math.floor(noise(x*.032,z*.032)*6+noise(x*.10+7,z*.10)*2);
   if(biome==='MONTAGNES')height+=Math.floor(noise(x*.018,z*.018)*16);
+  if(biome==='CAMPAGNE')height+=Math.floor(noise(x*.021+31,z*.021-17)*5);
+  if(biome==='LITTORAL')height=4+Math.floor(noise(x*.026,z*.026)*5+noise(x*.09+11,z*.09)*2);
+  if(biome==='INDUSTRIE')height=6+Math.floor(noise(x*.04,z*.04)*3);
   const road=Math.abs(x)<=3||Math.abs(z+28)<=3||truckRoad(x,z)||flagParking(x,z);
   const smooth=Math.min(1,Math.max(0,(Math.abs(x)-5)/14));
   height=Math.round(7*(1-smooth)+height*smooth);
@@ -35,7 +60,7 @@ export const heightAt=(x,z)=>column(x,z).height;
 export function generatedBlock(x,y,z){
   if(y<0||y>=HEIGHT)return null;
   const {height:h,biome,road}=column(x,z);
-  if(y<=h){if(y===h){if(road)return x===0&&mod(z,7)<4||z===-28&&mod(x,7)<4?'marquage':'bitume';return biome==='NEVADA'?'sable':biome==='MONTAGNES'?'pierre':'herbe'}return y<h-2?'pierre':'terre'}
+  if(y<=h){if(y===h){if(road)return x===0&&mod(z,7)<4||z===-28&&mod(x,7)<4?'marquage':'bitume';if(biome==='NEVADA'||biome==='LITTORAL')return'sable';if(biome==='MONTAGNES'||biome==='INDUSTRIE')return'pierre';if(biome==='CAMPAGNE'&&farmSoil(x,z))return'terre';return'herbe'}return y<h-2?'pierre':'terre'}
   if(outpostPad(x,z))return null;
   // Hangar FLAG : volume creux, baie ouverte face à la cour et toiture à néons.
   // Petit bistrot FLAG en blocs : sol, salle vitrée, mobilier et deux bornes.
@@ -64,9 +89,17 @@ export function generatedBlock(x,y,z){
     if(hash(cx,cz)>.25){if(x===cx&&z===cz&&y<=base+tall)return'bois';if(Math.abs(x-cx)<=2&&Math.abs(z-cz)<=2&&y>=base+tall-2&&y<=base+tall+1&&(Math.abs(x-cx)+Math.abs(z-cz)<4))return'feuilles'}
   }
   if(biome==='NEVADA'&&mod(x,13)===6&&mod(z,11)===5&&y<=h+3)return'feuilles';
-  if(biome==='VILLE'){
-    const cx=Math.floor(x/24)*24+12,cz=Math.floor(z/24)*24+12,base=heightAt(cx,cz),roof=base+9+Math.floor(hash(cx,cz)*15);
-    if(Math.abs(x-cx)<=4&&Math.abs(z-cz)<=4&&y>base&&y<=roof){if(y===roof)return'bleu';if(Math.abs(x-cx)===4||Math.abs(z-cz)===4)return y%3===0?'metal':'verre'}
+  if(biome==='INDUSTRIE'){
+    const cx=Math.floor(x/40)*40+20,cz=Math.floor(z/40)*40+20,base=heightAt(cx,cz),roof=base+8+Math.floor(hash(cx,cz)*5);
+    if(biomeAt(cx,cz)==='INDUSTRIE'&&!road){
+      if(Math.abs(x-cx)<=7&&Math.abs(z-cz)<=9&&y>base&&y<=roof){if(z===cz-9&&Math.abs(x-cx)<=1&&y<=base+3)return null;if(y===roof)return'metal';if(Math.abs(x-cx)===7||Math.abs(z-cz)===9)return y%3===0?'verre':'metal';return null}
+      if(x===cx+5&&z===cz-5&&y>roof&&y<=roof+4)return y===roof+4?'rouge':'metal';
+    }
+  }
+  if(CITY_BIOMES.has(biome)){
+    const city=WORLD_CITIES.find(item=>item.name===biome),cx=Math.floor(x/24)*24+12,cz=Math.floor(z/24)*24+12,base=heightAt(cx,cz),roof=base+9+Math.floor(hash(cx,cz)*15);
+    const insideCity=Math.hypot(cx-city.x,cz-city.z)<=city.radius+12;
+    if(insideCity&&!road&&hash(cx,cz)>.16&&Math.abs(x-cx)<=4&&Math.abs(z-cz)<=4&&y>base&&y<=roof){if(y===roof)return biome==='PARIS'?'rouge':'bleu';if(Math.abs(x-cx)===4||Math.abs(z-cz)===4)return y%3===0?'metal':'verre'}
   }
   return null;
 }

@@ -11,6 +11,7 @@
     "test:site": "node test-site.cjs",
     "test:browser": "node test-browser.cjs",
     "test:progression": "node test-progression.cjs",
+    "test:placement-progression": "node test-placement-progression.cjs",
     "test:public": "node test-public.cjs",
     "test:live": "node test-live.cjs",
     "test:live-bistro": "node test-live-bistro-arcades.cjs",

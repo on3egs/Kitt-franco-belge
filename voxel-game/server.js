@@ -3,7 +3,7 @@ require('dotenv').config();
 const express=require('express'),http=require('node:http'),path=require('node:path'),fs=require('node:fs'),crypto=require('node:crypto');
 const {Server}=require('socket.io');
 async function createGameServer(options={}){
-  const {BLOCKS,HEIGHT,key,generatedBlock}=await import('./game/world.mjs');
+  const {BLOCKS,HEIGHT,WORLD_LIMIT,key,generatedBlock}=await import('./game/world.mjs');
   const base=(options.basePath??process.env.BASE_PATH??'').replace(/\/$/,''),bind=options.bind??process.env.BIND??'127.0.0.1',port=options.port??Number(process.env.PORT||8080);
   const dataDir=options.dataDir||process.env.DATA_DIR||path.join(__dirname,'data','rooms');fs.mkdirSync(dataDir,{recursive:true});
   const pins=options.pins||{LILOU:process.env.ADMIN_PIN_LILOU,ALEXIA:process.env.ADMIN_PIN_ALEXIA};
@@ -11,7 +11,7 @@ async function createGameServer(options={}){
   const allowed=(process.env.PUBLIC_ORIGIN||'').split(',').filter(Boolean);
   const io=new Server(server,{path:`${base}/socket.io`,maxHttpBufferSize:64*1024,allowRequest:(req,done)=>{const origin=req.headers.origin;let ok=!origin;try{ok=ok||new URL(origin).host===req.headers.host||allowed.includes(origin)}catch{}done(null,ok)},cors:{origin:true,methods:['GET','POST']}});
   const roomId=raw=>String(raw||'FLAG-PUBLIC').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,24)||'FLAG-PUBLIC';
-  const validBlock=b=>b&&Number.isInteger(b.x)&&Number.isInteger(b.y)&&Number.isInteger(b.z)&&Math.abs(b.x)<=4096&&Math.abs(b.z)<=4096&&b.y>=0&&b.y<HEIGHT&&(b.type==='air'||Object.hasOwn(BLOCKS,b.type));
+  const validBlock=b=>b&&Number.isInteger(b.x)&&Number.isInteger(b.y)&&Number.isInteger(b.z)&&Math.abs(b.x)<=WORLD_LIMIT&&Math.abs(b.z)<=WORLD_LIMIT&&b.y>=0&&b.y<HEIGHT&&(b.type==='air'||Object.hasOwn(BLOCKS,b.type));
   function getRoom(id){if(rooms.has(id))return rooms.get(id);if(rooms.size>=32)return null;const r={id,players:new Map(),blocks:new Map(),dirty:false};try{const rows=JSON.parse(fs.readFileSync(path.join(dataDir,id+'.json'),'utf8'));for(const [k,t]of rows){const [x,y,z]=k.split(',').map(Number);if(validBlock({x,y,z,type:t}))r.blocks.set(k,t)}}catch{}rooms.set(id,r);return r}
   function list(){return [...rooms.values()].filter(r=>!r.id.startsWith('PRIVE-')).map(r=>({id:r.id,players:r.players.size,capacity:16}))}
   function broadcastList(){io.emit('room:list',list())}
@@ -52,7 +52,7 @@ async function createGameServer(options={}){
     s.on('room:leave',()=>leave(s));
     s.on('player:state',state=>{
       const r=rooms.get(s.data.room),p=r?.players.get(s.id);if(!p||limited('state',25)||!state||!['x','y','z','yaw'].every(k=>Number.isFinite(state[k])))return;
-      if(Math.abs(state.x)>4096||Math.abs(state.z)>4096||state.y< -15||state.y>HEIGHT+120)return;
+      if(Math.abs(state.x)>WORLD_LIMIT||Math.abs(state.z)>WORLD_LIMIT||state.y< -15||state.y>HEIGHT+120)return;
       const now=Date.now(),dt=Math.max(.05,(now-s.data.lastState)/1000),distance=Math.hypot(state.x-p.x,state.y-p.y,state.z-p.z);if(!s.data.profile&&distance>4+dt*35)return;
       Object.assign(p,{x:state.x,y:state.y,z:state.z,yaw:state.yaw,driving:!!state.driving});s.data.lastState=now;s.to(r.id).volatile.emit('player:state',p);
     });
