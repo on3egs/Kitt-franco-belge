@@ -1226,6 +1226,14 @@ function initControls() {
         if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
         if (e.repeat) return;
         keys[e.code] = true;
+        // Une pression courte doit agir dès keydown, même si keyup arrive
+        // avant la prochaine image (clavier tactile, iframe ou cadence faible).
+        const direction = getDirectionFromKey(e.code);
+        if (direction && state === 'playing' && !paused && !gameOver) {
+            movePiece(direction.x, direction.y, direction.z);
+            dasActive[e.code] = true;
+            dasTimer[e.code] = Date.now() + DAS_DELAY;
+        }
         
         // Handle special keys
         switch(e.code) {
