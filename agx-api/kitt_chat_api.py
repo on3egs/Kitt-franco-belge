@@ -90,6 +90,7 @@ _GUEST_RATE_WINDOW = 600
 _GUEST_RATE_MAX = 30
 _GUEST_MAX = 50
 _NAME_MAX = 48
+_GUEST_NAME_MAX = 24
 _TEXT_MAX = 500
 _CHAT_LANGUAGES = {"fr": "français", "nl": "néerlandais", "en": "anglais", "de": "allemand", "es": "espagnol", "it": "italien"}
 _TRANSLATION_CACHE: dict[tuple[str, str, str], str] = {}
@@ -1757,7 +1758,13 @@ def register_kitt_chat_routes(
         is_guest = first.get("type") == "guest"
         token_hash = ""
         if is_guest:
-            name = "Visiteur"
+            # Le pseudo est saisi à chaque visite et n'est pas transformé en compte.
+            name = _clean_text(first.get("name"), _GUEST_NAME_MAX)
+            reserved_guest_names = {"kitt", "karr", "manix", "admin", "administrateur", "visiteur", "invite", "invité"}
+            if not 2 <= len(name) <= _GUEST_NAME_MAX or name.casefold() in reserved_guest_names:
+                await ws.send_json({"type": "error", "message": "Choisis un prénom ou pseudo de 2 à 24 caractères."})
+                await ws.close(code=4003, message=b"Guest name required")
+                return ws
         else:
             if first.get("type") != "auth":
                 await ws.close(code=4001, message=b"Authentication required")
@@ -1795,6 +1802,10 @@ def register_kitt_chat_routes(
             if not is_guest and any(c.name.casefold() == client.name.casefold() for c in _CLIENTS.values() if not c.is_guest):
                 await ws.close(code=4002, message=b"Name already online")
                 return ws
+            if is_guest and any(c.room == room and c.name.casefold() == client.name.casefold() for c in _CLIENTS.values()):
+                await ws.send_json({"type": "error", "message": "Ce pseudo est déjà utilisé dans ce salon."})
+                await ws.close(code=4003, message=b"Guest name already in use")
+                return ws
             if len(_CLIENTS) >= 80:
                 await ws.close(code=1013, message=b"Room full")
                 return ws
@@ -1807,7 +1818,7 @@ def register_kitt_chat_routes(
             if is_guest:
                 history = history[-30:]
             await ws.send_json({
-                "type": "ready", "room": room, "history": history,
+                "type": "ready", "room": room, "name": client.name, "history": history,
                 "members": _online(room), "member": not is_guest,
             })
             _translate_recent_history(client, history)

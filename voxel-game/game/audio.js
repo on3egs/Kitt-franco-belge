@@ -24,6 +24,7 @@ export class SoundEngine{
       case'pumpkin':o(67,.65,'sawtooth',.1,42);o(113,.45,'triangle',.1,77,.2);break;
       case'bat':o(1400,.06,'sine',.11,2100);o(2100,.06,'sine',.08,1200,.12);this.noise(.08,.05*gain,3500);break;
       case'demon':o(72,.55,'sawtooth',.16,38);o(126,.4,'triangle',.12,70,.22);break;
+      case'enemyBreak':this.noise(.2,.32*gain,1500);o(180,.28,'sawtooth',.18,55);o(520,.16,'square',.09,280,.06);o(780,.22,'sine',.06,1060,.12);break;
       case'pulse':o(980,.16,'sawtooth',.18,190,.02);o(480,.2,'sine',.12,90,.08);break;
       case'hit':o(155,.12,'square',.13,68);break;
       case'upgrade':[440,554,659,880].forEach((f,i)=>o(f,.19,'sine',.14,f*1.2,i*.11));break;
