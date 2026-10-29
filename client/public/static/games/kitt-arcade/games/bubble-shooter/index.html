@@ -19,4 +19,5 @@ function neighbors(r,c){const even=r%2===0;return [[r,c-1],[r,c+1],[r-1,c+(even?
 function dropFloating(){const seen=new Set(),q=[];for(let c=0;c<COLS;c++)if(grid[0][c]!==null){q.push([0,c]);seen.add('0,'+c)}for(let i=0;i<q.length;i++)for(const [y,x] of neighbors(...q[i])){const k=y+','+x;if(grid[y][x]!==null&&!seen.has(k)){seen.add(k);q.push([y,x])}}let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c]!==null&&!seen.has(r+','+c)){grid[r][c]=null;n++}return n}
 function finish(win){ended=true;playing=false;cancelAnimationFrame(raf);msg(win?`Tunnel dégagé ! Score : ${score}.`:'Le convoi est bloqué. Nouvelle tentative ?');if(win)score+=100;sync();draw()}
 document.querySelector('#start').addEventListener('click',fresh);fresh();
-</script></body></html>
+</script><script src="/site-assets/page-navigation.js" defer></script>
+</body></html>

@@ -43,10 +43,24 @@ function CockpitRouteSync() {
   useEffect(() => { window.dispatchEvent(new Event('kitt-route-change')); }, [location]);
   return null;
 }
+function PageQuickLinks() {
+  const [location] = useLocation();
+  if (location === "/") return null;
+  const goBack = () => {
+    const sameSiteReferrer = document.referrer && new URL(document.referrer).origin === window.location.origin;
+    if (sameSiteReferrer && window.history.length > 1) window.history.back();
+    else window.location.assign("/");
+  };
+  return <nav className="site-page-quick-links" aria-label="Navigation rapide">
+    <button type="button" onClick={goBack} aria-label="Retour à la page précédente" title="Retour à la page précédente"><span aria-hidden="true">←</span> Retour</button>
+    <a href="/" aria-label="Accueil KITT Franco-Belge" title="Accueil KITT Franco-Belge"><span aria-hidden="true">⌂</span> Accueil</a>
+  </nav>;
+}
 function AppRouter() {
   return (
     <Router base={import.meta.env.BASE_URL}>
       <CockpitRouteSync />
+      <PageQuickLinks />
       <SiteTools />
       <Suspense fallback={<div role="status" className="route-loading">Chargement de l’interface…</div>}>
       <Switch>

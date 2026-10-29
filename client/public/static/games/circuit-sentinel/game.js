@@ -2,7 +2,7 @@
   'use strict';
   const canvas = document.getElementById('board'), ctx = canvas.getContext('2d');
   const MAX_WAVES = 10;
-  const ui = Object.fromEntries(['credits','wave','lives','score','best','toast','start-wave','upgrade','end','end-title','end-copy','pilot','save','again','sound','pause'].map(id => [id, document.getElementById(id)]));
+  const ui = Object.fromEntries(['credits','wave','lives','score','best','toast','start-wave','upgrade','end','end-title','end-copy','pilot','save','again','sound','pause'].map(id => [id.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()), document.getElementById(id)]));
   const path = [{x:-.03,y:.19},{x:.22,y:.19},{x:.22,y:.48},{x:.48,y:.48},{x:.48,y:.23},{x:.76,y:.23},{x:.76,y:.69},{x:1.03,y:.69}];
   const kinds = {pulse:{cost:60,range:104,rate:.66,damage:15,color:'#66e8eb'},rail:{cost:95,range:174,rate:1.3,damage:43,color:'#ffce69'},frost:{cost:80,range:120,rate:.9,damage:6,color:'#94b9ff'}};
   const state = {credits:180,lives:20,wave:0,score:0,towers:[],enemies:[],beams:[],selected:null,build:'pulse',pointer:null,active:false,spawn:0,spawned:0,clock:0,last:0,raf:0,muted:false,ended:false,paused:false};

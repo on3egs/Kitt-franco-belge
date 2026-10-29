@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070910">
+  <meta name="description" content="Dix nouveaux jeux d'arcade KITT, jouables au clavier, à la souris et sur écran tactile.">
+  <title>Manix Arcade Missions · 10 nouveaux jeux</title>
+  <link rel="stylesheet" href="./arcade.css?v=20261030-1">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="/jeux" aria-label="Retour à la salle d'arcade">← Retour au site</a>
+    <div class="brand"><span class="brand-mark">K</span><span>MANIX ARCADE MISSIONS<small>10 NOUVELLES BORNES · BY MANIX</small></span></div>
+    <a class="home" href="/" aria-label="Accueil KITT Franco-Belge">⌂ Accueil</a>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="hero-copy"><span class="eyebrow">KITT FRANCO-BELGE · SALLE D'ARCADE</span><h1>Une nouvelle<br><em>mission à chaque borne.</em></h1>
+        <p>Dix jeux originaux, dix façons de marquer des points. Lis le briefing avant de jouer, récupère les bonus et inscris tes records sur cet appareil.</p>
+        <div class="hero-pills"><span>10 jeux inédits</span><span>Clavier · souris · tactile</span><span>Sans compte</span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="hero-ring ring-one"></div><div class="hero-ring ring-two"></div><div class="scanner"></div><div class="hero-core">K</div><small>FLAG · ARCADE DIVISION</small></div>
+    </section>
+    <section class="catalog" id="catalog" aria-labelledby="catalog-title">
+      <div class="section-title"><div><span class="eyebrow">CHOISIS TA BORNE</span><h2 id="catalog-title">Les défis du garage</h2></div><label class="difficulty">Difficulté<select id="difficulty"><option value="1">Recrue</option><option value="1.25">Pilote</option><option value="1.5">Michael Knight</option></select></label></div>
+      <div class="game-grid" id="game-grid"></div>
+    </section>
+    <section class="play" id="play" hidden aria-label="Jeu sélectionné">
+      <div class="play-head"><div><span class="eyebrow" id="game-tag">BY MANIX</span><h2 id="game-title">Mission</h2></div><div class="play-actions"><button id="pause-button" type="button">Pause</button><button id="restart-button" type="button">Recommencer</button><button id="sound-button" type="button" aria-pressed="true">Son : ON</button><button id="menu-button" type="button">Quitter la borne</button></div></div>
+      <div class="play-layout">
+        <div class="screen-column">
+          <div class="hud"><div><small>SCORE</small><b id="score">0</b></div><div><small>RECORD</small><b id="best">0</b></div><div><small>VIES / TEMPS</small><b id="status">3 vies</b></div><div><small>BONUS</small><b id="bonus">Prêt</b></div></div>
+          <div class="canvas-wrap"><canvas id="screen" width="960" height="540" tabindex="0" aria-label="Écran de jeu arcade"></canvas><div class="screen-overlay" id="overlay"><div class="overlay-card"><span class="overlay-icon">K</span><span class="eyebrow" id="overlay-kicker">BRIEFING FLAG</span><h3 id="overlay-title">Prêt à jouer ?</h3><p id="overlay-copy">Choisis une borne dans le garage.</p><button id="overlay-action" type="button">Lancer</button></div></div></div>
+          <div class="touch-pad" id="touch-pad" aria-label="Commandes tactiles"><button data-key="ArrowUp" aria-label="Haut">▲</button><div><button data-key="ArrowLeft" aria-label="Gauche">◀</button><button data-key="Space" aria-label="Action">ACTION</button><button data-key="ArrowRight" aria-label="Droite">▶</button></div><button data-key="ArrowDown" aria-label="Bas">▼</button></div>
+          <p class="play-help" id="controls">Les commandes du défi apparaissent ici.</p>
+        </div>
+        <aside class="mission-card"><span class="eyebrow">CONSIGNES DE KITT</span><h3 id="mission-title">Objectif</h3><p id="mission-copy">Sélectionne une borne pour afficher son briefing.</p><div class="mission-rule"><small>COMMENT GAGNER</small><b id="mission-goal">Choisis un jeu.</b></div><div class="mission-rule"><small>COMMANDES</small><b id="mission-controls">Clavier · souris · tactile</b></div><p class="record-note">Les meilleurs scores restent dans le navigateur utilisé pour jouer.</p></aside>
+      </div>
+    </section>
+    <footer><span>KITT FRANCO-BELGE · CRÉATIONS ORIGINALES</span><a href="/static/games/high-scores.html">Hall of Fame</a><a href="/jeux">Retour à la collection</a></footer>
+  </main>
+  <script src="/static/games/highscores.js?v=20261030-1" defer></script>
+  <script src="./game.js?v=20261030-1" defer></script>
+  <script src="/site-assets/page-navigation.js" defer></script>
+</body>
+</html>

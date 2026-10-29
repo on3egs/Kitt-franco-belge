@@ -56,5 +56,6 @@
     document.querySelector('#showPlan').addEventListener('click',()=>{const p=plans[goal.value];const old=device.value;let extra='';if(old==='legacy'||old==='mobile')extra='<p class="warning">Votre appareil sélectionné ne peut pas héberger toutes les fonctions locales de la version actuelle.</p>';plan.innerHTML='<h3>'+p.title+'</h3><ol>'+p.steps.map(x=>'<li>'+x+'</li>').join('')+'</ol><p class="warning">'+p.warn+'</p>'+extra+'<a class="button" href="'+p.href+'">'+p.label+' ↗</a>';plan.hidden=false;plan.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});});
     const filter=document.querySelector('#filter'),cards=[...document.querySelectorAll('#tools .tool')],empty=document.querySelector('#emptyFilter');filter.addEventListener('input',()=>{const q=filter.value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();let count=0;for(const c of cards){const match=(c.dataset.keywords+' '+c.innerText).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(q);c.hidden=!match;if(match)count++;}empty.hidden=count>0;});
   </script>
+<script src="/site-assets/page-navigation.js" defer></script>
 </body>
 </html>

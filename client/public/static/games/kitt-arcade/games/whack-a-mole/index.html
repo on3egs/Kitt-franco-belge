@@ -11,4 +11,5 @@ function hit(i){if(!running||i!==active)return;score++;active=-1;holes[i].classL
 function end(){running=false;clearInterval(tick);clearTimeout(hide);active=-1;holes.forEach(h=>h.classList.remove('up'));message.textContent=`Fin de la chasse : ${score} signal${score>1?'s':''} neutralisé${score>1?'s':''}.`;document.querySelector('#start').textContent='Rejouer'}
 function start(){clearInterval(tick);clearTimeout(hide);holes.forEach(h=>h.classList.remove('up'));score=0;time=30;active=-1;running=true;document.querySelector('#score').textContent='0';document.querySelector('#time').textContent='30';document.querySelector('#start').textContent='Recommencer';message.textContent='Attention, ils arrivent !';spawn();tick=setInterval(()=>{time--;document.querySelector('#time').textContent=time;if(time<=0)end()},1000)}
 document.querySelector('#start').addEventListener('click',start);
-</script></body></html>
+</script><script src="/site-assets/page-navigation.js" defer></script>
+</body></html>

@@ -27,5 +27,6 @@
     document.querySelectorAll('.download-trigger').forEach(link=>link.addEventListener('click',()=>{try{if(window.KittVoice)window.KittVoice.speak('Le téléchargement de KITT Media Lab commence.',{lang:'fr-FR',rate:.8,pitch:.78,replacePending:true});else if('speechSynthesis'in window){const msg=new SpeechSynthesisUtterance('Le téléchargement de KITT Media Lab commence.');msg.lang='fr-FR';msg.rate=.8;speechSynthesis.speak(msg)}}catch(_){}}));
     fetch('downloads/download-info.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(info=>{if(!info)return;const el=document.getElementById('download-meta');el.innerHTML=`Version ${info.version} · ${info.sizeFormatted} · By Manix · KITT-FRANCO-BELGE<br>SHA-256 : <code>${info.sha256}</code><br>Installeur non signé numériquement : SmartScreen peut afficher un avertissement.`}).catch(()=>{});
   </script>
+<script src="/site-assets/page-navigation.js" defer></script>
 </body>
 </html>

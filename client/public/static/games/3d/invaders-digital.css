@@ -5,11 +5,16 @@ body{font-family:ui-monospace,monospace}
 .digital-menu h1{font-size:clamp(30px,6vw,56px);letter-spacing:.07em;line-height:1.15;margin:24px 0;color:#effaff;text-shadow:0 0 28px #2fc8ff70}
 .digital-menu h1 span{color:#8ba5ff}
 .digital-menu p{line-height:1.8;color:#a8bddb;font-size:13px}
+.mission-brief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0;text-align:left}.mission-brief article{display:flex;min-height:106px;flex-direction:column;gap:7px;padding:12px;border:1px solid #4dbbdc38;border-radius:10px;background:#071322b8}.mission-brief b{color:#74e5ff;font-size:10px;letter-spacing:.14em}.mission-brief span{color:#d0e1f2;font:12px/1.5 system-ui,sans-serif}.digital-menu .mission-controls{margin-top:10px;color:#d4e9f4}
 #start-button{margin:26px 0 10px;padding:16px 36px;border:1px solid #77ebff;border-radius:12px;color:#eaffff;background:linear-gradient(130deg,#176184,#233984);font:700 14px monospace;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 28px #1bcbff30}
 #start-button:disabled{opacity:.4}
 #hud{top:14px;left:14px;padding:12px 18px;border:1px solid #49b9da70;border-radius:12px;background:linear-gradient(130deg,#0c2239db,#040c1ddd);box-shadow:0 0 22px #17b8dd18;font:700 13px/1.6 monospace}
 #score-display{color:#f2fbff;text-shadow:0 0 12px #5eeeff}
 #level-display,#wave-display{font-size:11px;color:#a0d3ef}
+#bonus-display{margin-top:5px;color:#ffd674;font-size:10px;letter-spacing:.04em}
+#mission-toast{position:fixed;top:max(78px,env(safe-area-inset-top));left:50%;z-index:1100;width:min(560px,calc(100vw - 28px));padding:12px 18px;border:1px solid #64dfff78;border-radius:12px;background:#071525ed;color:#eafaff;text-align:center;font:600 13px/1.5 system-ui,sans-serif;box-shadow:0 8px 32px #0009,0 0 25px #28cfff20;opacity:0;translate:0 -8px;pointer-events:none;transition:opacity .2s,translate .2s}
+#mission-toast.visible{opacity:1;translate:0 0}
 #instructions{bottom:58px;font:11px monospace;opacity:.75}
 #game-over-screen,#pause-screen,#level-complete-screen{background:radial-gradient(ellipse,#09213ef2,#020611f5);backdrop-filter:blur(5px)}
+@media(max-width:720px){.mission-brief{grid-template-columns:1fr}.mission-brief article{min-height:0}.digital-menu{max-height:94dvh;overflow:auto}.mission-brief span{font-size:13px}}
 @media(max-width:600px){#instructions{display:none}.digital-menu p{font-size:11px}}

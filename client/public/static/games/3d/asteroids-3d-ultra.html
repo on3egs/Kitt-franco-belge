@@ -252,6 +252,19 @@
         button { cursor:pointer; padding:12px 20px; border:1px solid #63e9ff; border-radius:10px; background:#10202e; color:#fff; font-weight:bold; touch-action:none; }
         #mobile-controls { display:none; position:fixed; bottom:45px; left:0;right:0;z-index:35;justify-content:space-around; }
         @media (pointer:coarse) { #mobile-controls {display:flex;} #instructions {display:none;} }
+        #game-navigation{position:fixed;top:12px;left:12px;z-index:60;display:flex;gap:8px}#game-navigation a{display:inline-flex;min-height:40px;align-items:center;justify-content:center;padding:0 13px;border:1px solid #63e9ff66;border-radius:9px;background:#061321dd;color:#d9f8ff;font:700 11px ui-monospace,monospace;text-decoration:none;backdrop-filter:blur(8px)}#game-navigation a:hover{border-color:#ffe070;color:#fff}
+        .asteroids-menu-card{width:min(760px,calc(100vw - 28px));max-height:90dvh;overflow:auto;padding:clamp(22px,4vw,42px);border:1px solid #63e9ff66;border-radius:22px;background:linear-gradient(145deg,#101d36f5,#050911f5);box-shadow:0 0 70px #1689ba30;text-align:center}.asteroids-menu-card .eyebrow{color:#63e9ff;font:700 10px ui-monospace,monospace;letter-spacing:.18em}.asteroids-menu-card h1{margin:12px 0;color:#effcff;font:900 clamp(26px,5vw,44px) ui-monospace,monospace}.asteroids-menu-card>p{max-width:600px;margin:0 auto 16px;color:#c8d9e7;font:15px/1.55 system-ui,sans-serif}.asteroids-mission{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0;text-align:left}.asteroids-mission article{display:flex;min-height:98px;flex-direction:column;gap:6px;padding:12px;border:1px solid #ffffff1c;border-radius:10px;background:#ffffff08}.asteroids-mission b{color:#ffd36e;font:700 10px ui-monospace,monospace;letter-spacing:.1em}.asteroids-mission span{color:#d2e3ed;font:12px/1.45 system-ui,sans-serif}.asteroids-menu-card .by-manix{color:#ff8d95;font:700 10px ui-monospace,monospace;letter-spacing:.18em}
+        @media(max-width:650px){.asteroids-mission{grid-template-columns:1fr}.asteroids-mission article{min-height:0}.asteroids-menu-card{padding:20px 16px}.asteroids-mission span{font-size:13px}#game-navigation{top:8px;left:8px}#game-navigation a{min-height:36px;padding:0 9px;font-size:10px}}
+        #hud{position:fixed;top:66px;left:14px;z-index:45;display:grid;gap:6px;width:min(280px,calc(100vw - 28px));padding:12px 15px;border:1px solid #52d8ed75;border-radius:12px;background:linear-gradient(135deg,#061728e8,#060b13df);box-shadow:0 8px 28px #0008,0 0 22px #21cae516;pointer-events:none;backdrop-filter:blur(9px)}
+        #score-display{margin:0;color:#ffe17b;font:800 17px/1.25 ui-monospace,monospace;text-shadow:0 0 12px #ffc95a55}
+        #lives-display{gap:7px;color:#ff7a7e;font:700 12px ui-monospace,monospace}
+        .life-icon{width:13px;height:13px}
+        #level-display{margin:0;color:#7ee9ff;font:700 12px ui-monospace,monospace}
+        #bonus-display{max-width:100%;margin-top:2px;color:#c5d4e4;font:11px/1.4 system-ui,sans-serif}
+        #pause-button{top:14px!important;right:14px!important;z-index:70!important;border-color:#5bdff3!important;background:#071522ee!important;color:#c5f8ff!important}
+        #instructions{right:14px;bottom:14px;z-index:45;background:#060b12ce;border:1px solid #ffffff1a;color:#cbd6e3;font:11px ui-monospace,monospace}
+        .instructions-text{color:#cbd6e3}
+        @media(max-width:650px){#hud{top:54px;left:8px;width:min(250px,calc(100vw - 16px));padding:9px 11px}#score-display{font-size:15px}#bonus-display{font-size:10px}#pause-button{top:8px!important;right:8px!important}#mobile-controls{bottom:max(12px,env(safe-area-inset-bottom));gap:5px}#mobile-controls button{padding:11px 9px;font-size:10px}}
     </style>
 </head>
 <body>
@@ -271,14 +284,25 @@
         <div class="loading-percentage" id="loading-percentage">0%</div>
     </div>
     
-    <div id="menu-screen" style="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px">
-        <h1>☄️ ASTÉROÏDES 3D ULTRA</h1><p>Survivez aux vagues. Détruisez les astéroïdes.</p><button id="start-button">JOUER</button>
+    <nav id="game-navigation" aria-label="Navigation du jeu"><a href="/jeux/" target="_top">← ARCADE KITT</a><a href="/" target="_top">⌂ ACCUEIL</a></nav>
+    <div id="menu-screen" style="position:fixed;inset:0;z-index:50;background:radial-gradient(ellipse at 50% 25%,#102849e8,#01040cf5 72%);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:18px">
+        <section class="asteroids-menu-card" aria-labelledby="asteroids-title">
+          <div class="eyebrow">KYRONEXT · MISSION DE DÉFENSE</div><h1 id="asteroids-title">☄️ ASTÉROÏDES 3D ULTRA</h1>
+          <p>Protège le secteur FLAG. Détruis les rochers avant qu’ils ne percutent ton vaisseau et tiens les niveaux qui s’intensifient.</p>
+          <div class="asteroids-mission" aria-label="Mission et commandes">
+            <article><b>1 · FRAGMENTE</b><span>Les gros astéroïdes encaissent plusieurs tirs et se divisent. Nettoie tous les fragments pour ouvrir le niveau suivant.</span></article>
+            <article><b>2 · SURVIS</b><span>Tu as trois vies. Une collision en coûte une ; le bouclier te protège brièvement après un impact.</span></article>
+            <article><b>3 · MARQUE</b><span>Les petits fragments valent davantage. Le multiplicateur du niveau augmente chaque récompense. La campagne continue sans fin.</span></article>
+          </div>
+          <p><strong>Commandes :</strong> Z/W accélérer · Q/D ou ←/→ tourner · Espace tirer · P pause. Sur mobile, maintiens les commandes tactiles.</p>
+          <button id="start-button">LANCER LA PATROUILLE</button><p class="by-manix">BY MANIX · KITT FRANCO-BELGE</p>
+        </section>
     </div>
     <button id="pause-button" style="position:fixed;right:12px;top:12px;z-index:30">PAUSE</button>
     <div id="mobile-controls"><button data-key="ArrowLeft">↶</button><button data-key="ArrowUp">POUSSÉE</button><button data-key="ArrowRight">↷</button><button data-key="Space">TIR</button></div>
     <!-- HUD -->
     <div id="hud">
-        <div id="score-display">SCORE: 0</div>
+        <div id="score-display">SCORE : 0</div>
         <div id="lives-display">
             <span>VIES :</span>
             <span class="life-icon"></span>
@@ -286,12 +310,13 @@
             <span class="life-icon"></span>
         </div>
         <div id="level-display">NIVEAU : 1</div>
+        <div id="bonus-display">BONUS : détruis les rochers lumineux pour en récupérer</div>
     </div>
     
     <!-- Game Over Screen -->
     <div id="game-over-screen">
-        <h1 id="game-over-title">PARTIE TERMINÉE</h1>
-        <div id="final-score">SCORE: 0</div>
+        <h1 id="game-over-title">PATROUILLE TERMINÉE</h1>
+        <div id="final-score">SCORE : 0</div>
         <div id="high-score">RECORD : 0</div>
         <button id="restart-button">RECOMMENCER</button>
     </div>
@@ -312,6 +337,7 @@
         </div>
     </div>
     
-    <script src="asteroids-3d-ultra.js?v=20261005-resume"></script>
+    <script src="asteroids-3d-ultra.js?v=20261030-spacecloud2"></script>
+<script src="/site-assets/page-navigation.js" defer></script>
 </body>
 </html>

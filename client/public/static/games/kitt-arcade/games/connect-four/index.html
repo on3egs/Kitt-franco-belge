@@ -11,4 +11,5 @@ function render(){board.replaceChildren();for(let r=0;r<ROWS;r++)for(let c=0;c<C
 function drop(c){if(ended)return;let r=ROWS-1;while(r>=0&&grid[r][c])r--;if(r<0){turn.textContent='Colonne pleine. Tentez-en une autre.';return}grid[r][c]=player;const cells=check(r,c);if(cells){ended=true;cells.forEach(([y,x])=>grid[y][x]=3);if(player===1)red++;else yellow++;document.querySelector('#redWins').textContent=red;document.querySelector('#yellowWins').textContent=yellow;const best=Number(localStorage.getItem(KEY)||0)+1;localStorage.setItem(KEY,best);document.querySelector('#best').textContent=best;turn.textContent=`Victoire du pilote ${player===1?'rouge':'jaune'} !`;render();return}if(grid.every(row=>row.every(Boolean))){ended=true;turn.textContent='Égalité parfaite. On remet ça ?';render();return}player=3-player;turn.textContent=`Au tour du pilote ${player===1?'rouge':'jaune'}`;render()}
 function check(r,c){for(const [dr,dc] of [[0,1],[1,0],[1,1],[1,-1]]){let line=[[r,c]];for(const dir of [-1,1]){let y=r+dr*dir,x=c+dc*dir;while(y>=0&&y<ROWS&&x>=0&&x<COLS&&grid[y][x]===player){line.push([y,x]);y+=dr*dir;x+=dc*dir}}if(line.length>=4)return line}return null}
 document.querySelector('#restart').addEventListener('click',()=>{round++;start()});start();
-</script></body></html>
+</script><script src="/site-assets/page-navigation.js" defer></script>
+</body></html>

@@ -50,6 +50,7 @@ let enemyMoveTimer = 0;
 
 // Combo / multiplicateur
 let combo = 0, comboTimer = 0, maxMultiplier = 1, killsInWave = 0, wavePerfect = true;
+let lastKillAt = 0, shieldUntil = 0, waveBonus = 0;
 // Power-ups actifs
 let doubleShotUntil = 0, tripleShotUntil = 0, shieldActive = false, bombStock = 1;
 // Juice
@@ -843,6 +844,8 @@ function startGame() {
     lives = 3;
     level = 1;
     currentWave = 1;
+    combo = 0; comboTimer = 0; maxMultiplier = 1; killsInWave = 0; wavePerfect = true;
+    lastKillAt = 0; shieldUntil = 0; doubleShotUntil = 0; tripleShotUntil = 0; bombStock = 1; ufo = null; ufoTimer = 8;
     
     // Clear scene
     clearScene();
@@ -904,6 +907,8 @@ function clearScene() {
     enemyBullets = [];
     barriers = [];
     stars = [];
+    powerups = [];
+    ufo = null;
 }
 
 function startWave() {
@@ -911,11 +916,12 @@ function startWave() {
     for(const object of [...bullets,...enemyBullets,...barriers,...enemies]){scene.remove(object);disposeObject(object)}
     bullets=[];enemyBullets=[];barriers=[];enemies=[];
     currentWave = Math.min(currentWave, totalWaves);
+    combo = 0; comboTimer = 0; killsInWave = 0; wavePerfect = true; waveBonus = 0;
     
     // Update wave display
     const waveDisplay = document.getElementById('wave-display');
     if (waveDisplay) {
-        waveDisplay.textContent = `WAVE: ${currentWave}/${totalWaves}`;
+        waveDisplay.textContent = `VAGUE : ${currentWave}/${totalWaves}`;
     }
     
     // Create barriers
@@ -998,6 +1004,12 @@ function update(dt) {
     
     // Update enemy bullets
     updateEnemyBullets(deltaTime);
+
+    // Les modules et le vaisseau bonus doivent réellement évoluer en partie.
+    updatePowerups(deltaTime);
+    updateUfo(deltaTime);
+    comboTimer = Math.max(0, comboTimer - deltaTime);
+    if (comboTimer === 0) combo = 0;
     
     // Update HUD
     updateHud();
@@ -1048,22 +1060,121 @@ function updatePlayer(deltaTime) {
 
 function shoot() {
     if (!player || !canShoot) return;
-    
-    // Create bullet
-    const bullet = createBullet(
-        player.position.x,
-        player.position.z + 5
-    );
-    bullet.position.y = 1.5;
-    
-    scene.add(bullet);
-    bullets.push(bullet);
-    
+    const now = performance.now();
+    const offsets = now < tripleShotUntil ? [-1.8, 0, 1.8] : now < doubleShotUntil ? [-0.9, 0.9] : [0];
+    for (const offset of offsets) {
+        const bullet = createBullet(player.position.x + offset, player.position.z + 5);
+        bullet.position.y = 1.5;
+        scene.add(bullet);
+        bullets.push(bullet);
+    }
     // Set cooldown
     canShoot = false;
     shootCooldown = 0.2; // 200ms cooldown
     
     playShootSound();
+}
+
+function createPowerup(x, z, kind) {
+    const color = kind === 'shield' ? 0x4cffe1 : kind === 'bomb' ? 0xff704f : kind === 'triple' ? 0xffd66c : 0x6be7ff;
+    const item = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.75, 0), new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:1.2, metalness:.35, roughness:.2}));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.05,.08,8,20), new THREE.MeshBasicMaterial({color, transparent:true, opacity:.85}));
+    ring.rotation.x = Math.PI / 2;
+    item.add(core, ring, new THREE.PointLight(color, 1.8, 8));
+    item.position.set(x, 1.3, z);
+    item.userData = {kind, life:12, ring};
+    scene.add(item);
+    powerups.push(item);
+}
+
+function updatePowerups(dt) {
+    for (let i = powerups.length - 1; i >= 0; i--) {
+        const item = powerups[i];
+        item.userData.life -= dt;
+        item.rotation.y += dt * 2.4;
+        item.userData.ring.rotation.z += dt * 1.8;
+        item.position.z -= dt * 1.1;
+        item.position.y = 1.3 + Math.sin(performance.now() * .003 + i) * .2;
+        if (item.userData.life <= 0 || item.position.z < -24) {
+            removeGameObject(item); powerups.splice(i, 1); continue;
+        }
+        if (!player || Math.hypot(item.position.x - player.position.x, item.position.z - player.position.z) > 2.2) continue;
+        const now = performance.now();
+        if (item.userData.kind === 'shield') shieldUntil = now + 8000;
+        else if (item.userData.kind === 'double') doubleShotUntil = now + POWERUP_DURATION * 1000;
+        else if (item.userData.kind === 'triple') tripleShotUntil = now + POWERUP_DURATION * 1000;
+        else bombStock = Math.min(3, bombStock + 1);
+        score += 100 * level;
+        digitalAudio.sfx.powerup();
+        announceBonus(`Module récupéré : ${item.userData.kind === 'shield' ? 'bouclier' : item.userData.kind === 'bomb' ? 'bombe X' : item.userData.kind === 'triple' ? 'triple tir' : 'double tir'}.`);
+        removeGameObject(item); powerups.splice(i, 1);
+    }
+    shieldActive = performance.now() < shieldUntil;
+}
+
+function spawnUfo() {
+    const craft = new THREE.Group();
+    const hull = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 10), new THREE.MeshStandardMaterial({color:0xffd36e, emissive:0xff8b27, emissiveIntensity:1.1, metalness:.55, roughness:.2}));
+    hull.scale.set(1.65, .48, .72);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(.48, 14, 8), new THREE.MeshStandardMaterial({color:0xdaf8ff, emissive:0x5eeaff, emissiveIntensity:.7, transparent:true, opacity:.86}));
+    dome.position.y = .38;
+    craft.add(hull, dome, new THREE.PointLight(0xffba50, 2, 10));
+    craft.position.set(-GAME_WIDTH * CELL_SIZE / 2 - 2, 1.5, 18);
+    craft.userData.life = 7;
+    scene.add(craft);
+    ufo = craft;
+    announceBonus('Vaisseau bonus détecté : intercepte-le pour gagner des points et un module.');
+}
+
+function updateUfo(dt) {
+    if (!ufo) {
+        ufoTimer -= dt;
+        if (ufoTimer <= 0) spawnUfo();
+        return;
+    }
+    ufo.position.x += dt * 18;
+    ufo.userData.life -= dt;
+    if (ufo.userData.life <= 0 || ufo.position.x > GAME_WIDTH * CELL_SIZE / 2 + 3) {
+        removeGameObject(ufo); ufo = null; ufoTimer = 15;
+    }
+}
+
+function announceBonus(message) {
+    const toast = document.getElementById('mission-toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('visible');
+    clearTimeout(announceBonus.timer);
+    announceBonus.timer = setTimeout(() => toast.classList.remove('visible'), 2600);
+}
+
+function awardEnemy(enemy, index) {
+    const now = performance.now();
+    combo = now - lastKillAt < COMBO_WINDOW * 1000 ? combo + 1 : 1;
+    lastKillAt = now; comboTimer = COMBO_WINDOW; killsInWave++;
+    const multiplier = Math.min(5, 1 + Math.floor((combo - 1) / 3));
+    maxMultiplier = Math.max(maxMultiplier, multiplier);
+    score += enemy.userData.points * level * multiplier;
+    if (Math.random() < POWERUP_DROP_CHANCE) {
+        const kinds = ['double', 'triple', 'shield', 'bomb'];
+        createPowerup(enemy.position.x, enemy.position.z, kinds[Math.floor(Math.random() * kinds.length)]);
+    }
+    removeGameObject(enemy); enemies.splice(index, 1); enemiesRemaining = Math.max(0, enemiesRemaining - 1);
+}
+
+function useBomb() {
+    if (state !== 'playing' || paused || bombStock <= 0) return;
+    bombStock--;
+    for (const bullet of enemyBullets) removeGameObject(bullet);
+    enemyBullets = [];
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        const enemy = enemies[i]; enemy.userData.health -= 2;
+        createExplosion(enemy.position.x, enemy.position.z, COLORS.bulletGlow);
+        if (enemy.userData.health <= 0) awardEnemy(enemy, i);
+    }
+    announceBonus(`Bombe EMP déclenchée. ${bombStock} en réserve.`);
+    updateHud();
 }
 
 function updateBullets(deltaTime) {
@@ -1077,6 +1188,16 @@ function updateBullets(deltaTime) {
         if (bullet.position.z > 40) {
             removeGameObject(bullet);
             bullets.splice(i, 1);
+            continue;
+        }
+
+        if (ufo && Math.hypot(bullet.position.x - ufo.position.x, bullet.position.z - ufo.position.z) < 2.2) {
+            const x = ufo.position.x, z = ufo.position.z;
+            score += 650 * level;
+            createPowerup(x, z, ['double','triple','shield','bomb'][Math.floor(Math.random() * 4)]);
+            removeGameObject(ufo); ufo = null; ufoTimer = 18;
+            removeGameObject(bullet); bullets.splice(i, 1);
+            announceBonus(`Vaisseau bonus neutralisé : +${(650 * level).toLocaleString('fr-FR')} points.`);
             continue;
         }
         
@@ -1098,11 +1219,7 @@ function updateBullets(deltaTime) {
                 
                 if (enemy.userData.health <= 0) {
                     // Enemy destroyed
-                    score += enemy.userData.points * level;
-                    enemiesRemaining--;
-                    
-                    removeGameObject(enemy);
-                    enemies.splice(j, 1);
+                    awardEnemy(enemy, j);
                 }
                 
                 // Remove bullet
@@ -1193,6 +1310,7 @@ function updateEnemies(deltaTime) {
         
         if (enemy.position.z <= -GAME_DEPTH * CELL_SIZE / 2 + 10) {
             // Enemy reached bottom - game over
+            wavePerfect = false;
             lives--;
             
             if (lives <= 0) {
@@ -1247,9 +1365,17 @@ function updateEnemyBullets(deltaTime) {
             const dz = bullet.position.z - player.position.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
             
-            if (distance < 2 && performance.now()>=invulnerableUntil) {
+            const now=performance.now();
+            if (distance < 2 && (now>=invulnerableUntil || now<shieldUntil)) {
+                if (now < shieldUntil) {
+                    createExplosion(bullet.position.x, bullet.position.z, 0x4cffe1);
+                    removeGameObject(bullet);
+                    enemyBullets.splice(i, 1);
+                    continue;
+                }
                 invulnerableUntil=performance.now()+1800;
                 // Player hit
+                wavePerfect = false;
                 lives--;
                 
                 if (lives <= 0) {
@@ -1300,11 +1426,16 @@ function updateEnemyBullets(deltaTime) {
 }
 
 function checkWinCondition() {
-    if (enemiesRemaining <= 0 && currentWave < totalWaves) {
+    if (enemiesRemaining > 0 || state !== 'playing') return;
+    waveBonus = Math.round((250 + killsInWave * 25 + (wavePerfect ? 500 : 0)) * Math.min(3, maxMultiplier));
+    score += waveBonus;
+    updateHud();
+    announceBonus(`Vague ${currentWave} sécurisée : +${waveBonus.toLocaleString('fr-FR')} points${wavePerfect ? ' · sans dégât !' : '.'}`);
+    if (currentWave < totalWaves) {
         currentWave++;
         state='wavecomplete';digitalAudio.setMusic(false);digitalAudio.sfx.powerup();
         showLevelCompleteScreen();
-    } else if (enemiesRemaining <= 0 && currentWave >= totalWaves) {
+    } else {
         won = true;
         gameOver = true;
         showGameOverScreen();
@@ -1329,8 +1460,8 @@ function initControls() {
     document.addEventListener('visibilitychange',()=>{if(document.hidden)stopInput()});
     document.addEventListener('keydown', (e) => {
         if(state==='menu'&&['Enter','Space'].includes(e.code)){e.preventDefault();startGame();return;}
-        if(['ArrowLeft','ArrowRight','ArrowUp','Space'].includes(e.code))e.preventDefault();
-        if(e.repeat&&['Escape','KeyP','KeyR'].includes(e.code))return;
+        if(['ArrowLeft','ArrowRight','ArrowUp','Space','KeyX'].includes(e.code))e.preventDefault();
+        if(e.repeat&&['Escape','KeyP','KeyR','KeyX'].includes(e.code))return;
         keys[e.code] = true;
         audioContext?.resume().catch(()=>{});
         
@@ -1349,6 +1480,9 @@ function initControls() {
                 if (state === 'menu') {
                     startGame();
                 }
+                break;
+            case 'KeyX':
+                useBomb();
                 break;
         }
     });
@@ -1378,15 +1512,17 @@ function createHud() {
 }
 
 function updateHud() {
-    const stamp=[score,lives,level].join(':');if(stamp===hudStamp)return;hudStamp=stamp;
+    const now=performance.now();
+    shieldActive=now<shieldUntil;
+    const stamp=[score,lives,level,combo,bombStock,Math.ceil(Math.max(0,shieldUntil-now)/1000),Math.ceil(Math.max(0,doubleShotUntil-now)/1000),Math.ceil(Math.max(0,tripleShotUntil-now)/1000)].join(':');if(stamp===hudStamp)return;hudStamp=stamp;
     const scoreDisplay = document.getElementById('score-display');
     if (scoreDisplay) {
-        scoreDisplay.textContent = `SCORE: ${score.toLocaleString()}`;
+        scoreDisplay.textContent = `POINTS : ${score.toLocaleString('fr-FR')}`;
     }
     
     const livesDisplay = document.getElementById('lives-display');
     if (livesDisplay) {
-        let livesHtml = 'LIVES: ';
+        let livesHtml = 'VIES : ';
         for (let i = 0; i < lives; i++) {
             livesHtml += '<span class="life-icon"></span>';
         }
@@ -1395,7 +1531,17 @@ function updateHud() {
     
     const levelDisplay = document.getElementById('level-display');
     if (levelDisplay) {
-        levelDisplay.textContent = `LEVEL: ${level}`;
+        levelDisplay.textContent = `SECTEUR : ${level}`;
+    }
+
+    const bonusDisplay=document.getElementById('bonus-display');
+    if(bonusDisplay){
+        const multiplier=Math.min(5,1+Math.floor(Math.max(0,combo-1)/3));
+        const active=[];
+        if(shieldUntil>now)active.push(`BOUCLIER ${Math.ceil((shieldUntil-now)/1000)}s`);
+        if(doubleShotUntil>now)active.push(`DOUBLE TIR ${Math.ceil((doubleShotUntil-now)/1000)}s`);
+        if(tripleShotUntil>now)active.push(`TRIPLE TIR ${Math.ceil((tripleShotUntil-now)/1000)}s`);
+        bonusDisplay.textContent=`COMBO ×${multiplier} · BOMBE X : ${bombStock}${active.length?' · '+active.join(' · '):''}`;
     }
     
     // Update high score
@@ -1427,13 +1573,13 @@ function showGameOverScreen() {
     const gameOverScreen = document.getElementById('game-over-screen');
     if (gameOverScreen) {
         gameOverScreen.style.display = 'flex';
-        document.getElementById('final-score').textContent = `SCORE: ${score.toLocaleString()}`;
-        document.getElementById('high-score').textContent = `HIGH SCORE: ${highScore.toLocaleString()}`;
+        document.getElementById('final-score').textContent = `SCORE FINAL : ${score.toLocaleString('fr-FR')}`;
+        document.getElementById('high-score').textContent = `RECORD : ${highScore.toLocaleString('fr-FR')}`;
         
         if (won) {
-            document.getElementById('game-over-title').textContent = 'VICTORY!';
+            document.getElementById('game-over-title').textContent = 'SECTEUR SÉCURISÉ !';
         } else {
-            document.getElementById('game-over-title').textContent = 'GAME OVER';
+            document.getElementById('game-over-title').textContent = 'MISSION ÉCHOUÉE';
         }
     }
 }
@@ -1449,7 +1595,7 @@ function showLevelCompleteScreen() {
     const levelCompleteScreen = document.getElementById('level-complete-screen');
     if (levelCompleteScreen) {
         levelCompleteScreen.style.display = 'flex';
-        document.getElementById('level-complete-text').textContent = `Wave ${currentWave - 1} terminée! Prêt pour la suivante?`;
+        document.getElementById('level-complete-text').textContent = `Vague ${currentWave - 1} terminée ! Bonus : ${waveBonus.toLocaleString('fr-FR')} points. Prêt pour la suivante ?`;
     }
 }
 
@@ -1509,7 +1655,7 @@ setTimeout(() => {
     }
 }, 100);
 
-window.SPACE_INVADERS_3D_ULTRA={startGame,continueGame,togglePause,
+window.SPACE_INVADERS_3D_ULTRA={startGame,continueGame,togglePause,useBomb,
     getScore:()=>score,getLevel:()=>level,getLives:()=>lives,
-    state:()=>({state,paused,score,lives,wave:currentWave,enemies:enemies.length,bullets:bullets.length,player:player?{x:player.position.x,z:player.position.z}:null,screenX:player?player.position.clone().project(camera).x:null,drawCalls:renderer?.info.render.calls})};
+    state:()=>({state,paused,score,lives,wave:currentWave,enemies:enemies.length,bullets:bullets.length,combo,maxMultiplier,bombStock,powerups:powerups.length,shield:Math.max(0,shieldUntil-performance.now()),doubleShot:Math.max(0,doubleShotUntil-performance.now()),tripleShot:Math.max(0,tripleShotUntil-performance.now()),player:player?{x:player.position.x,z:player.position.z}:null,screenX:player?player.position.clone().project(camera).x:null,drawCalls:renderer?.info.render.calls})};
 })();

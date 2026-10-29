@@ -296,16 +296,22 @@
             font-weight: bold;
         }
     </style>
-    <link rel="stylesheet" href="invaders-digital.css?v=20261005-digital1">
+    <link rel="stylesheet" href="invaders-digital.css?v=20261030-missions2">
 </head>
 <body>
     <div id="game-container"></div>
+    <div id="mission-toast" role="status" aria-live="polite"></div>
     <section id="menu-screen" aria-label="Space Invaders 3D Ultra">
-      <div class="digital-menu"><div class="eyebrow">KYRONEXT · DIGITAL COMBAT SYSTEM</div>
+      <div class="digital-menu"><div class="eyebrow">KYRONEXT · DIGITAL COMBAT SYSTEM · BY MANIX</div>
         <h1>SPACE INVADERS<br><span>3D ULTRA</span></h1>
-        <p>Dix vagues. Une flotte holographique. Un seul défenseur.<br>Visuels néon · lasers électroniques · bande-son synthétique</p>
+        <p>Dix vagues pour protéger la base FLAG. Chaque formation détruite ouvre le secteur suivant.</p>
+        <div class="mission-brief" aria-label="Objectifs et bonus">
+          <article><b>OBJECTIF</b><span>Détruis toute la flotte avant qu’elle atteigne la base. Termine les 10 vagues pour sécuriser le secteur.</span></article>
+          <article><b>TACTIQUE</b><span>Déplace-toi sur toute la ligne. Les abris bloquent les tirs, mais s’abîment à chaque impact.</span></article>
+          <article><b>BONUS</b><span>Enchaîne les cibles pour faire monter le multiplicateur, attrape les modules et intercepte le vaisseau doré.</span></article>
+        </div>
         <button id="start-button" disabled onclick="window.SPACE_INVADERS_3D_ULTRA.startGame()">▶ LANCER LA MISSION</button>
-        <p>← → ou Q/D : déplacement · ESPACE : tir · P : pause</p>
+        <p class="mission-controls">← → ou Q/D : déplacement · Espace : tir · X : bombe · P : pause</p>
       </div>
     </section>
     
@@ -325,30 +331,31 @@
     
     <!-- HUD -->
     <div id="hud">
-        <div id="score-display">SCORE: 0</div>
+        <div id="score-display">POINTS : 0</div>
         <div id="lives-display">
-            <span>LIVES:</span>
+            <span>VIES :</span>
             <span class="life-icon"></span>
             <span class="life-icon"></span>
             <span class="life-icon"></span>
         </div>
-        <div id="level-display">LEVEL: 1</div>
-        <div id="wave-display">WAVE: 1/10</div>
+        <div id="level-display">NIVEAU : 1</div>
+        <div id="wave-display">VAGUE : 1/10</div>
+        <div id="bonus-display">COMBO ×1 · BOMBE X : 1</div>
     </div>
     
     <!-- Game Over Screen -->
     <div id="game-over-screen">
-        <h1 id="game-over-title">GAME OVER</h1>
-        <div id="final-score">SCORE: 0</div>
-        <div id="high-score">HIGH SCORE: 0</div>
+        <h1 id="game-over-title">MISSION ÉCHOUÉE</h1>
+        <div id="final-score">SCORE FINAL : 0</div>
+        <div id="high-score">RECORD : 0</div>
         <button id="restart-button" onclick="window.SPACE_INVADERS_3D_ULTRA.startGame()">RECOMMENCER</button>
     </div>
     
     <!-- Level Complete Screen -->
     <div id="level-complete-screen">
-        <h1 id="level-complete-title">WAVE COMPLETE!</h1>
-        <div id="level-complete-text">Vague terminée avec succès!</div>
-        <button id="continue-button" onclick="window.SPACE_INVADERS_3D_ULTRA.continueGame()">CONTINUER</button>
+        <h1 id="level-complete-title">VAGUE TERMINÉE !</h1>
+        <div id="level-complete-text">Vague sécurisée. Prépare-toi pour la suivante.</div>
+        <button id="continue-button" onclick="window.SPACE_INVADERS_3D_ULTRA.continueGame()">SECTEUR SUIVANT</button>
     </div>
     
     <!-- Pause Screen -->
@@ -367,8 +374,9 @@
     </div>
     
     <script src="/static/games/asteroids_pro/js/sfx.js?v=20261005-controls2"></script>
-    <script src="space-invaders-3d-ultra.js?v=20261005-controls2"></script>
-    <script src="controls-solo.js?v=20261005-controls2"></script>
+    <script src="space-invaders-3d-ultra.js?v=20261030-missions2"></script>
+    <script src="controls-solo.js?v=20261030-missions2"></script>
     <script src="/static/games/solo-runtime.js?v=20261005-resume1"></script>
+<script src="/site-assets/page-navigation.js" defer></script>
 </body>
 </html>

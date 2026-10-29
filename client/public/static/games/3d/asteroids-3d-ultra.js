@@ -25,7 +25,7 @@ const QUALITY_SETTINGS = {
 
 // Game state
 let scene, camera, renderer, composer, bloomPass;
-let ship, asteroids = [], bullets = [], particles = [], explosions = [];
+let ship, asteroids = [], bullets = [], particles = [], explosions = [], powerups = [];
 let clock;
 let backgroundStars = [];
 let nebulae = [];
@@ -33,6 +33,7 @@ let nebulae = [];
 let state = 'loading';
 let score = 0, lives = 3, level = 1, highScore = 0;
 let gameOver = false, paused = false, won = false;
+let shieldUntil = 0, rapidFireUntil = 0, hitsChain = 0, lastHitAt = 0;
 
 // Ship state
 let shipPosition, shipVelocity;
@@ -375,87 +376,40 @@ function createGrid() {
 }
 
 function createNebulae() {
-    const nebulaCount = 6;
-    const nebulaTextures = [];
-    
-    for(let i = 0; i < nebulaCount; i++) {
+    // Les textures ont un vrai canal alpha : les anciennes cartes opaques dessinaient des panneaux devant le champ.
+    const palettes = [[70, 135, 255], [163, 76, 255], [44, 214, 235], [245, 93, 142]];
+    for (let i = 0; i < palettes.length; i++) {
         const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 512;
+        canvas.width = canvas.height = 512;
         const ctx = canvas.getContext('2d');
-        
-        // Créer un dégradé radiale complexe pour la nébuleuse
-        const centerX = 256;
-        const centerY = 256;
-        const maxRadius = 256;
-        
-        // Couleurs aléatoires pour chaque nébuleuse
-        const color1 = `hsl(${Math.random() * 60 + 200}, 70%, 40%)`;
-        const color2 = `hsl(${Math.random() * 60 + 240}, 70%, 50%)`;
-        const color3 = `hsl(${Math.random() * 60 + 280}, 70%, 60%)`;
-        
-        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, maxRadius);
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(0.5, color2);
-        gradient.addColorStop(1, color3);
-        
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 512, 512);
-        
-        // Ajouter du bruit
-        const imageData = ctx.getImageData(0, 0, 512, 512);
-        const data = imageData.data;
-        
-        for (let j = 0; j < data.length; j += 4) {
-            const noise = Math.random() * 0.3 - 0.15;
-            data[j] = Math.min(255, Math.max(0, data[j] + noise * 255));
-            data[j + 1] = Math.min(255, Math.max(0, data[j + 1] + noise * 255));
-            data[j + 2] = Math.min(255, Math.max(0, data[j + 2] + noise * 255));
+        const [r, g, b] = palettes[i];
+        for (let cloud = 0; cloud < 18; cloud++) {
+            const x = 100 + Math.random() * 312;
+            const y = 100 + Math.random() * 312;
+            const radius = 45 + Math.random() * 115;
+            const alpha = 0.035 + Math.random() * 0.055;
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+            gradient.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
+            gradient.addColorStop(0.48, `rgba(${r},${g},${b},${alpha * 0.55})`);
+            gradient.addColorStop(1, `rgba(${r},${g},${b},0)`);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
         }
-        
-        ctx.putImageData(imageData, 0, 0);
-        
         const texture = new THREE.CanvasTexture(canvas);
-        texture.anisotropy = 16;
-        nebulaTextures.push(texture);
-        
-        // Créer la géométrie de la nébuleuse
-        const size = SPACE_SIZE * (0.4 + Math.random() * 0.8);
-        const geometry = new THREE.PlaneGeometry(size, size, 32, 32);
-        
-        // Déformer légèrement le plane pour un effet plus naturel
-        const position = geometry.attributes.position;
-        for (let j = 0; j < position.count; j++) {
-            const x = position.getX(j);
-            const y = position.getY(j);
-            const z = position.getZ(j);
-            const offset = (Math.sin(x * 0.1) + Math.cos(y * 0.1)) * 50;
-            position.setZ(j, z + offset);
-        }
-        
-        const material = new THREE.MeshBasicMaterial({
-            map: texture,
-            transparent: true,
-            opacity: 0.2 + Math.random() * 0.3,
-            side: THREE.DoubleSide,
-            blending: THREE.AdditiveBlending
-        });
-        
-        const nebula = new THREE.Mesh(geometry, material);
-        nebula.position.set(
-            (Math.random() - 0.5) * SPACE_SIZE * 2,
-            (Math.random() - 0.5) * SPACE_SIZE * 1.5,
-            (Math.random() - 0.5) * SPACE_SIZE * 2
-        );
-        nebula.rotation.x = Math.random() * Math.PI;
-        nebula.rotation.y = Math.random() * Math.PI;
-        nebula.rotation.z = Math.random() * Math.PI;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        const material = new THREE.SpriteMaterial({ map: texture, color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending });
+        const nebula = new THREE.Sprite(material);
+        const size = SPACE_SIZE * (0.36 + Math.random() * 0.22);
+        nebula.scale.set(size, size * (0.62 + Math.random() * 0.5), 1);
+        const side = i % 2 ? 1 : -1;
+        const offset = new THREE.Vector3(side * (300 + Math.random() * 250), (Math.random() - 0.5) * 470, -900 - i * 175);
+        nebula.position.copy(shipPosition || new THREE.Vector3()).add(offset);
+        nebula.userData.offset = offset;
         nebula.name = `nebula_${i}`;
         nebulae.push(nebula);
         scene.add(nebula);
     }
 }
-
 function createShip() {
     const group = new THREE.Group();
     group.name = 'ship';
@@ -935,6 +889,27 @@ function createBullet() {
     return group;
 }
 
+function createPowerup(position, type) {
+    const group = new THREE.Group();
+    const color = type === 'shield' ? COLORS.shipShield : COLORS.bulletGlow;
+    const core = new THREE.Mesh(
+        new THREE.OctahedronGeometry(1.05, 0),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 1.5, metalness: 0.35, roughness: 0.22 })
+    );
+    const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(1.45, 0.1, 8, 24),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 })
+    );
+    ring.rotation.x = Math.PI / 2;
+    group.add(core, ring);
+    const light = new THREE.PointLight(color, 1.8, 12);
+    group.add(light);
+    group.position.copy(position);
+    group.userData = { kind: type, life: 12, ring };
+    scene.add(group);
+    powerups.push(group);
+}
+
 function createExplosion(position, size = 'medium') {
     const explosionParticles = [];
     const explosionLights = [];
@@ -1058,6 +1033,7 @@ function startGame() {
     won = false;
     paused = false;
     score = 0; lives = 3; level = 1;
+    shieldUntil = 0; rapidFireUntil = 0; hitsChain = 0; lastHitAt = 0; lastShotTime = 0;
     hidePauseScreen();
     for (const code in keys) keys[code] = false;
     // Initialize ship state
@@ -1095,6 +1071,8 @@ function startGame() {
     // Reset asteroids
     asteroids.forEach(a => scene.remove(a));
     asteroids = [];
+    powerups.forEach(item => scene.remove(item));
+    powerups = [];
     
     // Clear bullets and particles
     bullets.forEach(b => scene.remove(b));
@@ -1226,12 +1204,16 @@ function update(dt) {
     
     const deltaTime = dt / 60;
     
-    if (keys.Space && performance.now() - lastShotTime > 160) { lastShotTime = performance.now(); fireBullet(); }
+    const shotGap = performance.now() < rapidFireUntil ? 80 : 160;
+    if (keys.Space && performance.now() - lastShotTime > shotGap) { lastShotTime = performance.now(); fireBullet(); }
     // Update ship
     updateShip(dt, deltaTime);
     
     // Update asteroids
     updateAsteroids(dt, deltaTime);
+
+    // Bonuses de secteur : bouclier temporaire ou cadence de tir renforcée.
+    updatePowerups(dt, deltaTime);
     
     // Update bullets
     updateBullets(dt, deltaTime);
@@ -1341,7 +1323,7 @@ function updateShip(dt, deltaTime) {
     }
     
     // Check for collisions with asteroids
-    if (shipInvulnerable) return;
+    if (shipInvulnerable || performance.now() < shieldUntil) return;
     
     for (let i = 0; i < asteroids.length; i++) {
         const asteroid = asteroids[i];
@@ -1410,16 +1392,10 @@ function updateBullets(dt, deltaTime) {
         const bullet = bullets[i];
         
         // Move bullet forward
-        const direction = new THREE.Vector3(
-            -Math.sin(shipRotation + Math.PI/2),
-            0,
-            Math.cos(shipRotation + Math.PI/2)
+        const direction = bullet.userData?.direction || new THREE.Vector3(
+            -Math.sin(shipRotation + Math.PI / 2), 0, Math.cos(shipRotation + Math.PI / 2)
         ).normalize();
-        
-        // Wait, bullets should have their own direction
-        // Let's fix this and use bullet's own direction
-        
-        bullet.position.add(direction.multiplyScalar(BULLET_SPEED * dt * 0.1));
+        bullet.position.add(direction.clone().multiplyScalar(BULLET_SPEED * dt * 0.1));
         
         // Check for collisions with asteroids
         for (let j = asteroids.length - 1; j >= 0; j--) {
@@ -1438,7 +1414,12 @@ function updateBullets(dt, deltaTime) {
                 
                 if (asteroid.userData.health <= 0) {
                     // Asteroid destroyed
-                    score += ASTEROID_POINTS[asteroid.userData.size] * level;
+                    const now = performance.now();
+                    hitsChain = now - lastHitAt < 3600 ? hitsChain + 1 : 1;
+                    lastHitAt = now;
+                    const chainBonus = Math.min(750, Math.max(0, hitsChain - 1) * 50);
+                    score += ASTEROID_POINTS[asteroid.userData.size] * level + chainBonus;
+                    if (Math.random() < 0.14) createPowerup(asteroid.position.clone(), Math.random() < 0.5 ? 'shield' : 'rapid');
                     
                     // Split asteroid
                     splitAsteroid(asteroid);
@@ -1482,6 +1463,28 @@ function updateBullets(dt, deltaTime) {
             scene.remove(bullet);
             bullets.splice(i, 1);
         }
+    }
+}
+
+function updatePowerups(dt, deltaTime) {
+    for (let i = powerups.length - 1; i >= 0; i--) {
+        const item = powerups[i];
+        item.userData.life -= deltaTime;
+        item.rotation.y += dt * 0.018;
+        item.userData.ring.rotation.z += dt * 0.025;
+        item.position.y = Math.sin(performance.now() * 0.002 + i) * 0.35;
+        if (item.userData.life <= 0) {
+            scene.remove(item);
+            powerups.splice(i, 1);
+            continue;
+        }
+        if (!shipPosition || item.position.distanceTo(shipPosition) > 3.2) continue;
+        if (item.userData.kind === 'shield') shieldUntil = performance.now() + 8000;
+        else rapidFireUntil = performance.now() + 9000;
+        score += 250 * level;
+        playThrustSound();
+        scene.remove(item);
+        powerups.splice(i, 1);
     }
 }
 
@@ -1556,8 +1559,8 @@ function updateBackground(dt, deltaTime) {
     // Animate nebulae
     for (let i = 0; i < nebulae.length; i++) {
         const nebula = nebulae[i];
-        nebula.rotation.y += dt * 0.00005 * (i + 1);
-        nebula.material.opacity = 0.2 + Math.sin(Date.now() * 0.0001 + i) * 0.05;
+        if (nebula.userData.offset) nebula.position.copy(shipPosition).add(nebula.userData.offset);
+        nebula.material.opacity = 0.25 + Math.sin(Date.now() * 0.0001 + i) * 0.04;
     }
 }
 
@@ -1578,14 +1581,13 @@ function updateCamera(dt, deltaTime) {
 }
 
 function updateShipStatus(dt, deltaTime) {
+    const protectedNow = shipInvulnerable || performance.now() < shieldUntil;
+    const shield = ship?.getObjectByName('shield');
+    if (shield) shield.material.opacity = protectedNow ? (performance.now() < shieldUntil ? 0.32 : 0.18) : 0;
     if (shipInvulnerable) {
         invulnerableTimer -= deltaTime;
         if (invulnerableTimer <= 0) {
             shipInvulnerable = false;
-            const shield = ship.getObjectByName('shield');
-            if (shield) {
-                shield.material.opacity = 0;
-            }
         }
     }
 }
@@ -1671,7 +1673,10 @@ function fireBullet() {
     
     // Set bullet life
     bullet.userData = {
-        life: BULLET_LIFETIME
+        life: BULLET_LIFETIME,
+        direction: new THREE.Vector3(
+            -Math.sin(shipRotation + Math.PI / 2), 0, Math.cos(shipRotation + Math.PI / 2)
+        ).normalize()
     };
     
     // Play sound
@@ -1710,12 +1715,12 @@ function createHud() {
 function updateHud() {
     const scoreDisplay = document.getElementById('score-display');
     if (scoreDisplay) {
-        scoreDisplay.textContent = `SCORE: ${score.toLocaleString()}`;
+        scoreDisplay.textContent = `SCORE : ${score.toLocaleString('fr-FR')}`;
     }
     
     const livesDisplay = document.getElementById('lives-display');
     if (livesDisplay) {
-        let livesHtml = 'LIVES: ';
+        let livesHtml = 'VIES : ';
         for (let i = 0; i < lives; i++) {
             livesHtml += '<span class="life-icon"></span>';
         }
@@ -1725,6 +1730,14 @@ function updateHud() {
     const levelDisplay = document.getElementById('level-display');
     if (levelDisplay) {
         levelDisplay.textContent = `NIVEAU : ${level}`;
+    }
+    const bonusDisplay = document.getElementById('bonus-display');
+    if (bonusDisplay) {
+        const bonuses = [];
+        if (hitsChain > 1) bonuses.push(`SÉRIE ×${Math.min(8, hitsChain)}`);
+        if (shieldUntil > performance.now()) bonuses.push(`BOUCLIER ${Math.ceil((shieldUntil - performance.now()) / 1000)} s`);
+        if (rapidFireUntil > performance.now()) bonuses.push(`TIR RAPIDE ${Math.ceil((rapidFireUntil - performance.now()) / 1000)} s`);
+        bonusDisplay.textContent = bonuses.length ? bonuses.join(' · ') : 'BONUS : détruis les rochers lumineux pour en récupérer';
     }
     
     // Save high score
@@ -1841,6 +1854,7 @@ window.ASTEROIDS_ULTRA = {
     togglePause: togglePause,
     getScore: () => score,
     getLevel: () => level,
-    getLives: () => lives
+    getLives: () => lives,
+    state: () => ({ state, paused, score, level, lives, asteroids: asteroids.length, bullets: bullets.length, powerups: powerups.length, shield: Math.max(0, Math.ceil((shieldUntil - performance.now()) / 1000)), rapidFire: Math.max(0, Math.ceil((rapidFireUntil - performance.now()) / 1000)), bulletDirection: bullets[0]?.userData?.direction?.toArray() || null })
 };
 })();
