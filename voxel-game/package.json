@@ -13,6 +13,7 @@
     "test:progression": "node test-progression.cjs",
     "test:public": "node test-public.cjs",
     "test:live": "node test-live.cjs",
+    "test:live-bistro": "node test-live-bistro-arcades.cjs",
     "test:live-patrol": "node test-live-patrol.cjs",
     "test:bistro": "node test-bistro.cjs",
     "test:bistro-arcade": "node test-bistro-arcade.cjs",
