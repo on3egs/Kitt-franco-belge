@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {heightAt} from './world.mjs';
+import {heightAt} from './world.mjs?v=truck-roads-20261029';
 const mat=(color,emissive=0)=>new THREE.MeshStandardMaterial({color,roughness:.92,emissive,emissiveIntensity:1.8});
 function box(g,w,h,d,x,y,z,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o}
 export const BESTIARY={

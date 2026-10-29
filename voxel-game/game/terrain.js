@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {CHUNK,HEIGHT,BLOCKS,hash} from './world.mjs';
+import {CHUNK,HEIGHT,BLOCKS,hash} from './world.mjs?v=truck-roads-20261029';
 
 function texture(type,color){
   const canvas=document.createElement('canvas');canvas.width=canvas.height=32;const c=canvas.getContext('2d');c.fillStyle=`#${color.toString(16).padStart(6,'0')}`;c.fillRect(0,0,32,32);

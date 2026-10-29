@@ -1,4 +1,5 @@
 // Génération déterministe partagée par le navigateur et le serveur.
+import {truckRoad,flagParking} from './roads.mjs';
 export const CHUNK = 16, HEIGHT = 48, SEED = 'FLAG-1982';
 export const BLOCKS = {
   herbe: {name:'Herbe',color:0x64884b}, terre:{name:'Terre',color:0x805a40},
@@ -23,7 +24,7 @@ export function column(x,z){
   const biome=z < -100?'MONTAGNES':z>92?'VILLE':x>65?'NEVADA':x < -55?'FORÊT':'FLAG';
   let height=5+Math.floor(noise(x*.032,z*.032)*6+noise(x*.10+7,z*.10)*2);
   if(biome==='MONTAGNES')height+=Math.floor(noise(x*.018,z*.018)*16);
-  const road=Math.abs(x)<=3||Math.abs(z+28)<=3;
+  const road=Math.abs(x)<=3||Math.abs(z+28)<=3||truckRoad(x,z)||flagParking(x,z);
   const smooth=Math.min(1,Math.max(0,(Math.abs(x)-5)/14));
   height=Math.round(7*(1-smooth)+height*smooth);
   if(Math.abs(x)<25&&Math.abs(z)<25||road)height=7;
@@ -60,7 +61,7 @@ export function generatedBlock(x,y,z){
     if(x===9||x===21||z===-14)return y===11&&z>-12?'verre':'metal';
     if(z===2&&(x<13||x>17||y>12))return'metal';
   }
-  if((x===-8||x===8)&&mod(z,16)===0&&y<=11&&Math.abs(z)<90)return y===11?'rouge':'metal';
+  if(!road&&(x===-8||x===8)&&mod(z,16)===0&&y<=11&&Math.abs(z)<90)return y===11?'rouge':'metal';
   if(x===-5&&z===-4&&y===8)return'frite';
   if(x===-5&&z===-6&&y===8)return'gaufre';
   if(Math.abs(x)===5&&mod(z,16)===8&&y===h+1&&Math.abs(z)<80)return'citrouille';

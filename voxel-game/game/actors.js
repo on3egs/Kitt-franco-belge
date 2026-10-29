@@ -129,6 +129,8 @@ export function goliath(){const g=new THREE.Group(),black=material(0x20242a,{met
   box(g,3.05,.2,.18,0,.69,5.98,edge);for(let i=0;i<8;i++){const stripe=box(g,.24,.11,.04,-1.05+i*.3,.7,6.085,i%2?material(0xf0d5c8):edge);stripe.rotation.y=.28}
   box(g,.38,.28,1.15,0,.38,-1.4,black);box(g,.6,.1,.9,0,.3,-1.45,edge);
   for(const x of [-1.58,1.58])for(const z of [-2.9,-1.35,1.1,3.4,5]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.57,.57,.35,14),rubber);w.rotation.z=Math.PI/2;w.position.set(x,.57,z);g.add(w);wheels.push(w);addWheelRim(g,x,.57,z,.57,.35,material(0x8e9297,{metalness:.45}),6)}
+  // Garde-boue et feux de gabarit du semi, visibles depuis les bas-côtés.
+  for(const side of [-1,1]){for(const z of [-2.9,-1.35,1.1,3.4,5])box(g,.5,.12,1.24,side*1.58,1.2,z,black);for(const z of [-.6,1,2.6,4.2,5.6])box(g,.07,.09,.17,side*1.64,.65,z,new THREE.MeshBasicMaterial({color:0xffbb44}));box(g,.34,.16,.08,side*1.15,.9,6.1,new THREE.MeshBasicMaterial({color:0xff263d}))}
   const bars=[];for(let i=0;i<11;i++)bars.push(box(g,.18,.11,.06,(i-5)*.2,1.42,-4.08,new THREE.MeshBasicMaterial({color:0x401019})));
   const glow=new THREE.PointLight(0xff173b,5,12,2);glow.position.set(0,1.5,-4.1);g.add(glow);g.userData={wheels,bars};return g}
 // Camion-atelier de la Fondation FLAG, distinct du semi-remorque Goliath.
@@ -140,7 +142,7 @@ export function flagWorkshopTruck(){const g=new THREE.Group(),navy=material(0x26
   box(g,.06,1.12,.035,-1.22,1.78,-.95,white);box(g,.06,1.12,.035,1.22,1.78,-.95,white);box(g,.08,1.55,.04,0,1.82,-.95,blue);
   // Plaques peintes FLAG, bien visibles sur les deux flancs du caisson.
   const flagMark=vehicleDecal('FLAG','FONDATION · ATELIER','#216d9b','#f0f2ed','#263d54');
-  for(const side of [-1,1]){box(g,1.48,.62,.035,side*1.225,1.8,1.55,white);sideDecal(g,flagMark,side*1.251,1.8,1.55,1.42,.56,side)}
+  for(const side of [-1,1]){box(g,.035,.62,1.48,side*1.225,1.8,1.55,white);sideDecal(g,flagMark,side*1.251,1.8,1.55,1.42,.56,side)}
   // Rangements de dépannage et bandes de visibilité d'un véritable atelier mobile.
   for(const side of [-1,1]){for(const z of [-.1,.8,1.7,2.35]){box(g,.055,.58,.58,side*1.245,.92,z,blue);box(g,.07,.035,.38,side*1.28,1.12,z,white);box(g,.08,.08,.08,side*1.29,.92,z,white)}for(const z of [-.2,.4,1.0,1.6,2.2])box(g,.07,.16,.36,side*1.27,.68,z,white);box(g,.18,.48,.16,side*1.26,2.42,-1.55,blue)}
   // Porte a rideau arriere, echelle de service et bande de pare-chocs.
@@ -151,5 +153,7 @@ export function flagWorkshopTruck(){const g=new THREE.Group(),navy=material(0x26
   // Gyrophares physiques rouge et bleu au-dessus du caisson et projecteurs de travail.
   box(g,.74,.12,.28,0,2.78,.42,navy);for(const s of [-1,1]){const beaconLens=new THREE.MeshStandardMaterial({color:s<0?0x3bb7ff:0xe43e50,emissive:s<0?0x12658a:0x741627,emissiveIntensity:.7});box(g,.25,.16,.24,s*.2,2.91,.42,beaconLens);box(g,.2,.1,.13,s*.93,2.74,-2.42,white)}
   for(const x of [-1.18,1.18])for(const z of [-1.7,.12,2.65]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.44,.44,.27,14),rubber);w.rotation.z=Math.PI/2;w.position.set(x,.48,z);g.add(w);wheels.push(w);addWheelRim(g,x,.48,z,.44,.27,white,5)}
+  // Marches antidérapantes, garde-boue et feux arrière de l'atelier.
+  for(const side of [-1,1]){box(g,.35,.12,.7,side*1.3,.6,-2.2,white);for(const z of [-1.7,.12,2.65])box(g,.36,.09,1,side*1.18,.97,z,navy);box(g,.25,.18,.07,side*.98,1.03,3.33,new THREE.MeshBasicMaterial({color:0xff3547}))}
   const beacon=new THREE.PointLight(0x50b8ff,1.2,6,2);beacon.position.set(0,2.9,.5);g.add(beacon);g.userData={wheels,beacon};return g}
 export function scanCar(g,time,speed=0,gold=false){const phase=(Math.sin(time*3)+1)*4;g.userData.segments.forEach((s,i)=>{const glow=Math.max(.06,1-Math.abs(i-phase)*.55);s.material.color.setRGB(glow,gold?0.48:0.008,0.035)});g.userData.wheels.forEach(w=>w.rotation.x+=speed*.03)}
