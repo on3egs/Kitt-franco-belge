@@ -61,11 +61,12 @@ and restart `kitt-kyronex.service` after changing the server.
 
 ## Visitor and privacy limits
 
-- Guests can read up to 30 recent messages per room and see member pseudonyms.
-  Guests are not included in the online member count and cannot post; the
-  server rejects their write attempts even if they bypass the page controls.
-- The guest preview is capped at 50 simultaneous visitors and 30 connection
-  attempts per source address per ten minutes.
+- Visitors choose a temporary pseudo for each visit, can read the latest 30
+  messages and write in public rooms. Their pseudo is not registered as a
+  Pontiac account. They appear in the presence list with the “Invite” role.
+- Public visitors are capped at 50 simultaneous connections and 30 connection
+  attempts per source address per ten minutes; each connection may post up to
+  eight messages per ten seconds. Buzz and owner-only tools remain restricted.
 - The shared code and member sessions have no time-based expiration. A session is remembered in
   the browser's `localStorage`; **Quitter le salon** only closes the connection.
   **Oublier cet appareil** clears the saved session. The AGX stores only a hash

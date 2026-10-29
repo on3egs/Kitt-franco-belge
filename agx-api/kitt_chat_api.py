@@ -1392,7 +1392,8 @@ def register_kitt_chat_routes(
 
     async def status(_request: web.Request) -> web.Response:
         return _cors(web.json_response({
-            "online": True, "rooms": ROOMS, "guestViewOnly": True, "ownerPhotosRequired": True,
+            "online": True, "rooms": ROOMS, "guestViewOnly": False,
+            "publicGuestsCanWrite": True, "ownerPhotosRequired": True,
             "speechVoices": {"KITT": "Guy KITT AGX", "KARR": "Guy HD AGX"} if speech_provider else None,
             "pushToTalk": transcription_provider is not None,
             "imageSharing": True, "imageDescription": image_description_provider is not None,
