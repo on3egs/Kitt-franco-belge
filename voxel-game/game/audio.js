@@ -32,9 +32,9 @@ export class SoundEngine{
       case'pet':o(440,.15,'sine',.15,660);o(660,.25,'sine',.12,880,.12);break;
     }
   }
-  tick(time,{menu=false,halloween=true,moving=false,grounded=false,driving=false,speed=0,braking=false,skidding=false,goliath=false}={}){
+  tick(time,{musicDisabled=false,menu=false,halloween=true,moving=false,grounded=false,driving=false,speed=0,braking=false,skidding=false,goliath=false}={}){
     if(!this.ctx||this.ctx.state!=='running'||document.hidden)return;
-    if(time>this.nextMusic){this.nextMusic=time+(menu?.55:.36);const notes=halloween?[110,130.81,164.81,123.47,98,130.81,146.83,123.47]:[110,164.81,220,146.83,130.81,196,261.63,164.81];this.count(menu?'menuMusic':'gameMusic');this.oscillator(notes[this.note++%notes.length],menu?.65:.3,{gain:menu?.13:.08,music:true,wave:'triangle'});if(menu&&this.note%4===0)this.oscillator(notes[(this.note+2)%notes.length]/2,1.5,{gain:.07,music:true,wave:'sine'})}
+    if(!musicDisabled&&time>this.nextMusic){this.nextMusic=time+(menu?.55:.36);const notes=halloween?[110,130.81,164.81,123.47,98,130.81,146.83,123.47]:[110,164.81,220,146.83,130.81,196,261.63,164.81];this.count(menu?'menuMusic':'gameMusic');this.oscillator(notes[this.note++%notes.length],menu?.65:.3,{gain:menu?.13:.08,music:true,wave:'triangle'});if(menu&&this.note%4===0)this.oscillator(notes[(this.note+2)%notes.length]/2,1.5,{gain:.07,music:true,wave:'sine'})}
     if(moving&&grounded&&!driving&&time-this.lastStep>.32){this.lastStep=time;this.play('step')}
     if(driving&&time>this.nextEngine){this.nextEngine=time+.16;this.play('engine',{gain:.42+Math.abs(speed)/15})}
     if(driving&&braking&&time>this.nextBrake){this.nextBrake=time+.34;this.play('brake',{gain:.35+Math.abs(speed)/22})}

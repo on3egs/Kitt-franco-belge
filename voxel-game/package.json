@@ -13,9 +13,18 @@
     "test:progression": "node test-progression.cjs",
     "test:public": "node test-public.cjs",
     "test:live": "node test-live.cjs",
+    "test:live-patrol": "node test-live-patrol.cjs",
     "test:bistro": "node test-bistro.cjs",
     "test:arcade": "node test-kitt-arcade.cjs",
-    "test:radio-bistro": "node test-radio-bistro-browser.cjs"
+    "test:radio-bistro": "node test-radio-bistro-browser.cjs",
+    "test:patrol": "node test-patrol.cjs",
+    "test:patrol-browser": "node test-patrol-browser.cjs",
+    "test:patrol-types": "node test-patrol-types-browser.cjs",
+    "test:presentation": "node test-presentation.cjs",
+    "test:radio": "node test-radio-v2.cjs",
+    "test:radio-live": "node test-radio-live.cjs",
+    "test:creatures": "node test-creatures-ai.cjs",
+    "test:trucks": "node test-trucks.cjs"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

@@ -35,7 +35,7 @@ const {createGameServer}=require('./server');
   await page.click('#soundToggle');await page.waitForFunction(()=>KITTBlock.inspect().audio.peak>.0001);
   console.log('Halloween : musique du menu, quatre sons de créatures et silence vérifiés sur le signal WebAudio.');
   await page.click('#creativeBtn');await page.waitForFunction(()=>!KITTBlock.inspect().paused);
-  const speechBefore=(await inspect()).speech;assert.ok(speechBefore.requests>0);assert.ok(speechBefore.lastText.includes('moutons'));
+  const speechBefore=(await inspect()).speech;assert.ok(speechBefore.requests>0);assert.ok(speechBefore.lastText.includes('FLAG'));
   const sizes=await page.evaluate(()=>({quote:parseFloat(getComputedStyle(document.querySelector('#quote')).fontSize),mission:parseFloat(getComputedStyle(document.querySelector('#mission')).fontSize)}));
   assert.ok(sizes.quote>=19&&sizes.mission>=18,'Dialogues et mission doivent rester lisibles');
   await page.keyboard.press('v');assert.ok((await inspect()).speech.requests>speechBefore.requests);
