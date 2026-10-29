@@ -14,11 +14,11 @@ const { createGameServer } = require('./server');
     await page.route('https://www.nrj.be/**', route => route.abort());
     // Dans l'iframe publique, servir les fichiers arcade locaux pour vérifier
     // exactement le code corrigé avant de le déployer.
-    const arcadeRoot=path.resolve(__dirname,'../client/public/static/games/3d');
-    await page.route('https://kitt-franco-belge.be/static/games/3d/**',route=>{
+    const arcadeRoot=path.resolve(__dirname,'../client/public/static/games');
+    await page.route('https://kitt-franco-belge.be/static/games/**',route=>{
       const pathname=new URL(route.request().url()).pathname;
-      const local=path.resolve(arcadeRoot,pathname.replace('/static/games/3d/',''));
-      if(local.startsWith(arcadeRoot+path.sep)&&fs.existsSync(local))return route.fulfill({path:local});
+      const local=path.resolve(arcadeRoot,pathname.replace('/static/games/',''));
+      if(local.startsWith(arcadeRoot+path.sep)&&fs.existsSync(local)&&fs.statSync(local).isFile())return route.fulfill({path:local});
       return route.continue();
     });
     await page.goto('http://127.0.0.1:' + service.port + '/block-mode.html');
@@ -41,7 +41,7 @@ const { createGameServer } = require('./server');
     await page.keyboard.press('F9');
     assert.equal(await page.locator('#radioPanel').evaluate(node => node.classList.contains('is-on')), false);
     await page.locator('#radioClose').click();
-    await walkTo(-21.9,-18);
+    await walkTo(-21.9,-18.9);
     await page.waitForFunction(() => document.querySelector('#targetName').textContent.includes('BORNE PAC-MAN'));
     await page.keyboard.press('e');
     await page.waitForSelector('#arcadePanel:not(.hidden)');
@@ -67,7 +67,8 @@ const { createGameServer } = require('./server');
       await page.locator('#capturePointer').click({timeout:10000});
       await page.waitForFunction(()=>KITTBlock.inspect().captured&&!KITTBlock.inspect().paused,{timeout:10000});
     }
-    await walkTo(-21.9,-14);
+    assert.deepEqual(await page.evaluate(()=>KITTBlock.inspect().bistro.cabinets),['pacman','tetris','space-invaders','stunt','arcade-hub']);
+    await walkTo(-21.9,-15.4);
     await page.waitForFunction(() => document.querySelector('#targetName').textContent.includes('BORNE TETRIS'));
     await page.keyboard.press('e');
     await page.waitForSelector('#arcadePanel:not(.hidden)');
@@ -86,15 +87,21 @@ const { createGameServer } = require('./server');
       if((await tetrisFrame.evaluate(()=>TETRIS_3D_ULTRA.debugState().position[0]))!==tetrisStart[0]){tetrisMoved=true;break}
     }
     assert.ok(tetrisMoved,'Une flèche doit déplacer la pièce Tetris.');
+    // Reproduire aussi le retour quand le document est en plein écran.
+    await page.evaluate(()=>document.documentElement.requestFullscreen());
+    assert.equal(await page.evaluate(()=>!!document.fullscreenElement),true,'Le test doit bien entrer en plein écran.');
     await page.locator('#arcadeClose').click();
+    await page.waitForFunction(()=>!document.fullscreenElement,null,{timeout:5000});
     await page.waitForFunction(()=>document.querySelector('#arcadePanel').classList.contains('hidden'),null,{timeout:5000});
     // Chrome peut livrer blur/pointerlockchange après le clic dans l'iframe Tetris.
+    // En plein écran, Chrome peut livrer les événements de focus tardivement.
+    await page.waitForTimeout(2500);
     await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
     await page.evaluate(()=>document.exitPointerLock?.());
     await page.waitForTimeout(100);
     assert.equal(await page.locator('#menu').evaluate(node=>node.classList.contains('hidden')),true,'Le menu initial doit rester fermé après Tetris.');
     assert.equal(await page.locator('#hud').evaluate(node=>node.classList.contains('hidden')),false,'Le HUD doit rester disponible après Tetris.');
-    console.log('OK Chrome : radio F9, bistrot, accès à pied et bornes Tetris + Pac-Man.');
+    console.log('OK Chrome : Tetris plein écran, Pac-Man et cinq bornes présentes dans le bistrot.');
   } finally {
     await browser.close();
     await service.close();

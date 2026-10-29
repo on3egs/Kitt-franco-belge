@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080a12"><title>KITT Stunt Run · Bistro FLAG</title>
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+<main class="shell">
+ <header><span class="scanner"></span><div><b>KITT STUNT RUN</b><small>ÉPREUVE DU BISTRO FLAG</small></div><a href="/static/games/">ARCADES ↗</a></header>
+ <section class="stage"><canvas id="game" width="960" height="540" aria-label="Course de cascades KITT. Espace pour sauter, flèches pour contrôler la voiture." tabindex="0"></canvas>
+  <div class="hud"><span>DISTANCE <b id="distance">0000 m</b></span><span>CASCADES <b id="stunts">0</b></span><span>BLINDAGE <b id="shield">◆ ◆ ◆</b></span></div><div class="toast hidden" id="toast" role="status"></div>
+  <section class="card" id="title"><small>KNIGHT INDUSTRIES · 1988</small><h1>PRENEZ<br><em>VOTRE ENVOL.</em></h1><p>Accélérez jusqu'aux rampes, sautez et stabilisez KITT avant l'atterrissage. Chaque figure réussie rapporte des points.</p><button id="start">DÉMARRER LA COURSE</button><p class="keys">ESPACE / ↑ sauter · ← → incliner · ÉCHAP pause</p></section>
+  <section class="card hidden" id="finish"><small>RAPPORT DE CASCADE</small><h2 id="result">Course terminée</h2><p id="summary"></p><button id="again">RECOMMENCER</button></section>
+ </section>
+ <nav aria-label="Commandes tactiles"><button data-key="ArrowLeft">◀</button><button data-key="Space">SAUTER</button><button data-key="ArrowRight">▶</button></nav>
+ <footer>Astuce de KITT : « Michael, je recommande de viser la rampe. Le mur est une option moins élégante. »</footer>
+</main><script src="game.js"></script>
+</body></html>
