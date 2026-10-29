@@ -34,6 +34,10 @@
 .kc-roster-heading{border-color:#34475d;color:#b8dcff}
 .kc-roster-heading span{background:#24354a;color:#c6d9ee}
 .kc-person{color:#d5e1ef}
+.kc-person-name{min-width:0;overflow-wrap:anywhere}
+.kc-away-indicator{display:inline-block;margin-left:6px;font:14px/1 system-ui,sans-serif;letter-spacing:0;vertical-align:baseline;filter:drop-shadow(0 0 4px #e7a94388)}
+.kc-person i.is-away{background:#d39a43;box-shadow:0 0 6px #e7b85d}
+.kc-person.is-away{color:#bdc5ce}
 .kc-avatar{border-color:#40566f;background:linear-gradient(140deg,#26384c,#172333);color:#a7d7ff}
 .kc-no-members{color:#94a3b7}
 .kc-sound,.kc-leave{border-color:#40566f;background:#172435;color:#dbe7f4}

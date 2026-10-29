@@ -6,7 +6,7 @@ import "./KittChat.css";
 type Room = { id: string; label: string; topic: string };
 type SharedImage = { id: string; url: string; width: number; height: number; alt: string; ownerId: string };
 type ChatLine = { id: string; name: string; text: string; timestamp: number; kind?: "system" | "message"; category?: string; liveBot?: boolean; image?: SharedImage; imageRemoved?: boolean; translation?: string; translationLanguage?: string; translationUnavailable?: boolean };
-type Member = { name: string; role?: string; admin?: boolean };
+type Member = { name: string; role?: string; admin?: boolean; away?: boolean };
 type PendingTurn = { speaker: "KITT" | "KARR"; expiresAt: number };
 type BotStatus = "KITT" | "KARR";
 type Owner = { id: string; name: string; car: string; year: string; photos: string[] };
@@ -795,6 +795,34 @@ export default function KittChat() {
   }, [apiBase, service, isMember, sessionToken, member, reconnectKey, publicGuestsCanWrite, guestName]);
 
   useEffect(() => {
+    if (socketState !== "online") return;
+    let lastActivitySent = 0;
+    const markActivity = () => {
+      const now = Date.now();
+      if (now - lastActivitySent < 20_000) return;
+      const client = socket.current;
+      if (!client || client.readyState !== WebSocket.OPEN) return;
+      client.send(JSON.stringify({ type: "activity" }));
+      lastActivitySent = now;
+    };
+    window.addEventListener("pointerdown", markActivity, { passive: true });
+    window.addEventListener("pointermove", markActivity, { passive: true });
+    window.addEventListener("keydown", markActivity);
+    window.addEventListener("wheel", markActivity, { passive: true });
+    window.addEventListener("touchstart", markActivity, { passive: true });
+    window.addEventListener("focus", markActivity);
+    markActivity();
+    return () => {
+      window.removeEventListener("pointerdown", markActivity);
+      window.removeEventListener("pointermove", markActivity);
+      window.removeEventListener("keydown", markActivity);
+      window.removeEventListener("wheel", markActivity);
+      window.removeEventListener("touchstart", markActivity);
+      window.removeEventListener("focus", markActivity);
+    };
+  }, [socketState]);
+
+  useEffect(() => {
     localStorage.setItem(CHAT_LANGUAGE_KEY, chatLanguage);
     if (socketState === "online") socket.current?.send(JSON.stringify({ type: "language", language: chatLanguage }));
   }, [chatLanguage, socketState]);
@@ -1495,8 +1523,8 @@ export default function KittChat() {
         </section>
         <aside className="kc-roster">
           <div className="kc-roster-heading"><Users size={17}/><strong>Membres présents</strong><span>{members.length}</span></div>
-          <div className="kc-roster-list">{members.length ? members.map((item,index)=><div className={`kc-person${identityTone(item.name) ? ` kc-person-${identityTone(item.name)}` : ""}`} key={`${item.name}-${index}`}>
-            <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span>{item.name}{item.role && item.role !== "Invite" && <small className="kc-person-role">{item.role}</small>}</span><i title="En ligne"/>
+          <div className="kc-roster-list">{members.length ? members.map((item,index)=><div className={`kc-person${identityTone(item.name) ? ` kc-person-${identityTone(item.name)}` : ""}${item.away ? " is-away" : ""}`} key={`${item.name}-${index}`}>
+            <span className="kc-avatar">{item.name.slice(0,1).toUpperCase()}</span><span className="kc-person-name">{item.name}{item.away && <span className="kc-away-indicator" role="img" aria-label="Absent depuis cinq minutes" title="Absent depuis 5 minutes">☕</span>}{item.role && item.role !== "Invite" && <small className="kc-person-role">{item.role}</small>}</span><i className={item.away ? "is-away" : "is-online"} title={item.away ? "Absent · pause-café" : "En ligne"} aria-label={item.away ? "Absent" : "Actif"}/>
           </div>) : <small className="kc-no-members">Aucun propriétaire connecté pour l’instant.</small>}</div>
           <button type="button" className="kc-sound" aria-pressed={sound} onClick={toggleSound}>{sound ? <Bell size={15}/> : <BellOff size={15}/>} {sound ? "Sons activés" : "Activer les sons"}<small>messages · arrivées · Buzz · analyses photo</small></button>
           <section className="kc-arrival-voice" aria-label="Annonce vocale des arrivées">

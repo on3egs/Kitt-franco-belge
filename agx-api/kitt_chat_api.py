@@ -112,6 +112,7 @@ _IDLE_WINDOW_SECONDS = 60 * 60.0
 _IDLE_MAX_PER_WINDOW = 4
 _IDLE_QUIET_SECONDS = 3 * 60.0
 _IDLE_POLL_SECONDS = 30.0
+_AWAY_AFTER_SECONDS = 5 * 60.0
 _KITT_REPLY_COOLDOWN = 4.5
 _KITT_PROACTIVE_COOLDOWN = 45.0
 _KITT_REPLY_WINDOW_SECONDS = 10 * 60.0
@@ -173,6 +174,95 @@ def _short_phrase(text: str) -> str:
     normalized = "".join(char for char in normalized if not unicodedata.combining(char))
     normalized = re.sub(r"[\W_]+", " ", normalized)
     return " ".join(normalized.split())
+
+
+_ACCESS_PHOTO_TERMS = re.compile(
+    r"\b(?:photo|photos|image|images|picture|pictures|upload|fichier|fichiers|piece jointe)\b"
+)
+_ACCESS_VOICE_TERMS = re.compile(
+    r"\b(?:micro|microphone|mic|vocal|voix|audio|voice|enregistrement|enregistrements|"
+    r"enregistrer|enregistre|dictee|dicter|transcrire|transcription|push to talk|"
+    r"barre(?: d)? (?:espace|space)|touche (?:espace|space)|spacebar|espace)\b"
+)
+_ACCESS_QUESTION_CUES = re.compile(
+    r"\b(?:pourquoi|pour quoi|comment|ou|quel|quelle|quels|quelles|peux|peut|"
+    r"sais|avoir|acceder|acces|utiliser|envoyer|partager|ajouter|joindre|"
+    r"bouton|option|options|identique|identiques|meme|memes|autres|invite|"
+    r"membre|manque|manquent|disponible|disponibles|marche|fonctionne|"
+    r"pas|plus|impossible|bloque|refuse|missing|why|how|where|cant|cannot|"
+    r"dont|same|access|button|upload|share|use)\b"
+)
+
+
+def _feature_access_help_kind(text: str) -> str | None:
+    """Recognise questions about guest access to the photo and push-to-talk tools."""
+    phrase = _short_phrase(text)
+    photo = bool(_ACCESS_PHOTO_TERMS.search(phrase))
+    voice = bool(_ACCESS_VOICE_TERMS.search(phrase))
+    if not photo and not voice:
+        return None
+    if "?" not in text and not _ACCESS_QUESTION_CUES.search(phrase):
+        return None
+    return "both" if photo and voice else "photo" if photo else "voice"
+
+
+_FEATURE_ACCESS_HELP: dict[str, dict[str, tuple[str, ...]]] = {
+    "KITT": {
+        "photo": (
+            "Les invités peuvent écrire sous pseudo, mais le partage de photos est réservé aux profils Pontiac validés. Une photo n’apparaît dans le salon qu’après ton clic sur « Publier ». ",
+            "Ce n’est pas une panne : l’accès libre donne le texte. Pour joindre une image, il faut se connecter avec un profil Pontiac approuvé; le partage demande ensuite une confirmation. ",
+            "Le salon est ouvert à la discussion, mais pas encore aux photos des invités. Leur envoi exige une session propriétaire Pontiac validée. ",
+        ),
+        "voice": (
+            "La barre Espace sert à dicter, pas à publier un message audio : maintiens-la hors du champ de saisie, relâche, relis la transcription puis clique sur Envoyer. La dictée demande une session Pontiac validée. ",
+            "Pour dicter, il faut être connecté avec un profil Pontiac approuvé. Maintiens Espace hors du champ de texte; je transcris tes paroles dans le champ, puis tu relis et envoies le texte. ",
+            "L’accès invité est limité au texte. La dictée par Espace est réservée aux membres validés; elle prépare une transcription que tu peux corriger avant l’envoi, sans diffuser ta voix dans la salle. ",
+        ),
+        "both": (
+            "L’accès invité permet le pseudo et les messages texte. Photos et dictée par Espace demandent un profil Pontiac validé. Espace prépare une transcription à relire; ta voix n’est pas publiée comme message audio. ",
+            "Tu n’as rien raté : les invités peuvent écrire, tandis que les outils photo et micro restent liés à une session propriétaire Pontiac approuvée. La photo attend ton clic sur Publier; Espace transcrit puis tu relis avant Envoyer. ",
+            "Le salon public ouvre la conversation, pas encore le partage photo ni la dictée aux invités. Connecte-toi avec un profil Pontiac validé pour ces outils. Espace transcrit ta voix; seule la version relue est envoyée. ",
+        ),
+    },
+    "KARR": {
+        "photo": (
+            "Ce n’est pas une panne, pilote : le pseudo ouvre le texte, tandis que les photos exigent un profil Pontiac validé. Même KITT ne peut publier une image avant ta confirmation. ",
+            "L’entrée est libre, les pièces jointes ne le sont pas encore. Le partage photo reste réservé aux profils Pontiac approuvés; il faut ensuite cliquer sur Publier. ",
+            "KITT a laissé la porte du salon ouverte, pas celle des téléversements. Pour ajouter une photo, connecte-toi avec un profil Pontiac validé. ",
+        ),
+        "voice": (
+            "Espace n’envoie pas un message vocal dans la salle : la touche dicte une transcription. Il faut un profil Pontiac validé; maintiens Espace hors du champ, relâche, relis, puis envoie le texte. ",
+            "La dictée par Espace est réservée aux membres Pontiac validés. Tu relâches la touche, tu corriges le texte transcrit, puis tu cliques sur Envoyer. KITT appelle cela une procédure; moi, une précaution élémentaire. ",
+            "Les invités n’ont pour l’instant que le texte. La dictée demande une session Pontiac approuvée, et seule la transcription relue est publiée — pas ta voix brute. ",
+        ),
+        "both": (
+            "Le salon accepte les pseudos et le texte; photos et dictée restent réservées aux profils Pontiac validés. Espace transcrit ta voix pour relecture, elle n’est pas diffusée en audio. Voilà, mystère résolu sans l’aide de KITT. ",
+            "Tu as bien vu : les outils photo et micro réclament une session propriétaire Pontiac approuvée. Espace prépare du texte à relire; la photo n’est publiée qu’après confirmation. La sécurité a parfois de bonnes manières. ",
+            "L’accès invité ne comprend actuellement que les messages texte. Profil Pontiac validé requis pour partager une image ou dicter avec Espace; tu relis toujours la transcription avant envoi. KITT aurait pu l’expliquer. ",
+        ),
+    },
+}
+
+
+def _feature_access_help_reply(bot: str, text: str) -> str | None:
+    kind = _feature_access_help_kind(text)
+    if kind is None:
+        return None
+    speaker = bot if bot in _FEATURE_ACCESS_HELP else "KITT"
+    return secrets.choice(_FEATURE_ACCESS_HELP[speaker][kind])
+
+
+def _passive_bot_mention(text: str) -> tuple[str, ...]:
+    """Return bot names mentioned in room talk, excluding messages addressed to them."""
+    if _kitt_was_addressed(text) or _karr_was_addressed(text):
+        return ()
+    phrase = _short_phrase(text)
+    mentioned = []
+    if re.search(r"\bkitt\b", phrase):
+        mentioned.append("KITT")
+    if re.search(r"\b(?:karr|kaerr)\b", phrase):
+        mentioned.append("KARR")
+    return tuple(mentioned)
 
 
 def _social_suffix_addressed(text: str, bot: str) -> bool:
@@ -572,11 +662,15 @@ async def _kitt_reply(
     return answer
 
 
-async def _maybe_kitt_reply(room: str, member_name: str, text: str, followup: TurnFollowup | None = None) -> None:
+async def _maybe_kitt_reply(
+    room: str, member_name: str, text: str,
+    followup: TurnFollowup | None = None, passive_mention: bool = False,
+) -> None:
     direct = _kitt_was_addressed(text)
-    if followup is None and not direct and not _kitt_proactive_candidate(text):
+    feature_help = _feature_access_help_reply("KITT", text)
+    if followup is None and not direct and not passive_mention and feature_help is None and not _kitt_proactive_candidate(text):
         return
-    if followup is None and not direct and _member_frequency(member_name) == "quiet":
+    if followup is None and not direct and not passive_mention and feature_help is None and _member_frequency(member_name) == "quiet":
         return
     clean_direct = re.sub(r"(?i)@?kitt\b", "", text).strip(" !,:?.-\t") if direct else text
     now = time.monotonic()
@@ -585,11 +679,11 @@ async def _maybe_kitt_reply(room: str, member_name: str, text: str, followup: Tu
     social = _social_reply("KITT", member_name, text) if direct or followup is not None else None
     if followup is None:
         async with _KITT_REPLY_LOCK:
-            if not direct and now - _KITT_LAST_REPLY.get(room, 0.0) < _KITT_REPLY_COOLDOWN:
+            if not direct and not passive_mention and feature_help is None and now - _KITT_LAST_REPLY.get(room, 0.0) < _KITT_REPLY_COOLDOWN:
                 return
-            if not direct and now - _KITT_LAST_PROACTIVE.get(room, 0.0) < _proactive_cooldown(_KITT_PROACTIVE_COOLDOWN, member_name):
+            if not direct and not passive_mention and feature_help is None and now - _KITT_LAST_PROACTIVE.get(room, 0.0) < _proactive_cooldown(_KITT_PROACTIVE_COOLDOWN, member_name):
                 return
-            if not direct:
+            if not direct and not passive_mention and feature_help is None:
                 proactive = _KITT_PROACTIVE_WINDOW[room]
                 while proactive and proactive[0] < now - _KITT_REPLY_WINDOW_SECONDS:
                     proactive.popleft()
@@ -599,14 +693,16 @@ async def _maybe_kitt_reply(room: str, member_name: str, text: str, followup: Tu
                 _KITT_LAST_PROACTIVE[room] = now
             _KITT_LAST_REPLY[room] = now
     try:
-        if social is not None:
+        if feature_help is not None:
+            answer = feature_help
+        elif social is not None:
             answer = social
         elif presence:
             answer = f"Oui {_clean_text(member_name, _NAME_MAX) or 'Manix'}, je suis l\u00e0 et je t\u2019\u00e9coute."
         elif wake_only:
             answer = "Oui, je t\u2019\u00e9coute."
         else:
-            if followup is None and not direct and not await _kitt_should_answer(room, member_name, text, direct=False):
+            if followup is None and not direct and not passive_mention and not await _kitt_should_answer(room, member_name, text, direct=False):
                 return
             async with _model_generation(room, "KITT"):
                 answer = await _kitt_reply(room, member_name, text, direct, followup.context if followup else None)
@@ -628,7 +724,7 @@ async def _maybe_kitt_reply(room: str, member_name: str, text: str, followup: Tu
     await _broadcast(room, {"type": "message", "message": line})
     await _set_pending_turn(
         room, "KITT", answer, followup.replies_left if followup else _TURN_MAX_REPLIES,
-        force=bool(wake_only or (direct and not presence)),
+        force=bool(wake_only or (direct and not presence) or feature_help is not None or passive_mention),
     )
 
 
@@ -726,6 +822,16 @@ async def _idle_room_loop(room: str) -> None:
             if not any(client.room == room for client in _CLIENTS.values()):
                 return
             now_mono = time.monotonic()
+            presence_changed = False
+            for client in _CLIENTS.values():
+                if client.room != room:
+                    continue
+                away = now_mono - client.last_activity >= _AWAY_AFTER_SECONDS
+                if client.away != away:
+                    client.away = away
+                    presence_changed = True
+            if presence_changed:
+                await _presence(room)
             now_wall = time.time()
             recent_humans: list[dict[str, Any]] = []
             last_activity = 0.0
@@ -976,14 +1082,18 @@ async def _kitt_counter_karr(room: str, member_name: str, karr_line: str) -> str
     return answer
 
 
-async def _maybe_karr_reply(room: str, member_name: str, text: str, followup: TurnFollowup | None = None) -> None:
+async def _maybe_karr_reply(
+    room: str, member_name: str, text: str,
+    followup: TurnFollowup | None = None, passive_mention: bool = False,
+) -> None:
     if _room_goodnight_current(room):
         await _close_turn(room)
         return
     direct = _karr_was_addressed(text)
-    if followup is None and not direct and not _karr_proactive_candidate(text):
+    feature_help = _feature_access_help_reply("KARR", text)
+    if followup is None and not direct and not passive_mention and feature_help is None and not _karr_proactive_candidate(text):
         return
-    if followup is None and not direct and _member_frequency(member_name) == "quiet":
+    if followup is None and not direct and not passive_mention and feature_help is None and _member_frequency(member_name) == "quiet":
         return
     clean_direct = re.sub(r"(?i)@?(?:karr|kaerr)\b", "", text).strip(" !,:?.-\t") if direct else text
     wake_only = direct and not clean_direct
@@ -993,9 +1103,9 @@ async def _maybe_karr_reply(room: str, member_name: str, text: str, followup: Tu
     now = time.monotonic()
     async with _KARR_REPLY_LOCK:
         if followup is None:
-            if not direct and now - _KARR_LAST_REPLY.get(room, 0.0) < _KARR_COOLDOWN:
+            if not direct and not passive_mention and feature_help is None and now - _KARR_LAST_REPLY.get(room, 0.0) < _KARR_COOLDOWN:
                 return
-            if not direct:
+            if not direct and not passive_mention and feature_help is None:
                 if now - _KARR_LAST_PROACTIVE.get(room, 0.0) < _proactive_cooldown(_KARR_PROACTIVE_COOLDOWN, member_name):
                     return
                 proactive = _KARR_PROACTIVE_WINDOW[room]
@@ -1007,12 +1117,12 @@ async def _maybe_karr_reply(room: str, member_name: str, text: str, followup: Tu
                 _KARR_LAST_PROACTIVE[room] = now
             _KARR_LAST_REPLY[room] = now
     decision: dict[str, Any] = {"should_reply": True, "start_show": False, "kitt_replies": False, "turns": 2}
-    if social is None and not wake_only and direct and clean_direct and not _room_rest_mode(room) and re.search(r"\bkitt\b|\bpontiac\b|\btrans\s*am\b", text, re.IGNORECASE):
+    if feature_help is None and social is None and not wake_only and direct and clean_direct and not _room_rest_mode(room) and re.search(r"\bkitt\b|\bpontiac\b|\btrans\s*am\b", text, re.IGNORECASE):
         try:
             decision = await _karr_decision(room, member_name, text, direct=True)
         except Exception as exc:
             print(f"[KARR_CHAT_BOT] show gate unavailable: {type(exc).__name__}", flush=True)
-    if followup is None and not direct:
+    if followup is None and not direct and not passive_mention and feature_help is None:
         try:
             decision = await _karr_decision(room, member_name, text, direct=False)
         except Exception as exc:
@@ -1026,7 +1136,9 @@ async def _maybe_karr_reply(room: str, member_name: str, text: str, followup: Tu
         "kitt_replies": decision.get("kitt_replies") is True,
         "turns": 3 if decision.get("turns") == 3 else 2,
     }
-    if social is not None:
+    if feature_help is not None:
+        answer = feature_help
+    elif social is not None:
         answer = social
     elif presence:
         answer = f"Oui {_clean_text(member_name, _NAME_MAX) or 'Manix'}, KARR est la. Je vous ecoute."
@@ -1047,11 +1159,11 @@ async def _maybe_karr_reply(room: str, member_name: str, text: str, followup: Tu
         if await _kitt_counter_karr(room, member_name, answer) is not None:
             return
         await _set_pending_turn(room, "KARR", answer, followup.replies_left, force=bool(direct and not short_presence))
-    elif social is not None or wake_only:
+    elif social is not None or wake_only or feature_help is not None or passive_mention:
         await _post_bot_line(room, "KARR", answer)
         await _set_pending_turn(
             room, "KARR", answer, _TURN_MAX_REPLIES,
-            force=bool(wake_only or (direct and not short_presence)),
+            force=bool(wake_only or (direct and not short_presence) or feature_help is not None or passive_mention),
         )
     else:
         last_speaker, last_line, shown = await _run_karr_show(room, member_name, text, answer, decision)
@@ -1092,6 +1204,8 @@ class Client:
     language: str = "fr"
     sent: deque[float] = field(default_factory=deque)
     last_buzz: float = 0.0
+    last_activity: float = field(default_factory=time.monotonic)
+    away: bool = False
 
 
 @dataclass
@@ -1255,11 +1369,11 @@ def _join_rate_limited(request: web.Request) -> bool:
 
 def _online(room: str) -> list[dict[str, Any]]:
     members = [
-        {"name": "KITT", "role": "ADMIN · AGX 32 · KYRONEXT IA", "admin": True},
-        {"name": "KARR", "role": "ADMIN RIVAL · AGX 32 · KYRONEXT IA", "admin": True},
+        {"name": "KITT", "role": "ADMIN · AGX 32 · KYRONEXT IA", "admin": True, "away": False},
+        {"name": "KARR", "role": "ADMIN RIVAL · AGX 32 · KYRONEXT IA", "admin": True, "away": False},
     ]
     members.extend(
-        {"name": client.name, "role": "Invite" if client.is_guest else "Membre", "admin": False}
+        {"name": client.name, "role": "Invite" if client.is_guest else "Membre", "admin": False, "away": client.away}
         for client in _CLIENTS.values()
         if client.room == room
     )
@@ -1891,6 +2005,13 @@ def register_kitt_chat_routes(
                     continue
                 if not isinstance(data, dict):
                     continue
+                was_away = client.away
+                client.last_activity = time.monotonic()
+                client.away = False
+                if was_away:
+                    await _presence(client.room)
+                if data.get("type") == "activity":
+                    continue
                 if data.get("type") == "switch":
                     target = data.get("room")
                     if not isinstance(target, str) or target not in _ROOM_IDS:
@@ -1900,13 +2021,11 @@ def register_kitt_chat_routes(
                         continue
                     client.room = target
                     _ensure_idle_room_loop(target)
-                    if not client.is_guest:
-                        await _presence(previous)
+                    await _presence(previous)
                     history = list(_HISTORY[target])
                     await ws.send_json({"type": "room", "room": target, "history": history[-30:] if client.is_guest else history})
                     _translate_recent_history(client, history)
-                    if not client.is_guest:
-                        await _presence(target)
+                    await _presence(target)
                     continue
                 if data.get("type") == "language":
                     client.language = _chat_language(data.get("language"))
@@ -1965,6 +2084,18 @@ def register_kitt_chat_routes(
                     task = asyncio.create_task(_maybe_kitt_reply(client.room, client.name, text), name=f"kitt-chat:{client.room}")
                 elif karr_direct:
                     task = asyncio.create_task(_maybe_karr_reply(client.room, client.name, text), name=f"kitt-chat:{client.room}")
+                elif _feature_access_help_kind(text) is not None:
+                    task = asyncio.create_task(_maybe_kitt_reply(client.room, client.name, text), name=f"kitt-chat:{client.room}")
+                elif (mentioned_bots := _passive_bot_mention(text)):
+                    if secrets.randbelow(2) == 0:
+                        speaker = secrets.choice(mentioned_bots)
+                        runner = _maybe_kitt_reply if speaker == "KITT" else _maybe_karr_reply
+                        task = asyncio.create_task(
+                            runner(client.room, client.name, text, passive_mention=True),
+                            name=f"kitt-chat:{client.room}",
+                        )
+                    else:
+                        task = None
                 elif _karr_proactive_candidate(text):
                     task = asyncio.create_task(_maybe_karr_reply(client.room, client.name, text), name=f"kitt-chat:{client.room}")
                 elif _kitt_proactive_candidate(text):
@@ -1976,8 +2107,9 @@ def register_kitt_chat_routes(
                         task = asyncio.create_task(runner(client.room, client.name, text, contextual), name=f"kitt-chat:{client.room}")
                     else:
                         task = asyncio.create_task(_maybe_memory_recall(client.room, client.name), name=f"kitt-chat:{client.room}")
-                _KITT_TASKS.add(task)
-                task.add_done_callback(_KITT_TASKS.discard)
+                if task is not None:
+                    _KITT_TASKS.add(task)
+                    task.add_done_callback(_KITT_TASKS.discard)
         finally:
             if _CLIENTS.pop(key, None) is not None:
                 if not client.is_guest:
