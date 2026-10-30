@@ -20,6 +20,14 @@ La dictée accepte les formats MediaRecorder des navigateurs, y compris les WebM
 
 Les photos occupent au maximum 150 Mo / 200 fichiers, avec une rétention de 90 jours. La copie originale et ses métadonnées ne sont pas conservées. La limite d'entrée est 8 Mo et 25 millions de pixels ; un espace disque libre minimal de 256 Mo est conservé. Les descriptions ne sont jamais fabriquées si le moteur visuel est indisponible.
 
+L'analyse ne démarre qu'après le clic explicite sur **Décrire avec KITT** ou **Décrire avec KARR**. Le personnage choisi publie d'abord une courte annonce d'attente, visible dans le salon et lue avec sa propre voix, puis sa description. Les annonces de KARR varient et gardent son ton contrarié et ironique.
+
+## Rappels de courtoisie de KITT et KARR
+
+Seules les insultes explicites proches du nom de KITT ou KARR déclenchent la modération ; une critique ordinaire ne suffit pas. KARR avertit une première fois, puis renvoie au salon au nouvel écart. KITT donne trois rappels gradués, dont une explication claire, puis retire la personne au nouvel écart. Les rappels et renvois sont des messages du personnage dans le salon, donc suivent aussi les préférences vocales des clients.
+
+Un renvoi est retenu cinq minutes en mémoire vive, sans journal d'adresse IP. Au retour, le personnage lance une pique et laisse douze secondes pour présenter des excuses ; il accepte ce pardon une seule fois. Sans excuses, le client est renvoyé. Après le pardon unique, une nouvelle récidive entraîne un renvoi sans seconde exception. Les avertissements, renvois et pardons ne sont pas persistés après un redémarrage du service.
+
 ## Vision Gemma 4 sur cet AGX
 
 Le modèle déjà installé est Gemma 4 26B A4B QAT. Son projector compatible a été téléchargé depuis le [dépôt QAT Unsloth](https://huggingface.co/unsloth/gemma-4-26B-A4B-it-qat-GGUF/blob/main/mmproj-BF16.gguf), au commit `f67b000030c50cb0cd0e46ab446093005c3842b8` : 1 194 828 256 octets, SHA-256 `7b06953ccdbe8cf363f47841a7afaacd2b1c2ff9a8d6b426fdec7521a6878744`.

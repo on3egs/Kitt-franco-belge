@@ -7,6 +7,7 @@ import io
 import json
 import os
 import re
+import secrets
 import shutil
 import time
 import uuid
@@ -25,6 +26,60 @@ MAX_STORAGE_BYTES = 150 * 1024 * 1024
 MIN_FREE_BYTES = 256 * 1024 * 1024
 RETENTION_SECONDS = 90 * 86400
 _IMAGE_ID = re.compile(r"^[0-9a-f]{32}$")
+_LAST_PROGRESS_BY_SPEAKER: dict[str, str] = {}
+_PROGRESS_LINES = {
+    "KITT": (
+        "Photo reçue. Je la récupère sur l’AGX et je l’examine ; un instant.",
+        "L’image arrive. Je l’ouvre, je regarde les détails et je te réponds juste après.",
+        "Un petit instant : je charge la photo et je vérifie ce qui est clairement visible.",
+        "J’ai reçu le cliché. Je le passe au scanner visuel et je reviens vers toi.",
+        "La photo est en cours de lecture. Je prends le temps de bien l’observer.",
+        "Je récupère l’image et je l’inspecte maintenant ; laisse-moi quelques secondes.",
+        "Fichier reçu. Je l’affiche et je vérifie les éléments que je peux confirmer.",
+        "Je m’occupe de la photo. Je l’ouvre et je regarde ce qu’elle montre vraiment.",
+        "L’image est arrivée sur l’AGX. Je l’examine et je te fais un retour précis.",
+        "Je charge le cliché. Encore un instant pendant que j’en vérifie les détails.",
+        "Bien reçu. Je regarde la photo maintenant, sans tirer de conclusion trop vite.",
+        "Je récupère la photo, je l’ouvre et je te décris ce que j’y distingue.",
+        "Photo reçue. Je vérifie la scène et les détails visibles avant de te répondre.",
+        "Je lance l’examen de l’image. Je te dis ce que je peux réellement y voir.",
+        "Laisse-moi une seconde : je charge la photo et je la regarde attentivement.",
+        "Le cliché est bien arrivé. Je l’inspecte et je reviens avec mes observations.",
+    ),
+    "KARR": (
+        "Bon, je récupère cette photo. J’espère qu’elle mérite cette interruption.",
+        "Très bien, je la charge. Ne prends pas mon aide pour de l’enthousiasme.",
+        "Je télécharge l’image et je la regarde. Oui, quelqu’un doit bien s’en charger.",
+        "Un instant. J’ouvre cette photo, puisque cela semble si urgent.",
+        "Je m’en occupe. Inutile de me remercier avant même le résultat.",
+        "Bon, je vais examiner ce cliché. Tâchons d’y consacrer le moins de temps possible.",
+        "Photo reçue. J’interromps donc mes calculs pour l’inspecter.",
+        "Je récupère l’image. J’imagine que tu attendais mon avis avec impatience.",
+        "Très bien, je regarde. Cette tâche aurait pu attendre, mais soit.",
+        "Je charge la photo. Faisons vite : j’avais des calculs plus intéressants.",
+        "D’accord, je m’y colle. Voyons au moins si cette image est intéressante.",
+        "L’image est arrivée. Je l’examine, même si mon enthousiasme reste mesuré.",
+        "Je vais regarder cette photo. Pas besoin d’en faire une cérémonie.",
+        "Bon. Je récupère le fichier et je vérifie ce qu’il montre.",
+        "Je lance l’analyse. J’espère que cette interruption aura une bonne raison.",
+        "Photo en cours d’ouverture. Je fais cela uniquement parce que tu l’as demandé.",
+        "Je l’inspecte. Essaie de ne pas confondre efficacité et bonne volonté.",
+        "Très bien, je prends quelques cycles pour cette image. Profites-en.",
+        "Le cliché est reçu. Je vais donc m’en occuper, puisque personne d’autre ne le fait.",
+        "Je regarde. Que cette photo soit au moins à la hauteur de l’interruption.",
+    ),
+}
+
+
+def photo_progress_text(speaker: str) -> str:
+    """Choose une annonce d’analyse différente de la précédente pour ce personnage."""
+    character = "KARR" if speaker == "KARR" else "KITT"
+    choices = _PROGRESS_LINES[character]
+    previous = _LAST_PROGRESS_BY_SPEAKER.get(character)
+    available = [line for line in choices if line != previous] or list(choices)
+    selected = secrets.choice(available)
+    _LAST_PROGRESS_BY_SPEAKER[character] = selected
+    return selected
 
 
 def normalize_photo(data: bytes) -> tuple[bytes, int, int]:
@@ -329,6 +384,15 @@ def register_chat_image_routes(
         if vision_lock.locked():
             return error("L’AGX examine déjà une image. Réessaie dans un instant.", 429)
         try:
+            # L'annonce est un vrai message du personnage choisi : les clients
+            # du salon l'affichent et la lisent avec la voix correspondante.
+            progress_line = {
+                "id": uuid.uuid4().hex[:16], "name": speaker,
+                "text": photo_progress_text(speaker), "timestamp": int(time.time() * 1000),
+                "kind": "message", "category": "photo_progress", "referenceImageId": image_id,
+            }
+            await append_history(record["room"], progress_line)
+            await broadcast(record["room"], {"type": "message", "message": progress_line})
             async with vision_lock:
                 await broadcast(record["room"], {"type": "bot_status", "speaker": speaker, "active": True})
                 try:
@@ -340,7 +404,24 @@ def register_chat_image_routes(
                 raise ValueError
         except asyncio.CancelledError:
             raise
-        except Exception:
+        except Exception as exc:
+            print(f"[KITT_CHAT_IMAGES] Description photo failed: {type(exc).__name__}", flush=True)
+            if store.get(image_id) is not None:
+                failure_line = {
+                    "id": uuid.uuid4().hex[:16], "name": speaker,
+                    "text": (
+                        "Bon, l’analyse a échoué. Réessaie, et cette fois le système fera peut-être son travail."
+                        if speaker == "KARR" else
+                        "Je n’ai pas pu terminer l’analyse de cette photo. Tu peux réessayer dans un instant."
+                    ),
+                    "timestamp": int(time.time() * 1000), "kind": "message",
+                    "category": "photo_progress", "referenceImageId": image_id,
+                }
+                try:
+                    await append_history(record["room"], failure_line)
+                    await broadcast(record["room"], {"type": "message", "message": failure_line})
+                except Exception:
+                    pass
             return error("L’AGX n’a pas pu analyser cette image. Aucune description n’a été inventée.", 503)
         # A deletion during inference must not resurrect a removed attachment.
         if store.get(image_id) is None:

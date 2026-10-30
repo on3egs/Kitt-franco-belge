@@ -96,6 +96,8 @@ def create_image_description_provider(
         if persona == "KARR":
             style = (
                 "Tu réponds comme KARR : sec, ironique et légèrement sarcastique, "
+                "avec l'air un peu contrarié qu'on lui ait demandé cette tâche, mais tu aides "
+                "quand même. Varie naturellement tes formulations d'une photo à l'autre, "
                 "sans insulter une personne ni commenter son apparence physique."
             )
         else:
@@ -129,7 +131,7 @@ def create_image_description_provider(
                     ],
                 },
             ],
-            "temperature": 0.2,
+            "temperature": 0.45 if persona == "KARR" else 0.2,
             "max_tokens": 300,
             "stream": False,
         }

@@ -129,6 +129,46 @@ _KARR_MAX_PROACTIVE_PER_WINDOW = 3
 _KARR_SHOW_COOLDOWN = 12 * 60.0
 _KARR_SHOW_WINDOW_SECONDS = 60 * 60.0
 _KARR_MAX_SHOWS_PER_WINDOW = 3
+_MODERATION_WINDOW_SECONDS = 60 * 60
+_MODERATION_STRIKES: dict[tuple[str, str], deque[float]] = defaultdict(deque)
+_MODERATION_KICKS: dict[str, dict[str, Any]] = {}
+_MODERATION_PARDON_USED: set[str] = set()
+_MODERATION_INSULTS = tuple(
+    tuple(phrase.split()) for phrase in (
+        "abruti", "abrutie", "asshole", "bande de con", "connard", "connasse", "con", "conne",
+        "crétin", "crétine", "débile", "dumbass", "enculé", "encule", "enfoiré", "enfoire",
+        "ferme ta gueule", "fuck you", "idiot", "idiote", "imbécile", "klootzak",
+        "merdeux", "moron", "ordure", "salaud", "salope", "shut up", "ta gueule", "va te faire foutre",
+    )
+)
+_KITT_MODERATION_LINES = {
+    1: (
+        "Je vous demande de garder un ton respectueux. Les insultes adressées à KITT n’aident pas la discussion.",
+        "Petit rappel courtois : vous pouvez contester une idée sans attaquer la personne qui vous répond.",
+    ),
+    2: (
+        "Je le répète calmement : ce salon est partagé par toute la communauté. Merci de rester correct.",
+        "Deuxième rappel, toujours avec le sourire : les insultes mettent les autres membres mal à l’aise.",
+    ),
+    3: (
+        "Je vous explique la règle avant toute mesure : les attaques répétées empêchent un échange agréable. Une nouvelle insulte entraînera votre retrait du salon.",
+        "Dernier rappel : la discussion doit rester accueillante pour tout le monde. Si cela continue, je vous retirerai du salon.",
+    ),
+}
+_KARR_WARNING_LINES = (
+    "Je te préviens une fois : garde tes insultes au garage. Je préfère les diagnostics aux crises de nerfs.",
+    "Premier et unique avertissement, humain : baisse d’un ton. Mon système de patience est déjà une option coûteuse.",
+    "Un avertissement, pas deux. Reformule sans insulte et nous pourrons tous reprendre une conversation civilisée.",
+)
+_KARR_EJECTION_LINES = (
+    "Fin de parcours pour toi : je te renvoie au paddock. Même mon pare-chocs a plus de tact.",
+    "Sortie de piste ! Je te raccompagne dehors avant que la conversation ne nécessite un mécanicien.",
+    "Rideau, pilote. Le salon reste ouvert ; ton accès, lui, prend la porte. Essaie le mode civilisé au retour.",
+)
+_KITT_EJECTION_LINES = (
+    "Je vous retire du salon. Les rappels précédents expliquaient pourquoi : les insultes répétées nuisent aux autres participants.",
+    "Je ferme votre connexion au salon. Vous avez reçu trois rappels et l’explication de la règle ; les attaques ont continué.",
+)
 _KITT_COUNTER_LAST: dict[str, float] = {}
 _KITT_COUNTER_WINDOW: dict[str, deque[float]] = defaultdict(deque)
 _KITT_COUNTER_LOCK = asyncio.Lock()
@@ -174,6 +214,99 @@ def _short_phrase(text: str) -> str:
     normalized = "".join(char for char in normalized if not unicodedata.combining(char))
     normalized = re.sub(r"[\W_]+", " ", normalized)
     return " ".join(normalized.split())
+
+
+def _targeted_character_insult(text: str) -> str | None:
+    """Repère uniquement une insulte explicite à proximité du nom d'un personnage."""
+    words = _short_phrase(text).split()
+    targets = [(index, word) for index, word in enumerate(words) if word in {"kitt", "karr", "kaerr"}]
+    if not targets:
+        return None
+    matches: list[tuple[int, str]] = []
+    for insult in _MODERATION_INSULTS:
+        width = len(insult)
+        for start in range(len(words) - width + 1):
+            if tuple(words[start:start + width]) != insult:
+                continue
+            end = start + width - 1
+            for target_index, target in targets:
+                distance = min(abs(target_index - start), abs(target_index - end))
+                if distance <= 7:
+                    matches.append((distance, "KARR" if target in {"karr", "kaerr"} else "KITT"))
+    return min(matches, key=lambda item: item[0])[1] if matches else None
+
+
+def _moderation_strike(client: "Client", character: str) -> int:
+    now = time.monotonic()
+    key = (client.moderation_id, character)
+    strikes = _MODERATION_STRIKES[key]
+    while strikes and strikes[0] < now - _MODERATION_WINDOW_SECONDS:
+        strikes.popleft()
+    strikes.append(now)
+    # Nettoie les pseudos/identités inactifs sans fichier persistant ni suivi IP.
+    for old_key, old_strikes in list(_MODERATION_STRIKES.items()):
+        while old_strikes and old_strikes[0] < now - _MODERATION_WINDOW_SECONDS:
+            old_strikes.popleft()
+        if not old_strikes:
+            _MODERATION_STRIKES.pop(old_key, None)
+    for identity, record in list(_MODERATION_KICKS.items()):
+        if float(record.get("until", 0)) <= now:
+            _MODERATION_KICKS.pop(identity, None)
+            _MODERATION_STRIKES.pop((identity, str(record.get("character", "KITT"))), None)
+    return len(strikes)
+
+
+def _active_moderation_kick(identity: str) -> dict[str, Any] | None:
+    record = _MODERATION_KICKS.get(identity)
+    if not record:
+        return None
+    if float(record.get("until", 0)) <= time.monotonic():
+        _MODERATION_KICKS.pop(identity, None)
+        character = str(record.get("character", "KITT"))
+        _MODERATION_STRIKES.pop((identity, character), None)
+        return None
+    return record
+
+
+def _is_apology(text: str) -> bool:
+    words = _short_phrase(text).split()
+    phrases = (
+        ("pardon",), ("desole",), ("desolee",), ("excuse", "moi"), ("je", "m", "excuse"),
+        ("je", "suis", "desole"), ("je", "suis", "desolee"), ("veuillez", "m", "excuser"),
+        ("sorry",), ("i", "am", "sorry"), ("my", "bad"), ("het", "spijt", "me"),
+    )
+    padded = tuple(words)
+    for phrase in phrases:
+        width = len(phrase)
+        if any(padded[index:index + width] == phrase for index in range(len(padded) - width + 1)):
+            return _targeted_character_insult(text) is None
+    return False
+
+
+async def _moderation_reentry_timeout(client: "Client") -> None:
+    """Laisse quelques secondes pour demander pardon, puis applique le renvoi."""
+    await asyncio.sleep(12)
+    if not client.moderation_pending or client.ws.closed:
+        return
+    client.moderation_pending = False
+    await _post_bot_line(
+        client.room, client.moderation_character,
+        f"{client.name}, tu as eu le temps de répondre et tu n’as pas demandé pardon. Retour à la sortie, cette fois sans discussion.",
+    )
+    record = _active_moderation_kick(client.moderation_id)
+    if record is not None:
+        record["until"] = time.monotonic() + 300
+    await client.ws.close(code=4004, message=f"{client.moderation_character}: excuses required".encode("ascii"))
+
+
+def _moderation_reply(character: str, strike: int) -> tuple[str, bool]:
+    if character == "KARR":
+        if strike == 1:
+            return secrets.choice(_KARR_WARNING_LINES), False
+        return secrets.choice(_KARR_EJECTION_LINES), True
+    if strike <= 3:
+        return secrets.choice(_KITT_MODERATION_LINES[strike]), False
+    return secrets.choice(_KITT_EJECTION_LINES), True
 
 
 _ROOM_GREETINGS: dict[str, tuple[str, ...]] = {
@@ -1275,12 +1408,16 @@ class Client:
     token_hash: str
     name: str
     room: str
+    moderation_id: str
     is_guest: bool = False
     language: str = "fr"
     sent: deque[float] = field(default_factory=deque)
     last_buzz: float = 0.0
     last_activity: float = field(default_factory=time.monotonic)
     away: bool = False
+    moderation_pending: bool = False
+    moderation_character: str = ""
+    moderation_task: asyncio.Task[None] | None = None
 
 
 @dataclass
@@ -1982,7 +2119,28 @@ def register_kitt_chat_routes(
                 await ws.close(code=4001, message=b"Owner profile is no longer approved")
                 return ws
             name = session["name"]
-        client = Client(ws=ws, token_hash=token_hash, name=name, room=room, is_guest=is_guest, language=_chat_language(first.get("language")))
+        moderation_id = (
+            f"guest:{name.casefold()}" if is_guest else
+            f"owner:{_clean_text(_SESSIONS.get(token_hash, {}).get('ownerId'), 64)}"
+        )
+        active_kick = _active_moderation_kick(moderation_id)
+        if active_kick and moderation_id in _MODERATION_PARDON_USED:
+            character = str(active_kick.get("character", "KITT"))
+            await _post_bot_line(
+                room, character,
+                f"{name}, déjà de retour ? Tu as utilisé ton unique pardon. La sortie est par là, pilote."
+                if character == "KARR" else
+                f"{name}, ton pardon unique a déjà été accepté. Les cinq minutes ne sont pas écoulées ; je te retire à nouveau du salon.",
+            )
+            await ws.send_json({"type": "error", "message": f"{character} n’a pas oublié le renvoi. Tu as déjà utilisé ton unique pardon."})
+            await ws.close(code=4004, message=f"{character}: pardon already used".encode("ascii"))
+            return ws
+        client = Client(
+            ws=ws, token_hash=token_hash, name=name, room=room, moderation_id=moderation_id,
+            is_guest=is_guest, language=_chat_language(first.get("language")),
+            moderation_pending=active_kick is not None,
+            moderation_character=str(active_kick.get("character", "")) if active_kick else "",
+        )
         key = id(ws)
         async with _LOCK:
             if not is_guest and not _session_is_current(_SESSIONS.get(token_hash)):
@@ -2070,6 +2228,18 @@ def register_kitt_chat_routes(
             await ws.send_json({"type": "message", "message": guide_line})
         if is_guest:
             await _presence(room)
+        if client.moderation_pending:
+            await _post_bot_line(
+                room, client.moderation_character,
+                (
+                    f"{client.name}, déjà de retour, petit casse-pieds ? Tu as 12 secondes pour présenter tes excuses. Sans pardon, je te ressors."
+                    if client.moderation_character == "KARR" else
+                    f"{client.name}, vous revoilà, pilote têtu. Vous avez 12 secondes pour présenter vos excuses ; ensuite, je vous retire de nouveau du salon."
+                ),
+            )
+            client.moderation_task = asyncio.create_task(
+                _moderation_reentry_timeout(client), name=f"kitt-chat-moderation:{client.moderation_id}",
+            )
         try:
             async for packet in ws:
                 if packet.type != WSMsgType.TEXT:
@@ -2079,6 +2249,41 @@ def register_kitt_chat_routes(
                 except json.JSONDecodeError:
                     continue
                 if not isinstance(data, dict):
+                    continue
+                if client.moderation_pending and data.get("type") == "message":
+                    answer = _clean_text(data.get("text"), _TEXT_MAX)
+                    if _is_apology(answer):
+                        client.moderation_pending = False
+                        if client.moderation_task is not None:
+                            client.moderation_task.cancel()
+                            client.moderation_task = None
+                        _MODERATION_KICKS.pop(client.moderation_id, None)
+                        _MODERATION_PARDON_USED.add(client.moderation_id)
+                        _MODERATION_STRIKES[(client.moderation_id, client.moderation_character)].clear()
+                        apology_line = {
+                            "id": secrets.token_hex(8), "name": client.name, "text": answer,
+                            "timestamp": int(time.time() * 1000), "kind": "message",
+                            "sourceLang": client.language,
+                        }
+                        await _append_history(client.room, apology_line)
+                        await _broadcast(client.room, {"type": "message", "message": apology_line})
+                        accepted = (
+                            "Bon, j’accepte tes excuses. Une seule fois. Ne m’oblige pas à répéter l’exercice."
+                            if client.moderation_character == "KARR" else
+                            "Excuses acceptées, une fois. Merci de reprendre la discussion calmement."
+                        )
+                        await _post_bot_line(client.room, client.moderation_character, accepted)
+                    else:
+                        record = _active_moderation_kick(client.moderation_id)
+                        if record is not None:
+                            record["until"] = time.monotonic() + 300
+                        client.moderation_pending = False
+                        await _post_bot_line(
+                            client.room, client.moderation_character,
+                            f"{client.name}, ce n’était pas un pardon. Je t’avais laissé une seule chance : retour à la sortie.",
+                        )
+                        await ws.close(code=4004, message=f"{client.moderation_character}: no apology".encode("ascii"))
+                        break
                     continue
                 was_away = client.away
                 client.last_activity = time.monotonic()
@@ -2139,6 +2344,17 @@ def register_kitt_chat_routes(
                 await _append_history(client.room, line)
                 await _broadcast(client.room, {"type": "message", "message": line})
                 _queue_line_translations(client.room, line)
+                if (targeted_insult := _targeted_character_insult(text)) is not None:
+                    strike = _moderation_strike(client, targeted_insult)
+                    moderation_text, should_kick = _moderation_reply(targeted_insult, strike)
+                    await _post_bot_line(client.room, targeted_insult, f"{client.name} : {moderation_text}")
+                    if should_kick:
+                        _MODERATION_KICKS[client.moderation_id] = {
+                            "character": targeted_insult, "until": time.monotonic() + 300,
+                        }
+                        await ws.close(code=4004, message=f"{targeted_insult}: left the room".encode("ascii"))
+                        break
+                    continue
                 if _is_goodnight(text):
                     await _close_turn(client.room)
                     await _post_bot_line(
@@ -2191,6 +2407,8 @@ def register_kitt_chat_routes(
                     _KITT_TASKS.add(task)
                     task.add_done_callback(_KITT_TASKS.discard)
         finally:
+            if client.moderation_task is not None:
+                client.moderation_task.cancel()
             if _CLIENTS.pop(key, None) is not None:
                 if not client.is_guest:
                     line = {

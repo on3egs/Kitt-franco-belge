@@ -799,6 +799,10 @@ export default function KittChat() {
         setError("La session ou le profil Pontiac n’est plus valide. Contacte Manix après l’approbation du profil.");
       } else if (event.code === 4003 && publicGuestsCanWrite) {
         setGuestName(""); setGuestDisplayName("");
+      } else if (event.code === 4004) {
+        const character = event.reason?.startsWith("KARR") ? "KARR" : "KITT";
+        setError(`${character} t’a retiré du salon. Relis son message et présente tes excuses si tu reviens dans les cinq minutes.`);
+        if (publicGuestsCanWrite) { setGuestName(""); setGuestDisplayName(""); }
       } else if (event.code === 1013) setError("Le salon est momentanément complet. Réessaie dans un instant.");
     };
     return () => {
