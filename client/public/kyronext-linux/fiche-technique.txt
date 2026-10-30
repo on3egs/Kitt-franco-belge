@@ -1,6 +1,6 @@
 KYRONEXT OS — 0.1 DEVELOPER PREVIEW
 Kyronext Systems — By Manix
-État au 30 octobre 2026
+Première édition publique — 30 octobre 2026
 
 Système Linux Live réel, distinct de la démonstration Web Kyronext OS 1982.
 Base : Debian 13 Trixie AMD64, noyau officiel Debian.
@@ -8,31 +8,35 @@ Bureau : KDE Plasma, SDDM, session X11.
 Services : systemd, PipeWire, NetworkManager, APT.
 Fabrication initiale : Debian live-build, puis révision des ressources visuelles.
 
-RÉVISION LOCALE
-20261030T151047Z-branding-806
+TÉLÉCHARGEMENT
+Révision publique : 20261030T143045Z-branding-final
 Fichier : Kyronext-OS-0.1-amd64.iso
-Taille : 1 638 072 320 octets
-SHA-256 : 1bdac4c7af5981819564818b7bc3b8be9a295b5a5ab3af1f0a4eb2136d04d0cd
-Cette empreinte identifie l'image de travail locale et n'annonce pas une ISO publique disponible.
+Taille : 1 634 861 056 octets
+SHA-256 : 91d8238d4eb33686b9674981dabf828fafb97f8e9d4d2319b019486e59508c85
+ISO : https://github.com/on3egs/kyronext-os/releases/download/v0.1-developer-preview/Kyronext-OS-0.1-amd64.iso
+Somme de contrôle : https://github.com/on3egs/kyronext-os/releases/download/v0.1-developer-preview/SHA256SUMS
 
 VALIDATION
-ISO locale et SHA-256 Windows vérifiés ; 298 sommes internes réussies.
-Structures hybrides BIOS/UEFI présentes.
-Bureau de la révision finale observé en UEFI VirtualBox.
-BIOS QEMU validé sur la révision précédente.
-Aucune compatibilité avec un ordinateur physique garantie.
+Empreinte ISO vérifiée ; sommes internes et structures hybrides contrôlées.
+Bureau KDE atteint en BIOS QEMU et en UEFI VirtualBox sur cette révision.
+Un démarrage USB a été rapporté sur une version personnelle ultérieure ;
+ce résultat n'est pas attribué automatiquement à l'ISO publique ci-dessus.
+Aucune compatibilité physique complète garantie : affichage, réseau,
+périphériques essentiels et audio se testent machine par machine.
 
 PERSONNALISATION
-Fond, couleurs graphite et rouge, accueil et panneau Kyronext.
+Fond, couleurs graphite et rouge, accueil et panneau originaux Kyronext.
 Réglages KDE conservés, animations désactivables.
 Le nom officiel reste Kyronext OS. Aucun lien officiel avec Knight Rider.
+Les illustrations KITT/KARR des essais privés ne sont pas dans cette ISO publique.
 Les thèmes personnels ne confèrent aucun droit sur les éléments de tiers.
 
-LIMITES
-Live uniquement. Aucun installateur sur disque actif ou persistance intégrée.
+LIMITES ET CLÉ USB
+Live uniquement. Aucun installateur sur disque actif ni persistance intégrée.
 Aucun modèle IA locale inclus. Cockpit et assistant IA prévus ultérieurement.
 Secure Boot, chiffrement et matériel physique non validés.
-ISO publique non proposée : préparation d'une édition redistribuable à terminer.
+L'écriture de l'ISO sur une clé USB efface cette clé : vérifier le périphérique.
+Ne remplacez pas votre système principal avec cette préversion.
 
 PRÉSENTATION
 https://kyronext.eu/kyronext-os/
