@@ -12,7 +12,8 @@
     "test:browser": "node test-browser.cjs",
     "test:progression": "node test-progression.cjs",
     "test:public": "node test-public.cjs",
-    "test:live": "node test-live.cjs"
+    "test:live": "node test-live.cjs",
+    "test:webgl": "node test-webgl-context.cjs"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
