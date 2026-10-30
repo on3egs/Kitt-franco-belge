@@ -383,7 +383,8 @@ def _room_greeting_reply(bot: str, member_name: str, language: str) -> str:
 
 
 _ACCESS_PHOTO_TERMS = re.compile(
-    r"\b(?:photo|photos|image|images|picture|pictures|upload|fichier|fichiers|piece jointe)\b"
+    r"\b(?:photo|photos|image|images|picture|pictures|upload|fichier|fichiers|piece jointe|"
+    r"description|decrire|decris|decrivez|analyse|analyser|vision)\b"
 )
 _ACCESS_VOICE_TERMS = re.compile(
     r"\b(?:micro|microphone|mic|vocal|voix|audio|voice|enregistrement|enregistrements|"
@@ -394,6 +395,8 @@ _ACCESS_QUESTION_CUES = re.compile(
     r"\b(?:pourquoi|pour quoi|comment|ou|quel|quelle|quels|quelles|peux|peut|"
     r"sais|avoir|acceder|acces|utiliser|envoyer|partager|ajouter|joindre|"
     r"bouton|option|options|identique|identiques|meme|memes|autres|invite|"
+    r"veux|voudrais|souhaite|demander|demande|inscrire|inscription|profil|validation|"
+    r"decrire|decris|decrivez|analyse|analyser|vision|"
     r"membre|manque|manquent|disponible|disponibles|marche|fonctionne|"
     r"pas|plus|impossible|bloque|refuse|missing|why|how|where|cant|cannot|"
     r"dont|same|access|button|upload|share|use)\b"
@@ -415,9 +418,9 @@ def _feature_access_help_kind(text: str) -> str | None:
 _FEATURE_ACCESS_HELP: dict[str, dict[str, tuple[str, ...]]] = {
     "KITT": {
         "photo": (
-            "Les invités peuvent écrire sous pseudo, mais le partage de photos est réservé aux profils Pontiac validés. Une photo n’apparaît dans le salon qu’après ton clic sur « Publier ». ",
-            "Ce n’est pas une panne : l’accès libre donne le texte. Pour joindre une image, il faut se connecter avec un profil Pontiac approuvé; le partage demande ensuite une confirmation. ",
-            "Le salon est ouvert à la discussion, mais pas encore aux photos des invités. Leur envoi exige une session propriétaire Pontiac validée. ",
+            "Les invités peuvent discuter par texte et voir les photos. Pour publier une photo ou demander sa description par IA, inscris ta Pontiac sur le Globe avec une photo de ta voiture, puis attends la validation. Après approbation, connecte-toi avec ce profil et clique sur le bouton KITT/KARR de la photo ; tout le salon verra la réponse, adressée d’abord à toi. ",
+            "Ce n’est pas une panne, pilote : l’analyse photo demande un profil Pontiac validé avec une photo de voiture. Inscris ta Pontiac sur le Globe, attends l’approbation, puis connecte-toi et ouvre la photo pour choisir KITT ou KARR. La réponse sera publique et commencera par ton prénom. ",
+            "L’accès invité permet de parler et de lire les réponses. Pour utiliser l’analyse d’image, ajoute une photo de ta Pontiac dans ton inscription sur le Globe et attends la validation. Ensuite, clique sur un bouton KITT/KARR sous la photo ; tout le monde verra la réponse, d’abord adressée à la personne qui a cliqué. ",
         ),
         "voice": (
             "La barre Espace sert à dicter, pas à publier un message audio : maintiens-la hors du champ de saisie, relâche, relis la transcription puis clique sur Envoyer. La dictée demande une session Pontiac validée. ",
@@ -432,9 +435,9 @@ _FEATURE_ACCESS_HELP: dict[str, dict[str, tuple[str, ...]]] = {
     },
     "KARR": {
         "photo": (
-            "Ce n’est pas une panne, pilote : le pseudo ouvre le texte, tandis que les photos exigent un profil Pontiac validé. Même KITT ne peut publier une image avant ta confirmation. ",
-            "L’entrée est libre, les pièces jointes ne le sont pas encore. Le partage photo reste réservé aux profils Pontiac approuvés; il faut ensuite cliquer sur Publier. ",
-            "KITT a laissé la porte du salon ouverte, pas celle des téléversements. Pour ajouter une photo, connecte-toi avec un profil Pontiac validé. ",
+            "Le salon est libre pour discuter et lire les réponses ; l’analyse photo demande un profil Pontiac validé avec une photo de voiture. Inscris-la sur le Globe, attends l’approbation, puis connecte-toi et clique le bouton KITT ou le mien sous la photo. Tout le monde verra ma réponse, mais je m’adresserai d’abord au pilote qui a cliqué. ",
+            "Tu veux faire décrire une image ? Inscris ta Pontiac avec une photo sur le Globe et attends la validation. Si ton profil est déjà approuvé, connecte-toi et ouvre la photo pour cliquer sur KITT ou moi. Toute la salle lira la réponse, mais c’est à toi que je parlerai en premier. Une organisation presque élégante. ",
+            "Les invités gardent le texte et la lecture du salon ; les outils photo exigent un profil propriétaire Pontiac approuvé. Ajoute la photo de ta voiture à l’inscription du Globe, attends le feu vert, puis clique sous la photo pour interroger KITT ou moi. La réponse restera visible pour toute la galerie. ",
         ),
         "voice": (
             "Espace n’envoie pas un message vocal dans la salle : la touche dicte une transcription. Il faut un profil Pontiac validé; maintiens Espace hors du champ, relâche, relis, puis envoie le texte. ",

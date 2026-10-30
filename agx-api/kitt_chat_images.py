@@ -234,7 +234,10 @@ def register_chat_image_routes(
     async def process_upload(request: web.Request) -> web.Response:
         owner = await authenticate(request)
         if owner is None:
-            return error("Connecte-toi au salon pour partager une photo.", 401)
+            return error(
+                "Le partage et la description IA des photos demandent un profil Pontiac validé avec une photo de voiture. Inscris ta Pontiac sur le Globe et attends la validation.",
+                401,
+            )
         if limited(owner, "upload", 5):
             return error("Trop de photos à la fois. Patiente un instant.", 429)
         if request.content_length and request.content_length > MAX_UPLOAD_BYTES + 65536:
@@ -349,9 +352,13 @@ def register_chat_image_routes(
     async def describe(request: web.Request) -> web.Response:
         owner = await authenticate(request)
         if owner is None:
-            return error("Connecte-toi pour demander une description.", 401)
+            return error(
+                "La description IA est réservée aux profils Pontiac validés. Inscris ta voiture avec une photo sur le Globe Pontiac et attends la validation.",
+                401,
+            )
         if describe_provider is None:
             return error("L’analyse d’image locale n’est pas disponible sur l’AGX pour le moment.", 503)
+        requester_name = " ".join(re.sub(r"[\x00-\x1f\x7f]", "", str(await owner_name(owner) or "")).split())[:48] or "pilote"
         if limited(owner, "describe", 4):
             return error("Trop de demandes de description. Patiente un instant.", 429)
         image_id = request.match_info["image_id"]
@@ -388,7 +395,7 @@ def register_chat_image_routes(
             # du salon l'affichent et la lisent avec la voix correspondante.
             progress_line = {
                 "id": uuid.uuid4().hex[:16], "name": speaker,
-                "text": photo_progress_text(speaker), "timestamp": int(time.time() * 1000),
+                "text": f"{requester_name}, {photo_progress_text(speaker)}", "timestamp": int(time.time() * 1000),
                 "kind": "message", "category": "photo_progress", "referenceImageId": image_id,
             }
             await append_history(record["room"], progress_line)
@@ -402,6 +409,18 @@ def register_chat_image_routes(
             answer = " ".join(str(answer or "").split())[:600]
             if not answer:
                 raise ValueError
+            if requester_name:
+                addressed = re.compile(
+                    rf"^(?:(?:bonjour|salut|coucou|hello|hi)\s+)?{re.escape(requester_name)}(?:\b|[,!:.])",
+                    re.IGNORECASE,
+                )
+                if not addressed.search(answer):
+                    opening = answer
+                    if len(opening) > 1 and opening[0].isupper() and opening[1].islower():
+                        opening = opening[0].lower() + opening[1:]
+                    answer = f"{requester_name}, {opening}"
+                    if len(answer) > 600:
+                        answer = answer[:599].rstrip() + "…"
         except asyncio.CancelledError:
             raise
         except Exception as exc:
@@ -410,9 +429,9 @@ def register_chat_image_routes(
                 failure_line = {
                     "id": uuid.uuid4().hex[:16], "name": speaker,
                     "text": (
-                        "Bon, l’analyse a échoué. Réessaie, et cette fois le système fera peut-être son travail."
+                        f"{requester_name}, l’analyse a échoué. Réessaie, et cette fois le système fera peut-être son travail."
                         if speaker == "KARR" else
-                        "Je n’ai pas pu terminer l’analyse de cette photo. Tu peux réessayer dans un instant."
+                        f"{requester_name}, je n’ai pas pu terminer l’analyse de cette photo. Tu peux réessayer dans un instant."
                     ),
                     "timestamp": int(time.time() * 1000), "kind": "message",
                     "category": "photo_progress", "referenceImageId": image_id,
