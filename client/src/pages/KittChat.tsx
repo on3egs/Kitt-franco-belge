@@ -74,6 +74,7 @@ const FALLBACK_ROOMS: Room[] = [
 ];
 const SESSION_KEY = "kitt-msn-chat-session-v1";
 const ADMIN_TOKEN_KEY = "kitt-pontiac-admin-token-v1";
+const OWNER_ACCESS_CODE = "1982";
 const ARRIVAL_VOICE_KEY = "kitt-msn-arrival-voice-v1";
 const CHAT_LANGUAGES = [{ id: "fr", label: "Français" }, { id: "nl", label: "Nederlands" }, { id: "en", label: "English" }, { id: "de", label: "Deutsch" }, { id: "es", label: "Español" }, { id: "it", label: "Italiano" }, { id: "pt", label: "Português" }];
 const CHAT_LANGUAGE_KEY = "kitt-chat-language-v1";
@@ -122,7 +123,7 @@ export default function KittChat() {
   const [owners, setOwners] = useState<Owner[]>([]);
   const [ownerId, setOwnerId] = useState("");
   const [member, setMember] = useState("");
-  const [invite, setInvite] = useState("");
+  const [invite, setInvite] = useState(OWNER_ACCESS_CODE);
   const [sessionToken, setSessionToken] = useState("");
   const [adminToken, setAdminToken] = useState("");
   const [adminTokenDraft, setAdminTokenDraft] = useState("");
@@ -1593,7 +1594,7 @@ export default function KittChat() {
                 {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.name} · {owner.car} {owner.year}</option>)}
               </select>
             </label> : <p>Aucun profil avec photo n’est encore approuvé. Inscris ta voiture sur le globe, puis attends la validation.</p>}
-            <label>Code d’accès<input required maxLength={80} autoComplete="off" inputMode="numeric" value={invite} onChange={event => setInvite(event.target.value)} placeholder="Code communiqué aux membres" disabled={!owners.length}/></label>
+            <label>Code membre<input required type="text" maxLength={4} pattern="[0-9]{4}" autoComplete="off" inputMode="numeric" value={invite} onChange={event => setInvite(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="Code à 4 chiffres" disabled={!owners.length}/></label>
             <button type="submit" disabled={!owners.length || !invite.trim() || service !== "online"}>Entrer dans le salon <ArrowRight size={15}/></button>
             <a className="kc-globe-cta" href="/communaute-pontiac#inscription"><CarFront size={15}/> Inscrire ma Pontiac sur le globe</a>
             <p>Étapes : inscris ta Pontiac avec une photo, attends la validation du profil, puis utilise le code communiqué aux membres. L’accès reste associé à ton profil approuvé.</p>
@@ -1615,7 +1616,7 @@ export default function KittChat() {
             {owners.map(owner => <option key={owner.id} value={owner.id}>{owner.name} · {owner.car} {owner.year}</option>)}
           </select>
         </label> : <p>Aucun profil Pontiac approuvé n’est disponible. Inscris ta voiture sur le globe et attends sa validation.</p>}
-        <label>Code d’accès<input required maxLength={80} autoComplete="off" inputMode="numeric" value={invite} onChange={event => setInvite(event.target.value)} placeholder="Code d’accès" disabled={!owners.length}/></label>
+        <label>Code membre<input required type="text" maxLength={4} pattern="[0-9]{4}" autoComplete="off" inputMode="numeric" value={invite} onChange={event => setInvite(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="Code à 4 chiffres" disabled={!owners.length}/></label>
         <button type="submit" disabled={!owners.length || !invite.trim() || service !== "online"}>Connexion propriétaire <ArrowRight size={15}/></button>
         <a className="kc-globe-cta" href="/communaute-pontiac#inscription"><CarFront size={15}/> Inscrire ma Pontiac sur le globe</a>
       </form>}
