@@ -2437,6 +2437,15 @@ export default function ToolsHub() {
         </p>
         <a href="/outils-licences.html">Licences et limites →</a>
       </div>
+      <a className="tools-image-studio-promo" href="/kyronext-linux/">
+        <span className="tools-image-studio-icon"><MonitorPlay size={22} /></span>
+        <span className="tools-image-studio-copy">
+          <small>LINUX LIVE · 0.1 DEVELOPER PREVIEW · BY MANIX</small>
+          <strong>Kyronext OS</strong>
+          <span>Un véritable bureau Debian et KDE, une identité personnalisable. Présentation vocale et fiche technique ; ISO publique en préparation.</span>
+        </span>
+        <span className="tools-image-studio-action">Découvrir le système <ArrowRight size={16} /></span>
+      </a>
       <a className="tools-image-studio-promo" href="/studio-image">
         <span className="tools-image-studio-icon"><ImageIcon size={22} /></span>
         <span className="tools-image-studio-copy">
