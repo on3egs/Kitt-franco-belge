@@ -1055,6 +1055,7 @@ export default function ToolsHub() {
     [outputs, setOutputs] = useState<Output[]>([]),
     [busy, setBusy] = useState(false),
     [status, setStatus] = useState(""),
+    [toolProgress, setToolProgress] = useState<number | null>(null),
     [recording, setRecording] = useState(false),
     [microphones, setMicrophones] = useState<MediaDeviceInfo[]>([]),
     [selectedMicrophone, setSelectedMicrophone] = useState(""),
@@ -1252,6 +1253,7 @@ export default function ToolsHub() {
       if (controller.signal.aborted) throw new DOMException("Traitement annulé.", "AbortError");
     };
     setBusy(true);
+    setToolProgress(selected.id === "media-convert" ? 0 : null);
     setStatus("Préparation de vos fichiers sur cet appareil…");
     setOutputs([]);
     try {
@@ -2176,7 +2178,11 @@ export default function ToolsHub() {
           const ffmpeg = new FFmpeg();
           let ffmpegLog = "";
           ffmpeg.on("log", ({ message }) => { ffmpegLog = `${ffmpegLog}\n${message}`.slice(-1800); });
-          ffmpeg.on("progress", ({ progress }) => setStatus(`Conversion en cours… ${Math.max(0, Math.min(100, Math.round(progress * 100)))} %`));
+          ffmpeg.on("progress", ({ progress }) => {
+            const percent = Math.max(0, Math.min(100, Math.round(progress * 100)));
+            setToolProgress(percent);
+            setStatus(`Conversion en cours… ${percent} %`);
+          });
           const base = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core";
           const [coreResponse, wasmResponse] = await Promise.all([fetch(`${base}.js`), fetch(`${base}.wasm`)]);
           if (!coreResponse.ok || !wasmResponse.ok) throw new Error("Le moteur FFmpeg est indisponible. Réessayez avec une connexion Internet.");
@@ -2225,6 +2231,7 @@ export default function ToolsHub() {
         return { ...result, name };
       });
       setOutputs(formatted);
+      setToolProgress(100);
       setStatus(
         created.length
           ? `${created.length} fichier(s) prêt(s). Les originaux restent inchangés.`
@@ -2238,6 +2245,7 @@ export default function ToolsHub() {
       );
     } finally {
       setBusy(false);
+      if (!outputs.length) setToolProgress(null);
       if (job.current === controller) job.current = null;
     }
   }
@@ -3017,6 +3025,12 @@ export default function ToolsHub() {
               <p className="tool-status" role="status" aria-live="polite">
                 {status || ""}
               </p>
+              {busy && (
+                <div className={`tool-progress ${toolProgress === null ? "is-indeterminate" : ""}`} role="progressbar" aria-label="Progression du traitement" aria-valuemin={0} aria-valuemax={100} aria-valuenow={toolProgress ?? undefined}>
+                  <span style={toolProgress === null ? undefined : { width: `${toolProgress}%` }} />
+                  <small>{toolProgress === null ? "Traitement en cours" : `${toolProgress} %`}</small>
+                </div>
+              )}
             </div>
             <div className="workbench-results">
               {outputs.length > 0 ? (
