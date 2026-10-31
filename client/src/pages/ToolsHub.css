@@ -72,3 +72,23 @@
 .tool-range-fieldset{min-width:0;margin:14px 0 0;padding:11px;border:1px solid #2c3a50;border-radius:9px}.tool-range-fieldset legend{padding-inline:5px;color:#cad3e0;font-size:12px}.tool-trim-controls>label{display:flex;flex-direction:column;gap:5px;min-width:0;color:#8fa1ba;font-size:10px}.tool-trim-controls input{padding:9px 10px;border:1px solid #3a4960;border-radius:8px;background:#0b121c;color:#edf2fa;font:12px system-ui}
 .recorder-panel{display:block}.recorder-panel>.tool-option{margin:0}.recorder-state{display:flex;align-items:center;gap:12px;margin-top:14px}.recorder-state p{margin:0}
 .tools-clear-saved{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin:7px 0 12px;padding:8px 10px;border:1px solid #354257;border-radius:8px;background:#0c121b;color:#adbbce;font:11px system-ui;cursor:pointer;transition:border-color .18s,color .18s,background .18s}.tools-clear-saved:hover{border-color:#9d5260;background:#1c1219;color:#ffd1d8}.tools-clear-saved:focus-visible{outline:2px solid #ff91a4;outline-offset:2px}.tools-sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Finition commune du catalogue et de chaque atelier */
+.tools-hub{--th-accent:#ff5368;--th-glow:#ff40521c}
+.tools-grid{gap:15px}
+.tool-card{min-height:215px;padding:19px;border-radius:16px;background:linear-gradient(145deg,#171f2d,#0c111a 78%);box-shadow:0 9px 24px #0003;transition:transform .2s,border-color .2s,box-shadow .2s,background .2s}
+.tool-card:hover{transform:translateY(-3px);border-color:#b45161;box-shadow:0 16px 34px #0006,0 0 24px var(--th-glow);background:linear-gradient(145deg,#202635,#10141d 78%)}
+.tool-card-icon{width:44px;height:44px;border:1px solid #733c49;border-radius:13px;background:linear-gradient(145deg,#401b27,#17151d);color:#ff8291;box-shadow:inset 0 1px #ffffff0c,0 6px 15px #0003}
+.tool-card:focus-within{outline:2px solid #ff8594;outline-offset:3px}
+.tool-workbench{overflow:hidden;border-radius:18px;background:linear-gradient(145deg,#151b26,#090d14);box-shadow:0 24px 70px #0007,0 0 35px var(--th-glow)}
+.workbench-heading{padding:20px 22px;background:linear-gradient(100deg,#21121a,#101722 58%,#111925);border-bottom:1px solid #354055}
+.workbench-heading h2{letter-spacing:-.025em}
+.workbench-body{gap:1px;background:#293448}
+.workbench-inputs,.workbench-results{padding:22px;background:linear-gradient(160deg,#111824,#0b1018)}
+.tool-file-picker{min-height:150px;border-radius:14px;box-shadow:inset 0 1px #ffffff0b;transition:transform .18s,border-color .18s,box-shadow .18s}
+.tool-file-picker:hover,.tool-file-picker.dragging{transform:translateY(-1px);border-color:#ff7082;box-shadow:0 0 0 3px #ff53681b,inset 0 1px #ffffff12}
+.tool-option select,.tool-option input,.tool-option textarea,.tool-trim-controls input{min-height:42px;border-radius:10px;border-color:#3b4a60;background:#080e17;transition:border-color .18s,box-shadow .18s}
+.tool-option :is(select,input,textarea):focus{border-color:#ff7182;box-shadow:0 0 0 3px #ff53681d}
+.tools-hub button:not(:disabled){transition:transform .16s,filter .16s,box-shadow .16s}
+.tools-hub button:not(:disabled):active{transform:translateY(1px);filter:brightness(.96)}
+@media(prefers-reduced-motion:reduce){.tools-hub *, .tools-hub *:before,.tools-hub *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
