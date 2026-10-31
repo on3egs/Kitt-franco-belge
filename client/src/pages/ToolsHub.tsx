@@ -65,6 +65,16 @@ type FileTool = {
 };
 const TOOLS: FileTool[] = [
   {
+    id: "media-convert",
+    group: "Vidéo",
+    title: "Convertir vidéo / audio",
+    description: "Réencode en MP4, WebM, AVI, MPEG, MP3 ou WAV.",
+    icon: Film,
+    accept: "video/*,audio/*",
+    option: "Format de sortie",
+    hint: "Conversion locale dans le navigateur avec FFmpeg WebAssembly. Les fichiers ne sont pas envoyés au serveur. Le premier lancement télécharge le moteur de conversion.",
+  },
+  {
     id: "video-info",
     group: "Vidéo",
     title: "Fiche vidéo",
@@ -2152,6 +2162,40 @@ export default function ToolsHub() {
           created = [await recordVideo(file!, selected.id, option, setStatus, controller.signal)];
           break;
         }
+        case "media-convert": {
+          if (!file) throw new Error("Choisissez un fichier vidéo ou audio.");
+          if (file.size > 500 * 1024 * 1024) throw new Error("Limite : 500 Mo par fichier pour la conversion locale.");
+          const format = option || "mp4";
+          setStatus("Chargement du moteur FFmpeg…");
+          const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+          const ffmpeg = new FFmpeg();
+          const base = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core";
+          const [coreResponse, wasmResponse] = await Promise.all([fetch(`${base}.js`), fetch(`${base}.wasm`)]);
+          if (!coreResponse.ok || !wasmResponse.ok) throw new Error("Le moteur FFmpeg est indisponible. Réessayez avec une connexion Internet.");
+          const coreURL = URL.createObjectURL(await coreResponse.blob());
+          const wasmURL = URL.createObjectURL(await wasmResponse.blob());
+          try {
+            await ffmpeg.load({ coreURL, wasmURL });
+            if (controller.signal.aborted) throw new Error("Conversion annulée.");
+            const inputName = `input.${file.name.split(".").pop()?.replace(/[^a-z0-9]/gi, "") || "bin"}`;
+            const outputName = `output.${format}`;
+            await ffmpeg.writeFile(inputName, new Uint8Array(await file.arrayBuffer()));
+            setStatus("Conversion en cours…");
+            const args = format === "mp3" ? ["-i", inputName, "-vn", "-codec:a", "libmp3lame", "-q:a", "2", outputName]
+              : format === "wav" ? ["-i", inputName, "-vn", "-c:a", "pcm_s16le", outputName]
+              : format === "avi" ? ["-i", inputName, "-c:v", "mpeg4", "-q:v", "5", "-c:a", "libmp3lame", outputName]
+              : format === "mpeg" ? ["-i", inputName, "-c:v", "mpeg1video", "-c:a", "mp2", outputName]
+              : format === "webm" ? ["-i", inputName, "-c:v", "libvpx", "-c:a", "libvorbis", outputName]
+              : ["-i", inputName, "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23", "-c:a", "aac", "-movflags", "+faststart", outputName];
+            const exitCode = await ffmpeg.exec(args);
+            if (exitCode !== 0) throw new Error("Ce fichier ou ce codec n’a pas pu être converti vers ce format.");
+            const data = await ffmpeg.readFile(outputName);
+            const mime = ({mp3:"audio/mpeg",wav:"audio/wav",mp4:"video/mp4",webm:"video/webm",avi:"video/x-msvideo",mpeg:"video/mpeg"} as Record<string,string>)[format];
+            const outputBytes = new Uint8Array(data as Uint8Array);
+            created = [{name:`${stem(file.name)}.${format}`,blob:new Blob([outputBytes.buffer as ArrayBuffer],{type:mime}),note:`Converti en ${format.toUpperCase()} localement`}];
+          } finally { URL.revokeObjectURL(coreURL); URL.revokeObjectURL(wasmURL); await ffmpeg.terminate(); }
+          break;
+        }
         default:
           throw new Error("Cet outil sera bientôt disponible.");
       }
@@ -2815,7 +2859,13 @@ export default function ToolsHub() {
               {selected.option && selected.id !== "audio-trim" && selected.id !== "video-trim" && (
                 <label className="tool-option">
                   {selected.option}
-                  {selected.id === "image-convert" ? (
+                  {selected.id === "media-convert" ? (
+                    <select value={option || "mp4"} onChange={e => setOption(e.target.value)}>
+                      <option value="mp4">MP4 · vidéo universelle</option><option value="webm">WebM · web</option>
+                      <option value="avi">AVI · vidéo classique</option><option value="mpeg">MPEG · vidéo DVD</option>
+                      <option value="mp3">MP3 · audio</option><option value="wav">WAV · audio sans perte</option>
+                    </select>
+                  ) : selected.id === "image-convert" ? (
                     <select
                       value={option || "WebP"}
                       onChange={e => setOption(e.target.value)}
