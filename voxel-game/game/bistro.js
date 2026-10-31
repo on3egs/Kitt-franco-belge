@@ -53,7 +53,7 @@ export function createBistro(scene){
  const frameMat=mat(0xb48a45,{metalness:.68,roughness:.28}),frameDark=mat(0x241b17,{roughness:.72});
  directBox(cedricFrame,1.38,1.78,.13,0,0,-.055,frameDark);
  for(const [x,y,w,h] of [[0,.88,1.48,.12],[0,-.88,1.48,.12],[-.68,0,.12,1.65],[.68,0,.12,1.65]])directBox(cedricFrame,w,h,.16,x,y,0,frameMat);
- const portraitTexture=new THREE.TextureLoader().load('./assets/pour-cedric-humour.jpg');portraitTexture.colorSpace=THREE.SRGBColorSpace;
+ const portraitTexture=new THREE.TextureLoader().load('./game/assets/pour-cedric-humour.jpg');portraitTexture.colorSpace=THREE.SRGBColorSpace;
  const portrait=new THREE.Mesh(new THREE.PlaneGeometry(1.22,1.58),new THREE.MeshBasicMaterial({map:portraitTexture,side:THREE.DoubleSide}));portrait.position.z=.045;cedricFrame.add(portrait);
  const plaque=panel(signTexture('CADEAU DE CÉDRIC','POUR MANIX · LE GAULOIS BELGE','#f2d17b','#281c18'),1.5,.34,3.25,1.98,-7.32);
  // Machine à café, groupe, tasses et trois robinets chromés.
