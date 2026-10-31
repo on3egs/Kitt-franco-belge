@@ -8,7 +8,7 @@ import {resolveViewBudget} from './view-budget.mjs?v=view-budget-20261030';
 import {createAdaptiveQuality} from './adaptive-quality.mjs?v=adaptive-quality-20261029';
 import {createFirstPersonArms} from './first-person-arms.mjs?v=fp-arms-20261030';
 import {chunkMesh,materials,voxelRay} from './terrain.js?v=flag-patrol-20261029';
-import {avatar,car,goliath,flagWorkshopTruck,scanCar,walkAvatar,nameLabel,PROFILES} from './actors.js?v=flag-patrol-20261029';
+import {avatar,car,goliath,flagWorkshopTruck,scanCar,walkAvatar,nameLabel,PROFILES} from './actors.js?v=avatar-detail-20261031';
 import {movementVector,headingTo} from './controls.mjs';
 import {FLAG_PARKING,truckRoute} from './roads.mjs';
 import {CreatureSystem,BESTIARY} from './creatures.js?v=flag-patrol-20261029';
