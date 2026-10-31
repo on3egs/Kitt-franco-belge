@@ -2166,9 +2166,17 @@ export default function ToolsHub() {
           if (!file) throw new Error("Choisissez un fichier vidéo ou audio.");
           if (file.size > 500 * 1024 * 1024) throw new Error("Limite : 500 Mo par fichier pour la conversion locale.");
           const format = option || "mp4";
+          const sourceExtension = file.name.split(".").pop()?.toLowerCase();
+          if (format === "mp4" && sourceExtension === "mp4") {
+            created = [{ name: `${stem(file.name)}.mp4`, blob: file, note: "Ce fichier est déjà en MP4. Copie rapide sans perte de qualité ni réencodage." }];
+            break;
+          }
           setStatus("Chargement du moteur FFmpeg…");
           const { FFmpeg } = await import("@ffmpeg/ffmpeg");
           const ffmpeg = new FFmpeg();
+          let ffmpegLog = "";
+          ffmpeg.on("log", ({ message }) => { ffmpegLog = `${ffmpegLog}\n${message}`.slice(-1800); });
+          ffmpeg.on("progress", ({ progress }) => setStatus(`Conversion en cours… ${Math.max(0, Math.min(100, Math.round(progress * 100)))} %`));
           const base = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core";
           const [coreResponse, wasmResponse] = await Promise.all([fetch(`${base}.js`), fetch(`${base}.wasm`)]);
           if (!coreResponse.ok || !wasmResponse.ok) throw new Error("Le moteur FFmpeg est indisponible. Réessayez avec une connexion Internet.");
@@ -2186,9 +2194,9 @@ export default function ToolsHub() {
               : format === "avi" ? ["-i", inputName, "-c:v", "mpeg4", "-q:v", "5", "-c:a", "libmp3lame", outputName]
               : format === "mpeg" ? ["-i", inputName, "-c:v", "mpeg1video", "-c:a", "mp2", outputName]
               : format === "webm" ? ["-i", inputName, "-c:v", "libvpx", "-c:a", "libvorbis", outputName]
-              : ["-i", inputName, "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23", "-c:a", "aac", "-movflags", "+faststart", outputName];
+              : ["-i", inputName, "-c:v", "mpeg4", "-q:v", "4", "-c:a", "aac", "-movflags", "+faststart", outputName];
             const exitCode = await ffmpeg.exec(args);
-            if (exitCode !== 0) throw new Error("Ce fichier ou ce codec n’a pas pu être converti vers ce format.");
+            if (exitCode !== 0) throw new Error(`Conversion impossible vers ${format.toUpperCase()}. ${ffmpegLog.trim().split("\n").slice(-3).join(" · ")}`);
             const data = await ffmpeg.readFile(outputName);
             const mime = ({mp3:"audio/mpeg",wav:"audio/wav",mp4:"video/mp4",webm:"video/webm",avi:"video/x-msvideo",mpeg:"video/mpeg"} as Record<string,string>)[format];
             const outputBytes = new Uint8Array(data as Uint8Array);
