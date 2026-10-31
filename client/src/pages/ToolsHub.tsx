@@ -684,7 +684,13 @@ function parseRange(value: string, total: number) {
   if (!pages.size) throw new Error("Indiquez au moins une page.");
   return Array.from(pages);
 }
-function wavBlob(buffer: AudioBuffer, start = 0, end = buffer.duration) {
+async function wavBlob(
+  buffer: AudioBuffer,
+  start = 0,
+  end = buffer.duration,
+  signal?: AbortSignal,
+  onProgress?: (percent: number) => void
+) {
   const from = Math.max(0, Math.floor(start * buffer.sampleRate)),
     to = Math.min(buffer.length, Math.floor(end * buffer.sampleRate));
   if (to <= from) throw new Error("La plage audio est vide.");
@@ -710,12 +716,20 @@ function wavBlob(buffer: AudioBuffer, start = 0, end = buffer.duration) {
   put(36, "data");
   view.setUint32(40, length * channels * 2, true);
   let offset = 44;
-  for (let i = from; i < to; i++)
-    for (let c = 0; c < channels; c++) {
-      const sample = Math.max(-1, Math.min(1, buffer.getChannelData(c)[i]));
-      view.setInt16(offset, sample < 0 ? sample * 32768 : sample * 32767, true);
-      offset += 2;
+  const blockSize = 65536;
+  for (let blockStart = from; blockStart < to; blockStart += blockSize) {
+    if (signal?.aborted) throw new DOMException("Traitement annulé.", "AbortError");
+    const blockEnd = Math.min(to, blockStart + blockSize);
+    for (let i = blockStart; i < blockEnd; i++) {
+      for (let c = 0; c < channels; c++) {
+        const sample = Math.max(-1, Math.min(1, buffer.getChannelData(c)[i]));
+        view.setInt16(offset, sample < 0 ? sample * 32768 : sample * 32767, true);
+        offset += 2;
+      }
     }
+    onProgress?.(Math.round(((blockEnd - from) / length) * 100));
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
   return new Blob([bytes], { type: "audio/wav" });
 }
 async function decodeAudio(file: File) {
@@ -822,6 +836,107 @@ function mediaRecorderType(candidates: string[]) {
     ) || ""
   );
 }
+async function recordMp4InBrowser(
+  file: File,
+  signal: AbortSignal,
+  onProgress: (percent: number | null, current: number, duration: number) => void
+) {
+  const mimeType = mediaRecorderType([
+    "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+    "video/mp4",
+  ]);
+  if (!mimeType)
+    throw new Error("L’encodage MP4 natif n’est pas disponible dans ce navigateur.");
+  const video = document.createElement("video"),
+    sourceUrl = URL.createObjectURL(file);
+  video.preload = "auto";
+  video.playsInline = true;
+  video.muted = true;
+  video.src = sourceUrl;
+  let sourceStream: MediaStream | null = null,
+    outputStream: MediaStream | null = null,
+    recorder: MediaRecorder | null = null,
+    progressTimer = 0;
+  let abortHandler: (() => void) | null = null;
+  const abortPromise = new Promise<never>((_, reject) => {
+    abortHandler = () => reject(new DOMException("Traitement annulé.", "AbortError"));
+    signal.addEventListener("abort", abortHandler, { once: true });
+  });
+  const wait = <T,>(promise: Promise<T>) => Promise.race([promise, abortPromise]);
+  try {
+    await wait(once(video, "loadedmetadata"));
+    if (!video.videoWidth || !video.videoHeight)
+      throw new Error("Cette vidéo n’a pas de dimensions lisibles.");
+    if (!Number.isFinite(video.duration) || video.duration <= 0) {
+      onProgress(null, 0, 0);
+      await wait(Promise.race([
+        seekVideo(video, 1_000_000_000),
+        new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error("Durée de la vidéo introuvable.")), 10000)),
+      ]));
+    }
+    const duration = video.duration;
+    if (!Number.isFinite(duration) || duration <= 0)
+      throw new Error("Le navigateur ne peut pas déterminer la durée de cette vidéo.");
+    await wait(seekVideo(video, 0));
+
+    const capturedStream = (video as HTMLVideoElement & { captureStream: () => MediaStream }).captureStream();
+    sourceStream = capturedStream;
+    const videoTrack = capturedStream.getVideoTracks()[0];
+    if (!videoTrack) throw new Error("La capture vidéo n’est pas prise en charge.");
+    outputStream = capturedStream;
+    recorder = new MediaRecorder(outputStream, {
+      mimeType,
+      videoBitsPerSecond: video.videoWidth <= 854 ? 2_000_000 : video.videoWidth <= 1280 ? 4_000_000 : 7_000_000,
+      audioBitsPerSecond: 160_000,
+    });
+    const chunks: BlobPart[] = [];
+    const recording = new Promise<Blob>((resolve, reject) => {
+      recorder!.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder!.onerror = () => reject(new Error("Le navigateur a interrompu la création du MP4."));
+      recorder!.onstop = () => resolve(new Blob(chunks, { type: recorder!.mimeType || "video/mp4" }));
+    });
+    void recording.catch(() => {});
+    let playbackFinished!: Promise<void>;
+    playbackFinished = new Promise((resolve, reject) => {
+      const cleanup = () => {
+        video.removeEventListener("ended", ended);
+        video.removeEventListener("error", failed);
+        signal.removeEventListener("abort", cancelled);
+      };
+      const ended = () => { cleanup(); resolve(); },
+        failed = () => { cleanup(); reject(new Error("La lecture de la vidéo a échoué.")); },
+        cancelled = () => { cleanup(); reject(new DOMException("Traitement annulé.", "AbortError")); };
+      video.addEventListener("ended", ended, { once: true });
+      video.addEventListener("error", failed, { once: true });
+      signal.addEventListener("abort", cancelled, { once: true });
+    });
+    const report = () => {
+      const current = Math.max(0, video.currentTime),
+        percent = Math.min(99, Math.round((current / duration) * 100));
+      onProgress(percent, current, duration);
+    };
+    recorder.start(500);
+    progressTimer = window.setInterval(report, 250);
+    await wait(video.play());
+    await wait(playbackFinished);
+    if (recorder.state !== "inactive") recorder.stop();
+    const blob = await wait(recording);
+    if (signal.aborted) throw new DOMException("Traitement annulé.", "AbortError");
+    if (!blob.size) throw new Error("Le navigateur a créé un MP4 vide.");
+    onProgress(100, duration, duration);
+    return blob;
+  } finally {
+    if (abortHandler) signal.removeEventListener("abort", abortHandler);
+    if (progressTimer) window.clearInterval(progressTimer);
+    video.pause();
+    if (recorder && recorder.state !== "inactive") recorder.stop();
+    [...(sourceStream?.getTracks() || []), ...(outputStream?.getTracks() || [])]
+      .forEach(track => track.stop());
+    video.removeAttribute("src");
+    video.load();
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
 function seekVideo(video: HTMLVideoElement, time: number) {
   if (Math.abs(video.currentTime - time) < 0.03) return Promise.resolve();
   return new Promise<void>((resolve, reject) => {
@@ -858,7 +973,9 @@ function canvasPng(canvas: HTMLCanvasElement) {
 async function makeImageContactSheet(
   files: File[],
   rawColumns: number,
-  labelMode: "filename" | "number" | "hidden"
+  labelMode: "filename" | "number" | "hidden",
+  checkpoint?: () => Promise<void>,
+  onProgress?: (completed: number, total: number) => void
 ) {
   if (!files.length) throw new Error("Choisissez au moins une image.");
   if (files.length > 40)
@@ -881,6 +998,7 @@ async function makeImageContactSheet(
   ctx.fillStyle = "#ff7382";
   ctx.fillText("KITT // PLANCHE CONTACT", outer, outer + 18);
   for (let index = 0; index < files.length; index++) {
+    await checkpoint?.();
     const image = await createImageBitmap(files[index]),
       column = index % columns,
       row = Math.floor(index / columns),
@@ -916,10 +1034,15 @@ async function makeImageContactSheet(
             : files[index].name;
       ctx.fillText(name, x + 9, y + cellHeight - 12, cellWidth - 18);
     }
+    onProgress?.(index + 1, files.length);
   }
   return canvasPng(canvas);
 }
-async function makeWaveform(buffer: AudioBuffer) {
+async function makeWaveform(
+  buffer: AudioBuffer,
+  checkpoint?: () => Promise<void>,
+  onProgress?: (completed: number, total: number) => void
+) {
   if (buffer.duration > 600)
     throw new Error("Limite de 10 minutes pour produire une forme d’onde.");
   const width = 1800,
@@ -961,7 +1084,9 @@ async function makeWaveform(buffer: AudioBuffer) {
     ctx.strokeStyle = channel === 0 ? "#ff4058" : "#6ee7ff";
     ctx.lineWidth = 1.35;
     ctx.beginPath();
-    for (let x = 0; x < width - 50; x++) {
+    const columns = width - 50;
+    for (let x = 0; x < columns; x++) {
+      if (x % 64 === 0) await checkpoint?.();
       const start = Math.floor((x * data.length) / (width - 50)),
         end = Math.max(
           start + 1,
@@ -977,7 +1102,9 @@ async function makeWaveform(buffer: AudioBuffer) {
       }
       ctx.moveTo(x + 25, center - max * amplitude);
       ctx.lineTo(x + 25, center - min * amplitude);
+      if (x % 64 === 0) onProgress?.(channel * columns + x, channels * columns);
     }
+    onProgress?.((channel + 1) * columns, channels * columns);
     ctx.stroke();
     ctx.fillStyle = "#c9d4e3";
     ctx.font = "12px Consolas, monospace";
@@ -1048,6 +1175,7 @@ export default function ToolsHub() {
       "filename" | "number" | "hidden"
     >("filename"),
     [quality, setQuality] = useState(88),
+    [videoSize, setVideoSize] = useState<"720" | "480" | "source">("source"),
     [normalizeTarget, setNormalizeTarget] = useState(95),
     [filenameTemplate, setFilenameTemplate] = useState(() => {
       try { return localStorage.getItem("kitt-tool-filename-template-v1") || "{nom}-{outil}"; } catch { return "{nom}-{outil}"; }
@@ -1070,7 +1198,8 @@ export default function ToolsHub() {
     stream = useRef<MediaStream | null>(null),
     video = useRef<HTMLVideoElement>(null),
     workbench = useRef<HTMLElement>(null),
-    job = useRef<AbortController | null>(null);
+    job = useRef<AbortController | null>(null),
+    cancelActive = useRef<(() => void) | null>(null);
   const locked = busy || recording;
   const available = useMemo(
     () =>
@@ -1102,6 +1231,7 @@ export default function ToolsHub() {
   useEffect(
     () => () => {
       job.current?.abort();
+      cancelActive.current?.();
       stream.current?.getTracks().forEach(t => t.stop());
       recorder.current?.state !== "inactive" && recorder.current?.stop();
     },
@@ -1169,6 +1299,7 @@ export default function ToolsHub() {
       )[tool.id] || ""
     );
     setQuality(88);
+    setVideoSize("source");
     setNormalizeTarget(95);
     setOutputs([]);
     setStatus("");
@@ -1252,8 +1383,17 @@ export default function ToolsHub() {
       await new Promise(resolve => setTimeout(resolve, 0));
       if (controller.signal.aborted) throw new DOMException("Traitement annulé.", "AbortError");
     };
+    const reportProgress = (completed: number, total: number) => {
+      if (total > 0) setToolProgress(Math.min(99, Math.round((completed / total) * 100)));
+    };
+    const hasStepProgress = [
+      "pdf-merge", "pdf-split", "pdf-page-numbers", "pdf-watermark", "pdf-rotate", "pdf-text",
+      "image-pdf", "image-contact-sheet", "image-convert", "image-resize", "zip-create",
+      "audio-waveform", "audio-wav", "audio-trim", "audio-normalize", "audio-join",
+      "video-frames", "video-contact-sheet",
+    ].includes(selected.id);
     setBusy(true);
-    setToolProgress(selected.id === "media-convert" ? 0 : null);
+    setToolProgress(hasStepProgress ? 0 : null);
     setStatus("Préparation de vos fichiers sur cet appareil…");
     setOutputs([]);
     try {
@@ -1488,6 +1628,7 @@ export default function ToolsHub() {
               source.getPageIndices()
             );
             pages.forEach(p => target.addPage(p));
+            reportProgress(files.indexOf(pdf) + 1, files.length);
           }
           created = [
             {
@@ -1552,6 +1693,7 @@ export default function ToolsHub() {
             (await part.copyPages(source, [i])).forEach(p => part.addPage(p));
             zipItems[`page-${String(i + 1).padStart(3, "0")}.pdf`] =
               await part.save();
+            reportProgress(i + 1, source.getPageCount());
           }
           created = [
             {
@@ -1574,7 +1716,10 @@ export default function ToolsHub() {
           if (pdf.getPageCount() > 1000)
             throw new Error("Limite de 1000 pages pour numéroter ce document.");
           const font = await pdf.embedFont(StandardFonts.Helvetica);
-          pdf.getPages().forEach((page, index) => {
+          const pages = pdf.getPages();
+          for (let index = 0; index < pages.length; index++) {
+            await checkpoint();
+            const page = pages[index];
             const label = String(first + index),
               size = 9,
               width = font.widthOfTextAtSize(label, size);
@@ -1585,7 +1730,8 @@ export default function ToolsHub() {
               font,
               color: rgb(0.38, 0.42, 0.49),
             });
-          });
+            reportProgress(index + 1, pages.length);
+          }
           const data = await pdf.save({ useObjectStreams: true });
           created = [
             {
@@ -1613,7 +1759,10 @@ export default function ToolsHub() {
           if (pdf.getPageCount() > 500)
             throw new Error("Limite de 500 pages pour appliquer un filigrane.");
           const font = await pdf.embedFont(StandardFonts.Helvetica);
-          for (const page of pdf.getPages()) {
+          const pages = pdf.getPages();
+          for (let index = 0; index < pages.length; index++) {
+            await checkpoint();
+            const page = pages[index];
             const size = Math.min(
                 42,
                 ((page.getWidth() - 48) /
@@ -1630,6 +1779,7 @@ export default function ToolsHub() {
               opacity,
               rotate: degrees(32),
             });
+            reportProgress(index + 1, pages.length);
           }
           const data = await pdf.save({ useObjectStreams: true });
           created = [
@@ -1649,11 +1799,12 @@ export default function ToolsHub() {
             const deg = Number(option);
             if (![90, 180, 270].includes(deg))
               throw new Error("Choisissez 90, 180 ou 270 degrés.");
-            pdf
-              .getPages()
-              .forEach(p =>
-                p.setRotation(degrees((p.getRotation().angle + deg) % 360))
-              );
+            const pages = pdf.getPages();
+            for (let index = 0; index < pages.length; index++) {
+              await checkpoint();
+              pages[index].setRotation(degrees((pages[index].getRotation().angle + deg) % 360));
+              reportProgress(index + 1, pages.length);
+            }
           }
           const data = await pdf.save({
             useObjectStreams: true,
@@ -1693,6 +1844,7 @@ export default function ToolsHub() {
                 .filter(Boolean)
                 .join(" ")
             );
+            reportProgress(i, doc.numPages);
           }
           const value = pages.join("\n\n");
 
@@ -1727,6 +1879,7 @@ export default function ToolsHub() {
               width: w,
               height: h,
             });
+            reportProgress(files.indexOf(img) + 1, files.length);
           }
           created = [
             {
@@ -1743,7 +1896,9 @@ export default function ToolsHub() {
           const blob = await makeImageContactSheet(
             files,
             Number(option),
-            contactSheetLabelMode
+            contactSheetLabelMode,
+            checkpoint,
+            reportProgress
           );
           created = [
             {
@@ -1808,6 +1963,7 @@ export default function ToolsHub() {
               blob,
               note: `${canvas.width} × ${canvas.height} · ${quality}% · ${(blob.size / 1024).toFixed(0)} Ko`,
             });
+            reportProgress(files.indexOf(img) + 1, files.length);
           }
           break;
         }
@@ -1836,6 +1992,7 @@ export default function ToolsHub() {
               name = `${base}-${n++}${ext}`;
             }
             items[name] = new Uint8Array(await f.arrayBuffer());
+            reportProgress(files.indexOf(f) + 1, files.length);
           }
           created = [
             {
@@ -1915,7 +2072,7 @@ export default function ToolsHub() {
         }
         case "audio-waveform": {
           const buffer = await decodeAudio(file!),
-            blob = await makeWaveform(buffer);
+            blob = await makeWaveform(buffer, checkpoint, reportProgress);
           created = [
             {
               name: stem(file!.name) + "-forme-onde.png",
@@ -1937,32 +2094,54 @@ export default function ToolsHub() {
           let outputBuffer = buffer;
           if (selected.id === "audio-normalize") {
             let peak = 0;
+            const totalSamples = buffer.length * buffer.numberOfChannels;
+            let scanned = 0;
             for (let c = 0; c < buffer.numberOfChannels; c++) {
               const channel = buffer.getChannelData(c);
-              for (let sample = 0; sample < channel.length; sample++)
-                peak = Math.max(peak, Math.abs(channel[sample]));
+              for (let offset = 0; offset < channel.length; offset += 262144) {
+                await checkpoint();
+                const end = Math.min(channel.length, offset + 262144);
+                for (let sample = offset; sample < end; sample++)
+                  peak = Math.max(peak, Math.abs(channel[sample]));
+                scanned += end - offset;
+                setToolProgress(Math.round((scanned / totalSamples) * 30));
+                setStatus(`Analyse du son… ${Math.round((scanned / totalSamples) * 100)} %`);
+              }
             }
             const targetAmplitude = normalizeTarget / 100;
             const scale = peak ? targetAmplitude / peak : 1;
             const Ctx =
                 window.AudioContext ||
                 ((window as any).webkitAudioContext as typeof AudioContext),
-              ctx = new Ctx(),
-              render = ctx.createBuffer(
+              ctx = new Ctx();
+            try {
+              const render = ctx.createBuffer(
                 buffer.numberOfChannels,
                 buffer.length,
                 buffer.sampleRate
               );
-            for (let c = 0; c < buffer.numberOfChannels; c++) {
-              const target = render.getChannelData(c),
-                source = buffer.getChannelData(c);
-              for (let i = 0; i < target.length; i++)
-                target[i] = source[i] * scale;
+              for (let c = 0; c < buffer.numberOfChannels; c++) {
+                const target = render.getChannelData(c),
+                  source = buffer.getChannelData(c);
+                for (let offset = 0; offset < target.length; offset += 262144) {
+                  await checkpoint();
+                  const end = Math.min(target.length, offset + 262144);
+                  for (let i = offset; i < end; i++) target[i] = source[i] * scale;
+                  const completed = c * target.length + end;
+                  setToolProgress(30 + Math.round((completed / totalSamples) * 35));
+                  setStatus(`Normalisation du son… ${Math.round((completed / totalSamples) * 100)} %`);
+                }
+              }
+              outputBuffer = render;
+            } finally {
+              await ctx.close();
             }
-            outputBuffer = render;
-            await ctx.close();
           }
-          const blob = wavBlob(outputBuffer, start, end);
+          const blob = await wavBlob(outputBuffer, start, end, controller.signal, percent => {
+            const base = selected.id === "audio-normalize" ? 65 : 0;
+            setToolProgress(base + Math.round((percent / 100) * (99 - base)));
+            setStatus(`Création du WAV… ${percent} %`);
+          });
           created = [
             {
               name: stem(file!.name) + ".wav",
@@ -1994,6 +2173,7 @@ export default function ToolsHub() {
             ctx = new Ctx(),
             out = ctx.createBuffer(channels, length, rate);
           let cursor = 0;
+          try {
           for (const item of decoded) {
             const count = Math.ceil(item.duration * rate);
             for (let c = 0; c < channels; c++) {
@@ -2001,21 +2181,32 @@ export default function ToolsHub() {
                 source = item.getChannelData(
                   Math.min(c, item.numberOfChannels - 1)
                 );
-              for (let i = 0; i < count; i++) {
-                const pos = (i * item.sampleRate) / rate,
-                  left = Math.floor(pos),
-                  fraction = pos - left;
-                target[cursor + i] =
-                  (source[left] || 0) * (1 - fraction) +
-                  (source[Math.min(left + 1, source.length - 1)] || 0) *
-                    fraction;
+              for (let blockStart = 0; blockStart < count; blockStart += 65536) {
+                await checkpoint();
+                const blockEnd = Math.min(count, blockStart + 65536);
+                for (let i = blockStart; i < blockEnd; i++) {
+                  const pos = (i * item.sampleRate) / rate,
+                    left = Math.floor(pos),
+                    fraction = pos - left;
+                  target[cursor + i] =
+                    (source[left] || 0) * (1 - fraction) +
+                    (source[Math.min(left + 1, source.length - 1)] || 0) *
+                      fraction;
+                }
+                reportProgress(cursor + blockEnd, length);
+                setStatus(`Assemblage audio… ${Math.min(99, Math.round(((cursor + blockEnd) / length) * 80))} %`);
               }
             }
             cursor += count;
           }
-          const blob = wavBlob(out);
-          await ctx.close();
+          const blob = await wavBlob(out, 0, out.duration, controller.signal, percent => {
+            setToolProgress(80 + Math.round((percent / 100) * 19));
+            setStatus(`Création du WAV assemblé… ${percent} %`);
+          });
           created = [{ name: "audio-assemble.wav", blob }];
+          } finally {
+            await ctx.close();
+          }
           break;
         }
         case "video-info":
@@ -2072,6 +2263,7 @@ export default function ToolsHub() {
                 items[
                   `image-${String(i + 1).padStart(3, "0")}-${Math.floor(shots[i])}s.png`
                 ] = new Uint8Array(await blob.arrayBuffer());
+              reportProgress(i + 1, shots.length);
             }
             if (selected.id === "video-frames") {
               const { zipSync } = await import("fflate");
@@ -2148,6 +2340,7 @@ export default function ToolsHub() {
             ctx.fillStyle = "#e9eff8";
             ctx.font = "12px Consolas, monospace";
             ctx.fillText(formatTime(times[index]), x + 9, y + cellHeight - 10);
+            reportProgress(index + 1, times.length);
           }
           const blob = await canvasPng(canvas);
           created = [
@@ -2169,45 +2362,128 @@ export default function ToolsHub() {
           if (file.size > 500 * 1024 * 1024) throw new Error("Limite : 500 Mo par fichier pour la conversion locale.");
           const format = option || "mp4";
           const sourceExtension = file.name.split(".").pop()?.toLowerCase();
+          const inputIsAudio = file.type.startsWith("audio/") || (!file.type && /\.(mp3|wav|m4a|aac|flac|ogg|opus)$/i.test(file.name));
           if (format === "mp4" && sourceExtension === "mp4") {
             created = [{ name: `${stem(file.name)}.mp4`, blob: file, note: "Ce fichier est déjà en MP4. Copie rapide sans perte de qualité ni réencodage." }];
             break;
           }
+          if (format === "mp4" && !inputIsAudio && videoSize === "source" && mediaRecorderType(["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4"]) && typeof (HTMLVideoElement.prototype as any).captureStream === "function") {
+            setStatus("Préparation de l’encodage MP4 natif…");
+            try {
+              const blob = await recordMp4InBrowser(file, controller.signal, (percent, current, duration) => {
+                setToolProgress(percent);
+                setStatus(duration > 0
+                  ? `Encodage MP4 accéléré · ${formatTime(current)} / ${formatTime(duration)} · ${percent ?? 0} %`
+                  : "Lecture des horodatages de la vidéo…");
+              });
+              created = [{
+                name: `${stem(file.name)}.mp4`,
+                blob,
+                note: "MP4 créé par l’encodeur vidéo natif, à la résolution d’origine.",
+              }];
+              break;
+            } catch (nativeError) {
+              if (controller.signal.aborted) throw nativeError;
+              setToolProgress(null);
+              setStatus("Le mode natif n’a pas pu démarrer ; passage au moteur de secours…");
+            }
+          }
           setStatus("Chargement du moteur FFmpeg…");
           const { FFmpeg } = await import("@ffmpeg/ffmpeg");
           const ffmpeg = new FFmpeg();
-          let ffmpegLog = "";
+          let ffmpegLog = "", lastPercent = 0, durationSeconds = 0, encodingStarted = false;
+          let termination: Promise<void> | null = null;
+          const terminate = () => {
+            termination ??= Promise.resolve(ffmpeg.terminate());
+            return termination;
+          };
+          cancelActive.current = terminate;
+          controller.signal.addEventListener("abort", terminate, { once: true });
+          let loadTimer: number | undefined;
           ffmpeg.on("log", ({ message }) => { ffmpegLog = `${ffmpegLog}\n${message}`.slice(-1800); });
-          ffmpeg.on("progress", ({ progress }) => {
-            const percent = Math.max(0, Math.min(100, Math.round(progress * 100)));
-            setToolProgress(percent);
-            setStatus(`Conversion en cours… ${percent} %`);
+          ffmpeg.on("progress", ({ time }) => {
+            if (!encodingStarted) return;
+            if (!durationSeconds || !Number.isFinite(time)) {
+              setToolProgress(null);
+              setStatus(`Encodage en cours · ${formatTime(Math.max(0, time / 1_000_000))} écoulées…`);
+              return;
+            }
+            const mediaTime = time / 1_000_000;
+            const estimate = Math.max(0, Math.min(99, Math.round((mediaTime / durationSeconds) * 100)));
+            lastPercent = Math.max(lastPercent, estimate);
+            setToolProgress(lastPercent);
+            setStatus(`Encodage vidéo · ${formatTime(Math.max(0, mediaTime))} / ${formatTime(durationSeconds)} · ${lastPercent} %`);
           });
-          const base = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core";
-          const [coreResponse, wasmResponse] = await Promise.all([fetch(`${base}.js`), fetch(`${base}.wasm`)]);
-          if (!coreResponse.ok || !wasmResponse.ok) throw new Error("Le moteur FFmpeg est indisponible. Réessayez avec une connexion Internet.");
-          const coreURL = URL.createObjectURL(await coreResponse.blob());
-          const wasmURL = URL.createObjectURL(await wasmResponse.blob());
+          const base = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core";
           try {
-            await ffmpeg.load({ coreURL, wasmURL });
+            setStatus("Initialisation du moteur vidéo…");
+            const loadPromise = ffmpeg.load(
+              { coreURL: `${base}.js`, wasmURL: `${base}.wasm` },
+              { signal: controller.signal }
+            );
+            await Promise.race([
+              loadPromise,
+              new Promise<never>((_, reject) => {
+                loadTimer = window.setTimeout(() => reject(new Error("Le moteur vidéo ne démarre pas. Vérifiez la connexion puis réessayez dans Chrome ou Edge à jour.")), 90000);
+              }),
+            ]);
             if (controller.signal.aborted) throw new Error("Conversion annulée.");
             const inputName = `input.${file.name.split(".").pop()?.replace(/[^a-z0-9]/gi, "") || "bin"}`;
             const outputName = `output.${format}`;
+            const scaleArgs = !inputIsAudio && videoSize !== "source"
+              ? ["-vf", videoSize === "480" ? "scale=min(854\\,iw):-2" : "scale=min(1280\\,iw):-2"]
+              : [];
+            setStatus("Préparation du fichier vidéo…");
             await ffmpeg.writeFile(inputName, new Uint8Array(await file.arrayBuffer()));
-            setStatus("Conversion en cours…");
+            if (controller.signal.aborted) throw new Error("Conversion annulée.");
+            if (!inputIsAudio) {
+              setStatus("Analyse de la durée pour afficher une progression précise…");
+              try {
+                await ffmpeg.ffprobe([
+                  "-v", "error", "-show_entries", "format=duration", "-of",
+                  "default=noprint_wrappers=1:nokey=1", inputName, "-o", "kitt-duration.txt",
+                ], -1, { signal: controller.signal });
+                const durationText = await ffmpeg.readFile("kitt-duration.txt", "utf8");
+                durationSeconds = Number(String(durationText).trim());
+                await ffmpeg.deleteFile("kitt-duration.txt");
+                if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
+                  await ffmpeg.ffprobe([
+                    "-v", "error", "-show_entries", "packet=pts_time,duration_time",
+                    "-of", "csv=p=0", inputName, "-o", "kitt-packets.txt",
+                  ], -1, { signal: controller.signal });
+                  const packetText = await ffmpeg.readFile("kitt-packets.txt", "utf8");
+                  durationSeconds = String(packetText).split(/\r?\n/).reduce((latest, row) => {
+                    const [ptsRaw, durationRaw] = row.split(","), pts = Number(ptsRaw), packetDuration = Number(durationRaw);
+                    return Number.isFinite(pts) ? Math.max(latest, pts + (Number.isFinite(packetDuration) ? packetDuration : 0)) : latest;
+                  }, 0);
+                  await ffmpeg.deleteFile("kitt-packets.txt");
+                }
+              } catch (probeError) {
+                if (controller.signal.aborted) throw probeError;
+                durationSeconds = 0;
+              }
+            }
+            setToolProgress(durationSeconds > 0 || inputIsAudio ? 0 : null);
+            encodingStarted = true;
+            setStatus(durationSeconds > 0 ? `Encodage vidéo · 0 / ${formatTime(durationSeconds)} · 0 %` : "Encodage vidéo en cours…");
             const args = format === "mp3" ? ["-i", inputName, "-vn", "-codec:a", "libmp3lame", "-q:a", "2", outputName]
               : format === "wav" ? ["-i", inputName, "-vn", "-c:a", "pcm_s16le", outputName]
-              : format === "avi" ? ["-i", inputName, "-c:v", "mpeg4", "-q:v", "5", "-c:a", "libmp3lame", outputName]
-              : format === "mpeg" ? ["-i", inputName, "-c:v", "mpeg1video", "-c:a", "mp2", outputName]
-              : format === "webm" ? ["-i", inputName, "-c:v", "libvpx", "-c:a", "libvorbis", outputName]
-              : ["-i", inputName, "-c:v", "mpeg4", "-q:v", "4", "-c:a", "aac", "-movflags", "+faststart", outputName];
+              : format === "avi" ? ["-i", inputName, ...scaleArgs, "-c:v", "mpeg4", "-q:v", "5", "-c:a", "libmp3lame", outputName]
+              : format === "mpeg" ? ["-i", inputName, ...scaleArgs, "-c:v", "mpeg1video", "-c:a", "mp2", outputName]
+              : format === "webm" ? ["-i", inputName, ...scaleArgs, "-c:v", "libvpx", "-deadline", "realtime", "-cpu-used", "8", "-c:a", "libvorbis", outputName]
+              : ["-i", inputName, ...scaleArgs, "-threads", "0", "-c:v", "mpeg4", "-q:v", videoSize === "480" ? "7" : "5", "-bf", "0", "-pix_fmt", "yuv420p", "-c:a", "aac", "-movflags", "+faststart", outputName];
             const exitCode = await ffmpeg.exec(args);
             if (exitCode !== 0) throw new Error(`Conversion impossible vers ${format.toUpperCase()}. ${ffmpegLog.trim().split("\n").slice(-3).join(" · ")}`);
             const data = await ffmpeg.readFile(outputName);
             const mime = ({mp3:"audio/mpeg",wav:"audio/wav",mp4:"video/mp4",webm:"video/webm",avi:"video/x-msvideo",mpeg:"video/mpeg"} as Record<string,string>)[format];
             const outputBytes = new Uint8Array(data as Uint8Array);
-            created = [{name:`${stem(file.name)}.${format}`,blob:new Blob([outputBytes.buffer as ArrayBuffer],{type:mime}),note:`Converti en ${format.toUpperCase()} localement`}];
-          } finally { URL.revokeObjectURL(coreURL); URL.revokeObjectURL(wasmURL); await ffmpeg.terminate(); }
+            created = [{name:`${stem(file.name)}.${format}`,blob:new Blob([outputBytes.buffer as ArrayBuffer],{type:mime}),note:`Converti en ${format.toUpperCase()} localement${!inputIsAudio && videoSize === "480" ? " · mode très rapide, 480p maximum" : !inputIsAudio && videoSize === "720" ? " · mode rapide, 720p maximum" : ""}`}];
+          } finally {
+            if (loadTimer !== undefined) window.clearTimeout(loadTimer);
+            controller.signal.removeEventListener("abort", terminate);
+            if (cancelActive.current === terminate) cancelActive.current = null;
+            await terminate();
+          }
           break;
         }
         default:
@@ -2245,7 +2521,8 @@ export default function ToolsHub() {
       );
     } finally {
       setBusy(false);
-      if (!outputs.length) setToolProgress(null);
+      setToolProgress(null);
+      cancelActive.current = null;
       if (job.current === controller) job.current = null;
     }
   }
@@ -2926,6 +3203,17 @@ export default function ToolsHub() {
                   )}
                 </label>
               )}
+              {selected.id === "media-convert" && !["mp3", "wav"].includes(option || "mp4") && files.some(file => file.type.startsWith("video/")) && (
+                <label className="tool-option">
+                  Vitesse et résolution vidéo
+                  <select value={videoSize} onChange={event => setVideoSize(event.target.value as "720" | "480" | "source")}>
+                    <option value="source">Accéléré · encodeur natif · résolution d’origine</option>
+                    <option value="720">Réduire à 720p maximum · conversion plus lente</option>
+                    <option value="480">Réduire à 480p maximum · conversion plus lente</option>
+                  </select>
+                  <small>Le mode accéléré utilise l’encodeur vidéo du navigateur et conserve tous les détails. Les modes 720p et 480p passent par FFmpeg.</small>
+                </label>
+              )}
               {(selected.id === "audio-trim" || selected.id === "video-trim") && (
                 <fieldset className="tool-range-fieldset"><legend>Plage à conserver</legend><div className="tool-trim-controls">
                   <label><span>Début (secondes)</span><input type="number" min="0" step="0.1" value={option.split(";")[0] || ""} placeholder="0" onChange={e => setOption(`${e.target.value};${option.split(";")[1] || ""}`)} /></label>
@@ -3020,7 +3308,7 @@ export default function ToolsHub() {
                   </>
                 )}
               </button>
-              {busy && !recording && <button type="button" className="tool-cancel" onClick={() => { job.current?.abort(); setStatus("Annulation demandée…"); }}><X size={15} /> Annuler le traitement</button>}
+              {busy && !recording && <button type="button" className="tool-cancel" onClick={() => { job.current?.abort(); cancelActive.current?.(); setStatus("Annulation demandée…"); }}><X size={15} /> Annuler le traitement</button>}
               <p className="tool-run-help">{recording ? "Le micro est actif jusqu’à votre arrêt." : selected.multiple ? "L’export suit l’ordre de votre sélection. Vos originaux sont conservés." : "Un nouveau fichier sera créé. Votre original est conservé."}</p>
               <p className="tool-status" role="status" aria-live="polite">
                 {status || ""}
