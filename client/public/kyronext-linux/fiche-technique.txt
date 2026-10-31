@@ -1,43 +1,42 @@
-KYRONEXT OS — 0.1 DEVELOPER PREVIEW
-Kyronext Systems — By Manix
-Première édition publique — 30 octobre 2026
-
-Système Linux Live réel, distinct de la démonstration Web Kyronext OS 1982.
-Base : Debian 13 Trixie AMD64, noyau officiel Debian.
-Bureau : KDE Plasma, SDDM, session X11.
-Services : systemd, PipeWire, NetworkManager, APT.
-Fabrication initiale : Debian live-build, puis révision des ressources visuelles.
-
-TÉLÉCHARGEMENT
-Révision publique : 20261030T143045Z-branding-final
-Fichier : Kyronext-OS-0.1-amd64.iso
-Taille : 1 634 861 056 octets
-SHA-256 : 91d8238d4eb33686b9674981dabf828fafb97f8e9d4d2319b019486e59508c85
-ISO : https://github.com/on3egs/kyronext-os/releases/download/v0.1-developer-preview/Kyronext-OS-0.1-amd64.iso
-Somme de contrôle : https://github.com/on3egs/kyronext-os/releases/download/v0.1-developer-preview/SHA256SUMS
-
-VALIDATION
-Empreinte ISO vérifiée ; sommes internes et structures hybrides contrôlées.
-Bureau KDE atteint en BIOS QEMU et en UEFI VirtualBox sur cette révision.
-Un démarrage USB a été rapporté sur une version personnelle ultérieure ;
-ce résultat n'est pas attribué automatiquement à l'ISO publique ci-dessus.
-Aucune compatibilité physique complète garantie : affichage, réseau,
-périphériques essentiels et audio se testent machine par machine.
-
-PERSONNALISATION
-Fond, couleurs graphite et rouge, accueil et panneau originaux Kyronext.
-Réglages KDE conservés, animations désactivables.
-Le nom officiel reste Kyronext OS. Aucun lien officiel avec Knight Rider.
-Les illustrations KITT/KARR des essais privés ne sont pas dans cette ISO publique.
-Les thèmes personnels ne confèrent aucun droit sur les éléments de tiers.
-
-LIMITES ET CLÉ USB
-Live uniquement. Aucun installateur sur disque actif ni persistance intégrée.
-Aucun modèle IA locale inclus. Cockpit et assistant IA prévus ultérieurement.
-Secure Boot, chiffrement et matériel physique non validés.
-L'écriture de l'ISO sur une clé USB efface cette clé : vérifier le périphérique.
-Ne remplacez pas votre système principal avec cette préversion.
+KYRONEXT OS - 0.1 DEVELOPER PREVIEW - SUITE INTEGRATION
+Kyronext Systems - By Manix
+Revision : 20261031T1854-suite-search-preview
+Date : 31 octobre 2026
 
 PRÉSENTATION
-https://kyronext.eu/kyronext-os/
-https://kitt-franco-belge.be/kyronext-linux/
+Distribution Linux Live AMD64 basée sur Debian 13 Trixie et KDE Plasma.
+Noyau Debian : 6.12.113+deb13-amd64.
+Services : systemd, PipeWire, NetworkManager et APT.
+Applications Kyronext intégrées : Welcome, Launchpad, Monitor et outils de diagnostic.
+Firefox ESR est fourni comme navigateur conseillé. Navigator Qt WebEngine reste expérimental.
+
+TÉLÉCHARGEMENT ET VÉRIFICATION
+L'image assemblée fait 2 454 208 512 octets. Elle est distribuée en deux parties.
+Partie 1 : Kyronext-OS-0.1-amd64.iso.part01 - 1 900 000 000 octets
+SHA-256 : 642e2e610634f7dd2f51bf59792a0f6297169d0abdb580c547b751f5f84473a1
+Partie 2 : Kyronext-OS-0.1-amd64.iso.part02 - 554 208 512 octets
+SHA-256 : cbf4103d23872f5cf4d40f80d4fc50121e386bed626cbfbbc4565548c8b58267
+SHA-256 de l'ISO assemblée : 631637ee963f8ed2e3660aa9e2cdef39ad53c397e6a12b02e37c5c31123704b4
+
+Windows : placer les deux parties et Assemble-KyronextISO.ps1 dans le même dossier,
+puis lancer : powershell -NoProfile -ExecutionPolicy Bypass -File .\Assemble-KyronextISO.ps1
+Linux : cat Kyronext-OS-0.1-amd64.iso.part01 Kyronext-OS-0.1-amd64.iso.part02 > Kyronext-OS-0.1-amd64.iso
+Puis vérifier avec : sha256sum -c SHA256SUMS
+
+VALIDATION
+Démarrage BIOS et UEFI observé dans QEMU/WHPX, sans disque virtuel.
+Le bureau KDE a été affiché ; Kyronext Monitor a montré des mesures en direct.
+Les tests automatisés du dépôt et les tests CTest de la suite ont été executes ; voir les rapports joints.
+Ces essais virtuels ne certifient pas un ordinateur physique. Le HP EliteBook 2540p n'a pas été testé.
+
+LIMITES
+Live uniquement : aucun installateur disque actif, aucune persistance intégrée.
+Aucun modèle IA locale inclus. Secure Boot, chiffrement et compatibilité physique non validés.
+Le projet reste une distribution Kyronext indépendante, sans affiliation officielle à Knight Rider.
+
+ATTENTION CLÉ USB
+Écrire l'image sur une clé USB efface son contenu. Vérifier soigneusement le périphérique cible.
+Aucune clé USB ni aucun disque physique n'a été modifie pendant la validation de cette révision.
+
+Sites : https://kitt-franco-belge.be/kyronext-linux/
+       https://kyronext.eu/kyronext-os/

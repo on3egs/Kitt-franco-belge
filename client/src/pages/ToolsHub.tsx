@@ -2779,7 +2779,7 @@ export default function ToolsHub() {
         <span className="tools-image-studio-copy">
           <small>LINUX LIVE · 0.1 DEVELOPER PREVIEW · BY MANIX</small>
           <strong>Kyronext OS</strong>
-          <span>Un véritable bureau Debian et KDE, une identité personnalisable. Présentation vocale et fiche technique ; ISO publique en préparation.</span>
+          <span>Un véritable bureau Debian et KDE, une identité personnalisable. Présentation vocale et fiche technique ; nouvelle ISO publique disponible en deux parties.</span>
         </span>
         <span className="tools-image-studio-action">Découvrir le système <ArrowRight size={16} /></span>
       </a>
