@@ -18,7 +18,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validate-ethernet-direct:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Windows assistant without changing network adapters
+        shell: powershell
+        run: |
+          $tokens = $null; $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile("$pwd/tools/ethernet-direct/Ethernet-Direct.ps1", [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count) { $errors | Format-List; exit 1 }
+          & ./tools/ethernet-direct/Test-Ethernet-Direct.ps1
+
   build-and-deploy:
+    needs: validate-ethernet-direct
     runs-on: ubuntu-latest
     environment:
       name: github-pages

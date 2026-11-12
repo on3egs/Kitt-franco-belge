@@ -1,0 +1,45 @@
+ETHERNET DIRECT 1.0 — KITT Franco-Belge
+Assistant portable pour Windows 10/11 avec Windows PowerShell 5.1 et interface graphique.
+
+1. Extraire TOUS les fichiers du ZIP dans un dossier local.
+2. Brancher le PC par câble à l'appareil.
+3. Double-cliquer Lancer.cmd et accepter la demande administrateur.
+4. Choisir la carte Ethernet physique (les cartes Wi-Fi et virtuelles sont exclues).
+5. Saisir l'IPv4 de l'appareil et son préfixe, fournis par son fabricant.
+   L'adresse proposée pour le PC reste modifiable. Vérifier qu'elle est libre.
+6. Saisir l'URL complète de l'appareil, y compris le port si nécessaire.
+7. Cliquer Configurer la liaison, confirmer la carte, puis Tester / ouvrir.
+8. Après usage, cliquer Restaurer la carte avant de revenir au réseau habituel.
+
+Exemple de liaison directe : appareil 192.168.129.25, PC 192.168.129.26,
+préfixe 23 (masque 255.255.254.0), URL https://192.168.129.25:3000/.
+Autre exemple : appareil 192.168.1.64, PC 192.168.1.65, préfixe 24,
+URL http://192.168.1.64/. Adapter ces valeurs à la notice de VOTRE appareil.
+
+Fonctionnement : inventaire des interfaces, liaison IPv4 fixe sans passerelle
+sur la seule carte choisie, route ciblée vers l'appareil et test TCP lié à
+l'adresse Ethernet. Le Wi-Fi et IPv6 ne sont pas modifiés. La configuration
+réseau de l'appareil distant n'est pas changée. La liaison ne partage pas Internet.
+
+Sauvegarde par identifiant de carte dans %ProgramData%\KITT-Ethernet-Direct.
+Conserver ces sauvegardes tant que la configuration initiale n'est pas restaurée.
+Ne pas supprimer une sauvegarde pour refaire une configuration : elle est
+conservée pour permettre le retour à la première configuration.
+En cas d'échec d'application, l'assistant tente la restauration ; s'il échoue,
+la sauvegarde est conservée et le bouton Restaurer reste disponible.
+
+Limites : un appareil à adresse fixe inconnue ne peut pas être identifié
+universellement. L'assistant ne scanne pas tous les réseaux et ne fournit pas
+un serveur DHCP. L'appareil doit déjà avoir une IPv4 connue et un service ouvert.
+Un voyant sans activité n'indique pas nécessairement une panne de câble.
+Le test TCP ne vérifie pas les certificats, comptes ou droits de l'application.
+Le navigateur peut afficher une alerte pour un certificat HTTPS local.
+L'URL s'ouvre dans le navigateur du compte administrateur utilisé pour lancer
+l'assistant. Les réseaux gérés par une entreprise peuvent interdire ces changements.
+
+Il s'agit d'une application PowerShell WinForms portable avec lanceur CMD,
+pas d'un exécutable EXE signé. La politique d'exécution n'est adaptée que pour
+ce processus de lancement ; aucune modification permanente de cette politique.
+Aucun compte, mot de passe ni donnée n'est envoyé au site. Aucun service installé.
+Sources incluses sous licence MIT. Test réel Windows et appareil à effectuer
+avant d'employer l'outil sur une liaison indispensable.

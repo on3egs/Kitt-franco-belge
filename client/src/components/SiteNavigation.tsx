@@ -4,6 +4,7 @@ import LangSelector from "./LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const SITE_LINKS: { href: string; label: string; detail: string; keywords?: string }[] = [
+  { href: "/ethernet-direct/", label: "Ethernet Direct · Windows", detail: "Configurer une liaison câblée vers un appareil et restaurer ses réglages", keywords: "reseau réseau ethernet ip windows connexion câble caméra automate serveur" },
   { href: "https://kitt.kitt-franco-belge.be/static/games/kitt-blocks/", label: "KITT · Monde en blocs", detail: "Construction voxel, KITT, Halloween et salles de 16 joueurs", keywords: "minecraft minercraft bac sable moutons monstres lilou alexia jeux" },
   { href: "/outils#outils-quotidiens", label: "Outils du quotidien", detail: "Tableur CSV, renommage de fichiers et mots de passe · By Manix" },
   { href: "/studio-pdf", label: "Studio PDF", detail: "Organiser, tourner, retirer et fusionner les pages avec aperçu" },
