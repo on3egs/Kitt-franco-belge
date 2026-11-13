@@ -17,6 +17,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import SiteNavigation from "@/components/SiteNavigation";
 import SoftwareSection from "@/components/SoftwareSection";
 import MissionLaunch from "@/components/MissionLaunch";
+import MidnightDemoSection from "@/components/MidnightDemoSection";
 import { soundEnabled } from "@/hooks/useSoundEffects";
 import { getApiBase } from "@/lib/tunnel";
 
@@ -2294,6 +2295,7 @@ export default function Home() {
       <SiteNavigation />
       <main id="main-content" tabIndex={-1}>
       <HeroSection />
+      <MidnightDemoSection />
       <MissionLaunch />
       <SoftwareSection />
       <VisitorCounter />
