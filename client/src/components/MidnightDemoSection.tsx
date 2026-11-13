@@ -1,5 +1,6 @@
 import "./MidnightDemoSection.css";
 import "./MidnightTribute.css";
+import MidnightGuestbook from "./MidnightGuestbook";
 
 const DEMO_URL = `${import.meta.env.BASE_URL}kyronext-midnight/`;
 
@@ -32,6 +33,7 @@ export default function MidnightDemoSection() {
         <p className="midnight-ethos">KYRONEXT poursuit ce fil avec une boussole <strong>white hat</strong> : comprendre, créer, protéger et transmettre, dans le respect des personnes, des auteurs et des systèmes.</p>
         <footer className="midnight-tribute-footer"><span>Le disque a changé. La lumière circule encore.</span><b>BY MANIX</b></footer>
       </aside>
+      <MidnightGuestbook />
     </section>
   );
 }

@@ -1,0 +1,25 @@
+[Unit]
+Description=KYRONEXT Midnight Disk - Guestbook and private messages
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=karr
+Group=karr
+WorkingDirectory=/home/karr/.local/share/kyronext-midnight/service
+Environment=MIDNIGHT_DATA_DIR=/home/karr/.local/share/kyronext-midnight/data
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 /home/karr/.local/share/kyronext-midnight/service/guestbook.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/karr/.local/share/kyronext-midnight/data
+MemoryMax=160M
+TasksMax=32
+
+[Install]
+WantedBy=multi-user.target

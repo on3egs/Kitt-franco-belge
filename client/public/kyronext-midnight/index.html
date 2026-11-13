@@ -34,7 +34,7 @@
 <ul class="midnight-greets" aria-label="Hommage aux groupes de la scène"><li>Skid Row</li><li>Fairlight</li><li>Paradox</li><li>Quartex</li><li>TRSI</li><li>Razor 1911</li><li>Anarchy</li><li>D-Mob</li></ul>
 <p class="midnight-ethos">KYRONEXT poursuit ce fil avec une boussole <strong>white hat</strong> : comprendre, créer, protéger et transmettre, dans le respect des personnes, des auteurs et des systèmes.</p>
 <footer class="midnight-tribute-footer"><span>Le disque a changé. La lumière circule encore.</span><b>BY MANIX</b></footer>
-</aside></main>
+</aside><midnight-guestbook id="midnight-guestbook"></midnight-guestbook></main>
 <script>
 'use strict';
 // Midnight Disk — création originale pour Manix. Canvas logiciel et musique procédurale.
@@ -124,4 +124,4 @@ window.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===document.b
 // Paramètre de capture pour vérifier une séquence sans attendre son passage.
 const capture=new URLSearchParams(location.search).get('frame');if(capture!==null){started=true;playing=false;$('gate').hidden=true;current=clamp(Number(capture)||0,0,95.99);render(current)}
 </script>
-</body></html>
+<script src="./guestbook.js" defer></script></body></html>
