@@ -1,4 +1,5 @@
 import "./MidnightDemoSection.css";
+import "./MidnightTribute.css";
 
 const DEMO_URL = `${import.meta.env.BASE_URL}kyronext-midnight/`;
 
@@ -20,6 +21,17 @@ export default function MidnightDemoSection() {
           <small>La musique démarre à votre clic. À regarder avec le son.</small>
         </div>
       </div>
+      <aside className="midnight-tribute" aria-labelledby="midnight-tribute-title">
+        <div className="midnight-transmission"><span>SIGNAL REÇU / 1990 → DEMAIN</span><span>MESSAGE AUX PARRAINS</span></div>
+        <h3 id="midnight-tribute-title">À ceux qui ont laissé la lumière allumée.</h3>
+        <p>Avant nos écrans, il y avait vos nuits. Des disquettes pour constellations, des pseudos pour signatures. Entre deux chargements, vous glissiez une preuve : quelques lignes de code pouvaient ouvrir un monde.</p>
+        <p>Aux anciens de la scène, à ses parrains et à tous les passeurs de savoir : <strong>merci</strong>. Vos trouvailles, vos démonstrations et votre passion du code continuent de nous aider à apprendre et à inventer.</p>
+        <ul className="midnight-greets" aria-label="Hommage aux groupes de la scène">
+          {["Skid Row", "Fairlight", "Paradox", "Quartex", "TRSI", "Razor 1911", "Anarchy", "D-Mob"].map(name => <li key={name}>{name}</li>)}
+        </ul>
+        <p className="midnight-ethos">KYRONEXT poursuit ce fil avec une boussole <strong>white hat</strong> : comprendre, créer, protéger et transmettre, dans le respect des personnes, des auteurs et des systèmes.</p>
+        <footer className="midnight-tribute-footer"><span>Le disque a changé. La lumière circule encore.</span><b>BY MANIX</b></footer>
+      </aside>
     </section>
   );
 }
