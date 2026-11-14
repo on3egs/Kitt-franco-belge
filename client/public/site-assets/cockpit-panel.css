@@ -2,6 +2,14 @@
 *{box-sizing:border-box}button,input,select,textarea{font:inherit}button,a,input,select,textarea{touch-action:manipulation}button,a{ -webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}a{color:var(--accent)}:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .launcher{position:fixed;right:22px;bottom:22px;z-index:2000;display:flex;align-items:center;gap:11px;border:1px solid #ff60784f;border-radius:14px;background:linear-gradient(140deg,#171d2bf5,#0a0f19fa);padding:12px 17px;color:#f5f7ff;box-shadow:0 8px 36px #0008,0 0 24px #ff526a18;backdrop-filter:blur(16px);font-weight:700;letter-spacing:.04em}
 .scanner{position:relative;width:34px;height:17px;overflow:hidden;background:#05070d;border-radius:4px;border:1px solid #ffffff20}
+.scanner::after{content:"";position:absolute;top:0;bottom:0;width:46%;left:-50%;background:linear-gradient(90deg,transparent,var(--accent),#fff,transparent)}
+@media (prefers-reduced-motion: no-preference) {
+  :host-context(html[data-kc-motion="cinema"]) .scanner::after,
+  :host-context(html[data-kc-motion="soft"]) .scanner::after { animation: kc-led-sweep 1.7s ease-in-out infinite; }
+  :host-context(html[data-kc-motion="soft"]) .scanner::after { animation-duration: 3.4s; opacity: .6; }
+  :host-context(html[data-kc-paused="true"]) .scanner::after { animation-play-state: paused; }
+}
+@keyframes kc-led-sweep { to { left: 130%; } }
 .scanner::after{content:"";position:absolute;left:3px;top:5px;width:8px;height:5px;border-radius:2px;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:scan 1.6s ease-in-out infinite alternate}
 dialog{position:fixed;margin:auto;padding:0;width:min(900px,calc(100vw - 28px));max-width:100%;height:min(790px,calc(100dvh - 40px));max-height:calc(100dvh - 40px);overflow:hidden;border:1px solid #52627980;border-radius:22px;color:#eef3fc;background:radial-gradient(ellipse at 100% 0,#213043 0,transparent 55%),#0b101a;box-shadow:0 40px 130px #000b}
 dialog[open]{display:flex;flex-direction:column;animation:arrival .25s ease-out}dialog::backdrop{background:#020610c9;backdrop-filter:blur(9px)}

@@ -9,3 +9,24 @@
 .home-creations .legacy-feature-copy,.home-creations .midnight-copy{display:flex;flex-direction:column;flex:1;padding:26px 24px 28px}
 .home-creations .legacy-feature-launch,.home-creations .midnight-launch{margin-top:auto;width:fit-content;align-self:flex-start}
 @media(max-width:860px){.home-creations{padding:28px 16px 36px}.home-creations-grid{grid-template-columns:1fr}.home-creations .legacy-feature-copy h2,.home-creations .midnight-copy h2{font-size:24px}}
+.home-creations-head h2{position:relative;display:inline-block}
+.home-creations-head h2::after{content:"";display:block;height:2px;margin-top:10px;width:72px;background:linear-gradient(90deg,#ffd09c,transparent)}
+.home-creations .legacy-feature-card,.home-creations .midnight-card{box-shadow:0 18px 44px #0008,inset 0 1px 0 #ffffff16;transition:transform .35s ease,box-shadow .35s ease,border-color .35s ease}
+.home-creations .legacy-feature-image,.home-creations .midnight-preview{overflow:hidden}
+.home-creations .legacy-feature-image img,.home-creations .midnight-preview img{transition:transform .7s ease}
+.home-creations .legacy-feature-play,.home-creations .midnight-play{z-index:2}
+.home-creations .legacy-feature-image::after,.home-creations .midnight-preview::after{content:"";position:absolute;left:0;right:0;height:22%;top:-25%;z-index:1;pointer-events:none;background:linear-gradient(180deg,transparent,#ff406055,transparent);opacity:0}
+@media (hover:hover) and (prefers-reduced-motion: no-preference) {
+  html[data-kc-motion="cinema"] .home-creations .legacy-feature-card:hover,
+  html[data-kc-motion="cinema"] .home-creations .midnight-card:hover{transform:translateY(-6px);box-shadow:0 22px 50px #000a,0 0 28px var(--kc-accent,#ff526a44)}
+  html[data-kc-motion="cinema"] .home-creations .legacy-feature-image:hover img,
+  html[data-kc-motion="cinema"] .home-creations .midnight-preview:hover img{transform:scale(1.045)}
+  html[data-kc-motion="cinema"] .home-creations .legacy-feature-image:hover::after,
+  html[data-kc-motion="cinema"] .home-creations .midnight-preview:hover::after{opacity:1;animation:kc-poster .9s linear}
+  html[data-kc-motion="soft"] .home-creations .legacy-feature-card:hover,
+  html[data-kc-motion="soft"] .home-creations .midnight-card:hover{transform:translateY(-3px)}
+}
+@keyframes kc-poster{from{top:-25%}to{top:100%}}
+@media (prefers-reduced-motion: reduce) {
+  .home-creations .legacy-feature-card,.home-creations .midnight-card,.home-creations img{transition:none}
+}

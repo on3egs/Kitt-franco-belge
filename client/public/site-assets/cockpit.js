@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   if (customElements.get('kitt-cockpit')) return;
-  const VERSION = '20261026-1';
+  const VERSION = '20261114-2';
   const CATALOG = [
     ['/jeux/', 'Arcade KITT · tous les jeux', 'Applications', 'Jeux de construction, course, arcade et coopération.', 'time'],
     ['https://kitt.kitt-franco-belge.be/static/games/kitt-blocks/', 'KITT · Monde en blocs', 'Applications', 'Minecraft, voxel, Halloween, moutons et salles de 16 joueurs.', 'time'],

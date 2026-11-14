@@ -48,3 +48,71 @@ html:not([data-kc-context="application"]) .hero-shot img{transition:transform .6
 @media(max-width:700px){.kc-mission{margin:20px 14px;border-radius:18px}.kc-orbit{display:none}.kc-mission-grid{grid-template-columns:1fr}.kc-mission-card{min-height:145px}.kc-page-beacon{margin:18px 12px;flex-direction:column;align-items:start}.kc-mission-head{gap:0}}
 @media(prefers-reduced-motion:reduce){.kc-mission *, .kc-reveal{animation:none!important;transition:none!important;translate:none!important;opacity:1!important}}
 @media print{kitt-cockpit,.kc-progress,.kc-page-beacon,.site-tools{display:none!important}.kc-reveal{opacity:1!important;translate:none!important}}
+
+/* Signature lumineuse. Cinéma par défaut, plus lent en mode discret, rien si les animations sont arrêtées. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-kc-context="application"]) body { isolation: isolate; }
+  html[data-kc-motion="cinema"]:not([data-kc-context="application"]) body::before {
+    content: "";
+    position: fixed;
+    inset: -12%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 12% 0%, color-mix(in srgb, var(--kc-accent) 16%, transparent), transparent 42%),
+      radial-gradient(ellipse at 92% 100%, #ffb45a10, transparent 46%);
+    animation: kc-drift 26s ease-in-out infinite alternate;
+  }
+  html[data-kc-motion="cinema"] .site-header::after,
+  html[data-kc-motion="soft"] .site-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--kc-accent), #fff, var(--kc-accent), transparent);
+    background-size: 22% 100%;
+    background-repeat: no-repeat;
+    animation: kc-header-scan 3.4s ease-in-out infinite;
+  }
+  html[data-kc-motion="soft"] .site-header::after { animation-duration: 7s; opacity: .5; }
+  html[data-kc-motion="cinema"] .brand-led,
+  html[data-kc-motion="soft"] .brand-led { animation: kc-led 2.8s ease-in-out infinite; }
+  html[data-kc-motion="soft"] .brand-led { animation-duration: 5.5s; }
+  html[data-kc-motion="cinema"] #hero h2 { animation: kc-title 4.8s ease-in-out infinite; }
+  html[data-kc-motion="cinema"] .legacy-feature-play,
+  html[data-kc-motion="cinema"] .midnight-play { animation: kc-play 2.6s ease-in-out infinite; }
+  html[data-kc-paused="true"] :is(.site-header::after, .brand-led, #hero h2, body::before, .legacy-feature-play, .midnight-play) { animation-play-state: paused; }
+}
+.service-card, .review-card { position: relative; }
+.service-card::before, .review-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: var(--kc-accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform .35s ease;
+  pointer-events: none;
+}
+.service-card:hover::before, .review-card:hover::before,
+.service-card:focus-within::before, .review-card:focus-within::before { transform: scaleY(1); }
+@keyframes kc-drift { to { transform: translate3d(-2%, 1.5%, 0); } }
+@keyframes kc-header-scan { from { background-position: -24% 0; } to { background-position: 124% 0; } }
+@keyframes kc-led {
+  0%, 100% { filter: brightness(1); box-shadow: 0 0 10px var(--kc-glow); }
+  50% { filter: brightness(1.45); box-shadow: 0 0 18px var(--kc-accent); }
+}
+@keyframes kc-title {
+  0%, 100% { text-shadow: 0 0 10px color-mix(in srgb, var(--kc-accent) 45%, transparent); }
+  50% { text-shadow: 0 0 22px var(--kc-accent), 0 0 42px color-mix(in srgb, var(--kc-accent) 35%, transparent); }
+}
+@keyframes kc-play {
+  0%, 100% { box-shadow: 0 0 0 0 #ffd59d66, 0 0 35px #000a; }
+  70% { box-shadow: 0 0 0 12px #ffd59d00, 0 0 35px #000a; }
+}
