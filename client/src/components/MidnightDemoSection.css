@@ -7,5 +7,5 @@
 .home-creations .legacy-feature,.home-creations .midnight-section{padding:0;margin:0;background:transparent;border:0}
 .home-creations .legacy-feature-card,.home-creations .midnight-card{display:flex;flex-direction:column;height:100%;grid-template-columns:1fr}
 .home-creations .legacy-feature-copy,.home-creations .midnight-copy{display:flex;flex-direction:column;flex:1;padding:26px 24px 28px}
-.home-creations .legacy-feature-launch,.home-creations .midnight-launch{margin-top:auto}
+.home-creations .legacy-feature-launch,.home-creations .midnight-launch{margin-top:auto;width:fit-content;align-self:flex-start}
 @media(max-width:860px){.home-creations{padding:28px 16px 36px}.home-creations-grid{grid-template-columns:1fr}.home-creations .legacy-feature-copy h2,.home-creations .midnight-copy h2{font-size:24px}}
