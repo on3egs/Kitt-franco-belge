@@ -1,0 +1,18 @@
+/* Les portraits conservent leurs proportions dans toutes les fiches. */
+.driver-portrait.has-dossier-art > img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:var(--driver-photo-position, 50% 42%);
+}
+/* Silhouette neutre si aucune photographie n'est fournie. */
+.driver-portrait:not(.has-dossier-art)::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse 19% 18% at 50% 37%,#aeb9c8 97%,transparent 100%),radial-gradient(ellipse 42% 30% at 50% 91%,#748297 97%,transparent 100%);
+  opacity:.85;
+}

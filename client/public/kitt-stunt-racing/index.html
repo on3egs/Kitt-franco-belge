@@ -5,12 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KITT STUNT RACING - By Manix</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="css/style.css?v=27-windows-compatibility">
-    <style>
-        .hud-lives-label { margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(255, 60, 70, .35); }
-        #lives { color: #ff6870; font-size: 1.25rem; letter-spacing: .08em; white-space: nowrap; }
-        @media (max-width: 760px) { #lives { font-size: 1rem; } }
-    </style>
+    <link rel="stylesheet" href="css/style.css?v=20261021-stunt-polish3">
+    <link rel="stylesheet" href="css/pilot-portraits.css?v=20261113-1">
 </head>
 <body>
     <!-- Canvas WebGL -->
@@ -20,6 +16,8 @@
     <div id="screen-vignette"></div>
     <div id="speed-lines"></div>
     <div id="damage-flash"></div>
+    <div id="turbo-vignette"></div>
+    <div id="impact-flash"></div>
 
     <!-- Écran de chargement -->
     <div id="loading-screen">
@@ -27,6 +25,7 @@
             <div class="kitt-scanner">
                 <div class="scanner-led"></div>
             </div>
+            <div class="presenter">KYRONEXT PRESENTS</div>
             <h1>KITT STUNT RACING</h1>
             <p>Chargement du moteur...</p>
             <div class="loading-bar"><div class="loading-fill"></div></div>
@@ -35,18 +34,30 @@
         </div>
     </div>
 
+    <div id="kironext-intro" class="kironext-intro hidden" aria-hidden="true">
+        <div class="kironext-logo" aria-label="Kyronext">KYRONEXT</div>
+        <div class="kironext-subtitle">PRESENTE // KNIGHT RIDER RACER</div>
+        <button id="kironext-intro-skip" type="button">PASSER</button>
+    </div>
+
     <!-- Menu principal -->
     <div id="main-menu" class="hidden">
         <div class="menu-box">
             <h1>KITT STUNT RACING</h1>
-            <p class="subtitle">Simulation 3D - Style Stunt Car Racer</p>
+            <p class="subtitle">10 CIRCUITS STUNT • 3 TOURS CHACUN • STYLE STUNT CAR RACER</p>
             <p class="menu-best hidden" id="menu-best"></p>
             <button id="btn-level1" class="menu-btn">▶ NIVEAU 1 — Classique</button>
             <button id="btn-level2" class="menu-btn">🌃 NIVEAU 2 — Nuit rapide</button>
             <button id="btn-level3" class="menu-btn">🔁 NIVEAU 3 — Looping</button>
+            <div class="level-grid" aria-label="Niveaux avancés">
+                <button id="btn-level5" class="menu-btn">⚡ NIVEAU 5 — Foudre</button>
+                <button id="btn-level6" class="menu-btn">🌆 NIVEAU 6 — Néon</button>
+                <button id="btn-level7" class="menu-btn">🌉 NIVEAU 7 — Pont</button>
+                <button id="btn-level8" class="menu-btn">🔥 NIVEAU 8 — Incendie</button>
+                <button id="btn-level9" class="menu-btn">🌌 NIVEAU 9 — Orbite</button>
+                <button id="btn-level10" class="menu-btn">🏆 NIVEAU 10 — Finale</button>
+            </div>
             <button id="btn-custom" class="menu-btn">🛠️ CIRCUIT PERSONNALISÉ</button>
-            <button id="btn-career" class="menu-btn">CARRIÈRE KITT <span id="career-progress">0/3</span></button>
-            <button id="btn-tutorial" class="mini-btn">APPRENDRE LES COMMANDES</button>
             <button id="btn-editor" class="menu-btn">🧱 CONSTRUCTION DE CIRCUIT</button>
             <button id="btn-scores" class="menu-btn">🏆 SCORES</button>
             <div class="menu-row">
@@ -90,8 +101,8 @@
                 <div class="hud-label">VITESSE</div>
                 <div class="hud-value" id="speed-value">0</div>
                 <div class="hud-unit">km/h</div>
-                <div class="turbo-bar"><div class="turbo-fill" id="turbo-fill"></div></div>
-                <div class="hud-label turbo-label">TURBO [ESPACE]</div>
+                <div class="turbo-bar" id="mobile-turbo-bar" role="button" tabindex="0" aria-label="Activer le turbo"><div class="turbo-fill" id="turbo-fill"></div></div>
+                <div class="hud-label turbo-label">TURBO [ESPACE / TACTILE]</div>
                 <button type="button" id="spm-toggle" class="spm-toggle">SPM [Q]</button>
                 <button type="button" id="fire-toggle" class="fire-toggle">◉ TIR KITT [F]</button>
                 <div id="karr-status" class="karr-status">KARR // EN ATTENTE</div>
@@ -100,39 +111,30 @@
         <div class="hud-center">
             <div class="hud-time" id="timer">00:00.00</div>
             <div class="hud-level" id="hud-level">NIVEAU 1</div>
+            <div class="race-lap" id="race-lap" aria-live="polite" aria-label="Tour 1 sur 3">TOUR 1 / 3<span class="race-lap-segments" aria-hidden="true"><i class="active"></i><i></i><i></i></span></div>
         </div>
         <div class="hud-right">
             <div class="hud-panel small">
                 <div class="hud-label">CHECKPOINT</div>
                 <div class="hud-value" id="checkpoint-info">0/3</div>
-                <div class="hud-label hud-lives-label">VIES</div>
-                <div class="hud-value" id="lives" aria-label="Trois vies">♥ ♥ ♥</div>
+            </div>
+            <div class="hud-panel small">
+                <div class="hud-label">POSITION</div>
+                <div class="hud-value" id="position-value">1/1</div>
             </div>
         </div>
-        <aside class="race-radar" aria-label="Radar du circuit">
-            <div class="race-radar-head"><b>RADAR</b><span id="race-radar-progress-label">0%</span></div>
-            <canvas id="race-radar-canvas" width="180" height="120" aria-label="Position sur le circuit"></canvas>
-            <div class="race-radar-foot"><span id="race-radar-next">DÉPART</span><span id="race-radar-gap">TRAFIC 0</span></div>
-            <div class="race-radar-progress"><i id="race-radar-progress-bar"></i></div>
-        </aside>
         <div class="hud-bottom">
             <div id="hud-messages"></div>
             <div id="hud-debug" class="hud-debug"></div>
         </div>
     </div>
 
-    <div id="racer-tutorial" class="hidden" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
-        <div class="tutorial-card"><button id="tutorial-close" class="tutorial-close" aria-label="Fermer">×</button>
-            <div class="driver-kicker">KYRONEXT // AIDE PILOTE</div><h2 id="tutorial-title">PRENDS LE VOLANT</h2>
-            <p id="tutorial-copy">Flèches ou WASD pour conduire. Espace déclenche le turbo, Q active le mode SPM. Sur mobile, maintiens les commandes tactiles.</p>
-            <div class="tutorial-steps"><span>1 · ACCÉLÉRER</span><span>2 · PILOTER</span><span>3 · TURBO</span></div>
-            <button id="tutorial-next" class="menu-btn">COMPRIS — DÉMARRER</button>
-        </div>
-    </div>
-    <div id="impact-flash" aria-hidden="true"></div><div id="damage-state" aria-hidden="true"></div>
     <!-- Compte à rebours -->
     <div id="countdown" class="hidden">3</div>
     <div id="spm-cinematic" class="hidden" aria-live="polite"><span>SUPER PURSUIT MODE</span><b>TRANSFORMATION 3D</b></div>
+
+    <!-- Bouton ACCUEIL tactile, toujours accessible pendant la course -->
+    <button type="button" id="btn-home" aria-label="Quitter et retourner à l'accueil" title="Accueil (quitter la course)">⌂<span>ACCUEIL</span></button>
 
     <!-- Commandes tactiles/gyroscope : visibles uniquement pendant la course sur mobile. -->
     <div id="mobile-race-controls" class="mobile-race-controls" aria-label="Commandes mobiles de course">
@@ -170,7 +172,6 @@
             <div class="results-line">Meilleur temps : <span id="results-best">--</span></div>
             <div class="results-line">Vitesse max : <span id="results-speed">--</span> km/h</div>
             <div class="results-line" id="results-rank"></div>
-            <button id="btn-career-next" class="menu-btn hidden">MISSION SUIVANTE</button>
             <button id="btn-restart" class="menu-btn">↻ REJOUER (R)</button>
             <button id="btn-menu" class="menu-btn">☰ MENU PRINCIPAL (M)</button>
             <div class="credits">Un hommage au groupe <span>KITT FRANCO BELGE</span></div>
@@ -213,10 +214,15 @@
     <!-- Scripts locaux -->
     <script src="lib/three.min.js"></script>
     <script src="lib/cannon.min.js"></script>
-    <script src="js/audio.js?v=9-local-audio"></script>
-    <script src="js/scores.js?v=8-local-scores"></script>
-    <script src="js/editor.js?v=9-local-editor"></script>
-    <script src="main.js?v=30-windows-three-global-guard"></script>
-<script src="/site-assets/page-navigation.js" defer></script>
+    <script src="js/audio.js?v=20261021-3lap-portrait-intro"></script>
+    <script src="js/scores.js?v=20261021-three-lap"></script>
+    <script src="js/editor.js?v=8-studio"></script>
+    <script src="js/arcade-config.js?v=20260917-network1"></script>
+    <script src="js/arcade-relay.js?v=20260917-network1"></script>
+    <script src="js/circuit-scenery.js?v=20261113-1"></script>
+    <script src="js/legacy-models.js?v=20261114"></script>
+    <script src="js/racer-cars.js?v=20261114"></script>
+    <script src="js/compatible-2d.js?v=20261114"></script>
+    <script src="main.js?v=20261114-legacy-merge"></script>
 </body>
 </html>
