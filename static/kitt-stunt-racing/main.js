@@ -888,6 +888,8 @@ function init() {
         initParticles();
         setupControls();
         setupUI();
+        const portal=document.getElementById('game-portal');
+        if(portal)portal.href=location.hostname==='kitt-franco-belge.be'?'/arcade':(['localhost','127.0.0.1'].includes(location.hostname)?'https://kitt-franco-belge.be/arcade':'/static/index.html');
         setupDriverSelection();
 
         // V7 — API publique pour l'éditeur et les scores
@@ -907,6 +909,7 @@ function init() {
         document.getElementById('main-menu').classList.remove('hidden');
         updateMenuBest();
         if (window.KITT) KITT.camera = camera;
+        GrandUI.refresh();
 
         const lvlParam = Number(urlParams.get('level'));
         if (Number.isInteger(lvlParam) && LEVEL_DATA[lvlParam]) setLevel(lvlParam);
@@ -1004,7 +1007,7 @@ function initThreeJS() {
 
     renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('game-canvas'),
-        antialias: false,
+        antialias: !LOW_POWER_MODE && !/aarch64|armv|jetson/i.test(navigator.platform+' '+navigator.userAgent),
         powerPreference: 'high-performance',
         preserveDrawingBuffer: forceTickMode   // requis pour les captures de test
     });
@@ -1101,251 +1104,7 @@ function onWindowResize() {
 // ============================================
 // ENVIRONNEMENT (sol, étoiles, néons)
 // ============================================
-function createEnvironment() {
-    const s = shared();
-    const coursePoints = Object.values(LEVEL_DATA).flatMap(level => level.line);
-    const nearCourse = (x,z,margin) => coursePoints.some(p => Math.hypot(p.x-x,p.z-z) < margin + 20);
-
-    // Ciel : dôme en dégradé (noir → bleu nuit → pourpre à l'horizon)
-    const skyCanvas = document.createElement('canvas');
-    skyCanvas.width = 4; skyCanvas.height = 512;
-    const skg = skyCanvas.getContext('2d');
-    const skyGrad = skg.createLinearGradient(0, 0, 0, 512);
-    skyGrad.addColorStop(0, '#010208');
-    skyGrad.addColorStop(0.38, '#07132b');
-    skyGrad.addColorStop(0.72, '#1a1740');
-    skyGrad.addColorStop(0.9, '#42152f');
-    skyGrad.addColorStop(1, '#6b1b2e');
-    skg.fillStyle = skyGrad;
-    skg.fillRect(0, 0, 4, 512);
-    const sky = new THREE.Mesh(
-        new THREE.SphereGeometry(5000, 16, 12),
-        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(skyCanvas), side: THREE.BackSide, fog: false })
-    );
-    scene.add(sky);
-
-    // Lune + halo
-    const moon = new THREE.Sprite(s.moonMat);
-    moon.scale.set(170, 170, 1);
-    moon.position.set(520, 330, -780);
-    scene.add(moon);
-    // Lune rouge au-dessus de la ligne de course : repère visuel K2000.
-    const kittMoonMat = s.moonMat.clone();
-    kittMoonMat.color.setHex(0xff3048);
-    kittMoonMat.opacity = .65;
-    const kittMoon = new THREE.Sprite(kittMoonMat);
-    kittMoon.scale.set(120, 120, 1);
-    kittMoon.position.set(-210, 170, 620);
-    scene.add(kittMoon);
-
-    // Sol avec grille (texture conservée pour l'animation de défilement)
-    const groundCanvas = document.createElement('canvas');
-    groundCanvas.width = 256;
-    groundCanvas.height = 256;
-    const gctx = groundCanvas.getContext('2d');
-    gctx.fillStyle = '#0b0b16';
-    gctx.fillRect(0, 0, 256, 256);
-    gctx.strokeStyle = '#25354a';
-    gctx.lineWidth = 2;
-    gctx.strokeRect(0, 0, 256, 256);
-    // Relief discret du sol, sans texture externe ni calcul par image.
-    gctx.strokeStyle = 'rgba(88,115,150,.16)';
-    gctx.lineWidth = 1;
-    for (let i = 32; i < 256; i += 32) {
-        gctx.beginPath(); gctx.moveTo(i, 0); gctx.lineTo(i, 256);
-        gctx.moveTo(0, i); gctx.lineTo(256, i); gctx.stroke();
-    }
-    // points lumineux aléatoires dans les cases (effet ville)
-    for (let i = 0; i < 40; i++) {
-        gctx.fillStyle = Math.random() < 0.5 ? 'rgba(0,229,255,0.10)' : 'rgba(255,40,80,0.08)';
-        gctx.fillRect(Math.floor(Math.random() * 16) * 16 + 6, Math.floor(Math.random() * 16) * 16 + 6, 3, 3);
-    }
-    const groundTex = new THREE.CanvasTexture(groundCanvas);
-    groundTex.wrapS = THREE.RepeatWrapping;
-    groundTex.wrapT = THREE.RepeatWrapping;
-    groundTex.repeat.set(90, 90);
-    groundTexRef = groundTex;
-    const groundMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(6000, 6000),
-        new THREE.MeshBasicMaterial({ map: groundTex })
-    );
-    groundMesh.rotation.x = -Math.PI / 2;
-    groundMesh.position.set(630, -2.01, 210); // centré entre toutes les pistes
-    scene.add(groundMesh);
-
-    // Étoiles (double couche : fines + grosses scintillantes)
-    function starLayer(count, size, color, opacity) {
-        const g = new THREE.BufferGeometry();
-        const pos = new Float32Array(count * 3);
-        for (let i = 0; i < count; i++) {
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.random() * Math.PI * 0.45;
-            const r = 1000;
-            pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-            pos[i * 3 + 1] = r * Math.cos(phi) + 20;
-            pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
-        }
-        g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        const m = new THREE.PointsMaterial({ color, size, sizeAttenuation: false, transparent: true, opacity, fog: false });
-        const p = new THREE.Points(g, m);
-        scene.add(p);
-        return m;
-    }
-    starLayer(500, 1.4, 0xaabbff, 0.8);
-    starLayer(120, 2.4, 0xffe0c0, 0.9);
-    auroraPlanes.push({ mat: starLayer(60, 3.0, 0xffffff, 0.7), phase: Math.random() * 9 });
-
-    // Aurore boréale : deux grands voiles additifs dérivants
-    function aurora(x, y, z, w, h, hue1, hue2, op) {
-        const c = document.createElement('canvas');
-        c.width = 128; c.height = 64;
-        const g = c.getContext('2d');
-        const grad = g.createLinearGradient(0, 0, 0, 64);
-        grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(0.45, hue1);
-        grad.addColorStop(0.75, hue2);
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-        g.fillStyle = grad;
-        g.fillRect(0, 0, 128, 64);
-        const mat = new THREE.MeshBasicMaterial({
-            map: new THREE.CanvasTexture(c), transparent: true, opacity: op,
-            blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false
-        });
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
-        mesh.position.set(x, y, z);
-        scene.add(mesh);
-        auroraPlanes.push({ mesh, mat, baseY: y, phase: Math.random() * 9, baseOp: op });
-    }
-    aurora(-420, 260, -880, 900, 240, 'rgba(0,255,170,0.20)', 'rgba(0,120,255,0.10)', 0.55);
-    aurora(300, 300, -950, 1100, 280, 'rgba(150,0,255,0.16)', 'rgba(0,200,255,0.08)', 0.45);
-
-    // Horizon HUD : trois anneaux lointains donnent une signature K2000
-    // sans ajouter de textures ou de post-processing coûteux.
-    const horizonMats = [
-        new THREE.MeshBasicMaterial({color:0xa40b28, transparent:true, opacity:.28}),
-        new THREE.MeshBasicMaterial({color:0x153f87, transparent:true, opacity:.2}),
-        new THREE.MeshBasicMaterial({color:0x7b164d, transparent:true, opacity:.16})
-    ];
-    [980, 1160, 1380].forEach((radius, i) => {
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 1.8, 5, 96), horizonMats[i]);
-        ring.rotation.x = Math.PI / 2;
-        ring.position.set(630, 105 + i * 38, 210);
-        ring.userData.hideInEditor = true;
-        scene.add(ring);
-    });
-
-    // Chaîne de montagnes silhouettées (3 crêtes de cônes)
-    const mtnMats = [0x11162a,0x0b1022,0x070b18].map(color => new THREE.MeshBasicMaterial({color}));
-    const mountainRings = [{ r: 880, h: 150, n: 26 }, { r: 1020, h: 230, n: 20 }, { r: 1150, h: 320, n: 14 }];
-    for (const [ringIndex, ring] of mountainRings.entries()) {
-        for (let i = 0; i < ring.n; i++) {
-            const a = (i / ring.n) * Math.PI * 2 + ring.r;
-            const h = ring.h * (0.55 + Math.random() * 0.9);
-            if (nearCourse(Math.cos(a)*ring.r+630, Math.sin(a)*ring.r+210, h*.9)) continue;
-            const cone = new THREE.Mesh(new THREE.ConeGeometry(h * 0.9, h, 8), mtnMats[ringIndex]);
-            cone.position.set(Math.cos(a) * ring.r + 630, -2 + h / 2, Math.sin(a) * ring.r + 210);
-            cone.rotation.y = Math.random() * Math.PI;
-            cone.userData.hideInEditor = true;
-            cone.userData.courseMargin = h * .9 + 20;
-            scene.add(cone);
-        }
-    }
-
-    // Skyline : buildings éloignés aux fenêtres lumineuses (2 grappes, une par niveau)
-    const clusters = [
-        { cx: -140, cz: 150 },
-        { cx: 500, cz: 60 },
-        { cx: 1140, cz: 380 }
-    ];
-    for (const cl of clusters) {
-        for (let i = 0; i < 15; i++) {
-            const a = Math.random() * Math.PI * 2;
-            const r = 130 + Math.random() * 190;
-            const bx = cl.cx + Math.cos(a) * r;
-            const bz = cl.cz + Math.sin(a) * r * 1.4;
-            const w = 14 + Math.random() * 22;
-            if (nearCourse(bx,bz,w)) continue;
-            const h = 22 + Math.random() * 55;
-            const tex = s.windowTex.clone();
-            tex.needsUpdate = true;
-            tex.repeat.set(Math.max(1, Math.round(w / 14)), Math.max(1, Math.round(h / 22)));
-            const facadeColors = [0x9daac2, 0x8998b4, 0xb2a0a0, 0x8297a2];
-            const facadeColor = facadeColors[Math.floor(Math.random() * facadeColors.length)];
-            // Matériau physique sur les grands écrans ; modèle Lambert plus
-            // léger sur GSM/Jetson basse puissance, avec le même aspect peint.
-            const buildingMaterial = LOW_POWER_MODE
-                ? new THREE.MeshLambertMaterial({
-                    map: tex, emissiveMap: tex, emissive: 0xffffff,
-                    emissiveIntensity: 0.62, color: facadeColor
-                })
-                : new THREE.MeshStandardMaterial({
-                    map: tex, emissiveMap: tex, emissive: 0xffffff,
-                    emissiveIntensity: 0.62, color: facadeColor,
-                    roughness: 0.72, metalness: 0.22
-                });
-            const b = new THREE.Mesh(
-                new THREE.BoxGeometry(w, h, w),
-                buildingMaterial
-            );
-            b.position.set(bx, -2 + h / 2, bz);
-            b.userData.courseMargin = w + 20;
-            b.rotation.y = Math.random() * Math.PI;
-            scene.add(b);
-            // Antenne + voyant clignotant sur les plus hauts
-            if (h > 55 && antennaLights.length < 8) {
-                const beacon = new THREE.Sprite(s.glowRed.clone());
-                beacon.scale.set(4, 4, 1);
-                beacon.position.set(bx, -2 + h + 4, bz);
-                scene.add(beacon);
-                antennaLights.push({ sprite: beacon, phase: Math.random() * 6 });
-            }
-        }
-    }
-
-    // Piliers néon décoratifs (hors des pistes)
-    const neonColors = [0xff0044, 0x00e5ff, 0xff8800, 0x8800ff, 0xff0044];
-    const pillarGeo = new THREE.BoxGeometry(2.5, 1, 2.5);
-    let placed = 0, attempts = 0;
-    while (placed < 70 && attempts < 900) {
-        attempts++;
-        const px = (Math.random() - 0.5) * 1600 + 630;
-        const pz = (Math.random() - 0.5) * 1000 + 210;
-        if (nearCourse(px,pz,12)) continue;
-        // exclusion : corridors des pistes 1, 2 et 3
-        if (px > -60 && px < 60 && pz > -40 && pz < 280) continue;
-        if (px > LEVEL_OFFSET_X - 80 && px < LEVEL_OFFSET_X + 100 && pz > -40 && pz < 380) continue;
-        if (px > LEVEL_OFFSET_X * 2 - 80 && px < LEVEL_OFFSET_X * 2 + 100 && pz > -40 && pz < 380) continue;
-        const h = 8 + Math.random() * 26;
-        const mat = new THREE.MeshStandardMaterial({
-            color: 0x111111,
-            emissive: neonColors[placed % neonColors.length],
-            emissiveIntensity: 0.55,
-            roughness: 0.8
-        });
-        neonPulseMats.push({ mat, phase: Math.random() * 6 });
-        const pillar = new THREE.Mesh(pillarGeo, mat);
-        pillar.scale.y = h;
-        pillar.position.set(px, -2 + h / 2, pz);
-        pillar.userData.courseMargin = 25;
-        scene.add(pillar);
-        placed++;
-    }
-
-    // Balises de piste lointaines : elles structurent le paysage sans
-    // collisions ni nouveaux calculs physiques.
-    const beaconMat = new THREE.MeshBasicMaterial({color:0xb30a28,transparent:true,opacity:.72});
-    for (let i = 0; i < 18; i++) {
-        const angle = (i / 18) * Math.PI * 2;
-        const radius = 420 + (i % 3) * 90;
-        const x = 630 + Math.cos(angle) * radius;
-        const z = 210 + Math.sin(angle) * radius;
-        if (nearCourse(x, z, 22)) continue;
-        const beacon = new THREE.Mesh(new THREE.BoxGeometry(1.1, 12 + (i % 4) * 5, 1.1), beaconMat);
-        beacon.position.set(x, 5, z);
-        beacon.userData.hideInEditor = true;
-        scene.add(beacon);
-    }
-}
+function createEnvironment() { RacerWorld.environment(scene); }
 
 // V7 — animation de l'environnement (appelée à chaque frame)
 function updateEnvironment(dt) {
@@ -1454,9 +1213,9 @@ function buildLevel(level, offsetX, opsOverride) {
     // Les tracés livrés étaient très courts. Les pièces intégrées sont étirées
     // en longueur et les virages gagnent du rayon; l'éditeur reste à l'échelle
     // exacte choisie par l'utilisateur.
-    activeTrackScale = opsOverride ? 1 : 1.55;
+    activeTrackScale = 1;
     trackPath = { x: offsetX, z: 0, y: 0, yaw: 0 };
-    trackLine = [];
+    trackLine = [{x:offsetX,y:0,z:0}];
     checkpoints = [];
     finishZone = null;
 
@@ -1468,18 +1227,16 @@ function buildLevel(level, offsetX, opsOverride) {
     currentLevelBodies = [];
 
     // Arche de départ, teintée au thème du circuit avancé.
-    const challengeTheme = CHALLENGE_THEMES[level];
+    const challengeTheme = { ...RacerTracks.themes[level], label:'#'+RacerTracks.themes[level].accent.toString(16).padStart(6,'0') };
     addArch(trackPath.x, trackPath.y, trackPath.z + 2, trackPath.yaw,
-        challengeTheme ? challengeTheme.name : 'DÉPART',
+        'DÉPART / ARRIVÉE',
         challengeTheme ? challengeTheme.label : '#ff0000');
 
     if (opsOverride) customLayoutFromOps(opsOverride);
-    else if (level === 1) level1Layout();
-    else if (level === 2) level2Layout();
-    else if (level === 3) level3Layout();
-    else if (level >= 5 && level <= 10) challengeLayout(level);
+    else if (level !== 4) RacerTracks.build(level,{straight:addStraight,curve:addCurve,checkpoint:addCheckpoint,loop:addLoop});
     else customLayoutFromOps(defaultCustomOps());
 
+    const closureLength = RacerTracks.closePath(trackPath,{x:offsetX,y:0,z:0},trackLine,buildRoadPiece);
     finishZone = {
         x: trackPath.x,
         y: trackPath.y,
@@ -1487,17 +1244,16 @@ function buildLevel(level, offsetX, opsOverride) {
         yaw: trackPath.yaw
     };
     addCheckerLine(finishZone.x, finishZone.y, finishZone.z, finishZone.yaw);
-    addArch(finishZone.x, finishZone.y, finishZone.z + 1, finishZone.yaw,
-        challengeTheme ? 'ARRIVÉE // ' + challengeTheme.name : 'ARRIVÉE',
-        challengeTheme ? challengeTheme.label : '#ffcc00');
 
-    if (!opsOverride && level !== 4) addCircuitScenery(level, offsetX);
+
+    const scenery = RacerWorld.decorate(level,lvlGroup,trackLine,scene.environment);
 
     const levelTurboPickups = createTurboPickups(trackLine, level);
     const levelSpmPickups = createSpmPickups(trackLine, level);
 
     LEVEL_DATA[level] = {
         line: trackLine,
+        closed:true, closureLength, length:RacerTracks.distance(trackLine), scenery,
         checkpoints: checkpoints,
         finish: finishZone,
         spawn: { x: offsetX, y: 1.0, z: 5, yaw: 0 },
@@ -1506,27 +1262,13 @@ function buildLevel(level, offsetX, opsOverride) {
         turboPickups: levelTurboPickups,
         spmPickups: levelSpmPickups
     };
+    RacerCars.compact(lvlGroup,new Set(lvlGroup.children.filter(o=>o.name!=='ROAD_STATIC')));
     currentLevelGroup = null;
     currentLevelBodies = null;
 }
 
 // ---- NIVEAU 4 : circuit personnalisé construit depuis une liste d'opérations ----
-function defaultCustomOps() {
-    return [
-        { type: 'straight', len: 30, dy: 0 },
-        { type: 'curve', radius: 45, angle: -45, dy: 0 },
-        { type: 'checkpoint' },
-        { type: 'straight', len: 22, dy: 1.8 },
-        { type: 'jump' },
-        { type: 'curve', radius: 50, angle: 90, dy: 0 },
-        { type: 'checkpoint' },
-        { type: 'straight', len: 30, dy: -1.0 },
-        { type: 'loop' },
-        { type: 'checkpoint' },
-        { type: 'curve', radius: 45, angle: -45, dy: 0 },
-        { type: 'straight', len: 30, dy: 0 }
-    ];
-}
+function defaultCustomOps() { return RacerTracks.template('grandprix'); }
 
 function customLayoutFromOps(ops) {
     let loops = 0;
@@ -1571,7 +1313,7 @@ function rebuildCustom(ops) {
     if (ops.length > 80) return { ok: false, error: 'Maximum 80 pièces' };
     for (const o of ops) {
         if (!o || !['straight','curve','gap','jump','loop','checkpoint'].includes(o.type)) return {ok:false,error:'Type de pièce invalide'};
-        for (const [key,min,max] of [['len',5,100],['radius',15,100],['angle',-180,180],['dy',-5,5]]) {
+        for (const [key,min,max] of [['len',5,300],['radius',15,150],['angle',-180,180],['dy',-5,5]]) {
             if (key in o && (!Number.isFinite(o[key]) || o[key] < min || o[key] > max)) return {ok:false,error:'Valeur hors limites : ' + key};
         }
         if (o.type === 'curve' && (!o.angle || !o.radius)) return {ok:false,error:'Rayon et angle non nuls requis'};
@@ -1774,6 +1516,7 @@ function setLevel(level) {
     inLoop = false;
     loopPhi = 0;
     loopCompleted = false;
+    RacerWorld.select(level,scene);
 }
 
 // ---- NIVEAU 1 : classique (montée, saut, grand virage) ----
@@ -2037,7 +1780,7 @@ function addLoop(radius) {
         if (i % 2 === 0) {
             const n = frame.up;
             const p = loopPoint(entry, fwd, radius, phiMid, exitSpan);
-            trackLine.push({ x: p.x + n.x * 0.9, y: p.y + n.y * 0.9, z: p.z + n.z * 0.9 });
+            trackLine.push({ x: p.x + n.x * 0.9, y: p.y + n.y * 0.9, z: p.z + n.z * 0.9, normal:{...n}, road:{...p} });
         }
     }
 
@@ -2194,21 +1937,22 @@ function buildRoadPiece(cx, cy, cz, yaw, len, dy) {
     group.quaternion.copy(qYaw).multiply(qPitch);
     group.position.set(cx, cy, cz);
 
+    group.name = 'ROAD_STATIC';
     // Route (asphalte texturé, bords rouges)
     const s = shared();
-    const roadTex = s.roadTex.clone();
-    roadTex.needsUpdate = true;
-    roadTex.repeat.set(1, Math.max(1, Math.round(segLen / 8)));
-    const road = new THREE.Mesh(
-        new THREE.BoxGeometry(CONFIG.trackWidth, CONFIG.trackHeight, segLen),
-        new THREE.MeshStandardMaterial({ map: roadTex, roughness: 0.9, metalness: 0.1 })
-    );
+    s.grandRoadMaterial ||= new THREE.MeshStandardMaterial({map:s.roadTex,roughness:.57,metalness:.17});
+    s.grandRoadMaterial.userData.shared=true;
+    const roadGeometry=new THREE.BoxGeometry(CONFIG.trackWidth,CONFIG.trackHeight,segLen);
+    const roadUv=roadGeometry.attributes.uv;for(let i=0;i<roadUv.count;i++)roadUv.setY(i,roadUv.getY(i)*Math.max(1,segLen/8));
+    const road = new THREE.Mesh(roadGeometry,s.grandRoadMaterial);
     road.receiveShadow = true;
     road.castShadow = true;
     group.add(road);
 
     // Bandes néon lumineuses au sol le long des bords (alternance rouge/cyan)
-    const neonMat = (buildingLevel % 2 === 0) ? s.neonCyan : s.neonRed;
+    s.grandNeonMats ||= {};
+    const neonMat=s.grandNeonMats[buildingLevel] ||= new THREE.MeshBasicMaterial({color:RacerTracks.themes[buildingLevel].accent});
+    neonMat.userData.shared=true;
     const neonGeo = new THREE.BoxGeometry(0.14, 0.06, segLen);
     for (const side of [1, -1]) {
         const strip = new THREE.Mesh(neonGeo, neonMat);
@@ -2217,7 +1961,7 @@ function buildRoadPiece(cx, cy, cz, yaw, len, dy) {
     }
 
     // Lampadaire tous les ~2 segments (alternance des côtés)
-    if (segLen >= 10) {
+    if (false && segLen >= 10) {
         poleCounter++;
         if (poleCounter % 2 === 0) {
             const side = (poleCounter % 4 === 0) ? 1 : -1;
@@ -2257,12 +2001,9 @@ function buildRoadPiece(cx, cy, cz, yaw, len, dy) {
 
     // Barrières à bandes hazard (texture partagée + émission pour la nuit)
     const barrierGeo = new THREE.BoxGeometry(0.15, 0.6, segLen);
-    const bTex = s.barrierTex.clone();
-    bTex.needsUpdate = true;
-    bTex.repeat.set(1, Math.max(1, Math.round(segLen / 4)));
-    const barrierMat = new THREE.MeshStandardMaterial({
-        map: bTex, emissive: 0xff2233, emissiveMap: bTex, emissiveIntensity: 0.5, roughness: 0.55
-    });
+    s.grandBarrierMat ||= new THREE.MeshStandardMaterial({map:s.barrierTex,emissive:0x8f3445,emissiveMap:s.barrierTex,emissiveIntensity:.27,roughness:.6});
+    s.grandBarrierMat.userData.shared=true;
+    const barrierMat=s.grandBarrierMat;
     const barrierL = new THREE.Mesh(barrierGeo, barrierMat);
     barrierL.position.set(CONFIG.trackWidth / 2 + 0.4, CONFIG.trackHeight / 2 + 0.45, 0);
     group.add(barrierL);
@@ -2271,7 +2012,7 @@ function buildRoadPiece(cx, cy, cz, yaw, len, dy) {
     group.add(barrierR);
 
     // Catadioptre rouge clignotant côté opposé au lampadaire
-    if (segLen >= 10) {
+    if (false && segLen >= 10) {
         const eyeSide = (poleCounter % 4 === 0) ? -1 : 1;
         const eye = new THREE.Sprite(s.eyeGlow);
         eye.scale.set(1.2, 1.2, 1);
@@ -2312,7 +2053,8 @@ function buildRoadPiece(cx, cy, cz, yaw, len, dy) {
 
     // Supports visuels si la section est en l'air
     if (cy > 1) {
-        const pillarMat = new THREE.MeshStandardMaterial({ color: 0x3a3a4a });
+        const pillarMat = s.grandSupportMat ||= new THREE.MeshStandardMaterial({color:0x465269,roughness:.7});
+        pillarMat.userData.shared=true;
         const count = Math.max(2, Math.floor(segLen / 10));
         const f = { x: Math.sin(yaw), z: Math.cos(yaw) };
         for (let i = 0; i < count; i++) {
@@ -2325,11 +2067,11 @@ function buildRoadPiece(cx, cy, cz, yaw, len, dy) {
             const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.6, h, 0.6), pillarMat);
             pillar.position.set(px + Math.cos(yaw) * (CONFIG.trackWidth / 2 - 0.5), -2 + h / 2, pz - Math.sin(yaw) * (CONFIG.trackWidth / 2 - 0.5));
             pillar.castShadow = true;
-            lvlAdd(pillar);
+            group.add(pillar);
             const pillar2 = new THREE.Mesh(new THREE.BoxGeometry(0.6, h, 0.6), pillarMat);
             pillar2.position.set(px - Math.cos(yaw) * (CONFIG.trackWidth / 2 - 0.5), -2 + h / 2, pz + Math.sin(yaw) * (CONFIG.trackWidth / 2 - 0.5));
             pillar2.castShadow = true;
-            lvlAdd(pillar2);
+            group.add(pillar2);
         }
     }
 }
@@ -3138,7 +2880,7 @@ function resetKarr() {
     karrProximityCooldown = 0;
     // KARR démarre assez près pour être visible dès le lancement, sans
     // apparaître directement dans la voiture du joueur.
-    karrPathIndex = Math.min(Math.max(3, 0), Math.max(0, trackLine.length - 2));
+    karrPathIndex = Math.min(2, Math.max(0,trackLine.length-2));
     karrPathT = 0;
     karrMesh.visible = true;
     updateKarrPose();
@@ -3147,14 +2889,18 @@ function resetKarr() {
 
 function updateKarrPose() {
     if (!karrMesh || !trackLine.length || !karrActive) return;
-    const a = trackLine[Math.min(karrPathIndex, trackLine.length - 2)];
-    const b = trackLine[Math.min(karrPathIndex + 1, trackLine.length - 1)];
-    const x = a.x + (b.x - a.x) * karrPathT;
-    const y = a.y + (b.y - a.y) * karrPathT;
-    const z = a.z + (b.z - a.z) * karrPathT;
-    karrMesh.position.set(x, y + .66, z);
-    karrMesh.rotation.y = Math.atan2(b.x - a.x, b.z - a.z);
-    karrMesh.userData.legacyModel?.userData.animate(clock.elapsedTime,CONFIG.karrSpeed);
+    const index=clamp(karrPathIndex,0,trackLine.length-2);
+    const a = trackLine[index];
+    const b = trackLine[index+1];
+    const pa=a.road||a,pb=b.road||b;
+    const forward=new THREE.Vector3(pb.x-pa.x,pb.y-pa.y,pb.z-pa.z).normalize();
+    const na=a.normal||{x:0,y:1,z:0},nb=b.normal||{x:0,y:1,z:0};
+    const normal=new THREE.Vector3(na.x,na.y,na.z).lerp(new THREE.Vector3(nb.x,nb.y,nb.z),karrPathT).normalize();
+    const right=new THREE.Vector3().crossVectors(normal,forward).normalize();
+    const up=new THREE.Vector3().crossVectors(forward,right).normalize();
+    karrMesh.position.set(pa.x+(pb.x-pa.x)*karrPathT,pa.y+(pb.y-pa.y)*karrPathT,pa.z+(pb.z-pa.z)*karrPathT).addScaledVector(right,-2.7).addScaledVector(up,.86);
+    karrMesh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(right,up,forward));
+    karrMesh.userData.legacyModel?.userData.animate(clock.elapsedTime,(karrMesh.userData.pursuitSpeed||0));
     const scanner = karrMesh.userData.scanner;
     if (scanner) {
         const close = karrProximityState === 'close';
@@ -3167,17 +2913,12 @@ function updateKarrPose() {
 }
 
 function advanceKarr(distance) {
-    while (distance > 0 && karrPathIndex < trackLine.length - 2) {
-        const a = trackLine[karrPathIndex];
-        const b = trackLine[karrPathIndex + 1];
-        const segment = Math.max(.01, Math.hypot(b.x - a.x, b.z - a.z));
-        const left = segment * (1 - karrPathT);
-        if (distance < left) { karrPathT += distance / segment; distance = 0; }
-        else { distance -= left; karrPathIndex++; karrPathT = 0; }
-    }
-    if (karrPathIndex >= trackLine.length - 2) {
-        karrPathIndex = Math.min(10, Math.max(0, trackLine.length - 2));
-        karrPathT = 0;
+    let guard=0;
+    while(distance>0&&guard++<trackLine.length+2){
+        if(karrPathIndex>=trackLine.length-1){karrPathIndex=0;karrPathT=0;}
+        const a=trackLine[karrPathIndex],b=trackLine[karrPathIndex+1];
+        const segment=Math.max(.01,Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z)),left=segment*(1-karrPathT);
+        if(distance<left){karrPathT+=distance/segment;distance=0;}else{distance-=left;karrPathIndex++;karrPathT=0;}
     }
 }
 
@@ -3259,6 +3000,7 @@ function clearProjectiles() {
 
 function updateKarrCombat(dt) {
     if (!karrMesh) return;
+    if (state==='countdown'){karrMesh.visible=karrActive;updateKarrPose();return;}
     if (state !== 'racing') { karrMesh.visible = false; return; }
     karrMesh.visible = karrActive;
     playerShootTimer = Math.max(0, playerShootTimer - dt);
@@ -3268,7 +3010,12 @@ function updateKarrCombat(dt) {
         if (karrRespawnTimer <= 0) resetKarr();
         return;
     }
-    advanceKarr(CONFIG.karrSpeed * (spmActive ? 1.16 : 1) * dt);
+    const prefix=raceTrafficPathDistance,total=raceTrafficPathLength;
+    const own=(prefix[karrPathIndex]||0)+((prefix[karrPathIndex+1]||0)-(prefix[karrPathIndex]||0))*karrPathT;
+    const relative=total>0?((own-raceTrafficPlayerDistance+total*1.5)%total)-total*.5:12;
+    const pursuitSpeed=Math.max(0,(carBody?.velocity.length()||0)+clamp((12-relative)*.42,-20,13));
+    karrMesh.userData.pursuitSpeed=pursuitSpeed;
+    advanceKarr(pursuitSpeed*dt);
     karrShootTimer -= dt;
     karrProximityCooldown = Math.max(0, karrProximityCooldown - dt);
     const distance = karrMesh.position.distanceTo(carMesh.position);
@@ -3467,12 +3214,7 @@ function stopAllAudio() {
 }
 
 // Retour à l'accueil KITT — coupe tout le son puis navigation.
-function goHome() {
-    stopAllAudio();
-    try { if (window.KE) KE.close(); } catch (e) { /* noop */ }
-    if(['localhost','127.0.0.1'].includes(location.hostname)||location.protocol==='file:')backToMenu();
-    else location.href=location.hostname==='kitt-franco-belge.be'?'/arcade':'/static/index.html';
-}
+function goHome() { stopAllAudio(); backToMenu(); }
 
 // Coupe le son du véhicule (moteur/vent/dérapage) — appelé à chaque sortie de course
 function silenceVehicle() {
@@ -3867,6 +3609,9 @@ function exitEditorVisual() {
 }
 
 function backToMenu() {
+    clearTimeout(kironextIntroTimer);clearTimeout(driverLaunchTimer);
+    window.KE?.close();window.KS?.close();closeRacerTutorial();stopDriverStoryAudio();clearDriveInputs();
+    for(const id of ['kironext-intro','driver-launch-intro']){const el=document.getElementById(id);el?.classList.add('hidden');el?.setAttribute('aria-hidden','true');}
     if (state === 'editor') exitEditorVisual();
     hideRaceTraffic();
     paused = false;
@@ -3915,6 +3660,7 @@ function showDriverLaunchPresentation(level) {
     screen.classList.remove('hidden'); screen.setAttribute('aria-hidden', 'false');
     playPilotVoice(profile);
     const finish = () => {
+        if(screen.classList.contains('hidden'))return;
         clearTimeout(driverLaunchTimer);
         if (remember?.checked) localStorage.setItem('kx-skip-driver-presentation', '1');
         screen.classList.add('hidden'); screen.setAttribute('aria-hidden', 'true');
@@ -3932,6 +3678,7 @@ function showKironextIntro(level) {
     const intro = document.getElementById('kironext-intro');
     if (!intro) { openDriverSelect(level); return; }
     const finish = () => {
+        if(intro.classList.contains('hidden'))return;
         clearTimeout(kironextIntroTimer);
         intro.classList.add('hidden'); intro.setAttribute('aria-hidden', 'true');
         openDriverSelect(level);
@@ -3939,7 +3686,7 @@ function showKironextIntro(level) {
     const names = {1:'CLASSIQUE // RAMPE & SAUT',2:'NUIT RAPIDE // COURSE URBAINE',3:'LOOPING // BOUCLE VERTICALE',5:'FOUDRE // DÉFI ÉLECTRIQUE',6:'NÉON // SÉRIE DE VIRAGES',7:'PONT SUSPENDU // ALTITUDE',8:'INCENDIE // ZONE DE DANGER',9:'ORBITE // CIRCUIT COSMIQUE',10:'FINALE // ÉPREUVE ULTIME',4:'CIRCUIT PERSONNALISÉ'};
     let subtitle = document.getElementById('kironext-intro-circuit');
     if (!subtitle) { subtitle = document.createElement('div'); subtitle.id = 'kironext-intro-circuit'; subtitle.className = 'kironext-intro-circuit'; intro.appendChild(subtitle); }
-    subtitle.textContent = names[level] || `CIRCUIT ${level}`;
+    subtitle.textContent = RacerTracks.themes[level]?.name || `CIRCUIT ${level}`;
     intro.insertBefore(subtitle, document.getElementById('kironext-intro-skip'));
     let laps = document.getElementById('kironext-intro-laps');
     if (!laps) { laps = document.createElement('div'); laps.id = 'kironext-intro-laps'; laps.className = 'kironext-intro-laps'; intro.appendChild(laps); }
@@ -3947,7 +3694,7 @@ function showKironextIntro(level) {
     intro.insertBefore(laps, document.getElementById('kironext-intro-skip'));
     intro.classList.remove('hidden'); intro.setAttribute('aria-hidden', 'false');
     const skip = document.getElementById('kironext-intro-skip');
-    if (skip) { skip.removeEventListener('click', finish); skip.addEventListener('click', finish, { once:true }); }
+    if(skip)skip.onclick=finish;
     kironextIntroTimer = setTimeout(finish, 4200);
 }
 
@@ -3987,7 +3734,7 @@ function beginRace(level) {
     const mobileStatus = document.getElementById('mobile-control-status');
     if (mobileStatus && mobileControlMode !== 'gyro') mobileStatus.textContent = 'TACTILE PRÊT';
     const lvlEl = document.getElementById('hud-level');
-    if (lvlEl) lvlEl.textContent = currentLevel === 4 ? 'CIRCUIT PERSO' : 'NIVEAU ' + currentLevel;
+    if (lvlEl) lvlEl.textContent = RacerTracks.themes[currentLevel].destination;
 
     nextCp = 0;
     currentRaceLap = 1;
@@ -4123,26 +3870,11 @@ function updateRaceLapHud() {
 }
 
 function completeRaceLap() {
-    raceTime = raceElapsedBeforeLap + Math.max(0, Date.now() - raceLapStartTime) / 1000;
-    raceElapsedBeforeLap = raceTime;
-    currentRaceLap++;
-    nextCp = 0;
-    const spawn = LEVEL_DATA[currentLevel].spawn;
-    respawnPoint = { ...spawn };
-    resetCarTo(spawn);
-    for (const pickup of [...turboPickups, ...spmPickups]) {
-        pickup.userData.collected = false;
-        pickup.visible = true;
-    }
-    resetKarr();
-    updateRaceLapHud();
-    state = 'countdown';
-    countdownT = 3.6;
-    countdownLast = -1;
-    countdownEl.textContent = '3';
-    countdownEl.classList.remove('hidden', 'go');
-    for (let i = 0; i < 4; i++) vehicle.setBrake(30, i);
-    showMessage(`TOUR ${currentRaceLap}/${RACE_LAPS} — C'EST REPARTI !`);
+    raceTime = raceElapsedBeforeLap + Math.max(0,Date.now()-raceLapStartTime)/1000;
+    currentRaceLap++;nextCp=0;respawnPoint={...LEVEL_DATA[currentLevel].spawn};
+    autoWpIdx=0;endOfLineTimer=0;loopCompleted=false;
+    for(const pickup of [...turboPickups,...spmPickups]){pickup.userData.collected=false;pickup.visible=true;}
+    updateRaceLapHud();showMessage('TOUR '+currentRaceLap+'/'+RACE_LAPS+' — GARDE TON ÉLAN !');
 }
 
 function finishRace() {
@@ -4569,6 +4301,7 @@ function animate() {
     updateKarrCombat(dt);
     if (state === 'racing') updateProjectiles(dt);
 
+    RacerWorld.update?.(clock.elapsedTime,currentLevel);
     updateScannerVisual(dt);
     updateSPM(dt);
     updateDetachedCarParts(dt);
@@ -4593,8 +4326,8 @@ function animate() {
 
     if (renderer && scene && camera && (!LOW_POWER_MODE || (++lowPowerRenderFrame % 2 === 0))) {
         for (const object of scene.children) if (object.userData.hideInEditor) object.visible = state !== 'editor' && !object.userData.hiddenByCourse;
-        scene.fog.near = state === 'editor' ? 1200 : 60;
-        scene.fog.far = state === 'editor' ? 7000 : 380;
+        scene.fog.near = state === 'editor' ? 1200 : 90;
+        scene.fog.far = state === 'editor' ? 7000 : 720;
         renderer.render(scene, camera);
     }
 }

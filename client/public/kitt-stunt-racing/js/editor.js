@@ -28,6 +28,7 @@ window.KE = (function () {
     let past = [], future = [];
     const copy = value => JSON.parse(JSON.stringify(value));
     function commit(next) {
+        next=RacerTracks.balance(next,selected);
         const res = window.KITT.rebuildCustom(next);
         if (!res.ok) { selected = Math.min(selected, ops.length - 1); buildToolbar(); updateStats(); toast('⚠ ' + res.error); return; }
         past.push(copy(ops)); if (past.length > 40) past.shift();
@@ -39,9 +40,9 @@ window.KE = (function () {
         const line = window.KITT.levelData[4].line;
         if (!line.length) return;
         const xs = line.map(p => p.x), zs = line.map(p => p.z);
-        cam.focus = { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: 0,
+        cam.focus = { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: (Math.min(...line.map(p=>p.y))+Math.max(...line.map(p=>p.y)))/2,
             z: (Math.min(...zs) + Math.max(...zs)) / 2 };
-        cam.dist = Math.max(65, Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) * 1.35);
+        cam.dist = Math.max(65, Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) * 1.08);
         cam.pitch = top ? 1.55 : 0.85;
     }
     let openState = false;
@@ -57,6 +58,8 @@ window.KE = (function () {
             if (Array.isArray(arr) && arr.length) return arr;
         } catch (e) { /* noop */ }
         // Circuit de départ par défaut (première visite)
+        return RacerTracks.template('grandprix');
+        /* Ancien tracé conservé pour la lecture des sauvegardes.
         return [
             { type: 'straight', len: 30, dy: 0 },
             { type: 'curve', radius: 45, angle: -45, dy: 0 },
@@ -70,7 +73,7 @@ window.KE = (function () {
             { type: 'checkpoint' },
             { type: 'curve', radius: 45, angle: -45, dy: 0 },
             { type: 'straight', len: 30, dy: 0 }
-        ];
+        ]; */
     }
 
     function saveOps() {
@@ -159,36 +162,25 @@ window.KE = (function () {
     function buildToolbar() {
         const bar = document.getElementById('editor-toolbar');
         if (!bar) return;
-        let html = '<h2>STUDIO CIRCUIT</h2><p class="ed-hint">Sélectionne une pièce pour la modifier. Les nouvelles pièces sont insérées après la sélection.</p>';
-        html += '<div class="ed-stats" id="ed-stats"></div>';
-        html += '<canvas id="ed-map" width="540" height="220" aria-label="Plan du circuit"></canvas>';
-        html += '<div class="ed-pieces"><button class="ed-btn" data-act="frame">Vue générale</button><button class="ed-btn" data-act="top">Vue du dessus</button></div>';
-        html += '<ol class="ed-sequence">';
-        ops.forEach((o, i) => {
-            const label = {straight:'Ligne droite',curve:'Virage',jump:'Saut',loop:'Boucle',checkpoint:'Checkpoint',gap:'Trou'}[o.type] || 'Pièce';
-            html += '<li><button class="ed-btn ' + (i === selected ? 'selected' : '') + '" data-select="' + i + '">' + (i + 1) + ' · ' + label + '</button></li>';
-        });
-        html += '</ol>';
-        const active = ops[selected];
-        if (active) {
-            html += '<div class="ed-properties">';
-            for (const [key, label, min, max] of [['len','Longueur (m)',5,100],['radius','Rayon (m)',15,100],['angle','Angle (°)',-180,180],['dy','Dénivelé (m)',-5,5]]) {
-                if (key in active) html += '<label>' + label + '<input type="number" data-field="' + key + '" min="' + min + '" max="' + max + '" step="1" value="' + Number(active[key]) + '"></label>';
-            }
-            html += '</div><div class="ed-pieces"><button class="ed-btn" data-act="duplicate">Dupliquer</button><button class="ed-btn warn" data-act="delete">Supprimer</button><button class="ed-btn" data-act="prev">↑ Déplacer</button><button class="ed-btn" data-act="next">↓ Déplacer</button></div>';
-        }
-        html += '<div class="ed-section"><div class="ed-section-label">PIÈCES — cliquer pour ajouter</div><div class="ed-pieces">';
-        for (const p of PIECES) html += '<button class="ed-btn" data-piece="' + p.id + '">' + p.label + '</button>';
-        html += '</div></div>';
-        html += '<div class="ed-section"><div class="ed-section-label">ACTIONS</div><div class="ed-pieces">';
-        html += '<button class="ed-btn warn" data-act="undo">↩ ANNULER</button><button class="ed-btn" data-act="redo">↪ RÉTABLIR</button>';
-        html += '<button class="ed-btn warn" data-act="clear">🧹 EFFACER</button>';
-        html += '<button class="ed-btn action" data-act="test">🏁 TESTER</button>';
-        html += '<button class="ed-btn action" data-act="save">💾 SAUVEGARDER</button>';
-        html += '<button class="ed-btn" data-act="export">Exporter JSON</button><button class="ed-btn" data-act="import">Importer JSON</button><input id="ed-import" type="file" accept=".json,application/json" hidden>';
-        html += '<button class="ed-btn" data-act="menu">☰ MENU</button>';
-        html += '</div></div>';
+        let html = '<div class="studio-top"><button class="ed-btn studio-menu" data-act="menu">← MENU</button><div class="studio-title"><span>KYRONEXT / BY MANIX</span><h2>Le studio des circuits.</h2></div><div class="studio-top-actions"><button class="ed-btn" data-act="save">SAUVEGARDER</button><button class="ed-btn action" data-act="test">▶ TESTER MA PISTE</button></div></div>';
+        html += '<aside class="studio-sidebar"><section><span class="studio-step">01 / UN POINT DE DÉPART</span><h3>Choisis un modèle.</h3><div class="studio-presets"><button data-template="sprint">Sprint</button><button data-template="grandprix">Grand prix</button><button data-template="stunt">Looping</button></div></section>';
+        html += '<section><span class="studio-step">02 / TES PIÈCES</span><h3>Un clic, une nouvelle route.</h3><div class="studio-palette">';
+        const icons = {straight20:'━',straight40:'━━',up:'↗',down:'↘',curveL45:'↶',curveR45:'↷',curveL90:'↰',curveR90:'↱',jump:'↟',loop:'∞',checkpoint:'⚑',straight10:'─'};
+        for (const piece of PIECES) html += '<button class="ed-btn" data-piece="'+piece.id+'"><b>'+icons[piece.id]+'</b><span>'+piece.label.replace(/^[^A-ZÉ]+/,'')+'</span></button>';
+        html += '</div><p class="studio-tip">La pièce s’insère après celle que tu as sélectionnée. Le retour au départ se raccorde automatiquement.</p></section>';
+        const active=ops[selected];
+        if(active){html+='<section class="studio-properties"><span class="studio-step">PIÈCE '+(selected+1)+' / '+ops.length+'</span><div class="ed-properties">';for(const[key,label,min,max]of[['len','Longueur (m)',5,300],['radius','Rayon (m)',15,150],['angle','Angle (°)',-180,180],['dy','Pente',-5,5]]){if(key in active)html+='<label>'+label+'<input type="number" data-field="'+key+'" min="'+min+'" max="'+max+'" step="1" value="'+Number(active[key])+'"></label>'}html+='</div><div class="studio-piece-actions"><button class="ed-btn" data-act="duplicate">DUPLIQUER</button><button class="ed-btn warn" data-act="delete">SUPPRIMER</button><button class="ed-btn" data-act="prev">← DÉPLACER</button><button class="ed-btn" data-act="next">DÉPLACER →</button></div></section>'}
+        html+='<section><span class="studio-step">03 / TON AMBIANCE</span><label class="studio-world-label" for="studio-world">Le pays du décor</label><select id="studio-world"><option value="5">Pays-Bas / moulins et canaux</option><option value="1">Belgique / Atomium</option><option value="6">Japon / cerisiers et néons</option><option value="9">Finlande / neige et aurore</option><option value="10">Suisse / Alpes et télécabine</option></select></section>';
+        html+='<details class="studio-files"><summary>MES FICHIERS DE CIRCUIT</summary><div><button class="ed-btn" data-act="export">EXPORTER JSON</button><button class="ed-btn" data-act="import">IMPORTER JSON</button><button class="ed-btn warn" data-act="clear">EFFACER</button></div></details><input id="ed-import" type="file" accept=".json,application/json" hidden></aside>';
+        html+='<div class="studio-map"><div class="studio-map-head"><span>VUE D’ENSEMBLE</span><button class="ed-btn" data-act="frame">3D</button><button class="ed-btn" data-act="top">DESSUS</button></div><canvas id="ed-map" width="540" height="220" aria-label="Plan de ta piste fermée"></canvas><div id="ed-stats" class="ed-stats"></div></div>';
+        html+='<div class="studio-timeline"><div class="studio-timeline-head"><span>TON PARCOURS / CLIQUE UNE PIÈCE</span><div><button class="ed-btn" data-act="undo" '+(!past.length?'disabled':'')+'>↶ ANNULER</button><button class="ed-btn" data-act="redo" '+(!future.length?'disabled':'')+'>↷ RÉTABLIR</button></div></div><ol class="ed-sequence">';
+        ops.forEach((op,i)=>{const names={straight:'Ligne droite',curve:op.angle>0?'Virage +':'Virage −',jump:'Saut',loop:'Looping',checkpoint:'Passage',gap:'Saut'};html+='<li><button class="ed-btn '+(i===selected?'selected':'')+'" data-select="'+i+'" aria-pressed="'+(i===selected)+'"><span>'+String(i+1).padStart(2,'0')+'</span>'+names[op.type]+'</button></li>'});
+        html+='</ol></div><div class="studio-camera-tip">GLISSER : TOURNER · MOLETTE : ZOOMER · MAJ + GLISSER : DÉPLACER</div>';
+
         bar.innerHTML = html;
+        bar.querySelectorAll('[data-template]').forEach(button=>button.onclick=()=>{selected=0;commit(RacerTracks.template(button.dataset.template))});
+        bar.querySelector('#studio-world').value=localStorage.getItem('kx-builder-world')||'5';
+        bar.querySelector('#studio-world').onchange=event=>{localStorage.setItem('kx-builder-world',event.target.value);window.KITT.rebuildCustom(ops);updateStats();frameTrack()};
         bar.querySelector('#ed-import').onchange = async event => {
             const file = event.target.files[0]; if (!file) return;
             if (file.size > 64000) { toast('⚠ Fichier trop volumineux (64 Ko maximum)'); return; }
@@ -273,12 +265,9 @@ window.KE = (function () {
         }
         const el = document.getElementById('ed-stats');
         if (!el) return;
-        const loops = ops.filter(o => o.type === 'loop').length;
-        el.innerHTML =
-            '🧩 Pièces : <strong>' + ops.length + '</strong><br>' +
-            '└ Longueur : <strong>' + lengthApprox(ops) + ' m</strong><br>' +
-            '🚩 Checkpoints : <strong>' + (data ? data.checkpoints.length : countCheckpoints(ops)) + '</strong>' +
-            (loops ? '<br>🔁 Boucle : <strong>' + (loops > 1 ? '⚠ une seule supportée' : 'oui') + '</strong>' : '');
+        const L=Math.round(data?.length||0),closure=Math.round(data?.closureLength||0);
+        el.innerHTML='<span><b>'+ops.length+'</b> PIÈCES</span><span><b>'+L+' m</b> PAR TOUR</span><span class="studio-closed">● CIRCUIT FERMÉ</span><small>'+(closure>1?'Raccord automatique : '+closure+' m.':'Les deux extrémités sont raccordées.')+' Sauvegarde locale automatique.</small>';
+
     }
 
     // ---------- caméra ----------
@@ -314,6 +303,7 @@ window.KE = (function () {
         const K = window.KITT;
         if (!K || !K.camera) return;
         const c = K.camera;
+        if(innerWidth>900)c.setViewOffset(innerWidth,innerHeight,-145,0,innerWidth,innerHeight);else c.setViewOffset(innerWidth,innerHeight,0,innerHeight*.12,innerWidth,innerHeight);
         const cy = Math.cos(cam.pitch), sy = Math.sin(cam.pitch);
         c.position.set(
             cam.focus.x + Math.sin(cam.yaw) * cy * cam.dist,
@@ -329,6 +319,7 @@ window.KE = (function () {
         ops = loadOps();
         selected = ops.length - 1; past = []; future = [];
         openState = true;
+        document.body.classList.add('studio-open');
         buildToolbar();
         bindCamera();
         const scr = document.getElementById('editor-screen');
@@ -340,6 +331,8 @@ window.KE = (function () {
 
     function close() {
         openState = false;
+        document.body.classList.remove('studio-open');
+        window.KITT?.camera?.clearViewOffset();
         const scr = document.getElementById('editor-screen');
         if (scr) scr.classList.add('hidden');
     }
@@ -348,6 +341,13 @@ window.KE = (function () {
         document.addEventListener('DOMContentLoaded', () => { /* rien : chargement paresseux */ });
     }
 
+    window.addEventListener('keydown',event=>{
+        if(!openState||event.target.matches?.('input,select,textarea'))return;
+        let action='';if((event.ctrlKey||event.metaKey)&&event.code==='KeyZ')action=event.shiftKey?'redo':'undo';
+        else if((event.ctrlKey||event.metaKey)&&event.code==='KeyY')action='redo';
+        else if(event.code==='Delete')action='delete';
+        if(action){event.preventDefault();document.querySelector('[data-act="'+action+'"]')?.click()}
+    });
     return {
         open, close,
         isOpen: () => openState,

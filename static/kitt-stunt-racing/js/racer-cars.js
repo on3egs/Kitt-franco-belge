@@ -118,6 +118,7 @@ window.RacerCars = (() => {
         return state;
     }
 
-    function rival(env){const root=new T.Group(),model=build(true,env);root.name='KARR_AI';root.add(model);root.userData.legacyModel=model;root.userData.scanner=model.userData.leds[4];return root}
-    return {installPlayer,rival};
+    function rival(env){const root=new T.Group(),model=build(true,env);root.name='KARR_AI';root.add(model);root.userData.legacyModel=model;root.userData.scanner=model.userData.leds[4];
+        const tag=document.createElement('canvas');tag.width=256;tag.height=80;const q=tag.getContext('2d');q.fillStyle='#100e18';q.fillRect(0,0,256,80);q.strokeStyle='#ffbd57';q.lineWidth=4;q.strokeRect(2,2,252,76);q.fillStyle='#ffcf83';q.textAlign='center';q.font='bold 42px monospace';q.fillText('KARR',128,55);const label=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(tag),depthWrite:false}));label.position.set(0,2.3,0);label.scale.set(2.6,.8,1);root.add(label);return root}
+    return {installPlayer,rival,compact};
 })();

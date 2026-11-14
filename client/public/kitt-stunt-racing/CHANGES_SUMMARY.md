@@ -513,3 +513,16 @@ Version commune PC / Jetson / site : dix circuits, dix-huit pilotes et fonctionn
 La fiche du pilote est organisée en trois blocs : identité et véhicule, histoire sur toute la largeur, puis statistiques. L'écoute du récit possède son propre bouton. La présentation est vérifiée sur ordinateur et mobile.
 
 Validation : dix-huit pilotes, conduite, dégâts et restauration, pause à la perte de focus, fonctionnement sans Three.js ; courses complètes de trois tours sur les circuits 1, 3 avec looping, et 10.
+
+
+## Grand Tour KYRONEXT — Windows et décors du monde · By Manix
+
+Dix circuits réellement fermés, de 624 à 1 178 mètres par tour, avec trois tours continus. Le looping du Canyon possède son approche et ses checkpoints. KARR est visible au départ, roule sur sa voie, adapte son allure au duel et suit l’orientation du looping.
+
+Belgique/Atomium, France/Paris, Arizona, Pays-Bas/moulins animés et canaux, Japon/cerisiers, Italie/Riviera, Allemagne/Ruhr, Finlande/neige et aurore, Suisse/Alpes et télécabine. Le circuit personnel propose plusieurs ambiances. Drapeaux par pays, eau et éléments de décor animés. Les décors sont instanciés, et les chaussées regroupées par matériau.
+
+Nouveau studio : modèles Sprint / Grand prix / Looping, palette de pièces, raccord automatique, réglages, annuler/rétablir, sauvegarde automatique, import/export JSON et choix du pays. Navigation corrigée : menu depuis toutes les fenêtres, annulation des départs différés et retour au portail distinct.
+
+Version Windows autonome et installateur personnalisé : https://kitt-franco-belge.be/kyronext-grand-tour-windows/
+
+Validation : courses complètes de trois tours sur les dix circuits ; constructeur, import/export, sauvegarde et tous les retours ; animations des moulins et orientation de KARR ; application Windows réelle, ressources locales et persistance. Projet de fan indépendant.

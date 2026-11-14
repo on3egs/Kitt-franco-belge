@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/style.css?v=20261021-stunt-polish3">
     <link rel="stylesheet" href="css/pilot-portraits.css?v=20261113-1">
     <link rel="stylesheet" href="css/driver-panel.css?v=20261114-2">
+    <link rel="stylesheet" href="css/grand-tour.css?v=20261114-grand1">
 </head>
 <body>
     <!-- Canvas WebGL -->
@@ -45,8 +46,9 @@
     <div id="main-menu" class="hidden">
         <div class="menu-box">
             <h1>KITT STUNT RACING</h1>
-            <p class="subtitle">10 CIRCUITS STUNT • 3 TOURS CHACUN • STYLE STUNT CAR RACER</p>
+            <p class="subtitle">GRAND TOUR KYRONEXT • 10 CIRCUITS FERMÉS • DUEL KITT / KARR</p>
             <p class="menu-best hidden" id="menu-best"></p>
+            <a id="game-portal" class="game-portal" href="https://kitt-franco-belge.be/arcade" target="_top">← ACCUEIL KITT FRANCO-BELGE</a>
             <button id="btn-level1" class="menu-btn">▶ NIVEAU 1 — Classique</button>
             <button id="btn-level2" class="menu-btn">🌃 NIVEAU 2 — Nuit rapide</button>
             <button id="btn-level3" class="menu-btn">🔁 NIVEAU 3 — Looping</button>
@@ -61,6 +63,7 @@
             <button id="btn-custom" class="menu-btn">🛠️ CIRCUIT PERSONNALISÉ</button>
             <button id="btn-editor" class="menu-btn">🧱 CONSTRUCTION DE CIRCUIT</button>
             <button id="btn-scores" class="menu-btn">🏆 SCORES</button>
+            <div class="download-desktop"><a href="/kyronext-grand-tour-windows/" target="_top">↓ VERSION WINDOWS · INSTALLATEUR ET PORTABLE · BY MANIX</a></div>
             <div class="menu-row">
                 <button id="btn-music" class="mini-btn" title="Musique (P)">🎵 MUSIQUE : OFF</button>
             </div>
@@ -135,7 +138,7 @@
     <div id="spm-cinematic" class="hidden" aria-live="polite"><span>SUPER PURSUIT MODE</span><b>TRANSFORMATION 3D</b></div>
 
     <!-- Bouton ACCUEIL tactile, toujours accessible pendant la course -->
-    <button type="button" id="btn-home" aria-label="Quitter et retourner à l'accueil" title="Accueil (quitter la course)">⌂<span>ACCUEIL</span></button>
+    <button type="button" id="btn-home" aria-label="Revenir au menu du jeu" title="Menu du jeu">⌂<span>MENU</span></button>
 
     <!-- Commandes tactiles/gyroscope : visibles uniquement pendant la course sur mobile. -->
     <div id="mobile-race-controls" class="mobile-race-controls" aria-label="Commandes mobiles de course">
@@ -216,14 +219,17 @@
     <script src="lib/three.min.js"></script>
     <script src="lib/cannon.min.js"></script>
     <script src="js/audio.js?v=20261021-3lap-portrait-intro"></script>
-    <script src="js/scores.js?v=20261021-three-lap"></script>
-    <script src="js/editor.js?v=8-studio"></script>
+    <script src="js/scores.js?v=20261114-grand1"></script>
+    <script src="js/editor.js?v=20261114-grand1"></script>
     <script src="js/arcade-config.js?v=20260917-network1"></script>
     <script src="js/arcade-relay.js?v=20260917-network1"></script>
-    <script src="js/circuit-scenery.js?v=20261113-1"></script>
+    <script src="js/grand-circuits.js?v=20261114-grand1"></script>
+    <script src="js/grand-scenery.js?v=20261114-grand1"></script>
+    <script src="js/world-motion.js?v=20261114-grand1"></script>
+    <script src="js/grand-ui.js?v=20261114-grand1"></script>
     <script src="js/legacy-models.js?v=20261114"></script>
-    <script src="js/racer-cars.js?v=20261114"></script>
+    <script src="js/racer-cars.js?v=20261114-grand1"></script>
     <script src="js/compatible-2d.js?v=20261114"></script>
-    <script src="main.js?v=20261114-driver-story2"></script>
+    <script src="main.js?v=20261114-grand1"></script>
 </body>
 </html>

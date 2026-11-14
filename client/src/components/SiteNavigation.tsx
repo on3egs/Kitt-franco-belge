@@ -4,6 +4,7 @@ import LangSelector from "./LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const SITE_LINKS: { href: string; label: string; detail: string; keywords?: string }[] = [
+  { href: "/kyronext-grand-tour-windows/", label: "Grand Tour · Jeu Windows", detail: "Installer ou emporter le jeu KITT/KARR · By Manix", keywords: "windows installer télécharger portable knight rider stunt grand tour jeu" },
   { href: "/kyronext-legacy/", label: "Legacy Transmission · Amiga & archives", detail: "KITT, KARR, Atomium, rock tracker et huit capsules mémoire · By Manix", keywords: "demo démo amiga atari 3d rock skid row fairlight paradox quartex trsi razor anarchy d-mob" },
   { href: "/kyronext-midnight/", label: "Midnight Disk · Démo 1990", detail: "KITT, KARR, 3D rétro et musique chiptune · By Manix", keywords: "amiga demo démo manix 1990 demoscene kitt karr musique" },
   { href: "/ethernet-direct/", label: "Ethernet Direct · Windows", detail: "Configurer une liaison câblée vers un appareil et restaurer ses réglages", keywords: "reseau réseau ethernet ip windows connexion câble caméra automate serveur" },

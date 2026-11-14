@@ -62,11 +62,11 @@ window.KS = (function () {
         if (!box) return;
         const runs = loadRuns();
         let html = '';
-        for (const lvl of [1, 2, 3, 4]) {
+        for (const lvl of [1,2,3,4,5,6,7,8,9,10]) {
             const lvlRuns = runs.filter(r => r.level === lvl).slice(0, 5);
             const best = bestTime(lvl);
             html += '<div class="scores-level">';
-            html += '<h2>' + (LEVEL_NAMES[lvl] || 'NIVEAU ' + lvl) +
+            html += '<h2>' + (window.RacerTracks?.themes[lvl]?.name || LEVEL_NAMES[lvl] || 'NIVEAU ' + lvl) +
                 ' <span class="lvl-best">' + (best !== null ? '★ ' + fmtTime(best) : '—') + '</span></h2>';
             if (!lvlRuns.length) {
                 html += '<div class="scores-empty">Aucune course enregistrée — lance-toi !</div>';
@@ -122,7 +122,7 @@ window.KS = (function () {
         } else {
             try {
                 localStorage.removeItem(RUNS_KEY);
-                for (const l of [1, 2, 3, 4]) localStorage.removeItem(BEST_KEY + l);
+                for (const l of [1,2,3,4,5,6,7,8,9,10]) localStorage.removeItem(BEST_KEY + l);
             } catch (e) { /* noop */ }
             disarmReset();
             render();
