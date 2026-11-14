@@ -313,7 +313,7 @@ function speakDriverStory(profile) {
         audio.onended = () => {
             if (activeDriverStoryAudio === audio) activeDriverStoryAudio = null;
             const currentButton = document.querySelector('[data-driver-story]');
-            if (currentButton) currentButton.textContent = '▶ ÉCOUTER SA LÉGENDE';
+            if (currentButton) currentButton.textContent = '▶ ÉCOUTER SON HISTOIRE';
         };
         audio.onerror = () => {
             if (activeDriverStoryAudio === audio) activeDriverStoryAudio = null;
@@ -494,14 +494,14 @@ function renderDriverSelection() {
         const points = Number(stats?.points) || 0;
         const family = driverVehicleFamily(selectedDriver);
         const familyName = family === 'kitt' ? 'ÉQUIPE KITT' : family === 'karr' ? 'ÉQUIPE KARR' : 'AUTRES MACHINES';
-        detail.innerHTML = `${portraitMarkup(selectedDriver, true)}
+        detail.innerHTML = `<div class="driver-identity">${portraitMarkup(selectedDriver, true)}
             <div class="driver-detail-copy"><div class="driver-detail-kicker">PILOTE SÉLECTIONNÉ</div>
             <h2>${selectedDriver.name}</h2><p>${selectedDriver.flag} ${selectedDriver.region}</p>
             <span class="driver-family-tag">${familyName}</span>
             <div class="driver-car-chip">VÉHICULE <b>${selectedDriver.car}</b></div>
-            <small>${selectedDriver.desc}</small>
-            <div class="driver-story-block"><div class="driver-story-kicker">LÉGENDE DU CIRCUIT // FICTION</div><p>${selectedDriver.story || selectedDriver.desc}</p>
-            <button type="button" class="driver-story-listen" data-driver-story>▶ ÉCOUTER SA LÉGENDE</button></div></div>`;
+            <small>${selectedDriver.desc}</small></div></div>
+            <section class="driver-story-block" aria-labelledby="driver-story-heading"><h3 id="driver-story-heading" class="driver-story-kicker">SA LÉGENDE DU CIRCUIT</h3><p>${selectedDriver.story || selectedDriver.desc}</p>
+            <button type="button" class="driver-story-listen" data-driver-story>▶ ÉCOUTER SON HISTOIRE</button><span class="driver-story-caption">Une histoire imaginée pour le jeu.</span></section>`;
         detail.insertAdjacentHTML('beforeend', `<div class="driver-stat-row" aria-label="Statistiques du pilote">
             <div><b>${power} CH</b><span>PUISSANCE</span></div>
             <div><b>${races}</b><span>COURSES</span></div>

@@ -189,3 +189,12 @@ Si des problèmes persistent, vérifier:
 ---
 *Documentation créée pour Manix/KITT FRANCO BELGE*
 *Date: 14 août 2026*
+
+
+## Fusion Legacy — 14 novembre 2026 · By Manix
+
+Version commune PC / Jetson / site : dix circuits, dix-huit pilotes et fonctionnalités récentes du Jetson ; mode compatible 2D, démarrage protégé et correctifs de commandes issus du site. KITT et KARR utilisent les Trans Am de Legacy Transmission, avec roues Cannon et pièces détachables adaptées. Les portraits, récits audio et licences sont inclus.
+
+La fiche du pilote est organisée en trois blocs : identité et véhicule, histoire sur toute la largeur, puis statistiques. L'écoute du récit possède son propre bouton. La présentation est vérifiée sur ordinateur et mobile.
+
+Validation : dix-huit pilotes, conduite, dégâts et restauration, pause à la perte de focus, fonctionnement sans Three.js ; courses complètes de trois tours sur les circuits 1, 3 avec looping, et 10.
