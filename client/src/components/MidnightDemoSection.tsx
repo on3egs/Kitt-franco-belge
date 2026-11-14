@@ -4,7 +4,7 @@ import MidnightGuestbook from "./MidnightGuestbook";
 
 const DEMO_URL = `${import.meta.env.BASE_URL}kyronext-midnight/`;
 
-export default function MidnightDemoSection() {
+export default function MidnightDemoSection({ compact = false }: { compact?: boolean }) {
   return (
     <section className="midnight-section" id="demo-1990" aria-labelledby="midnight-title">
       <div className="midnight-card">
@@ -22,7 +22,7 @@ export default function MidnightDemoSection() {
           <small>La musique démarre à votre clic. À regarder avec le son.</small>
         </div>
       </div>
-      <aside className="midnight-tribute" aria-labelledby="midnight-tribute-title">
+      {compact ? null : <><aside className="midnight-tribute" aria-labelledby="midnight-tribute-title">
         <div className="midnight-transmission"><span>SIGNAL REÇU / 1990 → DEMAIN</span><span>MESSAGE AUX PARRAINS</span></div>
         <h3 id="midnight-tribute-title">À ceux qui ont laissé la lumière allumée.</h3>
         <p>Avant nos écrans, il y avait vos nuits. Des disquettes pour constellations, des pseudos pour signatures. Entre deux chargements, vous glissiez une preuve : quelques lignes de code pouvaient ouvrir un monde.</p>
@@ -33,7 +33,7 @@ export default function MidnightDemoSection() {
         <p className="midnight-ethos">KYRONEXT poursuit ce fil avec une boussole <strong>white hat</strong> : comprendre, créer, protéger et transmettre, dans le respect des personnes, des auteurs et des systèmes.</p>
         <footer className="midnight-tribute-footer"><span>Le disque a changé. La lumière circule encore.</span><b>BY MANIX</b></footer>
       </aside>
-      <MidnightGuestbook />
+      <MidnightGuestbook /></>}
     </section>
   );
 }

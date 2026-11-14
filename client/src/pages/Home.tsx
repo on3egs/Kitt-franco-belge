@@ -15,7 +15,6 @@ import { toast } from "sonner";
 import LangSelector from "@/components/LangSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SiteNavigation from "@/components/SiteNavigation";
-import SoftwareSection from "@/components/SoftwareSection";
 import MissionLaunch from "@/components/MissionLaunch";
 import MidnightDemoSection from "@/components/MidnightDemoSection";
 import LegacyTransmissionSection from "@/components/LegacyTransmissionSection";
@@ -2296,15 +2295,21 @@ export default function Home() {
       <SiteNavigation />
       <main id="main-content" tabIndex={-1}>
       <HeroSection />
-      <LegacyTransmissionSection />
-      <MidnightDemoSection />
+      <section className="home-creations" aria-labelledby="home-creations-title">
+        <div className="home-creations-head">
+          <span>CRÉATIONS · BY MANIX</span>
+          <h2 id="home-creations-title">Choisissez votre disque.</h2>
+        </div>
+        <div className="home-creations-grid">
+          <LegacyTransmissionSection />
+          <MidnightDemoSection compact />
+        </div>
+      </section>
       <MissionLaunch />
-      <SoftwareSection />
       <VisitorCounter />
       <StorySection />
       <ServicesSection />
       <ProgressionSection />
-      <VideosSection />
       <SocialProofSection />
       <ContactSection />
       </main>
