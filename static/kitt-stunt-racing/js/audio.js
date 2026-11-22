@@ -46,9 +46,9 @@ window.KA = (function () {
         } catch (e) { return false; }
 
         comp = ctx.createDynamicsCompressor();
-        comp.threshold.value = -18;
+        comp.threshold.value = -16;
         comp.knee.value = 22;
-        comp.ratio.value = 8;
+        comp.ratio.value = 5;
         comp.attack.value = 0.004;
         comp.release.value = 0.18;
 
@@ -68,12 +68,12 @@ window.KA = (function () {
         intakeBP.frequency.value = 900; intakeBP.Q.value = 0.7;
 
         const engLP = ctx.createBiquadFilter(); engLP.type = 'lowpass';
-        engLP.frequency.value = 520; engLP.Q.value = 1.1;
+        engLP.frequency.value = 620; engLP.Q.value = 0.82;
 
-        const g1 = ctx.createGain(); g1.gain.value = 0.5;
-        const g2 = ctx.createGain(); g2.gain.value = 0.42;
-        const g3 = ctx.createGain(); g3.gain.value = 0.55;             // sub plus présent
-        const gIntake = ctx.createGain(); gIntake.gain.value = 0.05;
+        const g1 = ctx.createGain(); g1.gain.value = 0.34;
+        const g2 = ctx.createGain(); g2.gain.value = 0.31;
+        const g3 = ctx.createGain(); g3.gain.value = 0.68;             // sub plus présent
+        const gIntake = ctx.createGain(); gIntake.gain.value = 0.075;
         const engGain = ctx.createGain(); engGain.gain.value = 0;
 
         o1.connect(g1); g1.connect(engLP);
@@ -217,8 +217,8 @@ window.KA = (function () {
         if (!ctx || !skid) return;
         if (!isFinite(amount)) amount = 0;
         const a = Math.max(0, Math.min(1, amount));
-        skid.gain.gain.setTargetAtTime(a * 0.11, ctx.currentTime, 0.07);
-        skid.bp.frequency.setTargetAtTime(800 + a * 500, ctx.currentTime, 0.1);
+        skid.gain.gain.setTargetAtTime(a * 0.17, ctx.currentTime, 0.045);
+        skid.bp.frequency.setTargetAtTime(620 + a * 1050, ctx.currentTime, 0.075);
     }
 
     // ---------- one-shots ----------
@@ -272,6 +272,7 @@ window.KA = (function () {
             tone(520, .075, 'square', .07);
             tone(760, .09, 'square', .06, .10);
         },
+        tireScrub: (i = .8) => { const k = Math.max(.2, Math.min(1, i)); noiseHit(.09 + k * .07, 1900 + k * 1100, .04 + k * .055, 'bandpass'); tone(2100 + k * 500, .075, 'sine', .018 + k * .025, 0, 1250); },
         collision: (i) => {
             const k = Math.max(.15, Math.min(1, i || .4));
             tone(95 - k * 28, .11 + k * .09, 'sine', .12 + k * .16, 0, 42);

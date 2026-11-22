@@ -285,13 +285,11 @@ function speakDriverScore(profile) {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'fr-FR';
         utterance.rate = 0.94;
-        utterance.pitch = FEMALE_PILOTS.has(profile.id) ? 1.08 : 0.96;
+        utterance.pitch = 0.94;
         utterance.volume = 0.95;
         const voices = window.speechSynthesis.getVoices() || [];
         const french = voices.filter(voice => /^fr/i.test(voice.lang || ''));
-        const preferred = FEMALE_PILOTS.has(profile.id)
-            ? french.find(voice => /female|femme|audrey|hortense|amelie|amélie|julie/i.test(voice.name))
-            : french.find(voice => /male|homme|thomas|henri|paul/i.test(voice.name));
+        const preferred = french.find(voice => /male|homme|guy|thomas|henri|paul/i.test(voice.name));
         if (preferred || french[0]) utterance.voice = preferred || french[0];
         window.speechSynthesis.speak(utterance);
     } catch (error) { console.warn('[DRIVER SCORE VOICE]', error); }
@@ -357,11 +355,8 @@ const raceVoiceCache = new Map();
 let lastCrashVoiceAt = 0;
 let lastCrashVoiceKind = '';
 function playRaceVoice(kind) {
-    // Il n'existe qu'une annonce SPM masculine et une version Guy : toutes
-    // les pilotes utilisent donc une voix disponible au lieu d'un 404 audio.
-    const suffix = kind === 'spm'
-        ? (selectedDriver?.id === GUY_PILOT ? 'guy' : 'male')
-        : (selectedDriver?.id === GUY_PILOT ? 'guy' : (FEMALE_PILOTS.has(selectedDriver?.id) ? 'female' : 'male'));
+    // Toutes les communications de course utilisent les enregistrements Guy déjà fournis.
+    const suffix = 'guy';
     const key = `${kind}-${suffix}`;
     let audio = raceVoiceCache.get(key);
     if (!audio) {
@@ -381,7 +376,8 @@ function playRaceVoice(kind) {
             const utterance = new SpeechSynthesisUtterance('Activation du S.P.M !');
             utterance.lang = 'fr-FR';
             utterance.rate = .88;
-            const frenchVoice = window.speechSynthesis.getVoices().find(voice => voice.lang?.toLowerCase().startsWith('fr'));
+            const frenchVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang?.toLowerCase().startsWith('fr'));
+            const frenchVoice = frenchVoices.find(voice => /male|homme|guy|thomas|henri|paul/i.test(voice.name)) || frenchVoices[0];
             if (frenchVoice) utterance.voice = frenchVoice;
             window.speechSynthesis.speak(utterance);
         }
@@ -407,7 +403,8 @@ function speakRacerIntro() {
     utterance.pitch = 0.95;
     utterance.volume = 1;
     const voices = window.speechSynthesis.getVoices();
-    const frenchVoice = voices.find(voice => voice.lang && voice.lang.toLowerCase().startsWith('fr'));
+    const frenchVoices = voices.filter(voice => voice.lang && voice.lang.toLowerCase().startsWith('fr'));
+    const frenchVoice = frenchVoices.find(voice => /male|homme|guy|thomas|henri|paul/i.test(voice.name)) || frenchVoices[0];
     if (frenchVoice) utterance.voice = frenchVoice;
     window.speechSynthesis.speak(utterance);
 }
@@ -627,6 +624,7 @@ let trailEmissionTimer = 0;
 let turboSparkTimer = 0;
 let turboSmokeTimer = 0;
 let lastDustT = 0;
+let lastTireScrubSfxAt = 0;
 let lastShootingStar = 0;
 
 // RACER PREMIUM - état léger
@@ -886,6 +884,7 @@ function init() {
         createRaceTrafficFleet();
         createEnvironment();
         initParticles();
+        initSkidMarkPool();
         setupControls();
         setupUI();
         const portal=document.getElementById('game-portal');
@@ -1940,7 +1939,7 @@ function buildRoadPiece(cx, cy, cz, yaw, len, dy) {
     group.name = 'ROAD_STATIC';
     // Route (asphalte texturé, bords rouges)
     const s = shared();
-    s.grandRoadMaterial ||= new THREE.MeshStandardMaterial({map:s.roadTex,roughness:.57,metalness:.17});
+    s.grandRoadMaterial ||= new THREE.MeshStandardMaterial({map:s.roadTex,roughness:.88,metalness:.025});
     s.grandRoadMaterial.userData.shared=true;
     const roadGeometry=new THREE.BoxGeometry(CONFIG.trackWidth,CONFIG.trackHeight,segLen);
     const roadUv=roadGeometry.attributes.uv;for(let i=0;i<roadUv.count;i++)roadUv.setY(i,roadUv.getY(i)*Math.max(1,segLen/8));
@@ -1953,8 +1952,14 @@ function buildRoadPiece(cx, cy, cz, yaw, len, dy) {
     s.grandNeonMats ||= {};
     const neonMat=s.grandNeonMats[buildingLevel] ||= new THREE.MeshBasicMaterial({color:RacerTracks.themes[buildingLevel].accent});
     neonMat.userData.shared=true;
+    const shoulderMat = s.grandShoulderMat ||= new THREE.MeshStandardMaterial({ color: 0x303845, roughness: .94, metalness: .02 });
+    shoulderMat.userData.shared = true;
+    const shoulderGeo = new THREE.BoxGeometry(.42, .08, segLen);
     const neonGeo = new THREE.BoxGeometry(0.14, 0.06, segLen);
     for (const side of [1, -1]) {
+        const shoulder = new THREE.Mesh(shoulderGeo, shoulderMat);
+        shoulder.position.set(side * (CONFIG.trackWidth / 2 - .32), -CONFIG.trackHeight / 2 + .005, 0);
+        group.add(shoulder);
         const strip = new THREE.Mesh(neonGeo, neonMat);
         strip.position.set(side * (CONFIG.trackWidth / 2 - 0.12), CONFIG.trackHeight / 2 + 0.02, 0);
         group.add(strip);
@@ -4177,6 +4182,62 @@ function initParticles() {
     }
 }
 
+// Traces persistantes sur l'asphalte, dans un petit pool réutilisé.
+const SKID_MARKS = { mesh: null, cursor: 0, timer: 0, age: new Float32Array(360), dummy: new THREE.Object3D(), plane: new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0)) };
+function initSkidMarkPool() {
+    if (SKID_MARKS.mesh) return;
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, transparent: true, opacity: .72, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+    const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), material, SKID_MARKS.age.length);
+    mesh.frustumCulled = false;
+    mesh.renderOrder = 2;
+    SKID_MARKS.mesh = mesh;
+    for (let i = 0; i < SKID_MARKS.age.length; i++) {
+        SKID_MARKS.age[i] = -1;
+        SKID_MARKS.dummy.position.set(0, -1000, 0);
+        SKID_MARKS.dummy.scale.set(0, 0, 0);
+        SKID_MARKS.dummy.updateMatrix();
+        mesh.setMatrixAt(i, SKID_MARKS.dummy.matrix);
+        mesh.setColorAt(i, new THREE.Color(0x393b40));
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    scene.add(mesh);
+}
+function stampSkidMarks(dt, amount) {
+    const marks = SKID_MARKS;
+    if (!marks.mesh) return;
+    for (let i = 0; i < marks.age.length; i++) {
+        if (marks.age[i] < 0) continue;
+        marks.age[i] += dt;
+        if (marks.age[i] > 14) {
+            marks.age[i] = -1;
+            marks.dummy.position.set(0, -1000, 0);
+            marks.dummy.scale.set(0, 0, 0);
+            marks.dummy.updateMatrix();
+            marks.mesh.setMatrixAt(i, marks.dummy.matrix);
+            continue;
+        }
+
+    }
+    marks.timer -= dt;
+    if (amount < .22 || marks.timer > 0 || !carMesh) return;
+    marks.timer = .045;
+    for (const wheelIndex of [2, 3]) {
+        const info = vehicle?.wheelInfos?.[wheelIndex], wheel = info?.worldTransform?.position;
+        if (!wheel) continue;
+        const index = marks.cursor++ % marks.age.length;
+        const down = new THREE.Vector3(0, -1, 0).applyQuaternion(carMesh.quaternion);
+        marks.dummy.position.set(wheel.x + down.x * (info.radius - .015), wheel.y + down.y * (info.radius - .015), wheel.z + down.z * (info.radius - .015));
+        marks.dummy.quaternion.copy(carMesh.quaternion).multiply(marks.plane);
+        marks.dummy.scale.set(.17 + amount * .05, .48 + amount * .18, 1);
+        marks.dummy.updateMatrix();
+        marks.mesh.setMatrixAt(index, marks.dummy.matrix);
+        marks.age[index] = 0;
+    }
+    marks.mesh.instanceMatrix.needsUpdate = true;
+    if (marks.mesh.instanceColor) marks.mesh.instanceColor.needsUpdate = true;
+}
+
 // Émet une particule. Chaque sprite conserve son matériau propre : modifier son
 // opacité ne décolore donc plus toutes les flammes ou fumées à la fois.
 function spawnParticle(mat, x, y, z, vx, vy, vz, life, size, grow, spreadSize) {
@@ -4840,15 +4901,23 @@ function updateRace(dt) {
     forward.cross(up, right);
     const latSpeed = Math.abs(carBody.velocity.dot(right));
     const skidAmt = (grounded && speedAbs > 5) ? clamp(latSpeed / 9, 0, 1) : 0;
-    if (window.KA) KA.setSkid(skidAmt * clamp(speedAbs / 15, 0, 1));
+    const slip = skidAmt * clamp(speedAbs / 15, 0, 1);
+    if (window.KA) KA.setSkid(slip);
+    stampSkidMarks(dt, slip);
     lastDustT -= dt;
-    if (skidAmt > 0.3 && lastDustT <= 0 && carMesh) {
-        lastDustT = 0.05;
-        const back = new THREE.Vector3(0, -0.2, -1.6).applyQuaternion(carMesh.quaternion);
-        spawnParticle(shared().dustTex,
-            carMesh.position.x + back.x + (Math.random() - 0.5), carMesh.position.y + 0.15, carMesh.position.z + back.z + (Math.random() - 0.5),
-            -forward.x * 2 + (Math.random() - 0.5) * 2, 1.2, -forward.z * 2 + (Math.random() - 0.5) * 2,
-            0.7, 0.9, 2.2);
+    if (skidAmt > 0.22 && lastDustT <= 0 && carMesh) {
+        lastDustT = .035;
+        const back = new THREE.Vector3(0, -0.18, -1.35).applyQuaternion(carMesh.quaternion);
+        const lateral = new THREE.Vector3(1, 0, 0).applyQuaternion(carMesh.quaternion);
+        for (const side of [-1, 1]) {
+            const p = carMesh.position.clone().add(back).addScaledVector(lateral, side * .72);
+            const heavy = skidAmt > .68;
+            spawnParticle(shared().dustTex, p.x, p.y, p.z,
+                -forward.x * 1.4 + (Math.random() - .5) * 2, 1.5 + Math.random() * 1.4,
+                -forward.z * 1.4 + (Math.random() - .5) * 2,
+                .85 + Math.random() * .4, heavy ? .95 : .62, 2.5);
+        }
+        if (skidAmt > .78 && Date.now() - lastTireScrubSfxAt > 150 && window.KA) { lastTireScrubSfxAt = Date.now(); KA.sfx.tireScrub(skidAmt); }
     }
 
     // --- Atterrissage : choc vertical → son + secousse + flash + poussière ---

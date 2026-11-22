@@ -24,7 +24,10 @@ window.RacerWorld=(()=>{
         function sign(text,sub,x,y,z,yaw,w=12,h=3){const c=document.createElement('canvas');c.width=768;c.height=192;const q=c.getContext('2d');q.fillStyle='#0a0e1b';q.fillRect(0,0,768,192);q.strokeStyle=color(theme.accent);q.lineWidth=8;q.strokeRect(4,4,760,184);q.textAlign='center';q.fillStyle='#fff2d8';q.font='bold 54px sans-serif';q.fillText(text,384,85,720);q.fillStyle=color(theme.accent);q.font='22px monospace';q.fillText(sub,384,139,720);const texture=new T.CanvasTexture(c);texture.encoding=T.sRGBEncoding;const mesh=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:texture,side:T.DoubleSide}));mesh.position.set(x,y,z);mesh.rotation.y=yaw;group.add(mesh);return mesh}
         const ground=document.createElement('canvas');ground.width=ground.height=256;const gx=ground.getContext('2d');
         const palette={belgium:'#18302b',city:'#111c30',canyon:'#49303a',studio:'#11282d',storm:'#162638',neon:'#241e34',coast:'#123b49',industry:'#30262c',orbit:'#24283e',snow:'#a9b9c9',finale:'#212638'};
-        gx.fillStyle=palette[theme.kind];gx.fillRect(0,0,256,256);gx.strokeStyle='#ffffff0a';for(let i=0;i<256;i+=32){gx.strokeRect(i,0,32,256);gx.strokeRect(0,i,256,32)}
+        gx.fillStyle=palette[theme.kind];gx.fillRect(0,0,256,256);
+        const grit=random(level*2903+17);
+        for(let i=0;i<720;i++){const shade=grit()>.5?255:0;gx.fillStyle=shade?'rgba(210,225,245,.035)':'rgba(0,0,0,.055)';gx.fillRect(grit()*256,grit()*256,1+grit()*3,1+grit()*3)}
+        gx.strokeStyle='#ffffff0a';for(let i=0;i<256;i+=32){gx.strokeRect(i,0,32,256);gx.strokeRect(0,i,256,32)}
         const tex=new T.CanvasTexture(ground);tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.repeat.set((maxX-minX+400)/36,(maxZ-minZ+400)/36);tex.encoding=T.sRGBEncoding;
         const surface=new T.Mesh(new T.PlaneGeometry(maxX-minX+400,maxZ-minZ+400),new T.MeshBasicMaterial({map:tex}));surface.rotation.x=-Math.PI/2;surface.position.set((minX+maxX)/2,-2.025,(minZ+maxZ)/2);group.add(surface);
 
@@ -42,7 +45,7 @@ window.RacerWorld=(()=>{
             if(Math.abs(turn)>2&&i%3===0){const p=atRoad(i,turn>0?1:-1,10);sign(turn>0?'‹ ‹ ‹':'› › ›','',p.x,p.y+1.7,p.z,p.yaw+Math.PI,4.8,1.2)}
         }
         // Peuplement extérieur à la route : aucune forme dans les trajectoires.
-        const count=level===4?90:340;
+        const count=level===4?120:420;
         for(let i=0;i<count;i++){
             const x=minX-130+rng()*(maxX-minX+260),z=minZ-130+rng()*(maxZ-minZ+260),h=5+rng()*14;
             if(!safe(x,z,8))continue;

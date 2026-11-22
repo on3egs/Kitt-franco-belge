@@ -99,7 +99,7 @@ window.RacerCars = (() => {
         state.use=profile=>{
             if(!['manix','kitt','karr-black','karr-cedric'].includes(profile.carClass))return null;
             const karr=profile.carClass.startsWith('karr'), index=karr?1:0, model=models[index];
-            for(const info of vehicle.wheelInfos){info.radius=.355;info.suspensionLength=info.suspensionRestLength;}
+            for(const info of vehicle.wheelInfos){info.radius=.4;info.suspensionLength=info.suspensionRestLength;}
             if(karr)model.userData.twoTone.value=profile.carClass==='karr-cedric'||profile.id==='virginie'?1:0;
             originals.forEach(child=>{child.visible=child.isSpotLight||child.type==='Object3D'});
             owner.userData.driverParts.variantGroup.visible=false;

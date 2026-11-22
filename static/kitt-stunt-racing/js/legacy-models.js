@@ -37,7 +37,47 @@ window.LegacyModels=(()=>{
  // Aileron arrière, bandeau fumé, échappements et plaque KNIGHT.
  box(group,1.80,.06,.25,0,.945,2.05,paint);for(const side of [-1,1])box(group,.07,.12,.12,side*.68,.87,2.05,paint);box(group,1.63,.15,.035,0,.57,2.44,trim);for(const side of [-1,1])box(group,.52,.055,.04,side*.49,.61,2.463,new T.MeshBasicMaterial({color:0x5d1020}));
  const plate=document.createElement('canvas');plate.width=128;plate.height=48;const px=plate.getContext('2d');px.fillStyle='#132e60';px.fillRect(0,0,128,48);px.fillStyle='#f7ce4b';px.textAlign='center';px.font='10px monospace';px.fillText('CALIFORNIA',64,12);px.font='bold 24px monospace';px.fillText(karr?'KARR':'KNIGHT',64,38);const pm=new T.MeshBasicMaterial({map:new T.CanvasTexture(plate),side:T.DoubleSide});const pl=new T.Mesh(new T.PlaneGeometry(.38,.145),pm);pl.position.set(0,.53,2.47);group.add(pl);
- const wheels=[];for(const side of [-1,1])for(const z of [-1.46,1.42]){const w=new T.Group(),tire=new T.Mesh(new T.CylinderGeometry(.355,.355,.225,24),rubber);tire.rotation.z=Math.PI/2;w.add(tire);const hub=new T.Mesh(new T.CylinderGeometry(.255,.255,.236,24),trim);hub.rotation.z=Math.PI/2;w.add(hub);const lip=new T.Mesh(new T.TorusGeometry(.255,.012,5,28),chrome);lip.rotation.y=Math.PI/2;lip.position.x=side*.124;w.add(lip);for(let i=0;i<20;i++){let v=i*Math.PI*2/20;const fin=new T.Mesh(new T.BoxGeometry(.012,.036,.022),chrome);fin.position.set(side*.127,Math.sin(v)*.231,Math.cos(v)*.231);fin.rotation.x=-v;w.add(fin)}for(let i=0;i<5;i++){let v=i*Math.PI*2/5;const bolt=new T.Mesh(new T.SphereGeometry(.011,4,4),chrome);bolt.position.set(side*.133,Math.sin(v)*.062,Math.cos(v)*.062);w.add(bolt)}w.position.set(side*.91,.36,z);w.traverse(m=>{if(m.isMesh)m.castShadow=true});group.add(w);wheels.push(w)}
+ const wheels=[];
+ const treadMat=new T.MeshStandardMaterial({color:0x111318,roughness:.96});
+ const rotorMat=new T.MeshStandardMaterial({color:0x626a70,metalness:.82,roughness:.48});
+ const caliperMat=new T.MeshStandardMaterial({color:0xa51b27,metalness:.42,roughness:.38,emissive:0x260307});
+ for(const side of [-1,1])for(const z of [-1.46,1.42]){
+  const w=new T.Group(),tire=new T.Mesh(new T.CylinderGeometry(.405,.405,.27,32,1,true),rubber);
+  tire.rotation.z=Math.PI/2;w.add(tire);
+  for(const x of [-1,1]){
+   const wall=new T.Mesh(new T.TorusGeometry(.36,.022,7,36),rubber);wall.rotation.y=Math.PI/2;wall.position.x=x*.137;w.add(wall);
+   const shoulder=new T.Mesh(new T.TorusGeometry(.389,.012,5,36),treadMat);shoulder.rotation.y=Math.PI/2;shoulder.position.x=x*.112;w.add(shoulder);
+  }
+  for(let i=0;i<32;i++){
+   const a=i*Math.PI*2/32,g=new T.Mesh(new T.BoxGeometry(.225,.012,.022),treadMat);
+   g.position.set(0,Math.sin(a)*.404,Math.cos(a)*.404);g.rotation.x=-a;w.add(g);
+  }
+  const hub=new T.Mesh(new T.CylinderGeometry(.282,.282,.278,32),trim);hub.rotation.z=Math.PI/2;w.add(hub);
+  const rotor=new T.Mesh(new T.CylinderGeometry(.235,.235,.018,32),rotorMat);rotor.rotation.z=Math.PI/2;rotor.position.x=side*.151;w.add(rotor);
+  const lip=new T.Mesh(new T.TorusGeometry(.294,.017,7,36),chrome);lip.rotation.y=Math.PI/2;lip.position.x=side*.16;w.add(lip);
+  const innerLip=new T.Mesh(new T.TorusGeometry(.244,.008,5,32),chrome);innerLip.rotation.y=Math.PI/2;innerLip.position.x=side*.163;w.add(innerLip);
+  for(let i=0;i<10;i++){
+   const a=i*Math.PI*2/10,spoke=new T.Mesh(new T.BoxGeometry(.038,.22,.045),chrome);
+   spoke.position.set(side*.169,Math.sin(a)*.145,Math.cos(a)*.145);spoke.rotation.x=-a;w.add(spoke);
+  }
+  const cap=new T.Mesh(new T.CylinderGeometry(.079,.079,.025,24),silver);cap.rotation.z=Math.PI/2;cap.position.x=side*.176;w.add(cap);
+  for(let i=0;i<5;i++){
+   const a=i*Math.PI*2/5,bolt=new T.Mesh(new T.SphereGeometry(.012,6,5),chrome);
+   bolt.position.set(side*.178,Math.sin(a)*.105,Math.cos(a)*.105);w.add(bolt);
+  }
+  const caliper=new T.Mesh(new T.BoxGeometry(.052,.14,.095),caliperMat);caliper.position.set(side*.145,.19,-.075);w.add(caliper);
+  w.position.set(side*.91,.4,z);w.traverse(m=>{if(m.isMesh)m.castShadow=true});group.add(w);wheels.push(w);
+ }
+ // Pare-chocs, phares à lentille et doubles sorties d'échappement.
+ const splitter=box(group,1.95,.055,.28,0,.285,-2.46,trim);splitter.material=trim;
+ const lampMat=new T.MeshStandardMaterial({color:0xdde7f0,emissive:0xb8d9ff,emissiveIntensity:1.2,metalness:.45,roughness:.18});
+ const exhaustMat=new T.MeshStandardMaterial({color:0x89939b,metalness:.94,roughness:.2});
+ for(const side of [-1,1]){
+  box(group,.42,.105,.055,side*.68,.59,-2.49,lampMat);
+  const tip=new T.Mesh(new T.CylinderGeometry(.075,.09,.24,14),exhaustMat);tip.rotation.x=Math.PI/2;tip.position.set(side*.63,.3,2.43);group.add(tip);
+  const tailGlow=new T.MeshBasicMaterial({color:karr?0xff9b25:0xff3548});
+  box(group,.13,.025,.018,side*.68,.57,2.472,tailGlow);
+ }
  group.userData={leds,glow,wheels,karr,animate(t,speed=0){const center=(Math.sin(t*5.4)*.5+.5)*8;leds.forEach((led,i)=>{let v=Math.max(.04,1-Math.abs(i-center)/3);led.material.color.setRGB(v,karr?v*.58:v*.025,karr?v*.025:v*.045)});glow.position.x=(center-4)*.082;for(const w of wheels)w.rotation.x=t*speed;}};return group;
  }
  function atomium(env){const group=new T.Group(),structure=new T.Group();const mat=new T.MeshStandardMaterial({color:0xaab7c8,metalness:1,roughness:.13,envMap:env,envMapIntensity:1.1});const dark=new T.MeshStandardMaterial({color:0x273347,metalness:.85,roughness:.3,envMap:env});const points=[];for(let x of [-1.5,1.5])for(let y of [-1.5,1.5])for(let z of [-1.5,1.5])points.push(new T.Vector3(x,y,z));points.push(new T.Vector3());const q=new T.Quaternion().setFromUnitVectors(new T.Vector3(1,1,1).normalize(),new T.Vector3(0,1,0));points.forEach(p=>p.applyQuaternion(q));
