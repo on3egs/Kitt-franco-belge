@@ -70,3 +70,6 @@
 @media(max-width:620px){.kx-intro{min-height:auto}.kx-hero-visual{height:255px}.kx-card{min-height:206px;padding:13px 11px 11px}.kx-card-core{height:55px}.kx-card-glyph{width:46px;height:46px}}
 @media(max-width:370px){.kx-card{min-height:196px;padding:16px}.kx-card-core{height:60px}}
 @media(prefers-reduced-motion:reduce){.kx-boot:before,.kx-boot:after,.kx-boot-emblem:before,.kx-boot-emblem:after,.kx-boot-emblem>i{animation:none!important}}
+
+.kx-section-heading{display:grid;grid-template-columns:1fr auto;align-items:end}.kx-section-heading>div{grid-column:1;grid-row:1}.kx-section-note{grid-column:2;grid-row:1}.kx-hover-hint{grid-column:1/-1;grid-row:2;justify-self:end;margin:9px 0 0;color:#8f8994;font:9px 'Space Mono',monospace;letter-spacing:.07em}.kx-hover-hint i{color:#ff717b;font-style:normal;text-shadow:0 0 10px #ff344c}.kx-hover-hint b{padding:0 5px;color:#ff717b;font-weight:400}
+@media(max-width:620px){.kx-hover-hint{font-size:7px;letter-spacing:.04em}.kx-section-heading{grid-template-columns:1fr auto}}
