@@ -32,3 +32,65 @@
 @keyframes block-fall{from{translate:0 -3px}to{translate:0 16px}}
 @keyframes spark-flash{50%{opacity:.35;filter:blur(2px)}}
 @media(prefers-reduced-motion:reduce){.arcade-car b,.arcade-maze-art i,.block-drop,.block-spark,.arcade-car-art .road-lanes i{animation:none}}
+
+
+/* Fullscreen the arcade stage and let its embedded game use the complete display. */
+.arcade-frame-shell:fullscreen,
+.arcade-frame-shell.is-css-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #000 !important;
+}
+.arcade-frame-shell:fullscreen .arcade-frame,
+.arcade-frame-shell.is-css-fullscreen .arcade-frame {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.arcade-frame-shell:fullscreen .arcade-stage-bottom,
+.arcade-frame-shell.is-css-fullscreen .arcade-stage-bottom {
+  display: none !important;
+}
+.arcade-frame-shell:fullscreen .arcade-loading,
+.arcade-frame-shell.is-css-fullscreen .arcade-loading {
+  inset: 0 !important;
+}
+.arcade-fullscreen-exit {
+  display: none;
+}
+.arcade-frame-shell:fullscreen .arcade-fullscreen-exit,
+.arcade-frame-shell.is-css-fullscreen .arcade-fullscreen-exit {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 9px 13px;
+  border: 1px solid #ff334f;
+  border-radius: 9px;
+  background: #080b12e8;
+  color: #fff;
+  font: 700 11px/1 ui-monospace, monospace;
+  cursor: pointer;
+}
+body.arcade-css-fullscreen-active {
+  overflow: hidden !important;
+}

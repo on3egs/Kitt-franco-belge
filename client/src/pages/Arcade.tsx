@@ -74,7 +74,9 @@ export default function Arcade() {
   const [launched, setLaunched] = useState(false);
   const [reload, setReload] = useState(0);
   const [slowLoad, setSlowLoad] = useState(false);
+  const [cssFullscreen, setCssFullscreen] = useState(false);
   const playSectionRef = useRef<HTMLElement>(null);
+  const frameShellRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const clean = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const visibleGames = useMemo(() => GAMES.filter(game =>
@@ -112,7 +114,33 @@ export default function Arcade() {
     window.setTimeout(() => playSectionRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }), 80);
   };
 
-  const fullscreen = () => { void frameRef.current?.requestFullscreen?.().catch(() => { setSlowLoad(true); }); };
+  const fullscreen = async () => {
+    const shell = frameShellRef.current;
+    if (!shell) return;
+    if (document.fullscreenElement === shell) {
+      try { await document.exitFullscreen(); } catch { /* le navigateur peut déjà quitter le plein écran */ }
+      return;
+    }
+    if (cssFullscreen) { setCssFullscreen(false); return; }
+    try {
+      if (!shell.requestFullscreen) throw new Error("Le plein écran natif n’est pas disponible.");
+      await shell.requestFullscreen();
+    } catch {
+      setCssFullscreen(true);
+    }
+  };
+
+  useEffect(() => {
+    const syncFullscreen = () => {
+      if (document.fullscreenElement !== frameShellRef.current) setCssFullscreen(false);
+    };
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+  }, []);
+  useEffect(() => {
+    document.body.classList.toggle("arcade-css-fullscreen-active", cssFullscreen);
+    return () => document.body.classList.remove("arcade-css-fullscreen-active");
+  }, [cssFullscreen]);
 
   useEffect(() => {
     const closeBlockMode = (event: MessageEvent) => {
@@ -149,7 +177,8 @@ export default function Arcade() {
           <button type="button" onClick={fullscreen} title="Passer le jeu en plein écran"><Maximize2 size={17} /><span>Plein écran</span></button>
         </div>
       </div>
-      <div className="arcade-frame-shell">
+      <div ref={frameShellRef} className={cssFullscreen ? "arcade-frame-shell is-css-fullscreen" : "arcade-frame-shell"}>
+        <button type="button" className="arcade-fullscreen-exit" onClick={fullscreen} title="Quitter le plein écran"><X size={17} /><span>Quitter le plein écran</span></button>
         <iframe ref={frameRef} key={`${selected.id}-${reload}`} className="arcade-frame" src={selected.src} title={selected.name} allow="fullscreen; gamepad; autoplay" allowFullScreen onLoad={() => { setFrameLoaded(true); setSlowLoad(false); frameRef.current?.focus(); }} />
         {!frameLoaded && <div className="arcade-loading"><LoaderCircle size={28} /><strong>{slowLoad ? "Le chargement prend plus de temps" : "Préparation de la mission…"}</strong><span>{slowLoad ? "Essaie le nouvel onglet ou relance le chargement." : "Le jeu se prépare dans ton navigateur."}</span>{slowLoad && <button type="button" onClick={() => { setReload(value => value + 1); setSlowLoad(false); }}><RotateCcw size={14} /> Réessayer</button>}</div>}
         <div className="arcade-stage-bottom"><span><i className={frameLoaded ? "is-ready" : ""} />{frameLoaded ? "INTERFACE CHARGÉE" : "CHARGEMENT DU JEU"}</span><span>{selected.mode.toUpperCase()}</span></div>
