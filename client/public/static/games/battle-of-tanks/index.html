@@ -209,11 +209,9 @@
   document.getElementById("intro").addEventListener("pointerdown", () => {
     unlockAudio();
     startTracker("intro");
-    speakRobot("By Kyronext. By Manix.");
   });
   function bootFromIntro() {
     unlockAudio();
-    speakRobot("By Kyronext. By Manix.");
     startTracker("battle");
     document.getElementById("intro").classList.add("gone");
     startGame();
