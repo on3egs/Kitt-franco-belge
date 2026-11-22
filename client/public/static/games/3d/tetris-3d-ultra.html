@@ -1,389 +1,102 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🟪 TETRIS 3D ULTRA — KYRONEXT ARCADE</title>
-    <script src="lib/three.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #000;
-            font-family: 'Arial', sans-serif;
-            color: #fff;
-        }
-        
-        #game-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a0042 0%, #2d0085 50%, #1a0042 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 1000;
-            transition: opacity 0.5s ease-out;
-        }
-        
-        .kitt-logo {
-            text-align: center;
-            margin-bottom: 20px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        
-        .logo-text {
-            font-size: 3rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, #ff6b9d, #c44569, #ff006e, #8338ec);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 20px rgba(255,107,157,0.5);
-            letter-spacing: 8px;
-        }
-        
-        .logo-subtitle {
-            font-size: 1rem;
-            color: #aaa;
-            letter-spacing: 4px;
-        }
-        
-        .game-title {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, #ff6b9d, #ff006e, #8338ec, #3a86ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(255,107,157,0.8);
-        }
-        
-        .loading-text {
-            font-size: 1.2rem;
-            color: #aaa;
-            margin-bottom: 20px;
-        }
-        
-        .loading-bar {
-            width: 300px;
-            height: 6px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .loading-fill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #ff6b9d, #c44569, #ff006e, #8338ec, #3a86ff);
-            border-radius: 3px;
-            transition: width 0.3s ease-out;
-        }
-        
-        .loading-percentage {
-            margin-top: 10px;
-            font-size: 1rem;
-            color: #ff6b9d;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-        }
-        
-        #hud {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 100;
-            pointer-events: none;
-        }
-        
-        #score-display {
-            font-size: 1.2rem;
-            color: #ff6b9d;
-            text-shadow: 0 0 10px #ff6b9d;
-            margin-bottom: 5px;
-        }
-        
-        #level-display {
-            font-size: 1rem;
-            color: #8338ec;
-            margin-bottom: 5px;
-        }
-        
-        #lines-display {
-            font-size: 1rem;
-            color: #3a86ff;
-            margin-bottom: 5px;
-        }
-        #combo-display { display:none; padding:4px 8px; margin-top:4px; border:1px solid #ff4057; border-radius:6px; color:#ff6576; background:rgba(16,4,12,.78); font-weight:bold; text-shadow:0 0 9px #f23c58; animation:pulse 1s ease-in-out infinite; }
-        #combo-display.visible { display:inline-block; }
-        
-        #next-piece-display {
-            font-size: 1rem;
-            color: #00ff88;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        #next-piece-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 15px);
-            grid-template-rows: repeat(4, 15px);
-            gap: 1px;
-            background: #333;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        
-        .next-piece-cell {
-            width: 15px;
-            height: 15px;
-            background: #111;
-            border: 1px solid #444;
-        }
-        
-        #game-over-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 2000;
-        }
-        
-        #game-over-title {
-            font-size: 4rem;
-            color: #ff6b9d;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px #ff6b9d;
-        }
-        
-        #final-score {
-            font-size: 2rem;
-            color: #ffd700;
-            margin-bottom: 20px;
-        }
-        
-        #high-score {
-            font-size: 1.5rem;
-            color: #8338ec;
-            margin-bottom: 30px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Tetris 3D Ultra — KYRONEXT</title>
+  <script src="lib/three.min.js"></script>
+  <style>
+    :root { --cyan:#7ee7ff; --pink:#ff6b9d; --gold:#ffd15a; --bg:#07060e; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { height:100%; overflow:hidden; background:var(--bg); color:#e8eef6; font-family:Consolas,"Segoe UI",sans-serif; }
+    #game-container { position:fixed; inset:0; }
+    #hud { position:fixed; top:12px; left:12px; z-index:20; pointer-events:none; text-shadow:0 1px 2px #000; }
+    .panel { background:rgba(8,10,18,.72); border:1px solid rgba(255,107,157,.35); padding:10px 12px; margin-bottom:8px; min-width:170px; }
+    .score { color:var(--pink); font-size:1.15rem; letter-spacing:.08em; }
+    .meta { color:#9ab; font-size:.92rem; margin-top:3px; }
+    #combo { display:none; margin-top:6px; color:#ff6576; font-weight:700; }
+    #combo.on { display:block; }
+    #next-box, #hold-box { display:grid; grid-template-columns:repeat(4,14px); grid-template-rows:repeat(4,14px); gap:1px; background:#1a1a22; padding:4px; margin-top:6px; }
+    .cell { width:14px; height:14px; background:#111; }
+    #radar-wrap { position:fixed; top:12px; right:12px; z-index:20; pointer-events:none; }
+    #radar { display:grid; gap:2px; background:#0b0c14; padding:6px; border:1px solid rgba(126,231,255,.35); }
+    .rad { width:22px; height:22px; background:#151820; border:1px solid #2a3140; }
+    .rad.occ { background:#5a3a48; }
+    .rad.pie { background:#ff6b9d; box-shadow:0 0 8px #ff6b9d; }
+    .rad.gho { background:#2a4a55; }
+    #menu, #over, #pause { position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; flex-direction:column; background:rgba(4,4,10,.86); text-align:center; gap:14px; }
+    #menu.show, #over.show, #pause.show { display:flex; }
+    h1 { font-size:clamp(28px,5vw,48px); letter-spacing:.18em; color:#fff; text-shadow:0 0 22px #ff6b9d; }
+    .kicker { letter-spacing:.4em; color:var(--gold); font-size:12px; }
+    .credit { color:#c9b07a; letter-spacing:.12em; }
+    button { cursor:pointer; padding:12px 22px; border:1px solid var(--pink); background:transparent; color:#fff; font-weight:700; letter-spacing:.14em; }
+    button:hover { background:rgba(255,107,157,.15); }
+    #help { position:fixed; left:12px; bottom:12px; z-index:20; font-size:12px; color:#9aa; max-width:54vw; line-height:1.5; pointer-events:none; text-shadow:0 1px 2px #000; }
+    kbd { background:#222; border:1px solid #445; padding:1px 5px; }
+    #mobile { display:none; position:fixed; bottom:8px; left:0; right:0; z-index:30; justify-content:center; flex-wrap:wrap; gap:6px; padding:0 8px; }
+    #mobile button { min-width:52px; min-height:46px; pointer-events:auto; font-size:12px; }
+    @media (pointer:coarse) { #mobile { display:flex; } #help { display:none; } }
 
-        .tetris-hall-link {
-            display: inline-block;
-            margin: -14px 0 20px;
-            color: #b8eaff;
-            font-size: .8rem;
-            letter-spacing: .12em;
-            text-decoration: underline;
-            text-underline-offset: 4px;
-        }
-        .tetris-hall-link:focus-visible { outline: 2px solid #ff6b9d; outline-offset: 4px; }
-        
-        #restart-button {
-            background: linear-gradient(45deg, #ff6b9d, #c44569, #ff006e);
-            color: #fff;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        
-        #restart-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(255,107,157,0.5);
-        }
-        
-        #pause-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        
-        #pause-title {
-            font-size: 3rem;
-            color: #ffd700;
-            margin-bottom: 30px;
-            text-shadow: 0 0 20px #ffd700;
-        }
-        
-        #resume-button {
-            background: linear-gradient(45deg, #8338ec, #3a86ff);
-            color: #fff;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        #instructions {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.7);
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            z-index: 100;
-            pointer-events: none;
-        }
-        
-        .instructions-text {
-            color: #aaa;
-            line-height: 1.4;
-        }
-        
-        .instructions-key {
-            background: #333;
-            padding: 2px 6px;
-            border-radius: 3px;
-            color: #fff;
-            font-weight: bold;
-        }
-        
-        #hold-piece-display {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 100;
-            pointer-events: none;
-        }
-        
-        #hold-title {
-            font-size: 0.9rem;
-            color: #63e9ff;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-        
-        #hold-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 15px);
-            grid-template-rows: repeat(4, 15px);
-            gap: 1px;
-            background: #333;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        
-        .hold-cell {
-            width: 15px;
-            height: 15px;
-            background: #111;
-            border: 1px solid #444;
-        }
-        button { cursor:pointer; padding:12px 16px; border:1px solid #63e9ff; border-radius:10px; background:#10202e; color:#fff; font-weight:bold; touch-action:manipulation; }
-        #mobile-controls { display:none; position:fixed; bottom:max(10px,env(safe-area-inset-bottom)); left:0;right:0;z-index:35;justify-content:center;flex-wrap:wrap;gap:7px;padding:0 8px; }
-        #mobile-controls button { min-width:52px; min-height:48px; padding:10px 12px; border-color:#ff425b; background:linear-gradient(145deg,rgba(25,15,25,.96),rgba(10,25,37,.96)); color:#eafaff; box-shadow:0 0 12px rgba(255,55,83,.22); font-size:.82rem; touch-action:none; }
-        #mobile-controls button:active { background:#b82039; transform:scale(.96); }
-        @media (pointer:coarse) { #mobile-controls {display:flex;} #instructions {display:none;} #hud {transform:scale(.82);transform-origin:top left;} #hold-piece-display {transform:scale(.82);transform-origin:top right;} }
-        @media (max-width:600px) { #mobile-controls button { flex:1 1 20%; } #score-display {font-size:1rem;} }
-    </style>
+    .stage { width:120px; height:120px; perspective:420px; margin:6px 0 10px; }
+    .tet { width:72px; height:72px; margin:24px auto; transform-style:preserve-3d; animation:spin 7s linear infinite; }
+    .mini { position:absolute; width:22px; height:22px; background:linear-gradient(145deg,#ff8ab3,#ff4d86); border:1px solid #fff6; box-shadow:0 0 12px #ff6b9d; }
+    .mini:nth-child(1) { transform:translate3d(0,0,11px); }
+    .mini:nth-child(2) { transform:translate3d(24px,0,11px); }
+    .mini:nth-child(3) { transform:translate3d(-24px,0,11px); }
+    .mini:nth-child(4) { transform:translate3d(0,-24px,11px); }
+    @keyframes spin { to { transform:rotateY(360deg) rotateX(18deg); } }
+  </style>
 </head>
 <body>
-    <div id="game-container"></div>
-    
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <div class="kitt-logo">
-            <span class="logo-text">KYRONEXT</span>
-            <span class="logo-subtitle">PRÉSENTE</span>
-        </div>
-        <h1 class="game-title">🟪 TETRIS 3D ULTRA</h1>
-        <div class="loading-text">Chargement...</div>
-        <div class="loading-bar">
-            <div class="loading-fill" id="loading-fill"></div>
-        </div>
-        <div class="loading-percentage" id="loading-percentage">0%</div>
+  <div id="game-container"></div>
+  <div id="hud">
+    <div class="panel">
+      <div class="score" id="score">SCORE 0</div>
+      <div class="meta" id="level">NIVEAU 1 · COUCHES 0</div>
+      <div class="meta" id="best">RECORD 0</div>
+      <div id="combo">COMBO ×2</div>
     </div>
-    
-    <div id="menu-screen" style="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px"><h1>TETRIS 3D ULTRA</h1><p>Complétez des plans dans les trois dimensions.</p><button id="start-button">JOUER</button></div>
-    <button id="pause-button" style="position:fixed;right:12px;top:12px;z-index:30">PAUSE</button>
-    <div id="mobile-controls"><button data-action="left">←</button><button data-action="right">→</button><button data-action="depth">PROF.</button><button data-action="rotate">↻</button><button data-action="hold">RÉSERVE</button><button data-action="drop">CHUTE</button></div>
-    <!-- HUD -->
-    <div id="hud">
-        <div id="score-display">SCORE: 0</div>
-        <div id="level-display">NIVEAU : 1</div>
-        <div id="lines-display">LIGNES : 0</div>
-        <div id="combo-display" hidden>FLAG COMBO ×2</div>
-        <div id="next-piece-display">
-            <span>SUIVANTE :</span>
-            <div id="next-piece-grid"></div>
-        </div>
-    </div>
-    
-    <!-- Réserve Display -->
-    <div id="hold-piece-display">
-        <div id="hold-title">RÉSERVE</div>
-        <div id="hold-grid"></div>
-    </div>
-    
-    <!-- Game Over Screen -->
-    <div id="game-over-screen">
-        <h1 id="game-over-title">PARTIE TERMINÉE</h1>
-        <div id="final-score">SCORE: 0</div>
-        <div id="high-score">RECORD : 0</div>
-        <a class="tetris-hall-link" href="/static/games/high-scores.html">VOIR LE HALL OF FAME</a>
-        <button id="restart-button">RECOMMENCER</button>
-    </div>
-    
-    <!-- Pause Screen -->
-    <div id="pause-screen">
-        <h1 id="pause-title">PAUSE</h1>
-        <button id="resume-button">REPRENDRE</button>
-    </div>
-    
-    <!-- Instructions -->
-    <div id="instructions">
-        <div class="instructions-text">
-            <span class="instructions-key">←/→/↓</span> Déplacer | 
-            <span class="instructions-key">↑</span> Rotation · F/V : profondeur | 
-            <span class="instructions-key">ESPACE</span> Chuter | 
-            <span class="instructions-key">SHIFT</span> Réserve | 
-            <span class="instructions-key">P</span> Pause
-        </div>
-    </div>
-    
-    <script src="/static/games/highscores.js?v=20261027-arcade-sync1"></script>
-    <script src="tetris-3d-ultra-kitt-20261029.js?v=kitt-azerty-7bag-20261029"></script>
-<script src="/site-assets/page-navigation.js" defer></script>
+    <div class="panel">SUIVANTE<div id="next-box"></div></div>
+    <div class="panel">RÉSERVE<div id="hold-box"></div></div>
+  </div>
+  <div id="radar-wrap">
+    <div class="panel" style="min-width:auto">PLAN 5×5<div id="radar"></div></div>
+  </div>
+  <div id="help">
+    <kbd>←→</kbd> écran · <kbd>Z/S</kbd> profondeur · <kbd>↑/E</kbd> rot. Y · <kbd>X</kbd> rot. X · <kbd>C</kbd> rot. Z ·
+    <kbd>ESPACE</kbd> chute · <kbd>MAJ</kbd> réserve · <kbd>P</kbd> pause · glisser : caméra
+  </div>
+  <div id="mobile">
+    <button data-a="left">←</button>
+    <button data-a="right">→</button>
+    <button data-a="in">Z</button>
+    <button data-a="out">S</button>
+    <button data-a="rotY">↻Y</button>
+    <button data-a="rotX">↻X</button>
+    <button data-a="rotZ">↻Z</button>
+    <button data-a="soft">↓</button>
+    <button data-a="drop">CHUTE</button>
+    <button data-a="hold">RÉSERVE</button>
+  </div>
+  <div id="menu" class="show">
+    <p class="kicker">KYRONEXT · AMIGA 3D</p>
+    <h1>TETRIS 3D ULTRA</h1>
+    <div class="stage" aria-hidden="true"><div class="tet"><i class="mini"></i><i class="mini"></i><i class="mini"></i><i class="mini"></i></div></div>
+    <p>Puits 5×5×14 · complète des couches horizontales · rotation sur 3 axes</p>
+    <p class="credit">By Manix of KITT Franco-Belge · By Kyronext</p>
+    <button id="start">JOUER</button>
+  </div>
+  <div id="over">
+    <h1>PARTIE TERMINÉE</h1>
+    <p id="final">SCORE 0</p>
+    <a href="/static/games/high-scores.html" style="color:#b8eaff">HALL OF FAME</a>
+    <button id="restart">RECOMMENCER</button>
+  </div>
+  <div id="pause">
+    <h1>PAUSE</h1>
+    <button id="resume">REPRENDRE</button>
+  </div>
+  <script src="/static/games/highscores.js?v=20261027-arcade-sync1"></script>
+  <script src="tetris-3d-ultra.js?v=20261123-ultra2"></script>
 </body>
 </html>
