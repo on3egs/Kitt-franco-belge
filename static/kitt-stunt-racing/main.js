@@ -290,7 +290,8 @@ function speakDriverScore(profile) {
         const voices = window.speechSynthesis.getVoices() || [];
         const french = voices.filter(voice => /^fr/i.test(voice.lang || ''));
         const preferred = french.find(voice => /male|homme|guy|thomas|henri|paul/i.test(voice.name));
-        if (preferred || french[0]) utterance.voice = preferred || french[0];
+        if (!preferred) return;
+        utterance.voice = preferred;
         window.speechSynthesis.speak(utterance);
     } catch (error) { console.warn('[DRIVER SCORE VOICE]', error); }
 }
@@ -378,7 +379,8 @@ function playRaceVoice(kind) {
             utterance.rate = .88;
             const frenchVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang?.toLowerCase().startsWith('fr'));
             const frenchVoice = frenchVoices.find(voice => /male|homme|guy|thomas|henri|paul/i.test(voice.name)) || frenchVoices[0];
-            if (frenchVoice) utterance.voice = frenchVoice;
+            if (!frenchVoice) return;
+            utterance.voice = frenchVoice;
             window.speechSynthesis.speak(utterance);
         }
     });
@@ -405,7 +407,8 @@ function speakRacerIntro() {
     const voices = window.speechSynthesis.getVoices();
     const frenchVoices = voices.filter(voice => voice.lang && voice.lang.toLowerCase().startsWith('fr'));
     const frenchVoice = frenchVoices.find(voice => /male|homme|guy|thomas|henri|paul/i.test(voice.name)) || frenchVoices[0];
-    if (frenchVoice) utterance.voice = frenchVoice;
+    if (!frenchVoice) return;
+    utterance.voice = frenchVoice;
     window.speechSynthesis.speak(utterance);
 }
 
