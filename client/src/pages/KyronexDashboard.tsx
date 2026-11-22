@@ -46,7 +46,7 @@ export default function KyronexDashboard() {
   return <main className="kx-dashboard">
     <div className="kx-ambient" aria-hidden="true"><span/><span/><span/></div>
     {booting&&<div className="kx-boot" role="status" aria-label="Initialisation de Kyronex"><div className="kx-boot-panel">
-      <div className="kx-boot-emblem"><span>KX</span><i/></div><p>KYRONEX <b>///</b> INITIALISATION</p>
+      <div className="kx-boot-emblem"><span className="kx-belgian-flag" role="img" aria-label="Drapeau belge"><i></i><i></i><i></i></span><i/></div><p>KYRONEX <b>///</b> INITIALISATION</p>
       <div className="kx-boot-track"><i/></div><small>ACQUISITION DU SIGNAL · BELGIQUE</small>
     </div></div>}
     {!!linking&&<div className="kx-link" role="status" aria-live="polite"><div className="kx-link-panel">
