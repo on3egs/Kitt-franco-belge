@@ -110,3 +110,5 @@
 @keyframes kx-boot-glint{to{transform:translateX(120%)}}
 @keyframes kx-reactor-pulse{0%,100%{opacity:.72;scale:1}50%{opacity:1;scale:1.08}}
 @media(prefers-reduced-motion:reduce){.kx-dashboard.kx-ready .kx-frame,.kx-ready .kx-topbar,.kx-ready .kx-intro-copy,.kx-ready .kx-hero-visual,.kx-ready .kx-units-section,.kx-ready .kx-grid .kx-card,.kx-boot-panel,.kx-boot-emblem,.kx-boot-panel>p,.kx-boot-track:after,.kx-ready .kx-hero-halo{animation:none!important}.kx-dashboard.kx-starting .kx-frame{opacity:1;translate:none;filter:none}}
+
+.kx-voice-enable.kx-needs-activation{animation:kx-voice-activation-pulse 1.15s ease-in-out infinite}@keyframes kx-voice-activation-pulse{0%,100%{box-shadow:0 0 12px #ff233018}50%{box-shadow:0 0 25px #ff233088;border-color:#ff6875}}
