@@ -3072,7 +3072,7 @@ function createSpmTransformParts(paint, trim) {
         mesh.position.fromArray(closed);
         mesh.rotation.set.apply(mesh.rotation, closedRot || [0,0,0]);
         carMesh.add(mesh);
-        spmParts.push({ mesh, closed, opened, closedRot:closedRot||[0,0,0], openedRot:openedRot||[0,0,0] });
+        spmParts.push({ mesh, closed, opened, closedRot:closedRot||[0,0,0], openedRot:openedRot||[0,0,0], phase:Math.min(.42,spmParts.length*.035) });
         return mesh;
     }
     // Nez télescopique et canards avant.
@@ -3108,8 +3108,8 @@ function toggleSPM() {
     camShake = Math.max(camShake, .22);
     showMessage(spmActive ? '◆ ACTIVATION DU S.P.M !' : '◇ SPM DÉSACTIVÉ');
     initAudio();
+    if (window.KA?.sfx?.spmTransform) KA.sfx.spmTransform(spmActive);
     if (spmActive) playRaceVoice('spm');
-    [220,330,440,660,880].forEach((f,i)=>setTimeout(()=>beep(f,.11),i*120));
 }
 
 function collectSpmPickup(pickup) {
@@ -3122,18 +3122,19 @@ function collectSpmPickup(pickup) {
 
 function updateSPM(dt) {
     const target = spmActive ? 1 : 0;
-    spmProgress += clamp(target-spmProgress,-dt*.72,dt*.72);
-    const t = spmProgress*spmProgress*(3-2*spmProgress);
+    spmProgress += clamp(target-spmProgress,-dt*.58,dt*.58);
     for (const p of spmParts) {
+        const phase = clamp((spmProgress - p.phase) / (1 - p.phase), 0, 1);
+        const partT = phase * phase * (3 - 2 * phase);
         p.mesh.visible = !carMesh.userData.legacyActive || spmProgress > .01;
         p.mesh.position.set(
-            p.closed[0]+(p.opened[0]-p.closed[0])*t,
-            p.closed[1]+(p.opened[1]-p.closed[1])*t,
-            p.closed[2]+(p.opened[2]-p.closed[2])*t);
+            p.closed[0]+(p.opened[0]-p.closed[0])*partT,
+            p.closed[1]+(p.opened[1]-p.closed[1])*partT,
+            p.closed[2]+(p.opened[2]-p.closed[2])*partT);
         p.mesh.rotation.set(
-            p.closedRot[0]+(p.openedRot[0]-p.closedRot[0])*t,
-            p.closedRot[1]+(p.openedRot[1]-p.closedRot[1])*t,
-            p.closedRot[2]+(p.openedRot[2]-p.closedRot[2])*t);
+            p.closedRot[0]+(p.openedRot[0]-p.closedRot[0])*partT,
+            p.closedRot[1]+(p.openedRot[1]-p.closedRot[1])*partT,
+            p.closedRot[2]+(p.openedRot[2]-p.closedRot[2])*partT);
     }
     if (scannerLight) scannerLight.intensity = (spmActive ? 1.65 : .9) + Math.sin(clock.elapsedTime*12)*.18;
     if (spmDemoTimer > 0) {
@@ -3231,7 +3232,7 @@ function silenceVehicle() {
 
 function updateEngineSound(kmh, throttle) {
     if (!window.KA) return;
-    KA.setEngine(kmh, throttle, state === 'racing' && !paused, turboActive || spmActive);
+    KA.setEngine(kmh, throttle, state === 'racing' && !paused, turboActive, spmActive);
 }
 
 // V7 — musique synthwave (touche P / boutons)
@@ -4145,6 +4146,7 @@ function resetCarTo(p) {
     carBody.quaternion.set(q.x, q.y, q.z, q.w);
     carMesh.position.copy(carBody.position);
     carMesh.quaternion.copy(carBody.quaternion);
+    carMesh.position.y -= .075 * spmProgress;
 
     if (vehicle) {
         for (let i = 0; i < vehicle.wheelInfos.length; i++) {
@@ -4863,17 +4865,18 @@ function updateRace(dt) {
     }
     // Flamme turbo : scintillement + gerbe d'étincelles arrière
     if (turboFlames.length) {
-        for (const flame of turboFlames) flame.visible = turboActive;
-        if (turboActive && carMesh) {
-            const f = 1.5 + Math.random() * 1.25;
+        const thrustActive = turboActive || spmActive;
+        for (const flame of turboFlames) flame.visible = thrustActive;
+        if (thrustActive && carMesh) {
+            const f = (spmActive ? 2.35 : 1.5) + Math.random() * (spmActive ? .85 : 1.25);
             for (const flame of turboFlames) {
-                flame.scale.set(1.15 * f, 2.35 * f, 1);
-                flame.material = Math.random() < .35 ? shared().boostFlameMat : shared().flameMat;
+                flame.scale.set((spmActive ? 1.55 : 1.15) * f, (spmActive ? 3.2 : 2.35) * f, 1);
+                flame.material = Math.random() < (spmActive ? .62 : .35) ? shared().boostFlameMat : shared().flameMat;
             }
             turboSparkTimer -= dt;
             turboSmokeTimer -= dt;
             if (turboSparkTimer <= 0) {
-                turboSparkTimer = LOW_POWER_MODE ? .16 : .095;
+                turboSparkTimer = LOW_POWER_MODE ? .16 : (spmActive ? .065 : .095);
                 const back = new THREE.Vector3(0, 0.1, -2.6).applyQuaternion(carMesh.quaternion);
                 spawnParticle(shared().sparkTex,
                     carMesh.position.x + back.x, carMesh.position.y + back.y, carMesh.position.z + back.z,
@@ -5071,6 +5074,8 @@ function syncCarVisual() {
             vehicle.updateWheelTransform(i);
             const t = vehicle.wheelInfos[i].worldTransform;
             wheelMeshes[i].position.set(t.position.x, t.position.y, t.position.z);
+            const side = i % 2 === 0 ? -1 : 1;
+            wheelMeshes[i].position.add(new THREE.Vector3(side, 0, 0).applyQuaternion(carMesh.quaternion).multiplyScalar(.2 * spmProgress));
             wheelMeshes[i].quaternion.set(t.quaternion.x, t.quaternion.y, t.quaternion.z, t.quaternion.w);
             wheelMeshes[i].quaternion.multiply(wheelBaseQuat);
         }
@@ -5125,7 +5130,7 @@ function updateChaseCamera(dt) {
     camera.up.lerp(carUp, Math.min(1, dt * 4)).normalize();
 
     // FOV : élargi avec la vitesse et le turbo
-    const targetFov = CONFIG.cameraFOV + (turboActive ? CONFIG.turboFOVBoost : 0) + (spmActive ? 5 : 0) + Math.min(displayedSpeed * 0.07, 8);
+    const targetFov = CONFIG.cameraFOV + (turboActive ? CONFIG.turboFOVBoost : 0) + (spmActive ? 10 : 0) + Math.min(displayedSpeed * 0.07, 8);
     camera.fov += (targetFov - camera.fov) * Math.min(1, dt * 5);
     camera.updateProjectionMatrix();
 }

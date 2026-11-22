@@ -14,7 +14,7 @@ window.KA = (function () {
     // Moteur
     let eng = null;
     // Vent / dérapage
-    let wind = null, skid = null;
+    let wind = null, skid = null, spmDrive = null;
     // Ambiance environnementale
     let ambience = null;
     // Musique
@@ -83,7 +83,14 @@ window.KA = (function () {
         engLP.connect(engGain); engGain.connect(master);
 
         o1.start(); o2.start(); o3.start(); intake.start();
-        eng = { o1, o2, o3, intake, intakeBP, lp: engLP, gain: engGain, gear: 0 };
+        eng = { o1, o2, o3, intake, intakeBP, lp: engLP, gain: engGain, gear: 0, lastThrottle: 0 };
+
+        // ---- SPM : sifflement de turbine distinct du moteur V8.
+        const spmOsc = ctx.createOscillator(); spmOsc.type = 'sawtooth'; spmOsc.frequency.value = 430;
+        const spmFilter = ctx.createBiquadFilter(); spmFilter.type = 'lowpass'; spmFilter.frequency.value = 1750; spmFilter.Q.value = .7;
+        const spmGain = ctx.createGain(); spmGain.gain.value = 0;
+        spmOsc.connect(spmFilter); spmFilter.connect(spmGain); spmGain.connect(master);
+        spmOsc.start(); spmDrive = { osc: spmOsc, filter: spmFilter, gain: spmGain };
 
         // ---- Vent (boucle de bruit filtrée)
         const wSrc = ctx.createBufferSource(); wSrc.buffer = noiseBuf; wSrc.loop = true;
@@ -142,6 +149,7 @@ window.KA = (function () {
             eng.gain.gain.setTargetAtTime(0, t, 0.08);
             if (wind) wind.gain.gain.setTargetAtTime(0, t, 0.08);
             if (skid) skid.gain.gain.setTargetAtTime(0, t, 0.06);
+            if (spmDrive) spmDrive.gain.gain.setTargetAtTime(0, t, .1);
             if (ambience) ambience.gain.gain.setTargetAtTime(0, t, 0.15);
         } catch (e) { /* noop */ }
         eng.gear = 0;
@@ -164,7 +172,7 @@ window.KA = (function () {
 
     // ---------- moteur ----------
     // Appelé à chaque frame. kmh : vitesse, throttle 0..1, active : en course.
-    function setEngine(kmh, throttle, active, turbo) {
+    function setEngine(kmh, throttle, active, turbo, spm = false) {
         if (!ctx || !eng) return;
         if (!isFinite(kmh)) return;                 // garde-fou physique
         dbg.engineCalls++;
@@ -175,6 +183,7 @@ window.KA = (function () {
             eng.gain.gain.setTargetAtTime(0, t, 0.2);
             wind.gain.gain.setTargetAtTime(0, t, 0.2);
             skid.gain.gain.setTargetAtTime(0, t, 0.15);
+            if (spmDrive) spmDrive.gain.gain.setTargetAtTime(0, t, .12);
             if (ambience) ambience.gain.gain.setTargetAtTime(0, t, 0.15);
             return;
         }
@@ -185,7 +194,8 @@ window.KA = (function () {
         const gearSize = 16;                        // m/s par rapport
         const rawGear = Math.min(gears - 1, Math.floor(v / gearSize));
         const inGear = v - rawGear * gearSize;
-        const rpm01 = Math.min(1, inGear / gearSize + 0.12);
+        // Le régime doit monter à l'accélérateur même à l'arrêt, puis retomber brièvement au passage des rapports.
+        const rpm01 = Math.max(.1, Math.min(1, .1 + throttle * .44 + (inGear / gearSize) * .62));
         if (rawGear !== eng.gear) {
             const up = rawGear > eng.gear;
             eng.gear = rawGear;
@@ -196,16 +206,25 @@ window.KA = (function () {
             }
         }
 
-        const base = 46 * (1 + rawGear * 0.42);
-        const freq = base * (1 + rpm01 * 1.75) * (turbo ? 1.12 : 1);
-        eng.o1.frequency.setTargetAtTime(freq, t, 0.05);
-        eng.o2.frequency.setTargetAtTime(freq * 1.005, t, 0.05);
-        eng.o3.frequency.setTargetAtTime(freq * 0.5, t, 0.05);
-        eng.lp.frequency.setTargetAtTime(320 + rpm01 * 900 + (turbo ? 500 : 0) + throttle * 250, t, 0.07);
-        eng.intakeBP.frequency.setTargetAtTime(700 + rpm01 * 1400, t, 0.08);
+        // Pulsations d'échappement d'un V8 : fondamentale liée au régime, harmoniques et grave désaccordé.
+        const firingHz = 34 + rpm01 * 260;
+        const freq = firingHz * (turbo ? 1.07 : 1) * (spm ? 1.045 : 1);
+        eng.o1.frequency.setTargetAtTime(freq, t, .035);
+        eng.o2.frequency.setTargetAtTime(freq * 1.012, t, .045);
+        eng.o3.frequency.setTargetAtTime(freq * .5, t, .05);
+        eng.lp.frequency.setTargetAtTime(240 + rpm01 * 1050 + (turbo ? 420 : 0) + (spm ? 280 : 0) + throttle * 220, t, .065);
+        eng.intakeBP.frequency.setTargetAtTime(520 + rpm01 * 1680 + throttle * 320, t, .07);
 
-        const vol = 0.030 + throttle * 0.030 + rpm01 * 0.012 + (turbo ? 0.018 : 0);
-        eng.gain.gain.setTargetAtTime(vol, t, 0.09);
+        const vol = .042 + throttle * .038 + rpm01 * .018 + (turbo ? .018 : 0) + (spm ? .014 : 0);
+        eng.gain.gain.setTargetAtTime(vol, t, .075);
+        // Aspiration brève quand on écrase l'accélérateur.
+        if (throttle - eng.lastThrottle > .32 && !voiceDucked) noiseHit(.085, 1250 + rpm01 * 500, .038, 'lowpass');
+        eng.lastThrottle = throttle;
+        if (spmDrive) {
+            spmDrive.osc.frequency.setTargetAtTime(360 + Math.min(1, v / 65) * 660 + throttle * 120, t, .12);
+            spmDrive.filter.frequency.setTargetAtTime(1050 + Math.min(1, v / 65) * 1300, t, .15);
+            spmDrive.gain.gain.setTargetAtTime(spm ? (.018 + throttle * .014) : 0, t, spm ? .18 : .3);
+        }
 
         // Vent : croît avec le carré de la vitesse
         const wn = Math.min(0.14, Math.pow(Math.min(1, v / 62), 2) * 0.14);
@@ -268,6 +287,21 @@ window.KA = (function () {
             tone(340, 0.22, 'triangle', 0.035, .04, 980);
         },
         scanner: () => tone(220, 0.55, 'sine', 0.09, 0, 1500),
+        spmTransform: (deploy) => {
+            if (deploy) {
+                noiseHit(.24, 620, .11, 'lowpass', 0);
+                tone(105, .42, 'sawtooth', .055, .04, 620);
+                tone(760, .55, 'sine', .035, .08, 1420);
+                noiseHit(.14, 1650, .065, 'bandpass', .38);
+                tone(82, .24, 'sine', .12, .52, 42);
+                noiseHit(.12, 720, .075, 'lowpass', .54);
+            } else {
+                tone(640, .38, 'sawtooth', .045, 0, 110);
+                noiseHit(.18, 1150, .06, 'bandpass', .08);
+                tone(68, .2, 'sine', .085, .3, 38);
+                noiseHit(.1, 480, .055, 'lowpass', .32);
+            }
+        },
         karrProximity: () => {
             tone(520, .075, 'square', .07);
             tone(760, .09, 'square', .06, .10);
