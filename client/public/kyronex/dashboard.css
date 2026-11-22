@@ -40,3 +40,33 @@
 .kx-boot-emblem>.kx-belgian-flag i:nth-child(2){background:#ffd631}
 .kx-boot-emblem>.kx-belgian-flag i:nth-child(3){background:#ed2939}
 @keyframes kx-flag-wave{0%,100%{transform:perspective(120px) rotateY(-9deg) skewY(-2deg)}50%{transform:perspective(120px) rotateY(9deg) skewY(2deg)}}
+
+/* Rehausse cinématique de l’intro et des cartes d’accès */
+.kx-boot{overflow:hidden;background:radial-gradient(ellipse at 50% 46%,#75152230,transparent 28%),radial-gradient(ellipse at 50% 55%,#111827ad,transparent 58%),#030407f5}
+.kx-boot:before{position:absolute;inset:-20%;content:"";pointer-events:none;background:conic-gradient(from 210deg at 50% 50%,transparent 0deg,#ff293a12 32deg,transparent 67deg,#e8f4ff08 135deg,transparent 190deg);animation:kx-cinema-turn 24s linear infinite}
+.kx-boot:after{position:absolute;left:-15%;right:-15%;top:0;height:1px;content:"";pointer-events:none;background:linear-gradient(90deg,transparent,#ff374c,#fff,#ff374c,transparent);box-shadow:0 0 25px 4px #ff263c70;animation:kx-cinema-sweep 3.4s ease-in-out infinite}
+.kx-boot-panel{position:relative;width:min(480px,100%);padding:43px 38px 37px;overflow:hidden;border-color:#ff435b78;border-radius:4px;background:linear-gradient(145deg,#17121deF,#080a11fa 70%);box-shadow:0 35px 110px #000e,0 0 90px #ff1e352b,inset 0 0 55px #4e142118}
+.kx-boot-panel:before{position:absolute;inset:7px;content:"";pointer-events:none;border:1px solid #ffffff0c;background:linear-gradient(90deg,#ff526640 0 30px,transparent 30px calc(100% - 30px),#ff526640 calc(100% - 30px)),linear-gradient(180deg,#ff526640 0 24px,transparent 24px calc(100% - 24px),#ff526640 calc(100% - 24px));mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;padding:1px}
+.kx-boot-emblem{width:108px;height:108px;margin-bottom:25px;border-color:#ff687ba6;background:radial-gradient(circle,#ff36422a,transparent 62%);box-shadow:0 0 52px #ff233c42,inset 0 0 32px #ff233c24,0 0 0 9px #ff34480a}
+.kx-boot-emblem:before{inset:-10px;border-color:#ff52604d;animation:kx-seal-orbit-a 14s linear infinite}
+.kx-boot-emblem:after{inset:-16px;border-color:#d8eaff22;animation:kx-seal-orbit-b 19s linear infinite}
+.kx-boot-emblem>i{inset:-22px;border-top-width:2px;animation:kx-orbit 4.8s linear infinite}
+.kx-boot-emblem>.kx-belgian-flag{width:58px;height:39px;border-radius:2px;box-shadow:0 0 24px #ff263c88,0 0 54px #ff263c36;animation:kx-flag-wave 2.2s ease-in-out infinite}
+.kx-boot-panel>p{margin:0;font-size:11px;letter-spacing:.19em;text-shadow:0 0 18px #ff36464d}
+.kx-boot-track{height:3px;margin:22px 0 15px;background:#ffffff12}.kx-boot-track i{width:24%;animation:kx-progress 1.6s cubic-bezier(.45,0,.55,1) infinite}
+.kx-boot-panel small{font-size:9px;letter-spacing:.14em}
+.kx-intro{min-height:560px;background:radial-gradient(ellipse at 73% 54%,#ff263c0b,transparent 40%)}
+.kx-intro h1{text-shadow:0 8px 40px #000a}.kx-intro h1 em{text-shadow:0 0 44px #ff26333d,0 12px 45px #000a}
+.kx-hero-visual{height:470px;filter:saturate(1.08)}.kx-hero-visual:before{position:absolute;inset:8% 4%;content:"";border:1px solid #ffffff0b;border-radius:50%;transform:rotate(-12deg);box-shadow:0 0 90px #ff263c10,inset 0 0 75px #111a28}
+.kx-car-art{width:min(96%,520px);filter:drop-shadow(0 35px 30px #000e) drop-shadow(0 0 52px #ff263c38);animation:kx-car-float 7s ease-in-out infinite}
+.kx-scanline{height:2px;box-shadow:0 0 12px 1px #ff233f,0 0 32px #ff233f70}
+.kx-section-heading{position:relative;padding-bottom:18px;border-bottom:1px solid #ffffff17}.kx-section-heading:after{position:absolute;right:0;bottom:-1px;width:115px;height:1px;content:"";background:linear-gradient(90deg,transparent,#ff4655)}
+.kx-card{min-height:244px;padding:19px 18px 16px;border-color:#ffffff20;border-radius:3px;background:linear-gradient(145deg,#1b1c25ee 0%,#111219fa 58%,#0d0f15f5 100%);box-shadow:inset 0 1px #ffffff0a,0 12px 32px #0004}
+.kx-card:before{width:2px;background:linear-gradient(180deg,transparent,var(--tone) 25% 75%,transparent);opacity:.78}.kx-card:after{width:84px;height:84px;opacity:.9}
+.kx-card:hover,.kx-card:focus-visible{transform:translateY(-7px) perspective(850px) rotateX(1.2deg);box-shadow:0 22px 44px #0009,0 0 32px color-mix(in srgb,var(--tone) 18%,transparent),inset 0 1px #ffffff15}
+.kx-card-core{height:72px}.kx-card-glyph{width:59px;height:59px;font-size:25px}.kx-card-copy h3{font-size:clamp(14px,1.2vw,17px)}.kx-card-footer{padding-top:13px}
+@keyframes kx-cinema-turn{to{transform:rotate(360deg)}}@keyframes kx-cinema-sweep{0%,100%{transform:translateY(0);opacity:.25}50%{transform:translateY(100vh);opacity:1}}@keyframes kx-seal-orbit-a{to{transform:scaleX(.55) rotate(395deg)}}@keyframes kx-seal-orbit-b{to{transform:scaleX(.55) rotate(-395deg)}}
+@media(max-width:980px){.kx-intro{min-height:470px}.kx-hero-visual{height:390px}.kx-card{min-height:230px}}
+@media(max-width:620px){.kx-intro{min-height:auto}.kx-hero-visual{height:255px}.kx-card{min-height:206px;padding:13px 11px 11px}.kx-card-core{height:55px}.kx-card-glyph{width:46px;height:46px}}
+@media(max-width:370px){.kx-card{min-height:196px;padding:16px}.kx-card-core{height:60px}}
+@media(prefers-reduced-motion:reduce){.kx-boot:before,.kx-boot:after,.kx-boot-emblem:before,.kx-boot-emblem:after,.kx-boot-emblem>i{animation:none!important}}

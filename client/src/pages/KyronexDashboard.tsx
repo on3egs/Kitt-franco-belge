@@ -17,7 +17,7 @@ export default function KyronexDashboard() {
   const [linking, setLinking] = useState("");
   const navigationTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
-    const timer = window.setTimeout(() => setBooting(false), 1450);
+    const timer = window.setTimeout(() => setBooting(false), 2600);
     return () => { window.clearTimeout(timer); if (navigationTimer.current) window.clearTimeout(navigationTimer.current); };
   }, []);
   const playSfx = (file: string) => { const audio = new Audio(`/kyronex/${file}`); audio.volume = 0.16; audio.play().catch(() => undefined); };
