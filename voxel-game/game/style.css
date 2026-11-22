@@ -5,3 +5,45 @@
 #mission .muted,#mission .hint{color:#384858}
 
 #qualityReadout{display:block;margin-top:6px;font-size:10px;letter-spacing:.2px;line-height:1.4}
+
+/* KYRONEXT BLOCK WORLD PREMIUM HUD PASS 2026-11 */
+:root{--red:#ff3e56;--cyan:#57e6ff;--gold:#f4c46e;--panel:rgba(7,15,25,.88)}
+.screen{background:radial-gradient(ellipse at 82% 8%,#ff233315,transparent 38%),radial-gradient(ellipse at 10% 90%,#25c9ff11,transparent 42%),linear-gradient(90deg,#08111bf2,#08111bdc 55%,#08111baa);backdrop-filter:blur(10px)}
+.screen header{border-bottom-color:#ff455344}
+.panel,.modal>.dialog{border-color:#ff536344;background:linear-gradient(145deg,#0d1824ef,#0a121dee);box-shadow:0 16px 44px #0007,0 0 26px #ff183310}
+button{border-radius:9px;border-color:#526577;background:linear-gradient(145deg,#172432,#101a26);transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease,filter .14s ease}
+button:hover:not(:disabled){transform:translateY(-1px);border-color:#ff566b;box-shadow:0 6px 16px #0005,0 0 15px #ff183322;filter:brightness(1.08)}
+button.primary{background:linear-gradient(135deg,#a51c32,#e9334d);box-shadow:0 0 18px #ff183333}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.hud-panel,.hotbar,.toast{border-color:#ff536355;box-shadow:0 8px 24px #0007,0 0 18px #ff183318}
+.slot{border-radius:7px;transition:transform .12s ease,border-color .12s ease,background .12s ease}
+.slot.active{border-color:var(--red);box-shadow:0 0 16px #ff264455,inset 0 0 14px #ff263322}
+.inventory-grid button:hover i{box-shadow:0 0 16px currentColor}
+#qualityReadout{color:#8ea9b7}
+@media(prefers-reduced-motion:reduce){button,.slot{transition:none}button:hover:not(:disabled),.slot:hover{transform:none}}
+
+
+/* Console FLAG : départ plus lisible et raccourcis toujours à portée. */
+.screen button,.modal button,#hudActions button{min-height:42px}
+.menu-layout{max-width:1360px;grid-template-columns:minmax(0,1.12fr) minmax(360px,.88fr);gap:clamp(28px,5vw,76px)}
+.start-panel{border-color:#7393a8;background:linear-gradient(145deg,#152637f2,#0c1723f2);box-shadow:0 16px 48px #0006}
+.start-panel .panel-title{font-size:17px;letter-spacing:.5px}
+.start-panel .muted{font-size:14px;line-height:1.65}
+#patrolStart{flex:1 1 100%;min-height:58px;font-size:15px;letter-spacing:.7px;box-shadow:0 8px 28px #ff3b5135}
+#creativeBtn,#survivalBtn{flex:1 1 180px;min-height:52px}
+#resumeBtn:not(.hidden){flex:1 1 100%;min-height:48px;border-color:var(--cyan);color:var(--cyan)}
+#menuMessage{min-height:24px;margin:8px 0;color:var(--cyan)}
+.fullscreen-toggle{position:fixed;right:18px;bottom:18px;z-index:40;background:#0b1624ef;border-color:#ff6677;color:#fff;font-size:11px;font-weight:800;letter-spacing:.7px;box-shadow:0 5px 22px #0008}
+.fullscreen-toggle:hover{background:#341a27;border-color:#ff5268}
+.quick-help{position:fixed;left:18px;top:75px;z-index:8;width:min(310px,calc(100vw - 36px));pointer-events:auto;color:#ecf5f9;font:11px ui-monospace,monospace}
+.quick-help summary{display:inline-flex;align-items:center;min-height:40px;padding:0 13px;border:1px solid #648195;border-radius:5px;background:#091521ee;color:#75def0;cursor:pointer;letter-spacing:1px}
+.quick-help[open]{border:1px solid #648195;border-radius:7px;background:#091521f5;box-shadow:0 12px 36px #0008}
+.quick-help[open] summary{border:0;background:transparent}
+.quick-help div{display:grid;gap:7px;padding:0 14px 14px}
+.quick-help b{color:#ff6879;letter-spacing:1px;margin-top:5px}
+.quick-help span,.quick-help small{line-height:1.5;color:#d5e1e7}
+body.quality-low .screen,body.quality-low .panel,body.quality-low .hud-panel,body.quality-low #quote{backdrop-filter:none}
+body.quality-low .scanner i{animation:none;background:#ff4055}
+@media(max-width:900px){.menu-layout{grid-template-columns:1fr;max-width:720px;gap:20px;margin:22px auto}.intro-col h1{font-size:clamp(38px,9vw,54px)}}
+@media(max-width:760px){.fullscreen-toggle{right:10px;bottom:calc(112px + env(safe-area-inset-bottom));padding:9px 11px;font-size:10px}.quick-help{left:10px;top:60px}.quick-help[open]{width:min(300px,calc(100vw - 20px))}.menu-layout{margin:16px auto}.start-panel .muted{font-size:12px}#patrolStart{min-height:52px}}
+@media(prefers-reduced-motion:reduce){.scanner i{animation:none}}

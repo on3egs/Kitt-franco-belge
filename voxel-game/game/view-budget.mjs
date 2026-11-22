@@ -11,7 +11,10 @@ export function resolveViewBudget(settings={},hardware={}){
  const memoryGB=Number.isFinite(Number(hardware.deviceMemory))&&Number(hardware.deviceMemory)>0
   ?Number(hardware.deviceMemory)
   :(hardware.coarse?4:8);
- const hardwareMaxRadius=memoryGB<=2?2:memoryGB<=4||hardware.coarse?3:5;
+ const memoryMaxRadius=memoryGB<=2?2:memoryGB<=4||hardware.coarse?3:5;
+ const cores=Number(hardware.hardwareConcurrency);
+ const cpuMaxRadius=Number.isFinite(cores)&&cores>0?(cores<=2?1:cores<=4?2:5):5;
+ const hardwareMaxRadius=Math.min(memoryMaxRadius,cpuMaxRadius);
  const budgetMaxRadius=BUDGET_RADIUS[profile];
  const radius=Math.min(requestedRadius,budgetMaxRadius,hardwareMaxRadius);
  return{

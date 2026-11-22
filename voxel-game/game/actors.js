@@ -14,8 +14,11 @@ export const PROFILES={
 const material=(color,extra={})=>new THREE.MeshStandardMaterial({color,roughness:.72,...extra});
 function box(g,w,h,d,x,y,z,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o}
 export function avatar(profile='MICHAEL',label=''){
-  const p=PROFILES[profile]||PROFILES.MICHAEL,g=new THREE.Group(),skin=material(0xd9a781),hair=material(p.hair),shirt=material(p.shirt),pants=material(p.pants),shoe=material(0x171a22),white=material(0xecede9),dark=material(0x302b2c),accent=material(p.accent);
+  const p=PROFILES[profile]||PROFILES.MICHAEL,g=new THREE.Group(),skin=material(0xd9a781,{roughness:.86}),hair=material(p.hair,{roughness:.9}),shirt=material(p.shirt,{roughness:.82}),pants=material(p.pants,{roughness:.88}),shoe=material(0x171a22,{roughness:.48,metalness:.08}),white=material(0xecede9),dark=material(0x302b2c),accent=material(p.accent,{roughness:.5,metalness:.12}),seam=material(0xffffff,{transparent:true,opacity:.2}),metal=material(0xc3a86a,{metalness:.68,roughness:.3});
   const head=new THREE.Group();head.position.y=1.62;g.add(head);box(head,.53,.55,.46,0,0,0,skin);box(head,.58,.16,.51,0,.26,0,hair);box(head,.57,.43,.13,0,.01,.22,hair);
+  // Traits plus lisibles : oreilles, nez, sourcils et nuances du visage.
+  for(const s of [-1,1]){box(head,.09,.14,.12,s*.29,-.025,0,skin);box(head,.105,.045,.035,s*.13,.105,-.26,dark)}
+  box(head,.105,.105,.12,0,-.055,-.285,skin);box(head,.16,.035,.035,0,-.19,-.265,dark);
   const femme=['LILOU','ALEXIA','BONNIE','APRIL','PILOT_FEMME'].includes(profile);
   if(femme){
     // Cheveux longs jusqu'aux épaules : une masse arrière et deux mèches lisibles en silhouette.
@@ -44,7 +47,11 @@ export function avatar(profile='MICHAEL',label=''){
     box(head,.09,.025,.025,-.285,.035,-.24,frame);box(head,.09,.025,.025,.285,.035,-.24,frame);
   }
   if(profile==='BONNIE'||profile==='APRIL')for(const x of [-.135,.135]){for(const y of [-.015,.092])box(head,.23,.025,.03,x,y,-.28,accent);for(const dx of [-.103,.103])box(head,.025,.12,.03,x+dx,.04,-.28,accent)}
-  box(g,.55,.62,.32,0,1.05,0,shirt);box(g,.2,.06,.02,.13,1.19,-.17,accent);box(g,.16,.035,.025,.13,1.18,-.19,white);
+  // Cou et épaules donnent une transition nette entre tête, buste et bras.
+  box(g,.2,.18,.2,0,1.39,0,skin);box(g,.68,.16,.38,0,1.31,0,shirt);box(g,.55,.62,.32,0,1.05,0,shirt);
+  box(g,.2,.06,.02,.13,1.19,-.17,accent);box(g,.16,.035,.025,.13,1.18,-.19,white);
+  box(g,.5,.045,.035,0,.78,-.18,dark);box(g,.11,.1,.035,0,.78,-.205,metal);
+  for(const s of [-1,1]){box(g,.16,.2,.025,s*.17,1.05,-.18,material(p.shirt,{roughness:.7}));box(g,.025,.34,.025,s*.245,1.08,-.18,seam)}
   if(profile==='MICHAEL'||profile==='DEVON'){box(g,.12,.48,.04,0,1.1,-.18,material(profile==='DEVON'?0x273548:0x802a31));box(g,.025,.52,.04,.12,1.1,-.19,material(p.accent))}
   if(profile==='LILOU'){
     // Col ras-du-cou et petits motifs clairs pour distinguer son ensemble rose.
@@ -55,7 +62,7 @@ export function avatar(profile='MICHAEL',label=''){
     // T-shirt noir simple avec un petit motif discret bleu-gris, pantalon crème et poignets sombres.
     box(g,.25,.2,.025,0,1.02,-.174,material(0x313b4a));box(g,.08,.08,.035,0,1.045,-.196,material(0x7794ad));
   }
-  const arms=[],legs=[];for(const s of [-1,1]){const a=new THREE.Group();a.position.set(s*.39,1.31,0);box(a,.2,.4,.27,0,-.18,0,shirt);box(a,.18,.2,.23,0,-.46,0,skin);g.add(a);arms.push(a);const l=new THREE.Group();l.position.set(s*.15,.75,0);box(l,.24,.58,.27,0,-.27,0,pants);box(l,.25,.14,.37,0,-.6,-.045,shoe);g.add(l);legs.push(l)}
+  const arms=[],legs=[];for(const s of [-1,1]){const a=new THREE.Group();a.position.set(s*.39,1.31,0);box(a,.24,.18,.29,0,-.08,0,shirt);box(a,.2,.34,.27,0,-.31,0,shirt);box(a,.19,.07,.28,0,-.47,0,accent);box(a,.18,.2,.23,0,-.59,0,skin);box(a,.08,.12,.1,s*.03,-.69,-.015,skin);g.add(a);arms.push(a);const l=new THREE.Group();l.position.set(s*.15,.75,0);box(l,.27,.16,.29,0,-.09,0,pants);box(l,.24,.42,.27,0,-.36,0,pants);box(l,.26,.07,.29,0,-.59,0,material(p.pants,{roughness:.7}));box(l,.25,.14,.37,0,-.68,-.045,shoe);box(l,.26,.045,.38,0,-.75,-.045,dark);g.add(l);legs.push(l)}
   if(profile==='ALEXIA'){
     // Semelles et bandes au bas du pantalon restent lisibles sans changer l'animation des jambes.
     for(const l of legs){box(l,.25,.045,.38,0,-.505,-.045,material(0x24252a));box(l,.255,.045,.385,0,-.675,-.045,material(0x050608));}

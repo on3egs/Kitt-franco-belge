@@ -769,8 +769,8 @@ function shared() {
             blending: THREE.AdditiveBlending, depthWrite: false, transparent: true
         })),
         smokeTex: markShared(new THREE.SpriteMaterial({
-            map: radial('rgba(100,115,135,0.7)', 'rgba(20,25,35,0)'),
-            depthWrite: false, transparent: true, opacity: 0.7
+            map: radial('rgba(100,115,135,0.38)', 'rgba(20,25,35,0)'),
+            depthWrite: false, transparent: true, opacity: 0.34
         })),
         moonMat: markShared(new THREE.SpriteMaterial({
             map: radial('rgba(255,250,235,1)', 'rgba(200,210,255,0)'),
@@ -3066,6 +3066,7 @@ function createSpmTransformParts(paint, trim) {
         clearcoat: 1, clearcoatRoughness: .06
     });
     const edge = new THREE.MeshBasicMaterial({ color: 0xff1838 });
+    const spmSilver = new THREE.MeshStandardMaterial({ color: 0xd7d9dd, metalness: .72, roughness: .28, emissive: 0x17191e });
     function part(geometry, material, closed, opened, closedRot, openedRot) {
         const mesh = new THREE.Mesh(geometry, material);
         mesh.castShadow = true;
@@ -3078,18 +3079,27 @@ function createSpmTransformParts(paint, trim) {
     // Nez télescopique et canards avant.
     part(new THREE.BoxGeometry(2.28,.08,.62),aero,[0,-.17,2.03],[0,-.2,2.62],[0,0,0],[.08,0,0]);
     part(new THREE.BoxGeometry(2.1,.025,.66),edge,[0,-.205,2.0],[0,-.24,2.7],[0,0,0],[.08,0,0]);
+    // Les larges panneaux de flanc s'ouvrent comme les prises d'air SPM de la série.
     for (const sx of [-1,1]) {
+        part(new THREE.BoxGeometry(.76,.075,1.12),spmSilver,[sx*.78,.02,.78],[sx*1.38,.2,.96],[0,0,0],[0,sx*.2,sx*.11]);
         part(new THREE.BoxGeometry(.52,.055,.92),aero,[sx*.92,-.12,1.5],[sx*1.28,-.08,1.78],[0,0,0],[0,sx*.18,sx*.05]);
         part(new THREE.BoxGeometry(.16,.18,2.5),aero,[sx*1.04,-.15,-.15],[sx*1.28,-.1,-.12],[0,0,0],[0,0,sx*.08]);
         part(new THREE.BoxGeometry(.035,.055,2.28),edge,[sx*1.1,-.08,-.1],[sx*1.37,-.01,-.1],[0,0,0],[0,0,sx*.08]);
-        // Stabilisateur arrière qui se déploie vers l'extérieur.
-        part(new THREE.BoxGeometry(.55,.06,.78),aero,[sx*.72,.68,-1.82],[sx*1.18,.92,-2.08],[0,0,0],[-.12,sx*.16,sx*.16]);
+        // Évents blancs inclinés sur les ailes arrière : signature visuelle du SPM.
+        for (let vent=0;vent<5;vent++) {
+            const z=-1.55+vent*.19;
+            part(new THREE.BoxGeometry(.075,.045,.44),spmSilver,[sx*1.12,.43,z],[sx*1.27,.58,z-.06],[0,0,0],[0,0,sx*.08]);
+        }
+        // Aérofreins latéraux et stabilisateurs arrière déployables.
+        part(new THREE.BoxGeometry(.32,.07,.88),spmSilver,[sx*.86,.26,-.52],[sx*1.38,.43,-.34],[0,0,0],[0,sx*.14,sx*.12]);
+        part(new THREE.BoxGeometry(.55,.06,.78),aero,[sx*.72,.68,-1.82],[sx*1.28,1.02,-2.12],[0,0,0],[-.16,sx*.2,sx*.18]);
     }
-    // Double aérofrein dorsal et grand aileron relevable.
-    part(new THREE.BoxGeometry(.56,.045,.92),aero,[-.34,.89,-.68],[-.48,1.18,-.82],[0,0,0],[-.48,0,-.12]);
-    part(new THREE.BoxGeometry(.56,.045,.92),aero,[.34,.89,-.68],[.48,1.18,-.82],[0,0,0],[-.48,0,.12]);
-    part(new THREE.BoxGeometry(2.18,.08,.5),aero,[0,.69,-1.96],[0,1.22,-2.18],[0,0,0],[-.12,0,0]);
-    part(new THREE.BoxGeometry(2.02,.025,.54),edge,[0,.735,-1.96],[0,1.27,-2.18],[0,0,0],[-.12,0,0]);
+    // Prise d'air du capot et double aérofrein dorsal, puis aileron arrière large.
+    part(new THREE.BoxGeometry(.76,.18,.9),aero,[0,.31,.58],[0,.48,.64],[0,0,0],[-.04,0,0]);
+    part(new THREE.BoxGeometry(.58,.045,.92),spmSilver,[-.34,.89,-.68],[-.52,1.23,-.82],[0,0,0],[-.5,0,-.12]);
+    part(new THREE.BoxGeometry(.58,.045,.92),spmSilver,[.34,.89,-.68],[.52,1.23,-.82],[0,0,0],[-.5,0,.12]);
+    part(new THREE.BoxGeometry(2.72,.1,.56),aero,[0,.69,-1.96],[0,1.42,-2.24],[0,0,0],[-.16,0,0]);
+    part(new THREE.BoxGeometry(2.54,.035,.58),edge,[0,.75,-1.96],[0,1.48,-2.24],[0,0,0],[-.16,0,0]);
 }
 
 function toggleSPM() {
@@ -4885,7 +4895,7 @@ function updateRace(dt) {
             }
             // Panache dense mais plafonné par le pool global de particules.
             if (turboSmokeTimer <= 0) {
-                turboSmokeTimer = LOW_POWER_MODE ? .2 : .12;
+                turboSmokeTimer = LOW_POWER_MODE ? .32 : (spmActive ? .28 : .2);
                 const smokeBack = new THREE.Vector3(0, .05, -2.9).applyQuaternion(carMesh.quaternion);
                 spawnParticle(shared().smokeTex,
                     carMesh.position.x + smokeBack.x + (Math.random() - .5) * 1.2,
@@ -4893,7 +4903,7 @@ function updateRace(dt) {
                     carMesh.position.z + smokeBack.z + (Math.random() - .5) * 1.2,
                     -forward.x * (5 + Math.random() * 5), 1.2 + Math.random() * 2,
                     -forward.z * (5 + Math.random() * 5),
-                    1.1 + Math.random() * .8, .65 + Math.random() * .45, 2.5);
+                    0.75 + Math.random() * .3, .34 + Math.random() * .18, .9);
             }
         }
     }

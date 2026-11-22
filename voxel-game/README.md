@@ -43,7 +43,7 @@ Cette version reste un petit jeu coopératif : pas de chat, de combat entre joue
 - `npm run test:public` : contrôle la version HTTPS publiée avec deux clients, les positions/départs, les fichiers privés et le PIN local sans l'afficher. `npm run test:live` contrôle le catalogue public, le chargement WebGL, la construction en solo, la conduite, le Turbo Boost et le retour au catalogue dans Chrome.
 - `npm run test:site` : vérifie le vrai site principal, les recherches Minecraft/Halloween et plusieurs mots dans des ordres différents, l'intégration dans l'iframe, le saut tactile et le retour au catalogue entre les deux domaines.
 
-Le rendu logiciel de Chrome utilisé en test valide le fonctionnement ; il ne mesure pas la cadence d'un GPU de PC moyen. Le mode Économique réduit les chunks, la résolution, le bloom et les ombres.
+Le rendu logiciel de Chrome utilisé en test valide le fonctionnement ; il ne mesure pas la cadence d'un GPU de PC moyen. Le mode Économique réduit les chunks, la résolution, le bloom et les ombres. Le réglage automatique tient aussi compte de la mémoire et du nombre de cœurs du processeur pour les anciens PC.
 
 ## Publication sur l'AGX
 
