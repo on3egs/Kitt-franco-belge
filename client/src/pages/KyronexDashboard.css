@@ -73,3 +73,40 @@
 
 .kx-section-heading{display:grid;grid-template-columns:1fr auto;align-items:end}.kx-section-heading>div{grid-column:1;grid-row:1}.kx-section-note{grid-column:2;grid-row:1}.kx-hover-hint{grid-column:1/-1;grid-row:2;justify-self:end;margin:9px 0 0;color:#8f8994;font:9px 'Space Mono',monospace;letter-spacing:.07em}.kx-hover-hint i{color:#ff717b;font-style:normal;text-shadow:0 0 10px #ff344c}.kx-hover-hint b{padding:0 5px;color:#ff717b;font-weight:400}
 @media(max-width:620px){.kx-hover-hint{font-size:7px;letter-spacing:.04em}.kx-section-heading{grid-template-columns:1fr auto}}
+
+
+/* Cinematic title reveal after the Belgian-signal boot sequence */
+.kx-dashboard:after{position:fixed;z-index:20;inset:0;content:"";pointer-events:none;background:radial-gradient(ellipse at center,transparent 56%,#02030755 100%)}
+.kx-dashboard.kx-starting .kx-frame{opacity:0;translate:0 14px;filter:blur(2px)}
+.kx-dashboard.kx-ready .kx-frame{animation:kx-frame-reveal 1.05s cubic-bezier(.2,.72,.2,1) both}
+.kx-ready .kx-topbar{animation:kx-soft-reveal .7s .05s both}
+.kx-ready .kx-intro-copy{animation:kx-soft-reveal .9s .16s both}
+.kx-ready .kx-hero-visual{animation:kx-hero-reveal 1.2s .12s both}
+.kx-ready .kx-hero-halo{animation:kx-reactor-pulse 4.2s 1.2s ease-in-out infinite}
+.kx-ready .kx-units-section{animation:kx-soft-reveal .85s .3s both}
+.kx-ready .kx-grid .kx-card{animation:kx-card-arrive .58s both}
+.kx-ready .kx-grid .kx-card:nth-child(1){animation-delay:.36s}
+.kx-ready .kx-grid .kx-card:nth-child(2){animation-delay:.43s}
+.kx-ready .kx-grid .kx-card:nth-child(3){animation-delay:.50s}
+.kx-ready .kx-grid .kx-card:nth-child(4){animation-delay:.57s}
+.kx-ready .kx-grid .kx-card:nth-child(5){animation-delay:.64s}
+.kx-ready .kx-grid .kx-card:nth-child(6){animation-delay:.71s}
+.kx-ready .kx-grid .kx-card:nth-child(7){animation-delay:.78s}
+.kx-ready .kx-grid .kx-card:nth-child(8){animation-delay:.85s}
+.kx-boot-panel{animation:kx-boot-focus .9s cubic-bezier(.2,.75,.2,1) both}
+.kx-boot-emblem{animation:kx-emblem-arrive .8s .12s cubic-bezier(.2,.8,.2,1) both}
+.kx-boot-panel>p{animation:kx-signal-text .9s .32s both}
+.kx-boot-track{position:relative}
+.kx-boot-track:after{position:absolute;inset:0;content:"";background:linear-gradient(90deg,transparent,#ffffff55,transparent);transform:translateX(-120%);animation:kx-boot-glint 1.4s .6s ease-in-out infinite}
+.kx-hero-visual{perspective:900px}
+.kx-hero-halo{will-change:opacity}
+@keyframes kx-frame-reveal{from{opacity:0;translate:0 14px;filter:blur(2px)}to{opacity:1;translate:0 0;filter:blur(0)}}
+@keyframes kx-soft-reveal{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
+@keyframes kx-hero-reveal{from{opacity:0;scale:.975}to{opacity:1;scale:1}}
+@keyframes kx-card-arrive{from{opacity:0;translate:0 15px}to{opacity:1;translate:0 0}}
+@keyframes kx-boot-focus{from{opacity:0;scale:.965;filter:blur(5px)}to{opacity:1;scale:1;filter:blur(0)}}
+@keyframes kx-emblem-arrive{from{rotate:-14deg;scale:.82;opacity:.2}to{rotate:0;scale:1;opacity:1}}
+@keyframes kx-signal-text{0%{opacity:.35;letter-spacing:.28em}100%{opacity:1;letter-spacing:.19em}}
+@keyframes kx-boot-glint{to{transform:translateX(120%)}}
+@keyframes kx-reactor-pulse{0%,100%{opacity:.72;scale:1}50%{opacity:1;scale:1.08}}
+@media(prefers-reduced-motion:reduce){.kx-dashboard.kx-ready .kx-frame,.kx-ready .kx-topbar,.kx-ready .kx-intro-copy,.kx-ready .kx-hero-visual,.kx-ready .kx-units-section,.kx-ready .kx-grid .kx-card,.kx-boot-panel,.kx-boot-emblem,.kx-boot-panel>p,.kx-boot-track:after,.kx-ready .kx-hero-halo{animation:none!important}.kx-dashboard.kx-starting .kx-frame{opacity:1;translate:none;filter:none}}

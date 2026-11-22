@@ -21,7 +21,7 @@ export default function KyronexDashboard() {
   const speechAudio = useRef<HTMLAudioElement | undefined>(undefined);
   const speechCache = useRef(new Map<string, string>());
   useEffect(() => {
-    const timer = window.setTimeout(() => setBooting(false), 2600);
+    const timer = window.setTimeout(() => setBooting(false), 3600);
     return () => {
       window.clearTimeout(timer);
       if (navigationTimer.current) window.clearTimeout(navigationTimer.current);
@@ -83,7 +83,7 @@ export default function KyronexDashboard() {
     })}).then(r=>r.ok?r.blob():Promise.reject()).then(blob=>{const audio=new Audio(URL.createObjectURL(blob));audio.volume=.9;audio.play().catch(()=>undefined)}).catch(()=>undefined);
     navigationTimer.current=window.setTimeout(()=>{window.location.href=unit.href},3600);
   };
-  return <main className="kx-dashboard">
+  return <main className={"kx-dashboard " + (booting ? "kx-starting" : "kx-ready")}>
     <div className="kx-ambient" aria-hidden="true"><span/><span/><span/></div>
     {booting&&<div className="kx-boot" role="status" aria-label="Initialisation de Kyronex"><div className="kx-boot-panel">
       <div className="kx-boot-emblem"><span className="kx-belgian-flag" role="img" aria-label="Drapeau belge"><i></i><i></i><i></i></span><i/></div><p>KYRONEX <b>///</b> INITIALISATION</p>
