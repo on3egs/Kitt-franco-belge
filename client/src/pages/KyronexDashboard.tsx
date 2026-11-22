@@ -45,7 +45,7 @@ export default function KyronexDashboard() {
       speechRequest.current = controller;
       const audioUrl = cachedUrl
         ? Promise.resolve(cachedUrl)
-        : fetch("https://karr.kitt-franco-belge.be/api/tts-eleven", {
+        : fetch("https://kitt.kitt-franco-belge.be/api/tts/manix", {
             method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
             body: JSON.stringify({ text: unit.announcement, model_id: "eleven_v3", voice_settings: { stability: 0.55, similarity_boost: 0.85, style: 0.12, use_speaker_boost: true } }),
           }).then((response) => response.ok ? response.blob() : Promise.reject())
@@ -77,7 +77,7 @@ export default function KyronexDashboard() {
       window.setTimeout(() => void context.close(),1800);
     } catch {}
     const isKarr=unit.name.includes("KARR");
-    fetch("https://karr.kitt-franco-belge.be/api/tts-eleven",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+    fetch("https://kitt.kitt-franco-belge.be/api/tts/manix",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
       text:`Je suis ${unit.name}. Liaison directe avec l'ordinateur de la Fondation. Connexion acceptée.`,model_id:"eleven_v3",
       voice_settings:{stability:isKarr?.42:.58,similarity_boost:.88,style:isKarr?.32:.16,use_speaker_boost:true}
     })}).then(r=>r.ok?r.blob():Promise.reject()).then(blob=>{const audio=new Audio(URL.createObjectURL(blob));audio.volume=.9;audio.play().catch(()=>undefined)}).catch(()=>undefined);

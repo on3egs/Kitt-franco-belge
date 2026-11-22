@@ -7830,19 +7830,34 @@ async def handle_link_tts(request: web.Request) -> web.Response:
         return web.json_response({"error": f"SATCOM TTS indisponible: {exc}"}, status=503)
 
 
+_MANIX_TTS_ALLOWED_ORIGINS = {"https://kitt-franco-belge.be", "https://www.kitt-franco-belge.be"}
+
+def _manix_tts_cors(request: web.Request, response: web.Response) -> web.Response:
+    origin = request.headers.get("Origin", "")
+    if origin in _MANIX_TTS_ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Access-Control-Max-Age"] = "600"
+        response.headers["Vary"] = "Origin"
+    return response
+
+async def handle_tts_manix_options(request: web.Request) -> web.Response:
+    return _manix_tts_cors(request, web.Response(status=204))
+
 async def handle_tts_manix(request: web.Request) -> web.Response:
     """Synthèse vocale avec la voix Manix locale (Piper GPU manix.onnx)."""
     try:
         data = await request.json()
         text = (data.get("text") or "").strip()
     except Exception:
-        return web.Response(status=400, text="JSON requis")
+        return _manix_tts_cors(request, web.Response(status=400, text="JSON requis"))
     if not text:
-        return web.Response(status=400, text="Champ text vide")
+        return _manix_tts_cors(request, web.Response(status=400, text="Champ text vide"))
 
     engine = get_manix_engine()
     if engine is None:
-        return web.Response(status=503, text="Modèle manix.onnx non disponible")
+        return _manix_tts_cors(request, web.Response(status=503, text="Modèle manix.onnx non disponible"))
 
     import uuid
     audio_id = uuid.uuid4().hex
@@ -7855,12 +7870,11 @@ async def handle_tts_manix(request: web.Request) -> web.Response:
         clean_path.unlink(missing_ok=True)
         data_bytes = out_path.read_bytes()
         out_path.unlink(missing_ok=True)
-        return web.Response(body=data_bytes, content_type="audio/wav")
+        return _manix_tts_cors(request, web.Response(body=data_bytes, content_type="audio/wav"))
     except Exception as e:
         clean_path.unlink(missing_ok=True)
         out_path.unlink(missing_ok=True)
-        return web.Response(status=500, text=str(e))
-
+        return _manix_tts_cors(request, web.Response(status=500, text=str(e)))
 async def handle_monitor(request: web.Request) -> web.Response:
     return web.FileResponse(STATIC_DIR / "monitor.html")
 
@@ -10645,6 +10659,7 @@ def create_app() -> web.Application:
     app.router.add_get("/manix", handle_manix)
     app.router.add_post("/api/link/tts", handle_link_tts)
     app.router.add_post("/api/tts/manix", handle_tts_manix)
+    app.router.add_route("OPTIONS", "/api/tts/manix", handle_tts_manix_options)
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_post("/api/chat/stream", handle_chat_stream)
     app.router.add_get("/api/ui-settings", handle_ui_settings)
