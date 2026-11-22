@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KITT STUNT RACING - By Manix</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="css/style.css?v=20261021-stunt-polish3">
+    <link rel="stylesheet" href="css/style.css?v=20261122-unified-fullscreen1">
     <link rel="stylesheet" href="css/pilot-portraits.css?v=20261113-1">
     <link rel="stylesheet" href="css/driver-panel.css?v=20261114-2">
     <link rel="stylesheet" href="css/grand-tour.css?v=20261114-grand1">
@@ -13,6 +13,7 @@
 <body>
     <!-- Canvas WebGL -->
     <canvas id="game-canvas"></canvas>
+    <button id="racer-fullscreen-toggle" class="racer-fullscreen-toggle" type="button" aria-label="Passer Knight Racer en plein ecran" aria-pressed="false" title="Plein ecran">&#x26F6; PLEIN ECRAN</button>
 
     <!-- Effets d'écran (vignette + lignes de vitesse) -->
     <div id="screen-vignette"></div>
@@ -230,6 +231,68 @@
     <script src="js/legacy-models.js?v=20261114"></script>
     <script src="js/racer-cars.js?v=20261114-grand1"></script>
     <script src="js/compatible-2d.js?v=20261114"></script>
-    <script src="main.js?v=20261114-grand1"></script>
+    <script src="main.js?v=20261122-unified-fullscreen1"></script>
+<script>
+(() => {
+  const button = document.getElementById('racer-fullscreen-toggle');
+  const root = document.documentElement;
+  if (!button) return;
+  const tellParent = active => {
+    if (window.parent !== window) {
+      try { window.parent.postMessage({ type: 'KYRONEXT_ARCADE_FULLSCREEN', active }, window.location.origin); } catch (_) {}
+    }
+  };
+  const isActive = () => !!(document.fullscreenElement || document.webkitFullscreenElement || root.classList.contains('racer-css-fullscreen'));
+  const sync = () => {
+    const active = isActive();
+    button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-label', active ? 'Quitter le plein ecran' : 'Passer Knight Racer en plein ecran');
+    button.textContent = active ? String.fromCharCode(215) + ' QUITTER' : '\u26F6 PLEIN ECRAN';
+    button.title = active ? 'Quitter le plein ecran (Echap)' : 'Passer Knight Racer en plein ecran';
+  };
+  button.addEventListener('click', async () => {
+    if (isActive()) {
+      root.classList.remove('racer-css-fullscreen');
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { await exit.call(document); } catch (_) {}
+      }
+      tellParent(false);
+      sync();
+      return;
+    }
+    root.classList.add('racer-css-fullscreen');
+    tellParent(true);
+    const request = root.requestFullscreen || root.webkitRequestFullscreen;
+    if (request) {
+      try { await request.call(root); }
+      catch (error) { button.title = 'Mode immersif actif; plein ecran navigateur refuse: ' + (error && error.name || 'erreur'); }
+    } else {
+      button.title = 'Mode immersif actif; API plein ecran indisponible.';
+    }
+    sync();
+    window.dispatchEvent(new Event('resize'));
+  });
+  let nativeWasActive = false;
+  const onFullscreenChange = () => {
+    const native = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (nativeWasActive && !native) {
+      root.classList.remove('racer-css-fullscreen');
+      tellParent(false);
+    }
+    nativeWasActive = native;
+    sync();
+    window.dispatchEvent(new Event('resize'));
+  };
+  document.addEventListener('fullscreenchange', onFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && root.classList.contains('racer-css-fullscreen') && !document.fullscreenElement && !document.webkitFullscreenElement) {
+      root.classList.remove('racer-css-fullscreen'); tellParent(false); sync();
+    }
+  });
+  sync();
+})();
+</script>
 </body>
 </html>
