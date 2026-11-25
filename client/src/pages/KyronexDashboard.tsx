@@ -15,6 +15,7 @@ const units = [
 export default function KyronexDashboard() {
   const [booting, setBooting] = useState(true);
   const [linking, setLinking] = useState("");
+  const [constructionUnit, setConstructionUnit] = useState<typeof units[number] | null>(null);
   const navigationTimer = useRef<number | undefined>(undefined);
   const hoverTimer = useRef<number | undefined>(undefined);
   const speechRequest = useRef<AbortController | undefined>(undefined);
@@ -63,7 +64,7 @@ export default function KyronexDashboard() {
   const connect = (event: React.MouseEvent<HTMLAnchorElement>, unit: typeof units[number]) => {
     event.preventDefault();
     stopHoverSpeech();
-    if (!unit.online) return;
+    if (!unit.online) { setConstructionUnit(unit); return; }
     setLinking(unit.name);
     try {
       const context = new AudioContext();
@@ -78,6 +79,13 @@ export default function KyronexDashboard() {
     } catch {}
     navigationTimer.current=window.setTimeout(()=>{window.location.href=unit.href},3600);
   };
+  const closeConstruction = () => setConstructionUnit(null);
+  useEffect(() => {
+    if (!constructionUnit) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") closeConstruction(); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [constructionUnit]);
   return <main className={"kx-dashboard " + (booting ? "kx-starting" : "kx-ready")}>
     <div className="kx-ambient" aria-hidden="true"><span/><span/><span/></div>
     {booting&&<div className="kx-boot" role="status" aria-label="Initialisation de Kyronex"><div className="kx-boot-panel">
@@ -90,6 +98,22 @@ export default function KyronexDashboard() {
       <div className="kx-handshake"><span>IDENTITÉ VÉRIFIÉE</span><span>CANAL CHIFFRÉ</span><span>CONNEXION ACCEPTÉE</span></div>
       <div className="kx-link-track"><i/></div>
     </div></div>}
+    {constructionUnit&&<div className={`kx-build-overlay kx-build-${constructionUnit.code}`} role="dialog" aria-modal="true" aria-labelledby="kx-build-title" onMouseDown={event=>{if(event.target===event.currentTarget)closeConstruction();}}>
+      <section className="kx-build-panel">
+        <button className="kx-build-close" type="button" onClick={closeConstruction} aria-label="Fermer">×</button>
+        <div className="kx-build-top"><span>KYRONEX // ENGINEERING BAY</span><span><i/> LIVE BUILD</span></div>
+        <div className="kx-build-sigil" aria-hidden="true"><i/><b>{constructionUnit.code === "07" ? "K" : "G"}</b></div>
+        <p className="kx-build-kicker">UNIT {constructionUnit.code} · SYSTEM BOOT</p>
+        <h2 id="kx-build-title">{constructionUnit.name}</h2>
+        <p className="kx-build-message">{constructionUnit.code === "07" ? "Knight Rider systems are coming online." : "Go systems are being assembled."}</p>
+        <div className="kx-build-console" aria-live="polite">
+          {(constructionUnit.code === "07" ? ["CORE // initializing neural interface", "VOICE // calibrating response matrix", "SENSORS // awaiting Jetson hardware", "STATUS // construction in progress"] : ["GO // bootstrapping control plane", "MODULES // compiling subsystem map", "HARDWARE // awaiting Jetson assignment", "STATUS // construction in progress"]).map((line,index)=><p key={line} style={{animationDelay:`${index*180}ms`}}><b>{String(index+1).padStart(2,"0")}</b> {line}<i/></p>)}
+        </div>
+        <div className="kx-build-progress"><span>BUILD SEQUENCE</span><b>IN PROGRESS</b><i><em/></i></div>
+        <p className="kx-build-patience">Un peu de patience, Dadoo — la prochaine unité prend forme. 🙂</p>
+        <button className="kx-build-return" type="button" onClick={closeConstruction}>RETOUR AU RÉSEAU <span>↗</span></button>
+      </section>
+    </div>}
     <div className="kx-frame">
       <header className="kx-topbar">
         <a className="kx-brand" href="/kyronex/" aria-label="Kyronex, accueil"><span className="kx-brand-mark">K<span>X</span></span><span className="kx-brand-name">KYRONEX<small>KNIGHT INDUSTRIES · BELGIUM</small></span></a>
