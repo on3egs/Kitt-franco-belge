@@ -110,7 +110,7 @@ export default function KyronexDashboard() {
           {(constructionUnit.code === "07" ? ["CORE // initializing neural interface", "VOICE // calibrating response matrix", "SENSORS // awaiting Jetson hardware", "STATUS // construction in progress"] : ["GO // bootstrapping control plane", "MODULES // compiling subsystem map", "HARDWARE // awaiting Jetson assignment", "STATUS // construction in progress"]).map((line,index)=><p key={line} style={{animationDelay:`${index*180}ms`}}><b>{String(index+1).padStart(2,"0")}</b> {line}<i/></p>)}
         </div>
         <div className="kx-build-progress"><span>BUILD SEQUENCE</span><b>IN PROGRESS</b><i><em/></i></div>
-        <p className="kx-build-patience">Un peu de patience, Dadoo — la prochaine unité prend forme. 🙂</p>
+        <p className="kx-build-patience">Un peu de patience, {constructionUnit.code === "07" ? "Jo" : "Hervé"} — ton système prend forme. 🙂</p>
         <button className="kx-build-return" type="button" onClick={closeConstruction}>RETOUR AU RÉSEAU <span>↗</span></button>
       </section>
     </div>}
