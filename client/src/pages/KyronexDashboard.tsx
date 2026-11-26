@@ -8,14 +8,15 @@ const units = [
   { name:"KARR DE DADOO", code:"04", role:"Accès distant", spec:"JETSON ORIN NX · REMOTE ACCESS", href:"https://karr-dadoo.kitt-franco-belge.be/?ai=karr_dadoo", sound:"hover_karr.mp3", announcement:"KARR de Dadoo, propriétaire Dadoo. Jetson Orin NX, mémoire non précisée.", tone:"violet", icon:"◎", online:true },
   { name:"K-4000", code:"05", role:"Unité expérimentale", spec:"KYRONEX · FRANK / KR-95", href:"https://k4000.kitt-franco-belge.be", sound:"hover_kitt.mp3", announcement:"K-4000, propriétaire Frank, pseudo KR-95. Modèle Jetson non renseigné.", tone:"blue", icon:"◇", online:true },
   { name:"K.I.T.T. PASCAL", code:"06", role:"Assistant embarqué", spec:"ORIN NANO 8 GB · NEMOTRON", href:"https://kitt-pascal.kitt-franco-belge.be", sound:"hover_kitt.mp3", announcement:"KITT Pascal, propriétaire Pascal. Jetson Orin Nano, 8 gigaoctets.", tone:"cyan", icon:"⌘", online:true },
-  { name:"JO KNIGHT RIDER", code:"07", role:"Nœud neuronal", spec:"KYRONEX · EN CONSTRUCTION", href:"#", sound:"hover_kitt.mp3", announcement:"Jo Knight Rider. Unité en construction, modèle Jetson non renseigné.", tone:"muted", icon:"◌", online:false },
-  { name:"HERVÉ DE PASCAL-K.", code:"08", role:"Nœud neuronal", spec:"KYRONEX · EN CONSTRUCTION", href:"#", sound:"hover_karr.mp3", announcement:"Hervé de Pascal K. Unité en construction, modèle Jetson non renseigné.", tone:"muted", icon:"◌", online:false },
+  { name:"JO KNIGHT RIDER", code:"07", role:"Simulation de configuration", spec:"KITT / KARR · JETSON À COMPARER", href:"#", sound:"hover_kitt.mp3", announcement:"Simulation Jo Knight Rider. Choix du profil KITT ou KARR, du Jetson et de la famille LLM. Rien n'est configuré sur le matériel.", tone:"muted", icon:"◌", online:false },
+  { name:"HERVÉ DE PASCAL-K.", code:"08", role:"Simulation de configuration", spec:"PROFILS LLM · COMPARATIF JETSON", href:"#", sound:"hover_karr.mp3", announcement:"Simulation Hervé de Pascal K. Comparez les Jetson Orin Nano, Orin NX et AGX Orin, puis choisissez un profil KITT ou KARR. Aucun changement matériel n'est appliqué.", tone:"muted", icon:"◌", online:false },
 ];
 
 export default function KyronexDashboard() {
   const [booting, setBooting] = useState(true);
   const [linking, setLinking] = useState("");
   const [constructionUnit, setConstructionUnit] = useState<typeof units[number] | null>(null);
+  const [buildConfig, setBuildConfig] = useState({ owner: "À choisir", assistant: "KITT", jetson: "À comparer", llm: "À choisir" });
   const navigationTimer = useRef<number | undefined>(undefined);
   const hoverTimer = useRef<number | undefined>(undefined);
   const speechRequest = useRef<AbortController | undefined>(undefined);
@@ -80,6 +81,7 @@ export default function KyronexDashboard() {
     navigationTimer.current=window.setTimeout(()=>{window.location.href=unit.href},3600);
   };
   const closeConstruction = () => setConstructionUnit(null);
+  const updateBuildConfig = (key: keyof typeof buildConfig, value: string) => setBuildConfig((current) => ({ ...current, [key]: value }));
   useEffect(() => {
     if (!constructionUnit) return;
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") closeConstruction(); };
@@ -101,16 +103,23 @@ export default function KyronexDashboard() {
     {constructionUnit&&<div className={`kx-build-overlay kx-build-${constructionUnit.code}`} role="dialog" aria-modal="true" aria-labelledby="kx-build-title" onMouseDown={event=>{if(event.target===event.currentTarget)closeConstruction();}}>
       <section className="kx-build-panel">
         <button className="kx-build-close" type="button" onClick={closeConstruction} aria-label="Fermer">×</button>
-        <div className="kx-build-top"><span>KYRONEX // ENGINEERING BAY</span><span><i/> LIVE BUILD</span></div>
+        <div className="kx-build-top"><span>KYRONEX // ENGINEERING BAY</span><span><i/> SIMULATION · 26 NOV. 2026</span></div>
         <div className="kx-build-sigil" aria-hidden="true"><i/><b>{constructionUnit.code === "07" ? "K" : "G"}</b></div>
-        <p className="kx-build-kicker">UNIT {constructionUnit.code} · SYSTEM BOOT</p>
+        <p className="kx-build-kicker">UNIT {constructionUnit.code} · CONFIGURATION EN ÉTUDE</p>
         <h2 id="kx-build-title">{constructionUnit.name}</h2>
-        <p className="kx-build-message">{constructionUnit.code === "07" ? "Knight Rider systems are coming online." : "Go systems are being assembled."}</p>
+        <p className="kx-build-message">On fait avancer l’étude : compare les profils KITT et KARR, les Jetson disponibles et les familles de LLM avant de retenir une configuration.</p>
         <div className="kx-build-console" aria-live="polite">
-          {(constructionUnit.code === "07" ? ["CORE // initializing neural interface", "VOICE // calibrating response matrix", "SENSORS // awaiting Jetson hardware", "STATUS // construction in progress"] : ["GO // bootstrapping control plane", "MODULES // compiling subsystem map", "HARDWARE // awaiting Jetson assignment", "STATUS // construction in progress"]).map((line,index)=><p key={line} style={{animationDelay:`${index*180}ms`}}><b>{String(index+1).padStart(2,"0")}</b> {line}<i/></p>)}
+          {["PROFIL // KITT ou KARR, comportement à choisir", "PROPRIÉTAIRE // Dadoo · Virginie · KR-95", "JETSON // Orin Nano 8 Go · Orin NX 16 Go · AGX Orin", "LLM // Qwen · Gemma · Nemotron, version à valider"].map((line,index)=><p key={line} style={{animationDelay:`${index*180}ms`}}><b>{String(index+1).padStart(2,"0")}</b> {line}<i/></p>)}
         </div>
-        <div className="kx-build-progress"><span>BUILD SEQUENCE</span><b>IN PROGRESS</b><i><em/></i></div>
-        <p className="kx-build-patience">Un peu de patience, {constructionUnit.code === "07" ? "Jo" : "Hervé"} — ton système prend forme. 🙂</p>
+        <div className="kx-build-config" aria-label="Options de la simulation">
+          <label>PROPRIÉTAIRE<select value={buildConfig.owner} onChange={(event)=>updateBuildConfig("owner",event.target.value)}><option>À choisir</option><option>Dadoo</option><option>Virginie</option><option>KR-95</option></select></label>
+          <label>PROFIL IA<select value={buildConfig.assistant} onChange={(event)=>updateBuildConfig("assistant",event.target.value)}><option>KITT</option><option>KARR</option></select></label>
+          <label>JETSON À ÉTUDIER<select value={buildConfig.jetson} onChange={(event)=>updateBuildConfig("jetson",event.target.value)}><option>À comparer</option><option>Orin Nano · 8 Go</option><option>Orin NX · 16 Go</option><option>AGX Orin · mémoire à confirmer</option></select></label>
+          <label>FAMILLE LLM<select value={buildConfig.llm} onChange={(event)=>updateBuildConfig("llm",event.target.value)}><option>À choisir</option><option>Qwen</option><option>Gemma</option><option>Nemotron</option></select></label>
+        </div>
+        <p className="kx-build-summary" aria-live="polite">Simulation : {buildConfig.assistant} · {buildConfig.owner} · {buildConfig.jetson} · {buildConfig.llm}</p>
+        <p className="kx-build-patience">Étude uniquement : ces sélections ne pilotent aucun Jetson et ne téléchargent aucun modèle. La version précise du LLM et la mémoire restent à confirmer.</p>
+        <div className="kx-build-progress"><span>ÉTUDE DE CONFIGURATION</span><b>SIMULATION ACTIVE</b><i><em/></i></div>
         <button className="kx-build-return" type="button" onClick={closeConstruction}>RETOUR AU RÉSEAU <span>↗</span></button>
       </section>
     </div>}
@@ -145,12 +154,12 @@ export default function KyronexDashboard() {
         </div>
         <div className="kx-grid">{units.map(unit=><a className={`kx-card kx-tone-${unit.tone}${unit.online?"":" kx-card-offline"}`} href={unit.href}
           target={unit.online?"_blank":undefined} rel={unit.online?"noreferrer":undefined}
-          aria-label={unit.online?`Ouvrir ${unit.name}, ${unit.role}`:`${unit.name}, unité en préparation`} aria-disabled={!unit.online}
+          aria-label={unit.online?`Ouvrir ${unit.name}, ${unit.role}`:`Ouvrir la simulation de configuration ${unit.name}`} aria-disabled={!unit.online}
           onClick={event=>connect(event,unit)} onMouseEnter={()=>{if(unit.online)playSfx(unit.sound);announceUnit(unit)}} onMouseLeave={stopHoverSpeech} onFocus={()=>announceUnit(unit)} onBlur={stopHoverSpeech} key={unit.code}>
           <div className="kx-card-head"><span className="kx-card-number">UNITÉ <b>{unit.code}</b></span><span className="kx-card-state"><i/>{unit.online?"EN LIGNE":"BIENTÔT"}</span></div>
           <div className="kx-card-core"><span className="kx-card-glyph">{unit.icon}</span><span className="kx-card-arrow">↗</span></div>
           <div className="kx-card-copy"><p>{unit.role}</p><h3>{unit.name}</h3><span>{unit.spec}</span></div>
-          <div className="kx-card-footer"><span>{unit.online?"ÉTABLIR LA LIAISON":"ACCÈS EN PRÉPARATION"}</span><b>{unit.online?"→":"···"}</b></div>
+          <div className="kx-card-footer"><span>{unit.online?"ÉTABLIR LA LIAISON":"OUVRIR LA SIMULATION"}</span><b>{unit.online?"→":"···"}</b></div>
         </a>)}</div>
       </section>
       <footer className="kx-footer"><span><b>KYRONEX</b> · ACCÈS AUX UNITÉS</span><span>RÉSEAU SÉCURISÉ <i/> VERSION 3.0</span></footer>
