@@ -1,0 +1,57 @@
+.kx-intro {
+  background-image: radial-gradient(ellipse at 73% 45%, #14304377, transparent 64%);
+}
+.kx-hero-visual {
+  background-image: repeating-linear-gradient(0deg, transparent 0 28px, #83e9ff12 29px 30px),
+                    repeating-linear-gradient(90deg, transparent 0 28px, #83e9ff12 29px 30px);
+}
+.kx-build-panel {
+  box-shadow: 0 0 55px color-mix(in srgb, var(--build, #73edff) 25%, transparent);
+}
+.kx-mission-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  margin-top: 1.3rem;
+}
+.kx-mission-links a,
+.kx-mission-launch {
+  padding: .75rem 1rem;
+  border: 1px solid var(--mission-color, #73edff);
+  background: #0d1520;
+  color: var(--mission-color, #73edff);
+  border-radius: .35rem;
+  font: 700 .75rem/1.3 "Space Mono", monospace;
+  text-decoration: none;
+  cursor: pointer;
+}
+.kx-mission-links a:last-child { --mission-color: #ffc976; }
+.kx-mission-links a:focus-visible,
+.kx-mission-links a:hover,
+.kx-mission-launch:focus-visible,
+.kx-mission-launch:hover { box-shadow: 0 0 18px #73edff55; }
+.kx-grid .kx-card[data-offline] {
+  opacity: 1;
+  filter: none;
+  cursor: pointer;
+  background-image: radial-gradient(ellipse at 85% 0%, #78eaff22, transparent 65%);
+}
+.kx-grid .kx-card[data-name^="HERV"] {
+  background-image: radial-gradient(ellipse at 85% 0%, #ffc97628, transparent 65%);
+}
+.kx-build-overlay:not([hidden]) {
+  overflow-y: auto;
+  align-items: safe center;
+}
+.kx-mission-controls {
+  display: grid;
+  gap: .6rem;
+  margin: 1rem 0;
+}
+.kx-mission-launch { justify-self: start; --mission-color: var(--build, #73edff); }
+.kx-mission-launch:disabled { opacity: .6; cursor: wait; }
+.kx-mission-controls progress { width: 100%; accent-color: var(--build, #73edff); }
+.kx-mission-controls output { color: #d6e5f1; font: .75rem/1.4 "Space Mono", monospace; }
+@media (prefers-reduced-motion: reduce) {
+  .kx-build-console p, .kx-build-sigil, .kx-build-sigil * { animation: none !important; }
+}
